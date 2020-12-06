@@ -143,7 +143,7 @@ const Exceptions = {
     UnexpectedTokenStatement: class UnexpectedTokenStatement extends Error {
         constructor(statement, token, expected) {
             super(
-                `Error parsing the '${statement.toString()}' statement. Expected '${expected.toString()}', when actually: '${token.toString()}'.`,
+                `Error parsing the '${statement.toString()}' statement. Expected '${expected.toString()}', when actually: '${token.toString()}'`,
             );
         }
     },
@@ -158,7 +158,7 @@ const Exceptions = {
      */
     ParserLogicException: class ParserLogicException extends Error {
         constructor() {
-            super("The expression has incorrect logic.");
+            super("The expression has incorrect logic");
         }
     },
 
@@ -173,7 +173,7 @@ const Exceptions = {
     ParserEmtyArgumentException: class ParserEmtyArgumentException extends Error {
         constructor() {
             super(
-                "It is not possible to pass an empty argument to a function, use null to denote an empty value.",
+                "It is not possible to pass an empty argument to a function, use null to denote an empty value",
             );
         }
     },
@@ -189,7 +189,7 @@ const Exceptions = {
     LinkerPathNotGiveExceptrion: class LinkerPathNotGiveExceptrion extends Error {
         constructor() {
             super(
-                "To use include, you must pass the path to the current execution file.",
+                "To use include, you must pass the path to the current execution file",
             );
         }
     },
@@ -207,6 +207,258 @@ const Exceptions = {
             super("An error occured while opening file: '" + path + "'");
         }
     },
+
+    /**
+     * Ошибка выполнения нативной функции
+     *
+     * @memberof Pattern.Exceptions
+     * @name NativeFunctionExcecutionError
+     * @class
+     * @protected
+     */
+    NativeFunctionExcecutionError: class NativeFunctionExcecutionError extends Error {
+        constructor(name) {
+            super("Critical error while executing a native function '" + name + "'");
+        }
+    },
+
+    /**
+     * Ошибка типа, возвращаемого нативной функцией
+     *
+     * @memberof Pattern.Exceptions
+     * @name NativeFunctionReturnValueError
+     * @class
+     * @protected
+     */
+    NativeFunctionReturnValueError: class NativeFunctionReturnValueError extends Error {
+        constructor() {
+            super("Function can only return simple types");
+        }
+    },
+
+    /**
+     * Невозможно получить n от null
+     *
+     * @memberof Pattern.Exceptions
+     * @name GetFieldOfNullException
+     * @class
+     * @protected
+     */
+    GetFieldOfNullException: class GetFieldOfNullException extends Error {
+        constructor(field) {
+            super(`Cannot get property '${field}' of null`);
+        }
+    },
+
+    /**
+     * Поле не является функцией
+     *
+     * @memberof Pattern.Exceptions
+     * @name FieldNotAFunctionException
+     * @class
+     * @protected
+     */
+    FieldNotAFunctionException: class FieldNotAFunctionException extends Error {
+        constructor(field) {
+            super(`The field '${field}' is not a function`);
+        }
+    },
+
+    /**
+     * Поле уже объявлено
+     *
+     * @memberof Pattern.Exceptions
+     * @name TheFieldAlreadyHasBeenDeclaredException
+     * @class
+     * @protected
+     */
+    TheFieldAlreadyHasBeenDeclaredException: class TheFieldAlreadyHasBeenDeclaredException extends Error {
+        constructor(field) {
+            super(`The '${field}' field is already declared`);
+        }
+    },
+
+    /**
+     * Поле должно быть массивом
+     *
+     * @memberof Pattern.Exceptions
+     * @name TheFieldMustBeAnArrayInstanceExceprion
+     * @class
+     * @protected
+     */
+    TheFieldMustBeAnArrayInstanceExceprion: class TheFieldMustBeAnArrayInstanceExceprion extends Error {
+        constructor(field) {
+            super(`Field '${field}' must be an Array instance`);
+        }
+    },
+
+    /**
+     * Поле не объявлено
+     *
+     * @memberof Pattern.Exceptions
+     * @name TheFieldNotHasDeclaredExceprion
+     * @class
+     * @protected
+     */
+    TheFieldNotHasDeclaredExceprion: class TheFieldNotHasDeclaredExceprion extends Error {
+        constructor(field) {
+            super(`Field '${field}' is not declared`);
+        }
+    },
+
+    /**
+     * Поле должно иметь тип числа
+     *
+     * @memberof Pattern.Exceptions
+     * @name TheFieldMustBeNumberException
+     * @class
+     * @protected
+     */
+    TheFieldMustBeNumberException: class TheFieldMustBeNumberException extends Error {
+        constructor(field) {
+            super(`'${field}' must be a number, or a container containing a number`);
+        }
+    },
+
+    /**
+     * Невозможно распознать тип вхождения
+     *
+     * @memberof Pattern.Exceptions
+     * @name UnableToRecognizeTypeException
+     * @class
+     * @protected
+     */
+    UnableToRecognizeTypeException: class UnableToRecognizeTypeException extends Error {
+        constructor(type) {
+            super(`Unable to recognize type '${type}'`);
+        }
+    },
+
+    /**
+     * Ошибка сегментации сегментов вызова (...exp, ...exp, ) <-
+     * 
+     * @memberof Pattern.Exceptions
+     * @name SegmentationFaultEmptyArgumentException
+     * @class
+     * @protected
+     */
+    SegmentationFaultEmptyArgumentException: class SegmentationFaultEmptyArgumentException extends Error {
+        constructor(blockname) {
+            super(`Segmentation fault: empty argument for ` + blockname);
+        }
+    },
+
+    /**
+     * Ошибка сегментации сегментов вызова (...exp, ...exp, ) <-
+     * 
+     * @memberof Pattern.Exceptions
+     * @name SegmentationFaultMaximumSegmentsForBlockException
+     * @class
+     * @protected
+     */
+    SegmentationFaultMaximumSegmentsForBlockException: class SegmentationFaultMaximumSegmentsForBlockException extends Error {
+        constructor(blockname) {
+            super(`Segmentation fault exceeded the maximum number of segments for block ` + blockname);
+        }
+    },
+
+    /**
+     * somed.dss[ <...exp> ] <-
+     * 
+     * @memberof Pattern.Exceptions
+     * @name UnexpectedWordTypeAndGetException
+     * @class
+     * @protected
+     */
+    UnexpectedWordTypeAndGetException: class UnexpectedWordTypeAndGetException extends Error {
+        constructor(value, type) {
+            super(`Expected word type expression and get ${value}[${type}]`);
+        }
+    },
+
+    /**
+     * Невозможно получить доступ к полю, неправильно сотавлено выражение
+     * 
+     * @memberof Pattern.Exceptions
+     * @name InvalidSequenceForLetiableAccessException
+     * @class
+     * @protected
+     */
+    InvalidSequenceForLetiableAccessException: class InvalidSequenceForLetiableAccessException extends Error {
+        constructor() {
+            super(`Invalid sequence for letiable access`);
+        }
+    },
+
+    /**
+     * Критическая ошибка парсера
+     * 
+     * @memberof Pattern.Exceptions
+     * @name CriticalParserErrorException
+     * @class
+     * @protected
+     */
+    CriticalParserErrorException: class CriticalParserErrorException extends Error {
+        constructor() {
+            super(`Critical parser error`);
+        }
+    },
+
+    /**
+     * Критическая ошибка парсера, неожиданный конец ввода
+     * 
+     * @memberof Pattern.Exceptions
+     * @name CriticalParserErrorUnexpectedEndOfInputException
+     * @class
+     * @protected
+     */
+    CriticalParserErrorUnexpectedEndOfInputException: class CriticalParserErrorUnexpectedEndOfInputException extends Error {
+        constructor() {
+            super(`Critical parser error: unexpected end of input`);
+        }
+    },
+
+    /**
+     * Критическая ошибка парсера, не переданны данные для парсинга
+     * 
+     * @memberof Pattern.Exceptions
+     * @name CriticalParserErrorNoRawDataTransmittedException
+     * @class
+     * @protected
+     */
+    CriticalParserErrorNoRawDataTransmittedException: class CriticalParserErrorNoRawDataTransmittedException extends Error {
+        constructor() {
+            super(`Critical parser error: no raw data transmitted`);
+        }
+    },
+    
+    /**
+     * Прыжок через два уровня
+     * 
+     * @memberof Pattern.Exceptions
+     * @name BadArrowNotationJumpingTwoLevels
+     * @class
+     * @protected
+     */
+    BadArrowNotationJumpingTwoLevels: class BadArrowNotationJumpingTwoLevels extends Error {
+        constructor() {
+            super(`Bad array notation: jumping two levels is not possible`);
+        }
+    },
+    
+    /**
+     * Неожиданный переход на более высокий уровень
+     * 
+     * @memberof Pattern.Exceptions
+     * @name BadArrowNotationJumpingToUpperLevel
+     * @class
+     * @protected
+     */
+    BadArrowNotationJumpingToUpperLevel: class BadArrowNotationJumpingToUpperLevel extends Error {
+        constructor() {
+            super(`Bad array notation: unexpected transition to a upper level`);
+        }
+    }
 };
 
 /**
@@ -253,9 +505,7 @@ let Import = () => {};
                     Object.assign(modules, { [mod.name]: mod.lib });
                 else Object.assign(modules, mod);
             else
-                logger.warn(
-                    `Can't find module ${import_statements[i]}, check the spelling of the library name`,
-                );
+                logger.warn(`Can't find module ${import_statements[i]}, check the spelling of the library name`);
         }
 
         return modules;
@@ -307,7 +557,7 @@ class Heap extends Map {
     /**
      * Получет значение из текущей области памяти по ключу `key`
      *
-     * @param {String} key клю, по которому происходит получение значения
+     * @param {String} key ключ, по которому происходит получение значения
      * @method
      * @public
      */
@@ -332,61 +582,28 @@ class Heap extends Map {
         try {
             switch (typeof data) {
                 case "bigint":
-                    super.set(
-                        key,
-                        new Integer(
-                            new LexerEntry(
-                                CHARTYPE.NUMBER,
-                                Buffer.from(data.toString()),
-                                0,
-                            ),
-                        ),
-                    );
+                    super.set(key, new NativeInteger(data));
                     break;
                 case "number":
-                    super.set(
-                        key,
-                        new Number(
-                            new LexerEntry(
-                                CHARTYPE.NUMBER,
-                                Buffer.from(data.toString()),
-                                0,
-                            ),
-                        ),
-                    );
+                    super.set(key, new NativeNumber(data));
                     break;
                 case "string":
-                    super.set(
-                        key,
-                        new String(
-                            new LexerEntry(
-                                CHARTYPE.STRING,
-                                Buffer.from(data.toString()),
-                                0,
-                            ),
-                        ),
-                    );
+                    super.set(key, new NativeString(data));
                     break;
                 case "boolean":
-                    super.set(
-                        key,
-                        new Boolean(
-                            new LexerEntry(
-                                CHARTYPE.WORD,
-                                Buffer.from(data.toString()),
-                                0,
-                            ),
-                        ),
-                    );
+                    super.set(key, new NativeBoolean(data));
                     break;
                 case "object":
                     if (data == null) {
-                        super.set(key, data);
+                        super.set(key, new NativeNull());
                     } else if (
-                        data instanceof ExpressionPattern ||
-                        data instanceof MessagePattern
+                        data instanceof CodeEmitter
                     ) {
                         super.set(key, new PatternData(data));
+                    } else if(
+                        data instanceof Heap
+                    ) { 
+                        super.set(key, data);
                     } else {
                         parents_three.push(data);
 
@@ -401,8 +618,8 @@ class Heap extends Map {
 
                             super.set(key, sub);
                         } else {
-                            const sub = new Heap(),
-                                keys = Object.getOwnPropertyNames(data);
+                            const sub = new Heap()
+                                , keys = Object.getOwnPropertyNames(data);
 
                             for (let i = 0, leng = keys.length; i < leng; i++)
                                 if (!parents_three.includes(data[keys[i]]))
@@ -508,7 +725,12 @@ class Context {
         let b = null,
             p = this.levels.length - 1;
 
-        while (p >= 0 && (b = this.levels[p--].get(val)) == null);
+        while (
+            p >= 0 &&
+            (
+                b = this.levels[p--].get(val)
+            ) == null
+        );
 
         return b;
     }
@@ -632,7 +854,7 @@ class HeapIndexed extends Heap {
         if (
             typeof key !== "number" ||
             key < 0 ||
-            key > globalThis.Number.MAX_SAFE_INTEGER
+            key > Number.MAX_SAFE_INTEGER
         )
             throw new TypeError();
 
@@ -674,6 +896,25 @@ class ParserData {
      */
     constructor(type = "undefined") {
         this.type = type;
+    }
+}
+
+/**
+ * @lends Operand
+ * @class
+ */
+class Operand extends ParserData {
+    /**
+     * @param {String} type тип данных
+     * @constructs Operand
+     * @memberof Pattern
+     * @abstract
+     * @protected
+     */
+    constructor(name = "undefined") {
+        super('operand')
+
+        this.name = name;
     }
 }
 
@@ -763,20 +1004,20 @@ class Operator extends ParserData {
  * @lends Literal
  * @class
  */
-class Literal extends ParserData {
+class Literal extends Operand {
     /**
      * @param {LexerEntry} entry вхождение лексера описывающее текущий литерал
      * @param {String} name наименование литерала
      * @constructs Literal
      * @memberof Pattern
-     * @extends ParserData
+     * @extends Operand
      * @protected
      */
     constructor(entry, name) {
         super("literal");
 
         this.position = entry.position;
-        this.name = name;
+        this.operand_name = name;
     }
 
     /**
@@ -784,7 +1025,9 @@ class Literal extends ParserData {
      * @method
      * @public
      */
-    result() {}
+    result() {
+
+    }
 
     /**
      * Сравнивает имя литерала с переданных значением
@@ -803,7 +1046,7 @@ class Literal extends ParserData {
      *
      * @method
      * @public
-     * @returns {globalThis.String}
+     * @returns {String}
      */
     toString() {
         return this.name + " { " + this.result() + " }";
@@ -811,21 +1054,307 @@ class Literal extends ParserData {
 }
 
 /**
- * @lends Integer
+ * @lends Native
  * @class
  */
-class Integer extends Literal {
+class Native extends Operand {
+    /**
+     * @param {String} name наименование литерала
+     * @constructs Native
+     * @memberof Pattern
+     * @extends Operand
+     * @protected
+     */
+    constructor(name) {
+        super("native");
+
+        this.position = 0;
+        this.operand_name = name;
+    }
+
+    /**
+     * @abstract
+     * @method
+     * @public
+     */
+    result() {
+
+    }
+
+    /**
+     * Сравнивает имя литерала с переданных значением
+     *
+     * @param {String} f имя литерала с которым сравниваем
+     * @method
+     * @public
+     * @returns {Boolean}
+     */
+    equals(f) {
+        return this.name === f;
+    }
+
+    /**
+     * Серриализует текущий литерал
+     *
+     * @method
+     * @public
+     * @returns {String}
+     */
+    toString() {
+        return this.name + " [N] { " + this.result() + " }";
+    }
+}
+
+/**
+ * @lends NativeInteger
+ * @class
+ */
+class NativeInteger extends Native {
+    /**
+     * Дескриптор нативного целого числа в шаблонизаторе
+     *
+     * @param {BigInt} data данные для преобразования
+     * @constructs NativeInteger
+     * @memberof Pattern
+     * @extends Native
+     * @protected
+     */
+    constructor(data) {
+        super("NativeInteger");
+
+        if(!isNaN(data) && typeof data === 'bigint')
+            this.data = data;
+        else
+            throw new TypeError('For NativeInteger, the data type passed to the constructor must be a bigint')
+    }
+    
+    /**
+     * Серриализует текущее целое число
+     *
+     * @override
+     * @method
+     * @public
+     * @returns {String}
+     */
+    toString() {
+        return this.data + "i";
+    }
+
+    /**
+     * Возвращает серриалзованное значение результата выполнения
+     *
+     * @override
+     * @method
+     * @public
+     * @returns {BigInt}
+     */
+    result(){
+        return this.data;
+    }
+}
+
+/**
+ * @lends NativeNumber
+ * @class
+ */
+class NativeNumber extends Native {
+    /**
+     * Дескриптор нативного числа в шаблонизаторе
+     *
+     * @param {Number} data данные для преобразования
+     * @constructs NativeNumber
+     * @memberof Pattern
+     * @extends Native
+     * @protected
+     */
+    constructor(data) {
+        super("NativeNumber");
+
+        if(!isNaN(data) && typeof data === 'number')
+            this.data = data;
+        else
+            throw new TypeError('For NativeNumber, the data type passed to the constructor must be a number')
+    }
+    
+    /**
+     * Серриализует текущее целое число
+     *
+     * @override
+     * @method
+     * @public
+     * @returns {String}
+     */
+    toString() {
+        return this.data + "n";
+    }
+
+    /**
+     * Возвращает серриалзованное значение результата выполнения
+     *
+     * @override
+     * @method
+     * @public
+     * @returns {Number}
+     */
+    result(){
+        return this.data;
+    }
+}
+
+/**
+ * @lends NativeString
+ * @class
+ */
+class NativeString extends Native {
+    /**
+     * Дескриптор нативной строки в шаблонизаторе
+     *
+     * @param {String} data данные для преобразования
+     * @constructs NativeString
+     * @memberof Pattern
+     * @extends Native
+     * @protected
+     */
+    constructor(data) {
+        super("NativeString");
+
+        if(typeof data === 'string')
+            this.data = data;
+        else
+            throw new TypeError('For NativeString, the data type passed to the constructor must be a string')
+    }
+    
+    /**
+     * Серриализует текущее целое число
+     *
+     * @override
+     * @method
+     * @public
+     * @returns {String}
+     */
+    toString() {
+        return `'${this.data}'`;
+    }
+
+    /**
+     * Возвращает серриалзованное значение результата выполнения
+     *
+     * @override
+     * @method
+     * @public
+     * @returns {String}
+     */
+    result(){
+        return this.data;
+    }
+}
+
+/**
+ * @lends NativeBoolean
+ * @class
+ */
+class NativeBoolean extends Native {
+    /**
+     * Дескриптор нативного булевого значения в шаблонизаторе
+     *
+     * @param {Boolean} data данные для преобразования
+     * @constructs NativeBoolean
+     * @memberof Pattern
+     * @extends Native
+     * @protected
+     */
+    constructor(data) {
+        super("NativeBoolean");
+
+        if(typeof data === 'boolean')
+            this.data = data;
+        else
+            throw new TypeError('For NativeBoolean, the data type passed to the constructor must be a boolean')
+    }
+    
+    /**
+     * Серриализует текущее целое число
+     *
+     * @override
+     * @method
+     * @public
+     * @returns {String}
+     */
+    toString() {
+        return `${this.data}`;
+    }
+
+    /**
+     * Возвращает серриалзованное значение результата выполнения
+     *
+     * @override
+     * @method
+     * @public
+     * @returns {Boolean}
+     */
+    result(){
+        return this.data;
+    }
+}
+
+/**
+ * @lends NativeNull
+ * @class
+ */
+class NativeNull extends Native {
+    /**
+     * Дескриптор нативного null в шаблонизаторе
+     *
+     * @constructs NativeNull
+     * @memberof Pattern
+     * @extends Native
+     * @protected
+     */
+    constructor() {
+        super("NativeNull");
+    }
+    
+    /**
+     * Серриализует текущее целое число
+     *
+     * @override
+     * @method
+     * @public
+     * @returns {String}
+     */
+    toString() {
+        return `null`;
+    }
+
+    /**
+     * Возвращает серриалзованное значение результата выполнения
+     *
+     * @override
+     * @method
+     * @public
+     * @returns {null}
+     */
+    result(){
+        return null;
+    }
+}
+
+/**
+ * @lends IntegerLiteral
+ * @class
+ */
+class IntegerLiteral extends Literal {
     /**
      * Дескриптор целого числа в шаблонизаторе
      *
      * @param {LexerEntry} data Вхождение лексера описывающее целое число
-     * @constructs Integer
+     * @constructs IntegerLiteral
      * @memberof Pattern
      * @extends Literal
      * @protected
      */
     constructor(data) {
-        super(data, "Integer");
+        super(data, "IntegerLiteral");
 
         this.data = data.data.toString();
     }
@@ -848,7 +1377,7 @@ class Integer extends Literal {
      * @override
      * @method
      * @public
-     * @returns {globalThis.String}
+     * @returns {String}
      */
     toString() {
         return this.data + "i";
@@ -859,14 +1388,14 @@ class Integer extends Literal {
      *
      * @param {Any} data Данные из которых нужно преобразовать
      * @param {?Number} pos Позция вхождения
-     * @returns {Integer}
+     * @returns {IntegerLiteral}
      * @static
      * @public
      * @method
      */
     static toPatternNumber(data, pos = 0) {
         if (!(data instanceof ParserData))
-            return new Integer(
+            return new IntegerLiteral(
                 new LexerEntry(
                     CHARTYPE.NUMBER,
                     Buffer.from(BigInt(data).toString()),
@@ -878,11 +1407,11 @@ class Integer extends Literal {
         switch (data.entry.type) {
             case CHARTYPE.STRING:
             case CHARTYPE.WORD:
-                return new Integer(
+                return new IntegerLiteral(
                     new LexerEntry(CHARTYPE.NUMBER, data.entry.data, pos, null),
                 );
             case CHARTYPE.NUMBER:
-                return new Integer(
+                return new IntegerLiteral(
                     new LexerEntry(
                         CHARTYPE.NUMBER,
                         Buffer.from(data.entry.data.toString()),
@@ -892,7 +1421,7 @@ class Integer extends Literal {
                 );
         }
 
-        return new Integer(
+        return new IntegerLiteral(
             new LexerEntry(CHARTYPE.NUMBER, Buffer.from([48]), pos, null),
         );
     }
@@ -901,34 +1430,34 @@ class Integer extends Literal {
      * Создает пустое целое число со значнием 0
      *
      * @param {?Number} pos позиция к которой нужно привзать новосозданное целое число
-     * @returns {Integer}
+     * @returns {IntegerLiteral}
      * @static
      * @public
      * @method
      */
     static create(pos = 0) {
-        return new Number(
+        return new NumberLiteral(
             new LexerEntry(CHARTYPE.START, Buffer.from([48]), pos, null),
         );
     }
 }
 
 /**
- * @lends Number
+ * @lends NumberLiteral
  * @class
  */
-class Number extends Literal {
+class NumberLiteral extends Literal {
     /**
      * Дескриптор числа в шаблонизаторе
      *
      * @param {LexerEntry} data Вхождение лексера описывающее число
-     * @constructs Number
+     * @constructs NumberLiteral
      * @memberof Pattern
      * @extends Literal
      * @protected
      */
     constructor(data) {
-        super(data, "Number");
+        super(data, "NumberLiteral");
 
         this.data = data.data.toString();
 
@@ -941,7 +1470,7 @@ class Number extends Literal {
      * @override
      * @method
      * @public
-     * @returns {globalThis.String}
+     * @returns {String}
      */
     toString() {
         return this.data + "n";
@@ -973,7 +1502,7 @@ class Number extends Literal {
      * @override
      * @method
      * @public
-     * @returns {globalThis.Number}
+     * @returns {Number}
      */
     result() {
         return this.unsigned ? parseInt(this.data) : parseFloat(this.data);
@@ -984,17 +1513,17 @@ class Number extends Literal {
      *
      * @param {Any} data Данные из которых нужно преобразовать
      * @param {?Number} pos Позция вхождения
-     * @returns {Number}
+     * @returns {NumberLiteral}
      * @static
      * @public
      * @method
      */
     static toPatternNumber(data, pos = 0) {
         if (!(data instanceof ParserData))
-            return new Number(
+            return new NumberLiteral(
                 new LexerEntry(
                     CHARTYPE.NUMBER,
-                    Buffer.from(new globalThis.Number(data).toString()),
+                    Buffer.from(new Number(data).toString()),
                     pos,
                     null,
                 ),
@@ -1003,11 +1532,11 @@ class Number extends Literal {
         switch (data.entry.type) {
             case CHARTYPE.STRING:
             case CHARTYPE.WORD:
-                return new Number(
+                return new NumberLiteral(
                     new LexerEntry(CHARTYPE.NUMBER, data.entry.data, pos, null),
                 );
             case CHARTYPE.NUMBER:
-                return new Number(
+                return new NumberLiteral(
                     new LexerEntry(
                         CHARTYPE.NUMBER,
                         Buffer.from(data.entry.data.toString()),
@@ -1017,7 +1546,7 @@ class Number extends Literal {
                 );
         }
 
-        return new Number(
+        return new NumberLiteral(
             new LexerEntry(CHARTYPE.NUMBER, Buffer.from([48]), pos, null),
         );
     }
@@ -1026,34 +1555,34 @@ class Number extends Literal {
      * Создает пустое число со значнием 0
      *
      * @param {?Number} pos позиция к которой нужно привзать новосозданное число
-     * @returns {Number}
+     * @returns {NumberLiteral}
      * @static
      * @public
      * @method
      */
     static create(pos = 0) {
-        return new Number(
+        return new NumberLiteral(
             new LexerEntry(CHARTYPE.START, Buffer.from([48]), pos, null),
         );
     }
 }
 
 /**
- * @lends String
+ * @lends StringLiteral
  * @class
  */
-class String extends Literal {
+class StringLiteral extends Literal {
     /**
      * Дескриптор литерала строки
      *
      * @param {LexerEntry} data Вхождение лексера описывающее строку
-     * @constructs String
+     * @constructs StringLiteral
      * @memberof Pattern
      * @extends Literal
      * @protected
      */
     constructor(data) {
-        super(data, "String");
+        super(data, "StringLiteral");
 
         this.data = data.data.toString();
     }
@@ -1064,7 +1593,7 @@ class String extends Literal {
      * @override
      * @method
      * @public
-     * @returns {globalThis.String}
+     * @returns {String}
      */
     result() {
         return this.data.toString();
@@ -1075,17 +1604,17 @@ class String extends Literal {
      *
      * @param {Any} data Данные из которых нужно преобразовать
      * @param {?Number} pos Позция вхождения
-     * @returns {String}
+     * @returns {StringLiteral}
      * @static
      * @public
      * @method
      */
     static toPatternString(data, pos = 0) {
         if (!(data instanceof ParserData))
-            return new String(
+            return new StringLiteral(
                 new LexerEntry(
                     CHARTYPE.WORD,
-                    Buffer.from(new globalThis.String(data).toString()),
+                    Buffer.from(new String(data).toString()),
                     pos,
                     null,
                 ),
@@ -1094,11 +1623,11 @@ class String extends Literal {
         switch (data.entry.type) {
             case CHARTYPE.STRING:
             case CHARTYPE.WORD:
-                return new String(
+                return new StringLiteral(
                     new LexerEntry(CHARTYPE.WORD, data.entry.data, pos, null),
                 );
             case CHARTYPE.NUMBER:
-                return new String(
+                return new StringLiteral(
                     new LexerEntry(
                         CHARTYPE.WORD,
                         Buffer.from(data.entry.data.toString()),
@@ -1108,7 +1637,7 @@ class String extends Literal {
                 );
         }
 
-        return new String(
+        return new StringLiteral(
             new LexerEntry(CHARTYPE.WORD, Buffer.from([]), pos, null),
         );
     }
@@ -1119,7 +1648,7 @@ class String extends Literal {
      * @override
      * @method
      * @public
-     * @returns {globalThis.String}
+     * @returns {String}
      */
     toString() {
         return (
@@ -1133,34 +1662,34 @@ class String extends Literal {
      * Создает пустую строку с длинной равной нулю
      *
      * @param {?Number} pos позиция к которой нужно привзать новосозданный литерал
-     * @returns {String}
+     * @returns {StringLiteral}
      * @static
      * @public
      * @method
      */
     static create(pos = 0) {
-        return new String(
+        return new StringLiteral(
             new LexerEntry(CHARTYPE.START, Buffer.from([]), pos, null),
         );
     }
 }
 
 /**
- * @lends Boolean
+ * @lends BooleanLiteral
  * @class
  */
-class Boolean extends Literal {
+class BooleanLiteral extends Literal {
     /**
      * Дескриптор лбулевого итерала
      *
      * @param {LexerEntry} data Вхождение лексера описывающее булевый литерал
-     * @constructs Boolean
+     * @constructs BooleanLiteral
      * @memberof Pattern
      * @extends Literal
      * @protected
      */
     constructor(data) {
-        super(data, "Boolean");
+        super(data, "BooleanLiteral");
 
         this.data =
             data.data.toString() === "true"
@@ -1174,7 +1703,7 @@ class Boolean extends Literal {
      * @override
      * @method
      * @public
-     * @returns {globalThis.Boolean}
+     * @returns {Boolean}
      */
     result() {
         return this.data[0] !== 0;
@@ -1186,7 +1715,7 @@ class Boolean extends Literal {
      * @override
      * @method
      * @public
-     * @returns {globalThis.String}
+     * @returns {String}
      */
     toString() {
         return this.data[0] !== 0 ? "true" : "false";
@@ -1197,24 +1726,24 @@ class Boolean extends Literal {
      *
      * @param {Any} data Данные из которых нужно преобразовать
      * @param {?Number} pos Позция вхождения
-     * @returns {Boolean}
+     * @returns {BooleanLiteral}
      * @static
      * @public
      * @method
      */
     static toPatternBoolean(data, pos = 0) {
         if (!(data instanceof ParserData))
-            return new Boolean(
+            return new BooleanLiteral(
                 new LexerEntry(
                     CHARTYPE.WORD,
-                    Buffer.from(new globalThis.Boolean(data).toString()),
+                    Buffer.from(new Boolean(data).toString()),
                     pos,
                     null,
                 ),
             );
 
         if (data.entry.data.byteLength === 1) {
-            return new Boolean(
+            return new BooleanLiteral(
                 new LexerEntry(
                     CHARTYPE.WORD,
                     Buffer.from(data.entry.data[0] === 0 ? "false" : "true"),
@@ -1228,7 +1757,7 @@ class Boolean extends Literal {
                 case CHARTYPE.WORD:
                     switch (data.entry.data.toString()) {
                         case "true":
-                            return new Boolean(
+                            return new BooleanLiteral(
                                 new LexerEntry(
                                     CHARTYPE.WORD,
                                     Buffer.from("true"),
@@ -1237,7 +1766,7 @@ class Boolean extends Literal {
                                 ),
                             );
                         case "false":
-                            return new Boolean(
+                            return new BooleanLiteral(
                                 new LexerEntry(
                                     CHARTYPE.WORD,
                                     Buffer.from("false"),
@@ -1250,7 +1779,7 @@ class Boolean extends Literal {
                 case CHARTYPE.NUMBER:
                     switch (data.entry.data.toString()) {
                         case "0":
-                            return new Boolean(
+                            return new BooleanLiteral(
                                 new LexerEntry(
                                     CHARTYPE.WORD,
                                     Buffer.from("false"),
@@ -1259,7 +1788,7 @@ class Boolean extends Literal {
                                 ),
                             );
                         default:
-                            return new Boolean(
+                            return new BooleanLiteral(
                                 new LexerEntry(
                                     CHARTYPE.WORD,
                                     Buffer.from("true"),
@@ -1270,7 +1799,7 @@ class Boolean extends Literal {
                     }
             }
 
-            return new Boolean(
+            return new BooleanLiteral(
                 new LexerEntry(CHARTYPE.WORD, Buffer.from("false"), pos, null),
             );
         }
@@ -1280,34 +1809,34 @@ class Boolean extends Literal {
      * Создает пустую булевое значение равное `false`
      *
      * @param {?Number} pos позиция к которой нужно привзать новосозданный литерал
-     * @returns {Boolean}
+     * @returns {BooleanLiteral}
      * @static
      * @public
      * @method
      */
     static create(pos = 0) {
-        return new Boolean(
+        return new BooleanLiteral(
             new LexerEntry(CHARTYPE.START, Buffer.from([0]), pos, null),
         );
     }
 }
 
 /**
- * @lends Null
+ * @lends NullLiteral
  * @class
  */
-class Null extends Literal {
+class NullLiteral extends Literal {
     /**
      * Дескриптор литерала null
      *
      * @param {LexerEntry} data Вхождение лексера описывающее null
-     * @constructs Null
+     * @constructs NullLiteral
      * @memberof Pattern
      * @extends Literal
      * @protected
      */
     constructor(data) {
-        super(data, "Null");
+        super(data, "NullLiteral");
     }
 
     /**
@@ -1328,7 +1857,7 @@ class Null extends Literal {
      * @override
      * @method
      * @public
-     * @returns {globalThis.String}
+     * @returns {String}
      */
     toString() {
         return "Null";
@@ -1338,13 +1867,13 @@ class Null extends Literal {
      * Стоздает новый null литерал
      *
      * @param {?Number} pos позиция к которой нужно привзать новосозданный литерал
-     * @returns {Null}
+     * @returns {NullLiteral}
      * @static
      * @public
      * @method
      */
     static create() {
-        return new Null(
+        return new NullLiteral(
             new LexerEntry(CHARTYPE.START, Buffer.from([]), 0, null),
         );
     }
@@ -1354,14 +1883,14 @@ class Null extends Literal {
  * @lends NativeFunction
  * @class
  */
-class NativeFunction extends ParserData {
+class NativeFunction extends Operand {
     /**
      * Нативная функция, невозможно создать по средствам шаблона
      *
      * @param {Function} func функция, котороая будет вызвана при попытке результировать значение
      * @constructs NativeFunction
      * @memberof Pattern
-     * @extends ParserData
+     * @extends Operand
      * @protected
      */
     constructor(func) {
@@ -1377,7 +1906,7 @@ class NativeFunction extends ParserData {
      * @param {Context} context Контекст выполнения фукнции
      * @param {Function} throw_error Метод выбрасывания ошибок
      * @param {Number} call_pos Позиция из которой происходит вызов
-     * @returns {Integer|Number|String|Boolean|HeapIndexed|Heap|Null}
+     * @returns {IntegerLiteral|NumberLiteral|StringLiteral|BooleanLiteral|HeapIndexed|Heap|NullLiteral}
      */
     result(args, context, throw_error, call_pos) {
         let buff;
@@ -1385,50 +1914,37 @@ class NativeFunction extends ParserData {
         try {
             buff = this.target.call({ args, throw_error, context }, ...args);
         } catch (e) {
-            throw_error(
-                call_pos,
-                "Critical error while executing a native function " +
-                    this.target.name,
-            );
+            throw_error(call_pos, new Exceptions.NativeFunctionExcecutionError(this.target.name));
         }
 
-        if (buff == null) return Null.create();
-        else if (typeof buff === "bigint")
-            return new Integer(
-                new LexerEntry(
-                    CHARTYPE.NUMBER,
-                    Buffer.from(buff.toString()),
-                    0,
-                ),
-            );
-        else if (typeof buff === "number")
-            return new Number(
-                new LexerEntry(
-                    CHARTYPE.NUMBER,
-                    Buffer.from(buff.toString()),
-                    0,
-                ),
-            );
-        else if (typeof buff === "string")
-            return new String(
-                new LexerEntry(
-                    CHARTYPE.STRING,
-                    Buffer.from(buff.toString()),
-                    0,
-                ),
-            );
-        else if (typeof buff === "boolean")
-            return new Boolean(
-                new LexerEntry(CHARTYPE.WORD, Buffer.from(buff.toString()), 0),
-            );
-        else if (typeof buff === "object")
-            if (buff instanceof Array) return new HeapIndexed(buff);
-            else return new Heap(buff);
-        else
-            throw_error(
-                call_pos,
-                "Function can only return simple types, string number and boolean",
-            );
+        switch(typeof buff){
+            case "bigint":
+                if(isNaN(buff))
+                    return new NativeNull();
+                else
+                    return new NativeInteger(buff)
+            case "number":
+                if(isNaN(buff))
+                    return new NativeNull();
+                else 
+                    return new NativeNumber(buff);
+            case "string":
+                return new NativeString(buff);
+            case "boolean":
+                return new NativeBoolean(buff);
+            case "undefined":
+            case "object":
+                if(buff == null)
+                    return new NativeNull();
+                else {
+                    if (buff instanceof Array) 
+                        return new HeapIndexed(buff);
+                    else 
+                        return new Heap(buff);
+                }
+            default:
+                throw_error(call_pos, new Exceptions.NativeFunctionReturnValueError());
+        }
     }
 
     /**
@@ -1467,19 +1983,8 @@ class LexerEntry {
         this.leng = data.byteLength;
         this.string_separator =
             s_separator != null
-                ? globalThis.String.fromCharCode(s_separator)
+                ? String.fromCharCode(s_separator)
                 : null;
-
-        // Проверяем на валидность некоторые типы
-        switch (this.type) {
-            case CHARTYPE.NUMBER:
-                if (isNaN(parseFloat(this.data.toString())))
-                    throw new Error(
-                        "Cannot be identified as a digital format token of type: " +
-                            this.data.toString(),
-                    );
-                break;
-        }
     }
 
     /**
@@ -1487,7 +1992,7 @@ class LexerEntry {
      *
      * @param {*} t Тип с которым нужно сравнить текущее вхождение
      * @param {?String|String[]} s содержание с котрым необходимо сравнить текущее вхождение
-     * @returns {globalThis.Boolean}
+     * @returns {Boolean}
      */
     equals(t, s) {
         return (
@@ -1504,7 +2009,7 @@ class LexerEntry {
      * Сравнивает текущее вхождение с преданным `s` содержанием.
      *
      * @param {?String|String[]} s содержание с котрым необходимо сравнить текущее вхождение
-     * @returns {globalThis.Boolean}
+     * @returns {Boolean}
      */
     contentEquals(s) {
         return Array.isArray(s)
@@ -1526,16 +2031,17 @@ class LexerEntry {
 }
 
 /**
- * @lends PatternData;
+ * @lends PatternData
  * @protected
  */
-class PatternData extends ParserData {
+class PatternData extends Operand {
     /**
      * Данные вызова шаблона, если передать в heap шаблон, то он выполнится с текущей памятью
      *
      * @param {CodeEmitter} pattern эмиттер который будет исполнятся при сполнении этого выхождения
      *
      * @constructs PatternData
+     * @extends Operand
      * @memberof Pattern
      * @protected
      */
@@ -1576,27 +2082,25 @@ class PatternData extends ParserData {
 }
 
 /**
- * Получение значения
- */
-/**
- * @lends GetOperator;
+ * @lends GetOperator
  * @protected
  */
-class GetOperator extends ParserData {
+class GetOperator extends Operand {
     /**
      * Данные вызова шаблона, если передать в heap шаблон, то он выполнится с текущей памятью
      *
      * @param {CodeEmitter} эмиттер который будет исполнятся при сполнении этого выхождения
      *
      * @constructs GetOperator
+     * @extends Operand
      * @memberof Pattern
      * @protected
      */
     constructor(position, stack) {
-        super("get_name");
+        super("get");
 
         this.position = position;
-        this.query_stack = [...stack];
+        this.query_stack = stack;
     }
 
     /**
@@ -1633,7 +2137,7 @@ class GetOperator extends ParserData {
             } else {
                 throw_error(
                     this.position,
-                    "Cannot get property `" + query_stack[i] + "` of null",
+                    new Exceptions.GetFieldOfNullException(query_stack[i])
                 );
             }
         }
@@ -1655,16 +2159,17 @@ class GetOperator extends ParserData {
 }
 
 /**
- * @lends FunctionCall;
+ * @lends FunctionCall
  * @protected
  */
-class FunctionCall extends ParserData {
+class FunctionCall extends Operand {
     /**
      * Вхождение вызова функции, после выполнения этого вхождения будет вызвана нативная функция
      *
      * @param {CodeEmitter} эмиттер который будет исполнятся при сполнении этого выхождения
      *
      * @constructs FunctionCall
+     * @extends Operand
      * @memberof Pattern
      * @protected
      */
@@ -1711,7 +2216,7 @@ class FunctionCall extends ParserData {
             } else {
                 throw_error(
                     this.position,
-                    "Cannot get property `" + query_stack[i] + "` of null",
+                    new Exceptions.GetFieldOfNullException(query_stack[i]),
                 );
             }
         }
@@ -1727,8 +2232,7 @@ class FunctionCall extends ParserData {
         else
             throw_error(
                 this.position,
-                "The called object is not a function " +
-                    query_stack[query_stack.length - 1],
+                new Exceptions.FieldNotAFunctionException(query_stack[query_stack.length - 1])
             );
     }
 
@@ -1742,19 +2246,19 @@ class FunctionCall extends ParserData {
     toString() {
         return (
             "(" +
-            this.query_stack.join(" => ") +
+                this.query_stack.join(" => ") +
             ") <== (" +
-            this.args.join(", ") +
+                this.args.join(", ") +
             ")"
         );
     }
 }
 
 /**
- * @lends TernarOperator;
+ * @lends TernarOperator
  * @protected
  */
-class TernarOperator extends ParserData {
+class TernarOperator extends Operand {
     /**
      * Создает тернарные оператор
      *
@@ -1763,6 +2267,7 @@ class TernarOperator extends ParserData {
      * @param {ExpressionGroup} v2 Выражение, если ложь
      *
      * @constructs TernarOperator
+     * @extends Operand
      * @memberof Pattern
      * @protected
      */
@@ -1781,10 +2286,10 @@ class TernarOperator extends ParserData {
      * @public
      * @method
      */
-    toString() {
+    toString(indent) {
         return (
             "< " +
-            this.condition.toString() +
+            this.condition.toString(indent + "\t") +
             " > ? " +
             this.v_o +
             " : " +
@@ -1807,18 +2312,19 @@ class TernarOperator extends ParserData {
      */
     result(context, out, throw_error) {
         if (
-            Boolean.toPatternBoolean(
+            BooleanLiteral.toPatternBoolean(
                 this.condition.result(context, out, throw_error),
                 this.condition.position,
             ).result()
         )
             return this.v_o.result(context, out, throw_error);
-        else return this.v_t.result(context, out, throw_error);
+        else
+            return this.v_t.result(context, out, throw_error);
     }
 }
 
 /**
- * @lends SetOperator;
+ * @lends SetOperator
  * @protected
  */
 class SetOperator {
@@ -1845,8 +2351,8 @@ class SetOperator {
      * @public
      * @method
      */
-    toString() {
-        return "set " + this.name + " = " + this.value.toString();
+    toString(indent) {
+        return "set " + this.name + " = " + this.value.toString(indent + "\t");
     }
 
     /**
@@ -1871,14 +2377,14 @@ class SetOperator {
         else {
             throw_error(
                 this.position,
-                `The '${this.name}' field is already declared`,
+                new Exceptions.TheFieldAlreadyHasBeenDeclaredException(this.name)
             );
         }
     }
 }
 
 /**
- * @lends PushOperator;
+ * @lends PushOperator
  * @protected
  */
 class PushOperator {
@@ -1887,7 +2393,7 @@ class PushOperator {
      * Это опреатор для работы с массивами, и он заменяет свойство push
      *
      * @param {Number} position Позиция в начала оператора во входящих данных
-     * @param {String[]} query_stack Значение, которое поле получит после выполнения этого вхождения
+     * @param {String[]} query_stack Путь к полю которое поле получит
      * @param {ExpressionGroup} value Данные которые нужно устновить
      *
      * @constructs PushOperator
@@ -1907,14 +2413,14 @@ class PushOperator {
      * @public
      * @method
      */
-    toString() {
+    toString(indent) {
         return (
             "(" +
             this.query_stack
                 .map((e) => (typeof e === "number" ? `[${e}]` : e))
                 .join(" => ") +
             ") < " +
-            this.value.toString()
+            this.value.toString(indent + "\t")
         );
     }
 
@@ -1957,20 +2463,18 @@ class PushOperator {
             else
                 throw_error(
                     this.position,
-                    `Field '${
-                        query_stack[index - 1]
-                    }' must be an Array instance`,
+                    new Exceptions.TheFieldMustBeAnArrayInstanceExceprion(query_stack[index - 1])
                 );
         } else
             throw_error(
                 this.position,
-                `Can't get field '${query_stack[0]}' of null`,
+                new Exceptions.GetFieldOfNullException(query_stack[0]),
             );
     }
 }
 
 /**
- * @lends ResetOperator;
+ * @lends ResetOperator
  * @protected
  */
 class ResetOperator {
@@ -1979,7 +2483,7 @@ class ResetOperator {
      * Объект который сериализуется как name = (...expression)
      *
      * @param {Number} position Позиция в начала оператора во входящих данных
-     * @param {String[]} query_stack Значение, которое поле получит после выполнения этого вхождения
+     * @param {String[]} query_stack Путь поля в памяти
      * @param {ExpressionGroup} value Данные которые нужно устновить
      *
      * @constructs PushOperator
@@ -1999,14 +2503,14 @@ class ResetOperator {
      * @public
      * @method
      */
-    toString() {
+    toString(indent) {
         return (
             "(" +
-            this.query_stack
-                .map((e) => (typeof e === "number" ? `[${e}]` : e))
-                .join(" => ") +
+                this.query_stack
+                    .map((e) => (typeof e === "number" ? `[${e}]` : e))
+                    .join(" => ") +
             ") = " +
-            this.value.toString()
+            this.value.toString(indent + "\t")
         );
     }
 
@@ -2056,9 +2560,7 @@ class ResetOperator {
             } else
                 throw_error(
                     this.position,
-                    `Can't get field '${query_stack[index]}' of ${
-                        (query_data && query_data.type) || "null"
-                    }`,
+                    new Exceptions.GetFieldOfNullException(query_stack[index])
                 );
         } else {
             if (query_data != null)
@@ -2069,14 +2571,14 @@ class ResetOperator {
             else
                 throw_error(
                     this.position,
-                    `The field '${query_stack[0]}' not has declareted`,
+                    new Exceptions.TheFieldNotHasDeclaredExceprion(query_stack[0])
                 );
         }
     }
 }
 
 /**
- * @lends OutOperator;
+ * @lends OutOperator
  * @protected
  */
 class OutOperator {
@@ -2121,7 +2623,7 @@ class OutOperator {
 }
 
 /**
- * @lends IfStatement;
+ * @lends IfStatement
  * @protected
  */
 class IfStatement {
@@ -2153,11 +2655,11 @@ class IfStatement {
     toString(indent) {
         return (
             "if (" +
-            this.condition.toString() +
+            this.condition.toString(indent + "\t") +
             ") " +
-            this.body_true.toString(indent) +
+            this.body_true.toString(indent + "\t") +
             (this.body_false != null
-                ? " else " + this.body_false.toString(indent)
+                ? " else " + this.body_false.toString(indent + "\t")
                 : "")
         );
     }
@@ -2176,7 +2678,7 @@ class IfStatement {
      */
     result(context, out, throw_error) {
         if (
-            Boolean.toPatternBoolean(
+            BooleanLiteral.toPatternBoolean(
                 this.condition.result(context, out, throw_error),
                 this.condition.position,
             ).result()
@@ -2188,7 +2690,7 @@ class IfStatement {
 }
 
 /**
- * @lends WhileStatement;
+ * @lends WhileStatement
  * @protected
  */
 class WhileStatement {
@@ -2218,7 +2720,7 @@ class WhileStatement {
     toString(indent) {
         return (
             "while (" +
-            this.condition.toString() +
+            this.condition.toString(indent + "\t") +
             ") " +
             this.body.toString(indent + "\t")
         );
@@ -2238,12 +2740,82 @@ class WhileStatement {
      */
     result(context, out, throw_error) {
         while (
-            Boolean.toPatternBoolean(
+            BooleanLiteral.toPatternBoolean(
                 this.condition.result(context, out, throw_error),
                 this.condition.position,
             ).result()
         )
             this.body.result(context, out, throw_error);
+    }
+}
+
+/**
+ * @lends ObjectContructorCall
+ * @protected
+ */
+class ObjectContructorCall extends Operand {
+    /**
+     * Литеральный конструктор объекта
+     *
+     * @param {String} name имя конструктора
+     * @param {Map<String, ExpressionGroup>} fields поля объекта при инициализации
+     *
+     * @constructs ObjectContructorCall
+     * @extends Operand
+     * @memberof Pattern
+     * @protected
+     */
+    constructor(name = 'Object', fields) {
+        super('object');
+
+        this.name = name;
+        this.fields = fields;
+    }
+
+    /**
+     * Серриализует текущий объект в строку
+     *
+     * @param {String} indent отступ слева, для более понятного отображения кода
+     * @returns {String} Строковое представление выражения while
+     * @public
+     * @method
+     */
+    toString(indent) {
+        const items = [...this.fields.entries()];
+
+        return (
+            "new (" + this.name + ") -> \n" +
+                items.map((e, i) => {
+                    if(e[1] instanceof ObjectContructorCall)
+                        return indent + e[0] + ' -> ' + e[1].toString(indent + '\t');
+                    else
+                        return indent + e[0] + ' -> ' + e[1].toString(indent + '\t') + (i + 1 != items.length ? ',' : '');
+                }).join('\n')
+        );
+    }
+
+    /**
+     * Выполняет основной блок, до тех пор, пока выполняется условие переданное первым аргументом
+     *
+     * @param {Context} context Контекст выполнения
+     * @param {Array<Any>} out Массив с выходными данным
+     * @param {Function} throw_error Вызывается при ошибке
+     *
+     * @throws {Exceptions.ParserException}
+     *
+     * @public
+     * @method
+     */
+    result(context, out, throw_error) {
+        if(this.name === 'Object'){
+            const instance = new Heap();
+
+            for(let fieled of this.fields) {
+                instance.set(fieled[0], fieled[1].result(context, out, throw_error));
+            }
+
+            return instance;
+        }
     }
 }
 
@@ -2278,14 +2850,7 @@ class RepeatStatement {
      * @method
      */
     toString(indent) {
-        return (
-            "repeat (" +
-            this.from.toString() +
-            "; " +
-            this.to.toString() +
-            ") " +
-            this.body.toString(indent)
-        );
+        return "repeat (" + this.from.toString() + "; " + this.to.toString() + ") " + this.body.toString(indent);
     }
 
     /**
@@ -2308,13 +2873,13 @@ class RepeatStatement {
         if (typeof from !== "number")
             throw_error(
                 this.from.position,
-                "From must be a number, or a container containing a number",
+                new Exceptions.TheFieldMustBeNumberException("From")
             );
 
         if (typeof to !== "number")
             throw_error(
                 this.to.position,
-                "To must be a number, or a container containing a number",
+                new Exceptions.TheFieldMustBeNumberException("To")
             );
 
         from = parseInt(from);
@@ -2337,7 +2902,7 @@ class RepeatStatement {
 /**
  * @lends MessagePattern;
  */
-class ExpressionGroup extends ParserData {
+class ExpressionGroup extends Operand {
     /**
      * Группа выражения, водержит последовательность, кторая выполняется как выражение.
      *
@@ -2363,8 +2928,8 @@ class ExpressionGroup extends ParserData {
      * @public
      * @method
      */
-    toString() {
-        return this.data.join(" ");
+    toString(indent) {
+        return this.data.map(e => e.toString(indent + "\t")).join(" ");
     }
 
     /**
@@ -2384,70 +2949,59 @@ class ExpressionGroup extends ParserData {
         function push(entry) {
             switch (entry.type) {
                 case CHARTYPE.NUMBER:
-                    _.data.push(new Number(entry));
+                    _.data.push(new NumberLiteral(entry));
                     break;
                 case CHARTYPE.STRING:
-                    _.data.push(new String(entry));
+                    _.data.push(new StringLiteral(entry));
                     break;
                 case CHARTYPE.WORD:
                     switch (entry.data.toString()) {
                         case "true":
                         case "false":
-                            _.data.push(new Boolean(entry));
+                            _.data.push(new BooleanLiteral(entry));
                             break;
                         case "null":
-                            _.data.push(new Null(entry));
+                            _.data.push(new NullLiteral(entry));
                             break;
                         default:
                             _.data.push(new GetByName(entry));
                             break;
                     }
                     break;
-                case "get_index":
-                case "get_name":
-                case "call":
-                case "literal":
-                case "ternar":
-                case "expression":
-                case "operator":
-                    _.data.push(entry);
-                    break;
                 default:
-                    throw_error(entry.position, "Unable to recognize type");
+                    switch(entry.type) {
+                        case "operand":
+                        case "operator":
+                            _.data.push(entry);
+                            break;
+                        default:
+                            throw_error(entry.position, new Exceptions.UnableToRecognizeTypeException(entry.type));
+                    }
                     break;
             }
         }
 
-        if (_.data.length === 0) {
+        if (_.data.length === 0)
             push(entry);
-        } else if (entry.type === "operator")
-            if (_.data[_.data.length - 1].type !== "operator") push(entry);
+        else if (entry.type === "operator")
+            if (_.data[_.data.length - 1].type !== "operator")
+                push(entry);
             else
-                throw_error(
-                    entry.position,
-                    new Exceptions.TheSequenceException(entry),
-                );
+                throw_error(entry.position, new Exceptions.TheSequenceException(entry));
         else if (entry.type === "literal" || entry.type === "expression")
-            if (_.data[_.data.length - 1].type === "operator") push(entry);
+            if (_.data[_.data.length - 1].type === "operator")
+                push(entry);
             else
-                throw_error(
-                    entry.position,
-                    new Exceptions.TheSequenceException(entry),
-                );
-        else if (entry.type === CHARTYPE.OPERATOR) {
+                throw_error(entry.position, new Exceptions.TheSequenceException(entry));
+        else if (entry.type === CHARTYPE.OPERATOR)
             if (_.data[_.data.length - 1].type !== "operator")
                 push(new Operator(entry));
             else
-                throw_error(
-                    entry.position,
-                    new Exceptions.TheSequenceException(entry),
-                );
-        } else if (_.data[_.data.length - 1].type === "operator") push(entry);
+                throw_error(entry.position, new Exceptions.TheSequenceException(entry));
+        else if (_.data[_.data.length - 1].type === "operator")
+            push(entry);
         else
-            throw_error(
-                entry.position,
-                new Exceptions.TheSequenceException(entry),
-            );
+            throw_error(entry.position, new Exceptions.TheSequenceException(entry));
     }
 
     /**
@@ -2620,7 +3174,7 @@ class ExpressionGroup extends ParserData {
         let result =
             this.data[0] != null
                 ? this.data[0].result(context, out, throw_error)
-                : Null.create().result();
+                : NullLiteral.create().result();
 
         for (let i = 1, leng = this.data.length; i < leng; i += 2) {
             switch (true) {
@@ -2849,11 +3403,30 @@ class SequenceMainGroup {
  * @private
  */
 function maybeEquals(entries, index, equalts_t, equalts_v) {
-    if (entries[index].equals(equalts_t, equalts_v)) {
+    while (entries[index].equals(equalts_t, equalts_v)) {
         entries.splice(index, 1);
     }
 
     return true;
+}
+
+/**
+ * Подсчитывает количиство неприрывных одинаковых вхождений
+ * ---------------------------------------------------------------------------
+ * 
+ * @param {Array<LexerEntry>} entries вхождения для парсинга
+ * @param {Number} start начальная позиция парсинга
+ * @param {String} equalts_t Тип с которым сравниваем
+ * @param {String|Array<String>} equalts_v Значение(я) с которым(и) сравниваем
+ * 
+ * @memberof Pattern
+ * @private
+ */
+function countKeys(entries, start, equalts_t, equalts_v){
+    for(let i = start, to = entries.length; i < to; i++){
+        if(entries[i] == null || !entries[i].equals(equalts_t, equalts_v))
+            return i - start;
+    }
 }
 
 /**
@@ -3166,6 +3739,133 @@ function parseFunctionCall(query_stack, start, data, throw_error) {
     };
 }
 
+
+/**
+ * Парсит литеральное объявление объекта
+ * 
+ * ->
+ *  key1 -> value1,
+ *  key2 -> value2,
+ *  key1 --> value1...
+ *
+ * @param {Number} start начальная позиция разбора, для выражения
+ * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+ *
+ * @returns {{data: TernarOperator, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
+ *
+ * @memberof Pattern
+ * @protected
+ */
+function parseObject(start, data, throw_error, level = 0) {
+    let result = null,
+        count = 0,
+        entries = new Array([]),   // Значения объекта
+        last_row = start,
+        expected = 0;              // Ожидаемое следующие значение
+
+    for (let i = start; true; i++) {
+        switch (true) {
+            case data[i] === undefined || expected === 3 && !data[i].equals(CHARTYPE.OPERATOR, ',') || data[i].equals(CHARTYPE.OPERATOR, ';'):
+                if(entries[entries.length - 1].length !== 2)
+                    throw_error(data[i].position, new Exceptions.ParserEmtyArgumentException());
+
+                return {
+                    data: new ObjectContructorCall('Object', new Map(entries)),
+                    jump: i - start
+                };
+            default:
+                switch(expected){
+                    case 0:
+                        if(maybeEquals(data, i, CHARTYPE.NEWLINE) && data[i].equals(CHARTYPE.WORD)){
+                            entries[entries.length - 1][0] = data[i].toString();
+
+                            expected = 1;
+                        } else {
+                            throw_error(data[i].position, new Exceptions.UnexpectedTokenException(data[i], 'any word'));
+                        }
+                    break;
+                    case 1:
+                        maybeEquals(data, i, CHARTYPE.NEWLINE);
+
+                        count = countKeys(data, i, CHARTYPE.OPERATOR, '-');
+
+                        // - ('-' * level)
+                        if(count === level + 1) {
+                            i += count;
+
+                            if(!data[i].equals(CHARTYPE.OPERATOR, '>')){
+                                throw_error(data[i].position, new Exceptions.UnexpectedTokenException(data[i], '>'));
+                            }
+
+                            expected = 2;
+                        } else {
+                            entries.pop();
+
+                            if(count < level + 1) {
+                                return {
+                                    data: new ObjectContructorCall('Object', new Map(entries)),
+                                    jump: last_row - start
+                                };
+                            } else {
+                                throw_error(data[i].position, new Exceptions.BadArrowNotationJumpingToUpperLevel());
+                            }
+                        }
+                    break;
+                    case 2:
+                        maybeEquals(data, i, CHARTYPE.NEWLINE)
+
+                        count = countKeys(data, i + 1, CHARTYPE.OPERATOR, '-');
+
+                        /// Если как значение передан инициализатор другого объекта
+                        ///
+                        /// some ->
+                        ///     some1 --> 'some',
+                        if(
+                            data[i + level + 3] != null &&
+                            data[i].equals(CHARTYPE.WORD) &&
+                            count === level + 2 && 
+                            data[i + level + 3].equals(CHARTYPE.OPERATOR, '>')
+                        ){                            
+                            result = parseObject(i, data, throw_error, level + 1);
+
+                            i += result.jump - 1;
+
+                            entries[entries.length - 1][1] = result.data;
+
+                            expected = 3;
+
+                        /// Неправильная нотация
+                        ///
+                        ///
+                        } else if(count > level + 2) {
+                            throw_error(data[i + 1].position, new Exceptions.BadArrowNotationJumpingTwoLevels());
+                        /// Если как значение передано выражение
+                        ///
+                        /// some -> 'somesome...';
+                        }else {
+                            result = parseExpression(i, data, throw_error, [',', ';']);
+
+                            i += result.jump - 1;
+
+                            entries[entries.length - 1][1] = result.data;
+
+                            expected = 3;
+                        }
+                    break;
+                    case 3:
+                        entries.push([]);
+
+                        last_row = i;
+
+                        expected = 0;
+                    break;
+                }
+                break;
+        }
+    }
+}
+
 /**
  * Парсит тернарное выражение, возвращает объект тернарного выражения, и позицию с которой можно продолжить прасинг
  *
@@ -3330,7 +4030,7 @@ function parseVarName(start, data, throw_error) {
             default:
                 throw_error(
                     data[i].position,
-                    "Invalid sequence for letiable access",
+                    new Exceptions.InvalidSequenceForLetiableAccessException()
                 );
                 continue;
         }
@@ -3343,13 +4043,14 @@ function parseVarName(start, data, throw_error) {
  * @param {Number} start начальная позиция разбора, для выражения
  * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+ * @param {String} end_marker маркер конца выражения
  *
- * @returns {{data: ExpressionGroup,jump: Number}} выражение и позиция, с которой можно продолжить парсинг
+ * @returns {{data: ExpressionGroup, jump: Number}} выражение и позиция, с которой можно продолжить парсинг
  *
  * @memberof Pattern
  * @protected
  */
-function parseExpression(start, data, throw_error) {
+function parseExpression(start, data, throw_error, end_marker = ';') {
     if (data.length === 0)
         return {
             data: new ExpressionGroup(0),
@@ -3358,7 +4059,7 @@ function parseExpression(start, data, throw_error) {
 
     let buffer = new ExpressionGroup(data[0].position),
         deep = 0,
-        result;
+        result = new Array();
 
     function append(d) {
         let targ_d = buffer;
@@ -3373,7 +4074,7 @@ function parseExpression(start, data, throw_error) {
     for (let i = start; true; i++) {
         if (
             data[i] == undefined ||
-            data[i].equals(CHARTYPE.OPERATOR, ";") ||
+            data[i].contentEquals(end_marker) ||
             data[i].equals(CHARTYPE.NEWLINE)
         ) {
             buffer.complete(throw_error);
@@ -3386,6 +4087,7 @@ function parseExpression(start, data, throw_error) {
 
         switch (true) {
             case data[i].equals(CHARTYPE.WORD):
+                // Ключевые слова
                 switch (data[i].toString()) {
                     case "true":
                     case "false":
@@ -3394,34 +4096,62 @@ function parseExpression(start, data, throw_error) {
                         continue;
                 }
 
-                let { jump: jump1, data: stack, func } = parseVarName(
+                result[0] = parseVarName(
                     i,
                     data,
                     throw_error,
                 );
 
-                func =
-                    data[i + jump1] != null &&
-                    data[i + jump1].equals(CHARTYPE.OPERATOR, "(");
-
-                if (func) {
+                if (data[i + result[0].jump] != null && data[i + result[0].jump].equals(CHARTYPE.OPERATOR, "(")) {
                     // Функция
-                    const { jump: jump2, data: f_data } = parseFunctionCall(
-                        stack,
-                        i + jump1 + 1,
+                    result[1] = parseFunctionCall(
+                        result[0].data,
+                        i + result[0].jump + 1,
                         data,
                         throw_error,
                     );
 
-                    i += jump1 + jump2 + 1;
+                    i += result[0].jump + result[1].jump + 1;
 
-                    append(f_data);
+                    append(result[1].data);
+                } else if(
+                    data[i + result[0].jump + 1] != null && data[i + result[0].jump].equals(CHARTYPE.OPERATOR, "-") &&
+                    data[i + result[0].jump + 1].equals(CHARTYPE.OPERATOR, ">")
+                ) {
+                    // Конструктор объекта
+                    result[1] = parseObject(
+                        i + result[0].jump + 2,
+                        data,
+                        throw_error,
+                        0
+                    );
+
+                    i += result[0].jump + result[1].jump + 2;
+
+                    append(result[1].data);
                 } else {
                     // Получение значения переменной
-                    append(new GetOperator(data[i].position, stack));
+                    append(new GetOperator(data[i].position, result[0].data));
 
-                    i += jump1 - 1;
+                    i += result[0].jump - 1;
                 }
+                continue;
+            // Конструктор объекта
+            case data[i + 1] != null && 
+                data[i].equals(CHARTYPE.OPERATOR, "-") &&
+                data[i + 1].equals(CHARTYPE.OPERATOR, ">"):
+                // Конструктор объекта
+                result[0] = parseObject(
+                    i + 2,
+                    data,
+                    throw_error,
+                    0
+                );
+
+                i += result[0].jump + 2;
+
+                append(result[0].data);
+
                 continue;
             case data[i].equals(CHARTYPE.OPERATOR, "("):
                 append(new ExpressionGroup(data[i].position));
@@ -3437,8 +4167,8 @@ function parseExpression(start, data, throw_error) {
                         new Exceptions.ParserLogicException(),
                     );
                 continue;
-            case // expression ? v1 : v2;
-            data[i].equals(CHARTYPE.OPERATOR, "?"):
+            // expression ? v1 : v2;
+            case data[i].equals(CHARTYPE.OPERATOR, "?"):
                 buffer.complete(throw_error);
 
                 let targ_d = buffer;
@@ -3453,21 +4183,23 @@ function parseExpression(start, data, throw_error) {
                     else break;
                 }
 
-                result = parseTernar(
+                result[0] = parseTernar(
                     new ExpressionGroup(data[i].position, targ_d.data),
                     i + 1,
                     data,
                     throw_error,
                 );
 
-                i += 1 + result.jump;
+                i += 1 + result[0].jump;
 
                 if (deep === 0) {
                     return {
-                        data: result.data,
+                        data: result[0].data,
                         jump: i - start,
                     };
-                } else targ_d.data = [result.data];
+                } else 
+                    targ_d.data = [result[0].data];
+
                 continue;
             case data[i].equals(CHARTYPE.STRING) ||
                 data[i].equals(CHARTYPE.NUMBER) ||
@@ -3485,7 +4217,7 @@ function parseExpression(start, data, throw_error) {
                     "|",
                     "&",
                 ]):
-                append(data[i]);
+                    append(data[i]);
                 continue;
             default:
                 throw_error(
@@ -3509,7 +4241,7 @@ function parseExpression(start, data, throw_error) {
  * @param {Number} max_segments Максимальное число сегментов, если это число сегментов будет превышено, будет выбражено исключение
  * @param {String} blockname Название блока
  *
- * @returns {{data: Array<Number|String>, jump: Number}} массив со стэком запроса, по которому можно получит доступ к переменной, и позиция с которой можно продолжить парсинг
+ * @returns {{data: Array<ExpressionGroup>, jump: Number}} массив со стэком запроса, по которому можно получит доступ к переменной, и позиция с которой можно продолжить парсинг
  *
  * @memberof Pattern
  * @protected
@@ -3538,7 +4270,7 @@ function segmentationParser(
                 } else if (buffer.length > 1) {
                     throw_error(
                         entries[i - 1].position,
-                        "Segmentation fault: empty argument for " + blockname,
+                        new Exceptions.SegmentationFaultEmptyArgumentException(blockname)
                     );
                 } else {
                     buffer.splice(buffer.length - 1, 1);
@@ -3574,19 +4306,18 @@ function segmentationParser(
                         buffer[buffer.length - 1],
                         throw_error,
                     ).data;
-
+                        
                     buffer.push(new Array());
 
                     if (buffer.length > max_segments)
                         throw_error(
                             entries[i].position,
-                            "Segmentation fault exceeded the maximum number of segments for block " +
-                                blockname,
+                            new Exceptions.SegmentationFaultMaximumSegmentsForBlockException(blockname)
                         );
                 } else {
                     throw_error(
                         entries[i].position,
-                        "Segmentation fault: empty argument for " + blockname,
+                        new Exceptions.SegmentationFaultEmptyArgumentException(blockname)
                     );
                 }
                 break;
@@ -3604,7 +4335,7 @@ function segmentationParser(
  * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
- * @returns {{data: Array<ExpressionGroup>, jump: Number}} массив с выражениями, и позиция с которой можно продолжить парсинг
+ * @returns {{data: Array<SequenceGroup>, jump: Number}} массив с выражениями, и позиция с которой можно продолжить парсинг
  *
  * @memberof Pattern
  * @protected
@@ -3760,7 +4491,7 @@ function ifStatementParser(start, entries, throw_error) {
             entries[index + 1].position,
             new Exceptions.UnexpectedTokenStatement(
                 "if",
-                entries[index + 1].toString(),
+                    entries[index + 1].toString(),
                 "(",
             ),
         );
@@ -3795,8 +4526,6 @@ function codeBlockParser(start, entries, throw_error) {
                     jump: i - start,
                 };
             }
-
-            result.splice(0, Infinity);
 
             switch (true) {
                 case entries[i].equals(CHARTYPE.NEWLINE):
@@ -3959,21 +4688,13 @@ function codeBlockParser(start, entries, throw_error) {
                         } else {
                             throw_error(
                                 entries[i + 3].position,
-                                "Expected word type expression and get " +
-                                    entries[i + 2].toString() +
-                                    "[" +
-                                    entries[i + 2].type +
-                                    "]",
+                                new Exceptions.UnexpectedWordTypeAndGetException(entries[i + 2].toString(), entries[i + 2].type)
                             );
                         }
                     } else {
                         throw_error(
                             entries[i + 2].position,
-                            "Expected word type expression and get " +
-                                entries[i + 1].toString() +
-                                "[" +
-                                entries[i + 1].type +
-                                "]",
+                            new Exceptions.UnexpectedWordTypeAndGetException(entries[i + 1].toString(), entries[i + 1].type)
                         );
                     }
                 case entries[i].equals(CHARTYPE.WORD):
@@ -4065,7 +4786,7 @@ function codeBlockParser(start, entries, throw_error) {
                         } else {
                             throw_error(
                                 entries[i].position,
-                                "Invalid sequence for letiable access",
+                                new Exceptions.InvalidSequenceForLetiableAccessException()
                             );
                         }
                     } else {
@@ -4090,18 +4811,20 @@ function codeBlockParser(start, entries, throw_error) {
                     );
             }
         } catch (e) {
+            console.log(e)
+
             if (entries.length != 0) {
                 if (entries[i] != null)
-                    throw_error(entries[i].position, "Critical parser error");
+                    throw_error(entries[i].position, new Exceptions.CriticalParserErrorException());
                 else
                     throw_error(
                         entries[entries.length - 1].position,
-                        "Critical parser error: unexpected end of input",
+                        new Exceptions.CriticalParserErrorUnexpectedEndOfInputException()
                     );
             } else {
                 throw_error(
                     0,
-                    "Critical parser error: no raw data transmitted",
+                    new Exceptions.CriticalParserErrorNoRawDataTransmittedException()
                 );
             }
         }
@@ -4113,7 +4836,7 @@ function codeBlockParser(start, entries, throw_error) {
  *
  * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
- * @param {?globalThis.String} parent_path путь к шаблону
+ * @param {?String} parent_path путь к шаблону
  *
  * @returns {SequenceMainGroup} Тело исполнителя
  *
@@ -4124,7 +4847,11 @@ function parser(entries, throw_error, parent_path) {
     const exports = new SequenceMainGroup(),
         body = codeBlockParser(
             0,
-            linker(entries, parent_path, throw_error),
+            linker(
+                entries,
+                parent_path,
+                throw_error
+            ),
             throw_error,
         );
 
@@ -4142,13 +4869,13 @@ class CodeEmitter {
      *
      * @param {
      *  String | {
-     *          raw: globalThis.String,
-     *          path: globalThis.String,
-     *          charset: globalThis.String
+     *          raw: String,
+     *          path: String,
+     *          charset: String
      *      }
      * } input Входящая строка с выражением
      *
-     * @param {Array<globalThis.String>} import_s Массив с нативными библиотеками для импорта
+     * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
      *
      * @param {
      *      {
@@ -4297,13 +5024,13 @@ class MessagePattern extends CodeEmitter {
      *
      * @param {
      *      String | {
-     *          raw: globalThis.String,
-     *          path: globalThis.String,
-     *          charset: globalThis.String
+     *          raw: String,
+     *          path: String,
+     *          charset: String
      *      }
      * } input Входящая строка с выражением
      *
-     * @param {Array<globalThis.String>} import_s Массив с нативными библиотеками для импорта
+     * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
      *
      * @param {
      *      {
@@ -4332,13 +5059,7 @@ class MessagePattern extends CodeEmitter {
                 if (buffer.length > 0) {
                     this.data.push(
                         new OutOperator(
-                            new String(
-                                new LexerEntry(
-                                    CHARTYPE.WORD,
-                                    Buffer.from(buffer.join("")),
-                                    entries[i].position,
-                                ),
-                            ),
+                            new NativeString(buffer.join("")),
                         ),
                     );
 
@@ -4394,13 +5115,7 @@ class MessagePattern extends CodeEmitter {
             } else if (hook_index === 0) {
                 this.data.push(
                     new OutOperator(
-                        new String(
-                            new LexerEntry(
-                                CHARTYPE.WORD,
-                                Buffer.from(buffer.join("")),
-                                entries[entries.length - 1].position,
-                            ),
-                        ),
+                        new NativeString(buffer.join("")),
                     ),
                 );
 
@@ -4479,13 +5194,13 @@ class ExcecutionPattern extends CodeEmitter {
      *
      * @param {
      *      String | {
-     *          raw: globalThis.String,
-     *          path: globalThis.String,
-     *          charset: globalThis.String
+     *          raw: String,
+     *          path: String,
+     *          charset: String
      *      }
      * } input Входящая строка с выражением
      *
-     * @param {Array<globalThis.String>} import_s Массив с нативными библиотеками для импорта
+     * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
      *
      * @param {
      *      {
@@ -4503,9 +5218,7 @@ class ExcecutionPattern extends CodeEmitter {
         super(input, import_s, logger);
 
         this.data = parser(
-            lexer(Buffer.from(this.input)).filter(
-                (e) => e.type !== CHARTYPE.SPACE,
-            ),
+            lexer(Buffer.from(this.input), false),
             this.throwError.bind(this),
             this.path,
         );
@@ -4561,13 +5274,13 @@ class ExpressionPattern extends CodeEmitter {
      *
      * @param {
      *      String | {
-     *          raw: globalThis.String,
-     *          path: globalThis.String,
-     *          charset: globalThis.String
+     *          raw: String,
+     *          path: String,
+     *          charset: String
      *      }
      * } input Входящая строка с выражением
      *
-     * @param {Array<globalThis.String>} import_s Массив с нативными библиотеками для импорта
+     * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
      *
      * @param {
      *      {
