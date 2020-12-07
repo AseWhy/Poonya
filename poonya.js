@@ -1,15 +1,12 @@
 /**
  * @author Astecom
  * @license MIT
- * @file poonya.js
  * @namespace Poonya
  * @version 0.4.5
  * @see {@link https://github.com/AseWhy/Poonya|GitHub}
- * @package
  * @description Шаблонизатор, используется для создания шаблонов, и их последующего вывода
  * 
- * 
- * 
+ * <pre><code style='font-family: monospace'>
  *                      + @ W
  *                   + @ @ @ W #                                                         ____________________________________________________
  *                 : @ @ @ @ @ @                                                        |                      POONYA                       |
@@ -56,6 +53,7 @@
  *                                         @ @ @ @                     @ W @ @ @ @ W @
  *                                         + @ @ *                           + # +
  * ==========================================================================================================================================
+ * </code></pre>
  */
 
 "use strict";
