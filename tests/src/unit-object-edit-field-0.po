@@ -1,0 +1,10 @@
+/>
+    Multilevel object notation
+</
+
+set test1 = Object ->
+                field1 -> 1;
+
+test1.field1 = "NOT 1";
+
+> test1;

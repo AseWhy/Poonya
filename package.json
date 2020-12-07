@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AseWhy/Pattern.git"
+    "url": "git+https://github.com/AseWhy/Poonya.git"
   },
   "keywords": [
     "poonya",
@@ -21,7 +21,7 @@
   "author": "Astecom",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/AseWhy/Pattern/issues"
+    "url": "https://github.com/AseWhy/Poonya/issues"
   },
-  "homepage": "https://github.com/AseWhy/Pattern#readme"
+  "homepage": "https://github.com/AseWhy/Poonya#readme"
 }

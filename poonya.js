@@ -3,6 +3,8 @@
  * @license MIT
  * @file poonya.js
  * @namespace Poonya
+ * @version 0.4.5
+ * @see {@link https://github.com/AseWhy/Poonya|GitHub}
  * @package
  * @description Шаблонизатор, используется для создания шаблонов, и их последующего вывода
  * 
@@ -53,7 +55,7 @@
  *                                   W W @ @ @ @ W                 # @ @ @ @ @ @ @ @ @ W @ @ @ @ *
  *                                         @ @ @ @                     @ W @ @ @ @ W @
  *                                         + @ @ *                           + # +
- * =================================================================================================================
+ * ==========================================================================================================================================
  */
 
 "use strict";
@@ -85,7 +87,7 @@ const CHARTYPE = {
     POINT: "POINT",
     STRING: "STRING",
     NEWLINE: "NEWLINE",
-    OPERATOR: "OPERATOR",
+    OPERATOR: "OPERATOR"
 };
 
 /**
@@ -120,7 +122,7 @@ const OPERATOR = {
     ELARGER: "ELARGER",
     ELESS: "ELESS",
     AND: "AND",
-    OR: "OR",
+    OR: "OR"
 };
 
 /**
