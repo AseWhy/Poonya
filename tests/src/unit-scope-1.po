@@ -1,0 +1,9 @@
+set scope_1 = 'SomeValue';
+
+if(scope_1 = 'SomeValue') {
+    set scope_1 = 'SomeValue-1';
+
+    > scope_1;
+}
+
+> scope_1;

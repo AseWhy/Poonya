@@ -1,0 +1,18 @@
+/>
+    Multilevel object notation
+</
+
+set test1 = Object ->
+                field1 -> 1,
+                field2 -> 2,
+                field3 -> 3,
+                field4 -> 4,
+                field5 ->
+                    field1 --> 1,
+                    field2 --> 2,
+                    field3 -->
+                        field1 ---> 1,
+                        field2 ---> 2,
+                field6 -> 6;
+
+> test1;

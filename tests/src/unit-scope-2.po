@@ -1,0 +1,7 @@
+if(true) {
+    set scope_1 = 0;
+
+    > scope_1;
+}
+
+> scope_1;

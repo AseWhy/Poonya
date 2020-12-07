@@ -1,0 +1,8 @@
+// Empty objects notation
+set test = Object -> *;
+
+// Simpty empty object notation
+set test1 = -> *;
+
+> test;
+> test1;

@@ -1,0 +1,27 @@
+{
+  "name": "poonya.js",
+  "version": "0.4.5",
+  "description": "Simple preprocessor for text",
+  "main": "poonya.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "mocha ./tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AseWhy/Pattern.git"
+  },
+  "keywords": [
+    "poonya",
+    "poonya.js"
+  ],
+  "author": "Astecom",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AseWhy/Pattern/issues"
+  },
+  "homepage": "https://github.com/AseWhy/Pattern#readme"
+}

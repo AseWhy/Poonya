@@ -1,0 +1,9 @@
+set scope_1 = 5;
+
+repeat(0; 10) {
+    > scope_1;
+
+    scope_1 = scope_1 * (current + 2);
+}
+
+> scope_1;
