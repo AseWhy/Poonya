@@ -1,0 +1,12 @@
+/>
+    Multilevel object notation
+</
+
+set test1 = Object ->
+                field1 -> 1;
+
+// Using the functions inherited from Object
+test1.set('SomeField', 1);
+
+> test1.has('SomeField');
+> test1;

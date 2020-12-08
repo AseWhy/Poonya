@@ -128,4 +128,38 @@ describe("poonya-main-test", () => {
             }]);
         });
     })
+
+    describe("#object-inheritance", () => {
+        it("Checking the inheritance of fields from an object", () => {
+            const test_pattern = new poonya.ExcecutionPattern({
+                path: __dirname + "/src/unit-object-inheritance-0",
+            });
+
+            assert.deepStrictEqual(test_pattern.result(), [
+                true,
+                {
+                    field1: 1,
+                    SomeField: 1
+                }
+            ]);
+        });
+
+        it("Should return an array with numbers from 0 to 5", () => {
+            const test_pattern = new poonya.ExcecutionPattern({
+                path: __dirname + "/src/unit-object-inheritance-1",
+            });
+
+            assert.deepStrictEqual(test_pattern.result(), [
+                [1, 2, 3, 4, 5]
+            ]);
+        });
+
+        it("Should return empty array", () => {
+            const test_pattern = new poonya.ExcecutionPattern({
+                path: __dirname + "/src/unit-object-inheritance-2",
+            });
+
+            assert.deepStrictEqual(test_pattern.result(), [[]]);
+        });
+    })
 });

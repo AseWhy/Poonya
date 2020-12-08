@@ -169,13 +169,13 @@ class PoonyaArrayPrototype extends PoonyaPrototype {
         this.addField('unregister', this.unregister, FIELDFLAGS.CONSTANT);
         this.addField('includes', this.includes, FIELDFLAGS.CONSTANT);
         this.addField('indexOf', this.indexOf, FIELDFLAGS.CONSTANT);
-        this.addField('create', this.create, FIELDFLAGS.CONSTANT);
+        this.addField('create', this.create, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC);
         this.addField('concat', this.concat, FIELDFLAGS.CONSTANT);
         this.addField('append', this.append, FIELDFLAGS.CONSTANT);
         this.addField('length', this.length, FIELDFLAGS.CONSTANT);
         this.addField('remove', this.remove, FIELDFLAGS.CONSTANT);
         this.addField('slice', this.slice, FIELDFLAGS.CONSTANT);
-        this.addField('from', this.from, FIELDFLAGS.CONSTANT);
+        this.addField('from', this.from, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC);
         this.addField('pop', this.pop, FIELDFLAGS.CONSTANT);
     }
 
@@ -183,77 +183,89 @@ class PoonyaArrayPrototype extends PoonyaPrototype {
         return defs;
     }
 
-    includes(service, arr, target){
-        if(arr != null){
-            return arr.includes(target);
-        } else {
-            return false;
+    includes(service, target){
+        for(let [key, value] of this.fields){
+            if(value.result(service.context, null, service.throw_error) == target)
+                return true;
+        }
+
+        return false;
+    }
+
+    remove(service, from, to){
+        if(typeof from != 'number' || isNaN(from))
+            service.throw_error(service.position, new Exceptions.PoonyaException('From must have a number type'));
+
+        if(typeof to != 'number' || isNaN(to))
+            service.throw_error(service.position, new Exceptions.PoonyaException('To must have a number type'))
+
+        const delta = to - from;
+
+        while(from != to){
+            this.remove(from);
+
+            from += delta;
         }
     }
 
-    remove(service, arr, from, to){
-        const rest = arr.slice((to || from) + 1 || arr.length);
-
-        arr.length = from < 0 ? arr.length + from : from;
-
-        arr.push.apply(arr, rest);
-
-        return arr;
-    }
-
-    indexOf(service, arr, value){
-        return arr.indexOf(value);
-    }
-
-    length(service, array){
-        return array.length;
-    }
-
-    append(service, arr, value){
-        if(arr != null){
-            arr.push(value);
-
-            return arr;
-        } else {
-            return null;
+    indexOf(service, target){
+        for(let [key, value] of this.fields){
+            if(value.result(service.context, null, service.throw_error) == target)
+                return key;
         }
+        
+        return -1;
+    }
+
+    length(){
+        return this.fields.size;
+    }
+
+    append(service, value){
+        this.push(value)
     }
 
     concat(service, ...args){
-        return [].concat(...args);
-    }
-
-    slice(service, arr, ...args){
-        if(arr != null){
-            return arr.slice(...args);
-        } else {
-            return null;
+        for(let i = 0, leng = args.length; i < leng; i++) {
+            for(let j = 0, j_leng = args[i].length; j < j_leng; j++){
+                this.push(args[i][j]);
+            }
         }
     }
 
-    pop(service, arr){
-        if(arr != null){
-            arr.pop();
+    slice(service, from, to){
+        if(typeof from != 'number' || isNaN(from))
+            service.throw_error(service.position, new Exceptions.PoonyaException('From must have a number type'));
 
-            return arr;
-        } else {
-            return null;
+        if(typeof to != 'number' || isNaN(to))
+            service.throw_error(service.position, new Exceptions.PoonyaException('To must have a number type'));
+
+        const delta = to - from
+            , out = new Array();
+
+        while(from != to){
+            out.push(this.get(from));
+
+            from += delta;
         }
+
+        return out;
+    }
+
+    pop(service){
+        const buffer = this.fields.get(this.fields.size - 1);
+
+        this.fields.remove(this.fields.size - 1);
+
+        return buffer;
     }
 
     create(){
         return new Array();
     }
 
-    unregister(service, arr){
-        if(arr != null){
-            for(let i = 0, leng = arr.length;i < leng;i++)
-                arr[i] = arr[i] != null ? arr[i].toString().toLowerCase() : 'null';
-            
-            return arr;
-        } else {
-            return null;
-        }
+    unregister(service){
+        
     }
 }
 

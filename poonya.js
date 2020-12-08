@@ -181,9 +181,43 @@ function toFixed(d, l) {
 //#region Exceptions
 
 /**
+ * Класс ошибки шаблонизатора
+ *
+ * @memberof Poonya
+ * @name ParserException
+ * @class
+ * @protected
+ */
+class PoonyaException extends Error {
+    constructor(message){
+        super("There were some errors while executing the template:\n" + message)
+    }
+}
+
+/**
  * @namespace Poonya.Exceptions
  */
 const Exceptions = {
+    /**
+     * @readonly
+     * @field
+     */
+    PoonyaException: PoonyaException,
+
+    /**
+     * Основное исключение шаблонизатора
+     *
+     * @memberof Poonya.Exceptions
+     * @name ParserException
+     * @class
+     * @protected
+     */
+    ParserException: class ParserException extends PoonyaException {
+        constructor() {
+            super("Error when processing raw data");
+        }
+    },
+
     /**
      * Исключение последовательности, неожиданная последовательность
      *
@@ -192,23 +226,9 @@ const Exceptions = {
      * @class
      * @protected
      */
-    TheSequenceException: class TheSequenceException extends Error {
+    TheSequenceException: class TheSequenceException extends PoonyaException {
         constructor(entry) {
             super(`Wrong order: condition operator: '${entry.toString()}'`);
-        }
-    },
-
-    /**
-     * Исключение парсера
-     *
-     * @memberof Poonya.Exceptions
-     * @name ParserException
-     * @class
-     * @protected
-     */
-    ParserException: class ParserException extends Error {
-        constructor() {
-            super("Error when processing raw data");
         }
     },
 
@@ -220,7 +240,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    UnexpectedTokenException: class UnexpectedTokenException extends Error {
+    UnexpectedTokenException: class UnexpectedTokenException extends PoonyaException {
         constructor(token, expected) {
             super(
                 `Unexpected token '${token.toString()}' when expected '${expected.toString()}'`,
@@ -236,7 +256,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    UnexpectedTokenStatement: class UnexpectedTokenStatement extends Error {
+    UnexpectedTokenStatement: class UnexpectedTokenStatement extends PoonyaException {
         constructor(statement, token, expected) {
             super(
                 `Error parsing the '${statement.toString()}' statement. Expected '${expected.toString()}', when actually: '${token.toString()}'`,
@@ -252,7 +272,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    ParserLogicException: class ParserLogicException extends Error {
+    ParserLogicException: class ParserLogicException extends PoonyaException {
         constructor() {
             super("The expression has incorrect logic");
         }
@@ -266,7 +286,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    ParserEmtyArgumentException: class ParserEmtyArgumentException extends Error {
+    ParserEmtyArgumentException: class ParserEmtyArgumentException extends PoonyaException {
         constructor() {
             super(
                 "It is not possible to pass an empty argument to a function, use null to denote an empty value",
@@ -282,7 +302,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    LinkerPathNotGiveExceptrion: class LinkerPathNotGiveExceptrion extends Error {
+    LinkerPathNotGiveExceptrion: class LinkerPathNotGiveExceptrion extends PoonyaException {
         constructor() {
             super(
                 "To use include, you must pass the path to the current execution file",
@@ -298,7 +318,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    LinkerIOError: class LinkerIOError extends Error {
+    LinkerIOError: class LinkerIOError extends PoonyaException {
         constructor(path) {
             super("An error occured while opening file: '" + path + "'");
         }
@@ -312,7 +332,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    NativeFunctionExcecutionError: class NativeFunctionExcecutionError extends Error {
+    NativeFunctionExcecutionError: class NativeFunctionExcecutionError extends PoonyaException {
         constructor(name) {
             super("Critical error while executing a native function '" + name + "'");
         }
@@ -326,7 +346,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    NativeFunctionReturnValueError: class NativeFunctionReturnValueError extends Error {
+    NativeFunctionReturnValueError: class NativeFunctionReturnValueError extends PoonyaException {
         constructor() {
             super("Function can only return simple types");
         }
@@ -340,7 +360,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    GetFieldOfNullException: class GetFieldOfNullException extends Error {
+    GetFieldOfNullException: class GetFieldOfNullException extends PoonyaException {
         constructor(field) {
             super(`Cannot get property '${field}' of null`);
         }
@@ -354,7 +374,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    FieldNotAFunctionException: class FieldNotAFunctionException extends Error {
+    FieldNotAFunctionException: class FieldNotAFunctionException extends PoonyaException {
         constructor(field) {
             super(`The field '${field}' is not a function`);
         }
@@ -368,7 +388,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    TheFieldAlreadyHasBeenDeclaredException: class TheFieldAlreadyHasBeenDeclaredException extends Error {
+    TheFieldAlreadyHasBeenDeclaredException: class TheFieldAlreadyHasBeenDeclaredException extends PoonyaException {
         constructor(field) {
             super(`The '${field}' field is already declared`);
         }
@@ -382,7 +402,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    TheFieldMustBeAnArrayInstanceExceprion: class TheFieldMustBeAnArrayInstanceExceprion extends Error {
+    TheFieldMustBeAnArrayInstanceExceprion: class TheFieldMustBeAnArrayInstanceExceprion extends PoonyaException {
         constructor(field) {
             super(`Field '${field}' must be an Array instance`);
         }
@@ -396,7 +416,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    TheFieldNotHasDeclaredExceprion: class TheFieldNotHasDeclaredExceprion extends Error {
+    TheFieldNotHasDeclaredExceprion: class TheFieldNotHasDeclaredExceprion extends PoonyaException {
         constructor(field) {
             super(`Field '${field}' is not declared`);
         }
@@ -410,7 +430,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    TheFieldMustBeNumberException: class TheFieldMustBeNumberException extends Error {
+    TheFieldMustBeNumberException: class TheFieldMustBeNumberException extends PoonyaException {
         constructor(field) {
             super(`'${field}' must be a number, or a container containing a number`);
         }
@@ -424,7 +444,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    UnableToRecognizeTypeException: class UnableToRecognizeTypeException extends Error {
+    UnableToRecognizeTypeException: class UnableToRecognizeTypeException extends PoonyaException {
         constructor(type) {
             super(`Unable to recognize type '${type}'`);
         }
@@ -438,7 +458,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    SegmentationFaultEmptyArgumentException: class SegmentationFaultEmptyArgumentException extends Error {
+    SegmentationFaultEmptyArgumentException: class SegmentationFaultEmptyArgumentException extends PoonyaException {
         constructor(blockname) {
             super(`Segmentation fault: empty argument for ` + blockname);
         }
@@ -452,7 +472,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    SegmentationFaultMaximumSegmentsForBlockException: class SegmentationFaultMaximumSegmentsForBlockException extends Error {
+    SegmentationFaultMaximumSegmentsForBlockException: class SegmentationFaultMaximumSegmentsForBlockException extends PoonyaException {
         constructor(blockname) {
             super(`Segmentation fault exceeded the maximum number of segments for block ` + blockname);
         }
@@ -466,7 +486,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    UnexpectedWordTypeAndGetException: class UnexpectedWordTypeAndGetException extends Error {
+    UnexpectedWordTypeAndGetException: class UnexpectedWordTypeAndGetException extends PoonyaException {
         constructor(value, type) {
             super(`Expected word type expression and get ${value}[${type}]`);
         }
@@ -480,7 +500,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    InvalidSequenceForLetiableAccessException: class InvalidSequenceForLetiableAccessException extends Error {
+    InvalidSequenceForLetiableAccessException: class InvalidSequenceForLetiableAccessException extends PoonyaException {
         constructor() {
             super(`Invalid sequence for letiable access`);
         }
@@ -494,7 +514,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    CriticalParserErrorException: class CriticalParserErrorException extends Error {
+    CriticalParserErrorException: class CriticalParserErrorException extends PoonyaException {
         constructor() {
             super(`Critical parser error`);
         }
@@ -508,7 +528,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    CriticalParserErrorUnexpectedEndOfInputException: class CriticalParserErrorUnexpectedEndOfInputException extends Error {
+    CriticalParserErrorUnexpectedEndOfInputException: class CriticalParserErrorUnexpectedEndOfInputException extends PoonyaException {
         constructor() {
             super(`Critical parser error: unexpected end of input`);
         }
@@ -522,7 +542,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    CriticalParserErrorNoRawDataTransmittedException: class CriticalParserErrorNoRawDataTransmittedException extends Error {
+    CriticalParserErrorNoRawDataTransmittedException: class CriticalParserErrorNoRawDataTransmittedException extends PoonyaException {
         constructor() {
             super(`Critical parser error: no raw data transmitted`);
         }
@@ -536,7 +556,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    BadArrowNotationJumpingTwoLevels: class BadArrowNotationJumpingTwoLevels extends Error {
+    BadArrowNotationJumpingTwoLevels: class BadArrowNotationJumpingTwoLevels extends PoonyaException {
         constructor() {
             super(`Bad array notation: jumping two levels is not possible`);
         }
@@ -550,7 +570,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    BadArrowNotationJumpingToUpperLevel: class BadArrowNotationJumpingToUpperLevel extends Error {
+    BadArrowNotationJumpingToUpperLevel: class BadArrowNotationJumpingToUpperLevel extends PoonyaException {
         constructor() {
             super(`Bad array notation: unexpected transition to a upper level`);
         }
@@ -564,7 +584,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    BadEmptyObjectException: class BadEmptyObjectException extends Error {
+    BadEmptyObjectException: class BadEmptyObjectException extends PoonyaException {
         constructor() {
             super(`Cannot create an empty object after declaring its keys`);
         }
@@ -578,7 +598,7 @@ const Exceptions = {
      * @class
      * @protected
      */
-    BadKeyInvalidTypeException: class BadKeyInvalidTypeException extends Error {
+    BadKeyInvalidTypeException: class BadKeyInvalidTypeException extends PoonyaException {
         constructor() {
             super(`Wrong key type: it can be set only by a numeric or string key`);
         }
@@ -592,9 +612,37 @@ const Exceptions = {
      * @class
      * @protected
      */
-    BadKeyProtectedFieldException: class BadKeyProtectedFieldException extends Error {
+    BadKeyProtectedFieldException: class BadKeyProtectedFieldException extends PoonyaException {
         constructor() {
             super(`Cannot set this field, the field is protected from changes`);
+        }
+    },
+    
+    /**
+     * Попытка создать объект вызывав его как функцию
+     * 
+     * @memberof Poonya.Exceptions
+     * @name UnableToCreateAnObjectException
+     * @class
+     * @protected
+     */
+    UnableToCreateAnObjectException: class UnableToCreateAnObjectException extends PoonyaException {
+        constructor() {
+            super(`Unable to create an object by calling its constructor as a function, pick ConstructorName -> *;`);
+        }
+    },
+    
+    /**
+     * Попытка вызывать несуществующий констурктор
+     * 
+     * @memberof Poonya.Exceptions
+     * @name IsNotAConstructorException
+     * @class
+     * @protected
+     */
+    IsNotAConstructorException: class IsNotAConstructorException extends PoonyaException {
+        constructor(path) {
+            super(`${path.map(e => typeof e === 'number' ? '[' + e + ']' : e.toString()).join(' -> ')} - not a co-constructor`);
         }
     }
 };
@@ -808,11 +856,12 @@ class PoonyaStaticLibrary {
             (
                 new Function(
                     'FIELDFLAGS',
+                    "Exceptions",
                     'NativeLibrary',
                     'PoonyaPrototype',
                     `"use strict";${readFileSync(join(lib_dir, default_libs[i]), 'utf-8')}`
                 )
-            )(FIELDFLAGS, PoonyaStaticLibrary, PoonyaPrototype);
+            )(FIELDFLAGS, Exceptions, PoonyaStaticLibrary, PoonyaPrototype);
         };
     }
 })();
@@ -991,8 +1040,10 @@ class Heap extends Map {
         let output = new Object();
 
         for (let [key, value] of this)
-            if (!(value instanceof NativeFunction))
+            if (value instanceof NativeFunction)
                 output[key] = value != null ? value.result(context, out, throw_error) : null;
+            else
+                output[key] = value != null ? value.target : null;
 
         return output;
     }
@@ -1185,6 +1236,7 @@ class Context {
 }
 
 const GET = Symbol('GET')
+    , IS = Symbol('IS')
     , SUPER_CALL = Symbol('SEPER_CALL');
 
 /**
@@ -1252,12 +1304,29 @@ class PoonyaPrototype {
     }
 
     /**
+     * Проверяет, является ли текщуий прототип, наследником другого протитипа
+     * 
+     * @param {String} key ключ прототипа, который ищем
+     * @protected
+     * @method
+     */
+    [IS](key){
+        if(key !== this.name)
+            return true;
+        else
+            for(let i = 0, leng = this._parents;i < leng; i++){
+                if(this._parents[IS](key)) return true;
+            }
+        
+        false;
+    }
+
+    /**
      * Получает статическое значение прототипа
      * 
      * @param {String} ключ, по которому получаем значение
      * @param {PoonyaObject} объект, который хочет получить поле
-     * 
-     * @public
+     * @protected
      * @method
      * @returns {Operand|null}
      */
@@ -1339,6 +1408,17 @@ class PoonyaObject {
      */
     has(key){
         return this.fields.has(key);
+    }
+
+    /**
+     * Удаляет ключ из объекта
+     *
+     * @param {String} key ключ который нужно удалить
+     * @method
+     * @public
+     */
+    remove(key){
+        return this.fields.delete(key);
     }
 
     /**
@@ -1488,9 +1568,10 @@ class PoonyaArray extends PoonyaObject {
     constructor(prototype = null, init, context){
         super(prototype, null, context);
 
-        for(let i = 0, leng = init.length; i < leng; i++){
-            this.push(init[i]);
-        }
+        if(init)
+            for(let i = 0, leng = init.length; i < leng; i++){
+                this.push(init[i]);
+            }
     }
 
     /**
@@ -1503,15 +1584,6 @@ class PoonyaArray extends PoonyaObject {
      */
     push(data, parents_three = new Array()) {
         this.fields.set(this.fields.size + 1, data, parents_three);
-    }
-
-    /**
-     * @override
-     * @method
-     * @public
-     */
-    get(key) {
-        return this.fields.get(key);
     }
 
     /**
@@ -2588,7 +2660,12 @@ class NativeFunction extends Operand {
         let buff;
 
         try {
-            buff = this.target.call(thisArgs, { args, context, throw_error }, ...args);
+            buff = this.target.call(thisArgs, { 
+                args,
+                context,
+                throw_error,
+                position: call_pos
+            }, ...args);
         } catch (e) {
             console.error(e);
 
@@ -2903,6 +2980,11 @@ class FunctionCall extends Operand {
 
         if (query_data instanceof NativeFunction)
             return query_data.result(args, safe_parent, context, throw_error, this.position);
+        else if(query_data instanceof PoonyaPrototype)
+            throw_error(
+                this.position,
+                new Exceptions.UnableToCreateAnObjectException()
+            );
         else {
             throw_error(
                 this.position,
@@ -3256,6 +3338,9 @@ class OutOperator {
      * Выводит данные из шаблона
      *
      * @constructs OutOperator
+     * 
+     * @param {ExpressionGroup} expression выражение, результаты выполнения которого будем выводить
+     * 
      * @memberof Poonya
      * @protected
      */
@@ -3288,7 +3373,9 @@ class OutOperator {
      * @method
      */
     result(context, out, throw_error) {
-        out.push(this.expression.result(context, out, throw_error));
+        const data = this.expression.result(context, out, throw_error);
+
+        out.push(data instanceof PoonyaObject ? data.result(context, out, throw_error) : data);
     }
 }
 
@@ -3439,7 +3526,7 @@ class ObjectContructorCall extends Operand {
     constructor(query_stack = 'Object', fields, position) {
         super('object-creator');
 
-        this.query_stack = query_stack != null ? SERVICE.CONSTRUCTORS.OBJECT : query_stack;
+        this.query_stack = query_stack != null ? query_stack : SERVICE.CONSTRUCTORS.OBJECT;
         this.fields = fields;
         this.position = position;
     }
@@ -3479,13 +3566,19 @@ class ObjectContructorCall extends Operand {
      * @method
      */
     result(context, out, throw_error) {
-        let instance = new PoonyaObject(context.getByPath(this.query_stack, this.position, PoonyaPrototype), null, context);
+        const proto = context.getByPath(this.query_stack, this.position, PoonyaPrototype);
 
-        for(let fieled of this.fields) {
-            instance.set(fieled[0], fieled[1].result(context, out, throw_error));
+        if(proto != null) {
+            let instance = new (proto[IS]('Array') ? PoonyaObject : PoonyaArray)(proto, null, context);
+
+            for(let fieled of this.fields) {
+                instance.set(fieled[0], fieled[1].result(context, out, throw_error));
+            }
+
+            return instance;
+        } else {
+            throw_error(this.position, new Exceptions.IsNotAConstructorException(this.query_stack))
         }
-
-        return instance;
     }
 }
 
@@ -3842,7 +3935,7 @@ class ExpressionGroup extends Operand {
      */
     result(context, out, throw_error) {
         let result = this.data[0] != null ? this.data[0].result(context, out, throw_error) : null;
-        
+
         for (let i = 1, leng = this.data.length; i < leng; i += 2) {
             switch (true) {
                 case this.data[i].equals(OPERATOR.PLUS):
@@ -4456,11 +4549,13 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                     case 0:
                         if(data[i].equals(CHARTYPE.WORD) || data[i].equals(CHARTYPE.STRING)){
                             entries[entries.length - 1][0] = data[i].toRawString();
-
-                            expected = 1;
+                        } else if(data[i].equals(CHARTYPE.NUMBER)) {
+                            entries[entries.length - 1][0] = parseInt(data[i].toRawString());
                         } else {
                             throw_error(data[i].position, new Exceptions.UnexpectedTokenException(data[i], 'any word'));
                         }
+
+                        expected = 1;
                     continue;
                     case 1:
                         count = countKeys(data, i, CHARTYPE.OPERATOR, '-');
@@ -4496,7 +4591,10 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                         ///     some1 --> 'some',
                         if(
                             data[i + level + 3] != null &&
-                            data[i].equals(CHARTYPE.WORD) &&
+                            (
+                                data[i].equals(CHARTYPE.WORD) ||
+                                data[i].equals(CHARTYPE.NUMBER)
+                            ) &&
                             count === level + 2 && 
                             data[i + level + 3].equals(CHARTYPE.OPERATOR, '>')
                         ){                            
@@ -5487,7 +5585,7 @@ function codeBlockParser(start, entries, throw_error) {
                     );
             }
         } catch (e) {
-            if(!e instanceof Exceptions.ParserException) {
+            if(!e instanceof PoonyaException) {
                 if (entries.length != 0) {
                     if (entries[i] != null)
                         throw_error(entries[i].position, new Exceptions.CriticalParserErrorException());
@@ -5675,12 +5773,10 @@ class CodeEmitter {
             }
         }
 
-        this.logger.error(buffer.join(""));
-
         if (message instanceof Error) 
-            throw message;
+            throw new Error(buffer.join(""));
         else
-            throw new Exceptions.ParserException();
+            throw new PoonyaException(buffer.join(""));
     }
 
     /**
