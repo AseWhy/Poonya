@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Heap</title>
+    <title>JSDoc: Class: PoonyaPrototype</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Heap</h1>
+    <h1 class="page-title">Class: PoonyaPrototype</h1>
 
     
 
@@ -29,7 +29,7 @@
 <header>
     
         <h2><span class="attribs"><span class="type-signature"></span></span>
-            <span class="ancestors"><a href="Poonya.html">Poonya</a></span>Heap<span class="signature">(data, context)</span><span class="type-signature"></span></h2>
+            <span class="ancestors"><a href="Poonya.html">Poonya</a></span>PoonyaPrototype<span class="signature">(parents<span class="signature-attributes">nullable</span>, name)</span><span class="type-signature"></span></h2>
         
     
 </header>
@@ -42,7 +42,7 @@
     
 
     
-    <h4 class="name" id="Heap"><span class="type-signature"></span>new Heap<span class="signature">(data, context)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="PoonyaPrototype"><span class="type-signature"></span>new PoonyaPrototype<span class="signature">(parents<span class="signature-attributes">nullable</span>, name)</span><span class="type-signature"></span></h4>
     
 
     
@@ -50,7 +50,7 @@
 
 
 <div class="description">
-    Модуль памяти, может использоваться для манипульций с памятью.
+    Прототип объекта, позволяет
 </div>
 
 
@@ -74,6 +74,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -86,46 +88,64 @@
 
         <tr>
             
-                <td class="name"><code>data</code></td>
+                <td class="name"><code>parents</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">Array.&lt;<a href="PoonyaPrototype.html">PoonyaPrototype</a>></span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+                    &lt;nullable><br>
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"></td>
+            <td class="description last">прототипы объекта, если необходимо</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>context</code></td>
+                <td class="name"><code>name</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="Context.html">Context</a></span>
+<span class="param-type">String</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"></td>
+            <td class="description last">имя прототипа, который необъодимо создать</td>
         </tr>
 
     
@@ -163,13 +183,82 @@
 
         <tr>
             
-                <td class="name"><code>context</code></td>
+                <td class="name"><code>name</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="Context.html">Context</a></span>
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">имя прототипа</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>_parents</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;<a href="PoonyaPrototype.html">PoonyaPrototype</a>></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>_fields_data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Map.&lt;(String|Number), <a href="Operand.html">Operand</a>></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>_fields</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Map.&lt;(String|Number), Number></span>
 
 
             
@@ -218,7 +307,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="poonya.js.html">poonya.js</a>, <a href="poonya.js.html#line948">line 948</a>
+        <a href="poonya.js.html">poonya.js</a>, <a href="poonya.js.html#line1262">line 1262</a>
     </li></ul></dd>
     
 
@@ -274,7 +363,7 @@
     
 
     
-    <h4 class="name" id="append"><span class="type-signature"></span>append<span class="signature">(data)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="addField"><span class="type-signature"></span>addField<span class="signature">(field, data, flags)</span><span class="type-signature"></span></h4>
     
 
     
@@ -282,7 +371,7 @@
 
 
 <div class="description">
-    Обновляет данные в текущем объекте
+    Устанавливает данные прототипа объекта
 </div>
 
 
@@ -318,13 +407,13 @@
 
         <tr>
             
-                <td class="name"><code>data</code></td>
+                <td class="name"><code>field</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">String</span>
 
 
             
@@ -334,7 +423,53 @@
 
             
 
-            <td class="description last">данные которые нужно обновить</td>
+            <td class="description last">поле которое нужно установить</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Any</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">данные которые нужно установить</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>flags</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">FIELDFLAGS</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">флаги поля</td>
         </tr>
 
     
@@ -375,7 +510,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="poonya.js.html">poonya.js</a>, <a href="poonya.js.html#line975">line 975</a>
+        <a href="poonya.js.html">poonya.js</a>, <a href="poonya.js.html#line1301">line 1301</a>
     </li></ul></dd>
     
 
@@ -411,7 +546,7 @@
     
 
     
-    <h4 class="name" id="get"><span class="type-signature"></span>get<span class="signature">(key)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="GET"><span class="type-signature">(protected) </span>GET<span class="signature">(ключ,, объект,)</span><span class="type-signature"> &rarr; {<a href="Operand.html">Operand</a>|null}</span></h4>
     
 
     
@@ -419,7 +554,188 @@
 
 
 <div class="description">
-    Получет значение из текущей области памяти по ключу `key`
+    Получает статическое значение прототипа
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>ключ,</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">по которому получаем значение</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>объект,</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="PoonyaObject.html">PoonyaObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">который хочет получить поле</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="poonya.js.html">poonya.js</a>, <a href="poonya.js.html#line1333">line 1333</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Operand.html">Operand</a></span>
+|
+
+<span class="param-type">null</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="IS"><span class="type-signature">(protected) </span>IS<span class="signature">(key)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Проверяет, является ли текщуий прототип, наследником другого протитипа
 </div>
 
 
@@ -471,7 +787,7 @@
 
             
 
-            <td class="description last">ключ, по которому происходит получение значения</td>
+            <td class="description last">ключ прототипа, который ищем</td>
         </tr>
 
     
@@ -512,7 +828,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="poonya.js.html">poonya.js</a>, <a href="poonya.js.html#line1006">line 1006</a>
+        <a href="poonya.js.html">poonya.js</a>, <a href="poonya.js.html#line1313">line 1313</a>
     </li></ul></dd>
     
 
@@ -548,7 +864,7 @@
     
 
     
-    <h4 class="name" id="result"><span class="type-signature"></span>result<span class="signature">(context<span class="signature-attributes">nullable</span>, out<span class="signature-attributes">nullable</span>, throw_error<span class="signature-attributes">nullable</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="SUPER_CALL"><span class="type-signature">(protected) </span>SUPER_CALL<span class="signature">(child)</span><span class="type-signature"></span></h4>
     
 
     
@@ -556,7 +872,7 @@
 
 
 <div class="description">
-    Десерриализует значени е хипа памяти в javascript объект
+    Вызывает супер вызов всех родительских конструкторов
 </div>
 
 
@@ -580,8 +896,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -594,99 +908,23 @@
 
         <tr>
             
-                <td class="name"><code>context</code></td>
+                <td class="name"><code>child</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="Context.html">Context</a></span>
+<span class="param-type"><a href="PoonyaObject.html">PoonyaObject</a></span>
 
 
             
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-                    &lt;nullable><br>
-                
-
-                
-                </td>
-            
 
             
 
-            <td class="description last">контекст выполнения</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>out</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;String></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-                    &lt;nullable><br>
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Выходной массив</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>throw_error</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-                    &lt;nullable><br>
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Функция вызывающаяся при ошибках</td>
+            <td class="description last">дочерний объект, который необходимо собрать</td>
         </tr>
 
     
@@ -727,218 +965,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="poonya.js.html">poonya.js</a>, <a href="poonya.js.html#line1039">line 1039</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="set"><span class="type-signature"></span>set<span class="signature">(key, data, parents_three<span class="signature-attributes">nullable</span>)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Устанавливает значение для текущей области памяти
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>key</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">ключ по которому будет происходить установка</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>data</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">данные которые будут установлены</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>parents_three</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;Object></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-                    &lt;nullable><br>
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">стэк родителей</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="poonya.js.html">poonya.js</a>, <a href="poonya.js.html#line1019">line 1019</a>
+        <a href="poonya.js.html">poonya.js</a>, <a href="poonya.js.html#line1358">line 1358</a>
     </li></ul></dd>
     
 

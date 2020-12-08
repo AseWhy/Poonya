@@ -1253,7 +1253,7 @@ class PoonyaPrototype {
      * @property {String} name имя прототипа
      * @property {PoonyaPrototype[]} _parents
      * @property {Map<String|Number, Operand>} _fields_data
-     * @property {Map<String|Number, Number} _fields
+     * @property {Map<String|Number, Number>} _fields
      * 
      * @memberof Poonya
      * @constructs PoonyaPrototype
