@@ -123,6 +123,7 @@ class PoonyaObjectPrototype extends PoonyaPrototype {
     constructor(){
         super([], 'Object');
 
+        this.addField('create', this.create, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC);
         this.addField('values', this.values, FIELDFLAGS.CONSTANT);
         this.addField('assign', this.assign, FIELDFLAGS.CONSTANT);
         this.addField('remove', this.remove, FIELDFLAGS.CONSTANT);
@@ -159,6 +160,10 @@ class PoonyaObjectPrototype extends PoonyaPrototype {
 
     remove(service, key){
         this.delete(key);
+    }
+
+    create(){
+        return new Object();
     }
 }
 

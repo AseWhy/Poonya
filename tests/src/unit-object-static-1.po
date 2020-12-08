@@ -1,0 +1,7 @@
+/>
+    Multilevel object notation
+</
+
+set test1 = Array.create();
+
+> test1;

@@ -1,7 +1,7 @@
 const poonya = require("../poonya")
     , assert = require("assert");
 
-describe("poonya-main-test", () => {
+describe("poonya-common-test", () => {
     describe("#scope", () => {
         it("Should return SomeValue-1 and SomeValue", () => {
             const test_pattern = new poonya.ExcecutionPattern({
@@ -160,6 +160,34 @@ describe("poonya-main-test", () => {
             });
 
             assert.deepStrictEqual(test_pattern.result(), [[]]);
+        });
+    })
+
+    describe("#object-static-methods", () => {
+        it("Should return an array with values ​​from 0 to 5", () => {
+            const test_pattern = new poonya.ExcecutionPattern({
+                path: __dirname + "/src/unit-object-static-0",
+            });
+
+            assert.deepStrictEqual(test_pattern.result(), [
+                [0, 1, 2, 3, 4, 5]
+            ]);
+        });
+
+        it("Should return an empty array", () => {
+            const test_pattern = new poonya.ExcecutionPattern({
+                path: __dirname + "/src/unit-object-static-1",
+            });
+
+            assert.deepStrictEqual(test_pattern.result(), [[]]);
+        });
+
+        it("Should return an empty object", () => {
+            const test_pattern = new poonya.ExcecutionPattern({
+                path: __dirname + "/src/unit-object-static-2",
+            });
+
+            assert.deepStrictEqual(test_pattern.result(), [{}]);
         });
     })
 });

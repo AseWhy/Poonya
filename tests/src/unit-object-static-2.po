@@ -1,0 +1,5 @@
+/>
+    Empty object return
+</
+
+> Object.create();

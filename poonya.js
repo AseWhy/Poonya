@@ -130,12 +130,14 @@ const OPERATOR = {
  * @constant FIELDFLAGS
  * @property {Number} NOOUTPUT - Запрет вывода, при серриализации объекта в объект js, это поле будет скрыто
  * @property {Number} CONSTANT - Константное значение, невозможно изменить оператором присваивания
+ * @property {Number} STATIC   - Статическое значение прототипа
  * @protected
  * @static
  */
 const FIELDFLAGS = {
-    NOOUTPUT: 0x1,
-    CONSTANT: 0x2,
+    NOOUTPUT:   0x1,
+    CONSTANT:   0x2,
+    STATIC:     0x4
 };
 
 /**
@@ -1214,6 +1216,8 @@ class Context {
 
             if (query_data instanceof PoonyaObject) {
                 query_data = query_data.get(query_stack[i]) || null;
+            } else if (query_data instanceof PoonyaPrototype) {
+                query_data = query_data[GET](query_stack[i], this) || null;
             } else {
                 throw_error(position, new Exceptions.GetFieldOfNullException(query_stack[i]));
             }
@@ -1324,22 +1328,24 @@ class PoonyaPrototype {
     /**
      * Получает статическое значение прототипа
      * 
-     * @param {String} ключ, по которому получаем значение
-     * @param {PoonyaObject} объект, который хочет получить поле
+     * @param {String} key ключ, по которому получаем значение
+     * @param {Context} context объект, который хочет получить поле
      * @protected
      * @method
      * @returns {Operand|null}
      */
-    [GET](key, child){
+    [GET](key, context, static_assces = true){
         // Буффер данных
         let data;
 
-        // 
         if((data = this._fields.get(key)) != null){
-            return Cast(data, child.context);
+            if(static_assces || (this._fields_data.get(key) & FIELDFLAGS.STATIC) !== 0)
+                return Cast(data, context);
+            else
+                return null;
         } else {
             for(let i = 0, leng = this._parents.length; i < leng; i++) {
-                if(data = this._parents[i].get(key, child) != null){
+                if(data = this._parents[i].get(key, context, static_assces) != null){
                     return data;
                 }
             }
@@ -1434,7 +1440,7 @@ class PoonyaObject {
         if(data != null) {
             return data;
         } else {
-            return this.prototype[GET](key, this);
+            return this.prototype[GET](key, this.context);
         }
     }
 
@@ -2889,6 +2895,8 @@ class GetOperator extends Operand {
 
             if (query_data instanceof PoonyaObject) {
                 query_data = query_data.get(query_stack[i]) || null;
+            } else if (query_data instanceof PoonyaPrototype) {
+                query_data = query_data[GET](query_stack[i], context) || null;
             } else {
                 throw_error(
                     this.position,
@@ -2969,6 +2977,10 @@ class FunctionCall extends Operand {
                 safe_parent = query_data;
 
                 query_data = query_data.get(query_stack[i]) || null;
+            } else if (query_data instanceof PoonyaPrototype) {
+                safe_parent = query_data;
+
+                query_data = query_data[GET](query_stack[i], context) || null;
             } else {
                 throw_error(this.position, new Exceptions.GetFieldOfNullException(query_stack[i]));
             }
