@@ -7,6 +7,6 @@ set test1 = Object ->
                     subfield1 --> 1,
                     subfield2 --> 2;
 
-test1.field1 = "NOT OBJECT";
+test1.field1 = 'NOT OBJECT';
 
 > test1;

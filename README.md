@@ -1,5 +1,8 @@
 # Poonya
 JavaScript library that allows you to create and execute po templates, thereby formatting text. In other words, this is a template engine
+
+![poo](./data/header_document_image.png)
+
 ## How to use it in your project?
 To do this, you need to connect Poonya
 ```js

@@ -124,6 +124,37 @@ const OPERATOR = {
 };
 
 /**
+ * Флаги для полей
+ *
+ * @memberof Poonya
+ * @constant FIELDFLAGS
+ * @property {Number} NOOUTPUT - Запрет вывода, при серриализации объекта в объект js, это поле будет скрыто
+ * @property {Number} CONSTANT - Константное значение, невозможно изменить оператором присваивания
+ * @protected
+ * @static
+ */
+const FIELDFLAGS = {
+    NOOUTPUT: 0x1,
+    CONSTANT: 0x2,
+};
+
+/**
+ * Сервисная константа, для служебной информации
+ *
+ * @memberof Poonya
+ * @constant SERVICE
+ * @property {Number} CONSTRUCTORS - конструкторы объектов
+ * @protected
+ * @static
+ */
+const SERVICE = {
+    CONSTRUCTORS: {
+        OBJECT: [ 'Object' ],
+        ARRAY: [ 'Array' ]
+    }
+}
+
+/**
  * Занимаемая область в глобальном контексте
  * 
  * @memberof Poonya
@@ -537,6 +568,34 @@ const Exceptions = {
         constructor() {
             super(`Cannot create an empty object after declaring its keys`);
         }
+    },
+    
+    /**
+     * Неправильный тип ключа
+     * 
+     * @memberof Poonya.Exceptions
+     * @name BadKeyInvalidTypeException
+     * @class
+     * @protected
+     */
+    BadKeyInvalidTypeException: class BadKeyInvalidTypeException extends Error {
+        constructor() {
+            super(`Wrong key type: it can be set only by a numeric or string key`);
+        }
+    },
+    
+    /**
+     * Невозможно создать пустой объект, ключи уже объявлены
+     * 
+     * @memberof Poonya.Exceptions
+     * @name BadKeyProtectedFieldException
+     * @class
+     * @protected
+     */
+    BadKeyProtectedFieldException: class BadKeyProtectedFieldException extends Error {
+        constructor() {
+            super(`Cannot set this field, the field is protected from changes`);
+        }
     }
 };
 
@@ -598,10 +657,115 @@ class PoonyaStaticLibrary {
      * @param {Object} data
      * @memberof Poonya
      * @constructs PoonyaStaticLibrary
-     * @protected
+     * @public
      */
-    constructor(id, global = false){
-        AddLibrary(id, this, global);
+    constructor(id, global = false, override = false, namespace){
+        AddLibrary(id, this, override);
+
+        this.namespace = namespace;
+        this.global = global;
+
+        this._fields = new Map();
+    }
+
+    /**
+     * Добавляет поле для импорта из библиотеки
+     * 
+     * @param {String} field название поля, которое устанавливаем
+     * @param {Any} data данные, который нужно импортировать
+     * @public
+     * @method
+     */
+    addField(field, data){
+        this._fields.set(field, data);
+    }
+
+    /**
+     * Расширяет прототип класса переданного как proto
+     * 
+     * @param {PoonyaPrototype} proto название поля, которое устанавливаем
+     * @public
+     * @method
+     */
+    expandClass(proto){
+        if(proto instanceof PoonyaPrototype) {
+            this._fields.set(proto.name, proto);
+        } else {
+            throw new Error(`Only PoonyaPrototype instance can be passed as a prototype.`)
+        }
+    }
+
+    /**
+     * Добавляет стороннюю библиотеку как поле этой бибилотеки
+     * 
+     * @param {String} ident идентификатор ассимилируемой библиотеки
+     * @public
+     * @method
+     */
+    addLib(ident){
+        const lib = global[NAMESPACE][Symbol.for('Modules')][Symbol.for(ident)];
+
+        if(lib != null) {
+            this._fields.set(lib.namespace, lib);
+        } else {
+            throw new Error(`Can't find library with identifier ${ident}`)
+        }
+    }
+
+    /**
+     * Вызывается для преобразования библиотеки в модуль памяти, к которому в последствии можно будет получить доступ
+     * 
+     * @param {Context|PoonyaObject} parent контекст выполнения
+     * @public
+     * @method
+     */
+    importTo(parent, context, throw_error){
+        for(let [key, value] of this._fields)
+            switch(typeof value){
+                case "bigint":
+                    if(isNaN(value))
+                        parent.set(key, new NativeNull());
+                    else
+                        parent.set(key, new NativeInteger(value));
+                break;
+                case "number":
+                    if(isNaN(value))
+                        parent.set(key, new NativeNull());
+                    else 
+                        parent.set(key, new NativeNumber(value));
+                break;
+                case "string":
+                    parent.set(key, new NativeString(value));
+                break;
+                case "symbol":
+                    parent.set(key, new NativeString(Symbol.keyFor(value)));
+                break;
+                case "function":
+                    parent.set(key, new NativeFunction(value));
+                break;
+                case "boolean":
+                    parent.set(key, new NativeBoolean(value));
+                break;
+                case "undefined":
+                case "object":
+                    if(value == null)
+                        parent.set(new NativeNull());
+                    else {
+                        if (value instanceof PoonyaStaticLibrary) {
+                            const target = new PoonyaObject(context.getByPath(SERVICE.CONSTRUCTORS.OBJECT, -1, PoonyaPrototype, throw_error), null, context);
+
+                            value.importTo(target, context, throw_error);
+
+                            parent.set(key, target);
+                        } else if (value instanceof PoonyaPrototype)
+                            parent.set(key, value);
+                        else if (value instanceof Array) 
+                            parent.set(key, new PoonyaArray(context.getByPath(SERVICE.CONSTRUCTORS.ARRAY, -1, PoonyaPrototype, throw_error), value, null, context));
+                        else 
+                            parent.set(key, new PoonyaObject(context.getByPath(SERVICE.CONSTRUCTORS.OBJECT, -1, PoonyaPrototype, throw_error), value, null, context));
+                    }
+                break;
+            }
     }
 }
 
@@ -614,37 +778,9 @@ class PoonyaStaticLibrary {
         global[NAMESPACE][modules] = new Map();
     }
 
-    AddLibrary = (lib_id, lib_object, p_global) => {
-        lib_id = Symbol.for(lib_id);
-
-        if(global[NAMESPACE][modules][lib_id] == null) {
-            const lib = global[NAMESPACE][modules][lib_id] = [p_global, new Heap()];
-
-            lib_object.addLib = (name) => {
-                name = Symbol.for(name);
-
-                if(global[NAMESPACE][modules][name] != null){
-                    global[NAMESPACE][modules][lib_id][1].set(Symbol.keyFor(name), global[NAMESPACE][modules][name][1]);
-                } else {
-                    throw new TypeError('Cannot find sub library. For ' + lib_id.toString() + ', for ' + Symbol.keyFor(name));
-                }
-            }
-
-            lib_object.addMethod = (name, alias) => {
-                const method = typeof alias === 'string' ? lib_object[alias] : alias;
-
-                if(typeof method === 'function'){
-                    lib[1].set(name, method);
-                } else 
-                    throw new TypeError('The method to add must be a function. For ' + lib_id.toString());
-            }
-
-            lib_object.addField = (name, field) => {
-                if(typeof field !== 'function'){
-                    lib[1].set(name, field);
-                } else 
-                    throw new TypeError('To add a method use addMethod. For ' + lib_id.toString());
-            }
+    AddLibrary = (lib_id, lib_object, override = false) => {
+        if(override || global[NAMESPACE][modules][lib_id = Symbol.for(lib_id)] == null) {
+            global[NAMESPACE][modules][lib_id] = lib_object;
         } else {
             throw new TypeError('Library, with this id already imported. For ' + lib_id.toString());
         }
@@ -654,17 +790,10 @@ class PoonyaStaticLibrary {
         if (!(import_statements instanceof Array))
             throw new TypeError("import_statements must be Array");
 
-        const statements = new Heap();
+        const statements = new Array();
 
-        for(let i = 0, leng = import_statements.length, current; i < leng; i++) {
-            current = global[NAMESPACE][modules][Symbol.for(import_statements[i])];
-
-            if(current[0]) {
-                statements.append(current[1]);
-            } else {
-                if(current[1])
-                statements.set(import_statements[i], current[1]);
-            }
+        for(let i = 0, leng = import_statements.length; i < leng; i++) {
+            statements.push(global[NAMESPACE][modules][Symbol.for(import_statements[i])]);
         }
 
         return statements;
@@ -676,10 +805,79 @@ class PoonyaStaticLibrary {
         const default_libs = readdirSync(lib_dir);
 
         for(let i = 0, leng = default_libs.length; i < leng; i++){
-            (new Function('NativeLibrary', `"use strict";${readFileSync(join(lib_dir, default_libs[i]), 'utf-8')}`))(PoonyaStaticLibrary);
+            (
+                new Function(
+                    'FIELDFLAGS',
+                    'NativeLibrary',
+                    'PoonyaPrototype',
+                    `"use strict";${readFileSync(join(lib_dir, default_libs[i]), 'utf-8')}`
+                )
+            )(FIELDFLAGS, PoonyaStaticLibrary, PoonyaPrototype);
         };
     }
 })();
+
+/**
+ * Фукция которая преобразует нативное значение в значение Poonya
+ *
+ * @memberof Poonya
+ * @function Cast
+ *
+ * @param {Any} data Данные которые необходимо преобразовать
+ * @param {Context} Контекст
+ * @param {Array<Any>} дерево родителей объекта
+ *
+ * @protected
+ */
+function Cast(data, context, parents_three = new Array()){
+    let sub;
+
+    switch (typeof data) {
+        case "bigint":
+            return new NativeInteger(data);
+        case "number":
+            return new NativeNumber(data);
+        case "string":
+            return new NativeString(data);
+        case "symbol":
+            return new NativeString(Symbol.keyFor(data));
+        case "boolean":
+            return new NativeBoolean(data);
+        case "object":
+            switch(true){
+                case data === null:                     return new NativeNull();
+                case data instanceof CodeEmitter:       return new PoonyaData(data);
+                case data instanceof PoonyaObject:
+                case data instanceof Operand:
+                case data instanceof PoonyaPrototype:   return data;
+                default: 
+                    parents_three.push(data);
+
+                    if (data instanceof Array) {
+                        sub = new PoonyaArray(context.getByPath(SERVICE.CONSTRUCTORS.ARRAY, -1, PoonyaPrototype), null, context)
+
+                        for (let i = 0,
+                            leng = data.length; i < leng; i++) {
+
+                            if (!parents_three.includes(data[i]))
+                                sub.set(i, data[i], data, Array.from(parents_three));
+                        }
+
+                        return sub;
+                    } else {
+                        sub = new PoonyaObject(context.getByPath(SERVICE.CONSTRUCTORS.OBJECT, -1, PoonyaPrototype), null, context);
+
+                        for (let key in data) {
+                            if (!parents_three.includes(key))
+                                sub.set(key, data[key], Array.from(parents_three));
+                        }
+
+                        return sub;
+                    }
+            }
+        case "function": return new NativeFunction(data);
+    }
+}
 
 /**
  * @lends Heap
@@ -690,14 +888,32 @@ class Heap extends Map {
      * Модуль памяти, может использоваться для манипульций с памятью.
      *
      * @param {Object} data
+     * @param {Context} context
+     * 
+     * @property {Context} context
+     * 
      * @memberof Poonya
      * @constructs Heap
      * @public
      */
-    constructor(data) {
+    constructor(data, context) {
         super();
 
-        if (data !== undefined) this.append(data);
+        this.context = context;
+
+        if (data != null)
+            this.append(data);
+    }
+
+    removeContext(){
+        this.context = null;
+    }
+
+    setContext(context){
+        if(context instanceof Context)
+            this.context = context;
+        else
+            throw new Error('context must be an object of type Сontext')
     }
 
     /**
@@ -711,17 +927,19 @@ class Heap extends Map {
         if (typeof data === "object") {
             if (Array.isArray(data)) {
                 for (let i = 0, leng = data.length; i < leng; i++)
-                    this.set(i, data[i], data);
+                    this.set(i, data[i]);
             } else {
-                if(data instanceof Heap) {
+                if(data instanceof PoonyaObject) {
+                    for (let entry of data.fields) {
+                        this.set(entry[0], entry[1]);
+                    }
+                } else if(data instanceof Heap){
                     for (let entry of data) {
-                        this.set(entry[0], entry[1], data);
+                        this.set(entry[0], entry[1]);
                     }
                 } else {
-                    const keys = Object.getOwnPropertyNames(data);
-
-                    for (let i = 0, leng = keys.length; i < leng; i++)
-                        this.set(keys[i], data[keys[i]], data);
+                    for (let key in data)
+                        this.set(key, data[key]);
                 }
             }
         } else {
@@ -745,72 +963,16 @@ class Heap extends Map {
      *
      * @param {String} key ключ по которому будет происходить установка
      * @param {Object} data данные которые будут установлены
-     * @param {?Object} subj суб объект(родитель текущего значения)
-     * @param {?Array<Heap|HeapIndexed>} parents_three стэк родителей
+     * @param {?Array<Object>} parents_three стэк родителей
      * @method
      * @public
      */
-    set(key, data, subj = null, parents_three = new Array()) {
+    set(key, data, parents_three = new Array()) {
         if (typeof key !== "string" && typeof key !== "number")
-            throw new TypeError();
+            throw new TypeError('Bad key.');
 
         try {
-            switch (typeof data) {
-                case "bigint":
-                    super.set(key, new NativeInteger(data));
-                    break;
-                case "number":
-                    super.set(key, new NativeNumber(data));
-                    break;
-                case "string":
-                    super.set(key, new NativeString(data));
-                    break;
-                case "boolean":
-                    super.set(key, new NativeBoolean(data));
-                    break;
-                case "object":
-                    if (data == null) {
-                        super.set(key, new NativeNull());
-                    } else if (
-                        data instanceof CodeEmitter
-                    ) {
-                        super.set(key, new PoonyaData(data));
-                    } else if(
-                        data instanceof Heap ||
-                        data instanceof Operand
-                    ) { 
-                        super.set(key, data);
-                    } else {
-                        parents_three.push(data);
-
-                        if (data instanceof Array) {
-                            const sub = new HeapIndexed();
-
-                            for (let i = 0, leng = data.length; i < leng; i++)
-                                if (!parents_three.includes(data[i]))
-                                    sub.set(i, data[i], data, [
-                                        ...parents_three,
-                                    ]);
-
-                            super.set(key, sub);
-                        } else {
-                            const sub = new Heap()
-                                , keys = Object.getOwnPropertyNames(data);
-
-                            for (let i = 0, leng = keys.length; i < leng; i++)
-                                if (!parents_three.includes(data[keys[i]]))
-                                    sub.set(keys[i], data[keys[i]], data, [
-                                        ...parents_three,
-                                    ]);
-
-                            super.set(key, sub);
-                        }
-                    }
-                    break;
-                case "function":
-                    super.set(key, new NativeFunction(data.bind(subj)));
-                    break;
-            }
+            super.set(key, Cast(data, this.context, parents_three));
         } catch (e) {
             console.error("Error when cast value of " + key);
         }
@@ -819,8 +981,7 @@ class Heap extends Map {
     /**
      * Десерриализует значени е хипа памяти в javascript объект
      *
-     * @param {?Heap} heap Текущий хип памяти
-     * @param {?Heap} source_data Исходный хип памяти
+     * @param {?Context} context контекст выполнения
      * @param {?Array<String>} out Выходной массив
      * @param {?Function} throw_error Функция вызывающаяся при ошибках
      * @method
@@ -831,10 +992,7 @@ class Heap extends Map {
 
         for (let [key, value] of this)
             if (!(value instanceof NativeFunction))
-                output[key] =
-                    value != null
-                        ? value.result(context, out, throw_error)
-                        : null;
+                output[key] = value != null ? value.result(context, out, throw_error) : null;
 
         return output;
     }
@@ -848,19 +1006,33 @@ class Context {
     /**
      * Контекст выполнения
      *
-     * @param  {...Heap|HeapIndexed} initial Значения переданные для инициализации
+     * @param {PoonyaStaticLibrary[]} libraries бибилиотеки для инициалзиции контекста
+     * @param {...Heap} initial Значения переданные для инициализации
      * @memberof Poonya
      * @constructs Context
      * @classdesc Определяет набор данных для манипуляции в шаблонизаторе
      * @protected
      */
-    constructor(...initial) {
-        this.levels =
-            initial.filter(
-                (e) => !(e instanceof Heap || e instanceof HeapIndexed),
-            ).length === 0
-                ? initial
-                : new Array();
+    constructor(libraries, throw_error, ...initial) {
+        this.levels = new Array(new Heap(null, this));
+
+        if(libraries != null){
+            for(let i = 0, leng = libraries.length;i < leng; i++) {
+                if(libraries[i] instanceof PoonyaStaticLibrary) {
+                    if(libraries[i].global) {
+                        libraries[i].importTo(this, this, throw_error)
+                    } else {
+                        const target = new PoonyaObject(context.getByPath(SERVICE.CONSTRUCTORS.OBJECT, -1, PoonyaPrototype, throw_error), null, this.context);
+
+                        libraries[i].importTo(target, this, throw_error);
+
+                        this.levels[this.levels.length - 1].set(key, target);
+                    }
+                }
+            }
+        }
+
+        this.levels.push(...initial.filter(e => !(e instanceof Heap)).length === 0 ? initial : new Array());
     }
 
     /**
@@ -870,14 +1042,16 @@ class Context {
      */
     addLevel(level) {
         if (level != null) {
-            if (level instanceof Heap || level instanceof HeapIndexed)
+            if (level instanceof Heap) {
+                level.setContext(this);
+
                 this.levels.push(level);
-            else
+            } else
                 throw new Error(
                     "The level for the context must be heap, or indexed by the heap",
                 );
         } else {
-            this.levels.push(new Heap());
+            this.levels.push(new Heap(null, this));
         }
     }
 
@@ -887,7 +1061,7 @@ class Context {
      * @public
      */
     popLevel() {
-        return this.levels.pop();
+        this.levels.pop().removeContext();
     }
 
     /**
@@ -974,40 +1148,361 @@ class Context {
                 break;
         }
     }
+
+    getByPath(path, position, type, throw_error) {
+        let query_data = this.get(path[0]),
+            query_stack = [...path];
+
+        for (
+            let i = 1, leng = query_stack.length;
+            query_data && i < leng;
+            i++
+        ) {
+            if (query_stack[i] instanceof ExpressionGroup)
+                query_stack[i] = query_stack[i].result(this, out, throw_error);
+
+            if (query_data instanceof PoonyaObject) {
+                query_data = query_data.get(query_stack[i]) || null;
+            } else {
+                throw_error(position, new Exceptions.GetFieldOfNullException(query_stack[i]));
+            }
+        }
+
+        if (query_data instanceof type) 
+            return query_data;
+        else 
+            return null;
+    }
+
+    createObject(entries, position, path, throw_error) {
+        for(let key in entries) {
+            if(typeof entries[key] === 'object' && entries[key] != null)
+                entries[key] = this.createObject(entries[key], position, [ Array.isArray(entries[key]) ? 'Array' : 'Object' ])
+        }
+
+        return new (path[0] === 'Object' ? PoonyaObject : PoonyaArray)(this.getByPath(path, position, PoonyaPrototype, throw_error), entries, this);
+    }
+}
+
+const GET = Symbol('GET')
+    , SUPER_CALL = Symbol('SEPER_CALL');
+
+/**
+ * @lends PoonyaPrototype
+ * @class
+ */
+class PoonyaPrototype {
+    /**
+     * Прототип объекта, позволяет
+     *
+     * @param {?PoonyaPrototype[]} parents прототипы объекта, если необходимо
+     * @param {String} name имя прототипа, который необъодимо создать
+     * 
+     * @property {String} name имя прототипа
+     * @property {PoonyaPrototype[]} _parents
+     * @property {Map<String|Number, Operand>} _fields_data
+     * @property {Map<String|Number, Number} _fields
+     * 
+     * @memberof Poonya
+     * @constructs PoonyaPrototype
+     * @public
+     */
+    constructor(parents = [], name){
+        if(parents.find(e => !e instanceof PoonyaPrototype) != null)
+            throw new Error('Only descendants of PoonyaPrototype should be specified as parents of the target class');
+        
+        if(typeof name === 'string' || name == null) {
+            this.name = name != null ? name : 'Object';
+        } else {
+            throw new Error('Only string value can be passed as name')
+        }
+
+        this._parents = [...parents];
+        this._fields_data = new Map();
+        this._fields = new Map();
+    }
+
+    /**
+     * Добавляет родительский прототип целевому
+     *
+     * @param {PoonyaPrototype} parent прототип объекта
+     * @memberof Poonya
+     * @constructs PoonyaObject
+     * @public
+     */
+    addParent(parent){
+        if(parent instanceof PoonyaPrototype)
+            this._parents.push(parent);
+        else
+            throw new TypeError("Parent must be an PoonyaPrototype instance.")
+    }
+
+    /**
+     * Устанавливает данные прототипа объекта
+     * 
+     * @param {String} field поле которое нужно установить
+     * @param {Any} data данные которые нужно установить
+     * @param {FIELDFLAGS} flags флаги поля
+     * @method
+     * @public
+     */
+    addField(field, data, flags){
+        this._fields.set(field, data);
+        this._fields_data.set(field, flags);
+    }
+
+    /**
+     * Получает статическое значение прототипа
+     * 
+     * @param {String} ключ, по которому получаем значение
+     * @param {PoonyaObject} объект, который хочет получить поле
+     * 
+     * @public
+     * @method
+     * @returns {Operand|null}
+     */
+    [GET](key, child){
+        // Буффер данных
+        let data;
+
+        // 
+        if((data = this._fields.get(key)) != null){
+            return Cast(data, child.context);
+        } else {
+            for(let i = 0, leng = this._parents.length; i < leng; i++) {
+                if(data = this._parents[i].get(key, child) != null){
+                    return data;
+                }
+            }
+
+            return null;
+        }
+    }
+    
+    /**
+     * Вызывает супер вызов всех родительских конструкторов
+     *
+     * @param {PoonyaObject} child дочерний объект, который необходимо собрать
+     * @method
+     * @protected
+     */
+    [SUPER_CALL](child){
+        // Копируем значения полей 
+        for(let [key, value] of this._fields_data)
+            child.field_attrs.set(key, value)
+
+        // Вызываем конструкеторы родителейских прототипов
+        for(let i = 0, leng = this._parents.length; i < leng; i++)
+            this._parents[i].superCall(child);
+    }
 }
 
 /**
- * @lends HeapIndexed
+ * @lends PoonyaObject
  * @class
  */
-class HeapIndexed extends Heap {
+class PoonyaObject {
     /**
-     * Хип памяти (Индексированный)
-     * Смотрите {@link Heap} для просмотра информации о наследуемом классе
+     * Дескриптор объекта в poonya
      *
-     * @param {Object} data данные для инициализации модуля памяти
+     * @param {PoonyaObject} prototype Прототип объекта, если необходимо
+     * @param {Object} init Объект инициализации
      * @memberof Poonya
-     * @constructs HeapIndexed
-     * @extends Heap
+     * @constructs PoonyaObject
      * @public
      */
-    constructor(data) {
-        super(data);
+    constructor(prototype, init, context){
+        this.fields = new Map();
+        this.field_attrs = new Map();
 
-        this.length = 0;
+        if(context instanceof Context)
+            this.context = context;
+        else
+            throw new Error('No context passed: dynamic data needs context.');
+
+        if(prototype instanceof PoonyaPrototype) {
+            prototype[SUPER_CALL](this);
+
+            this.prototype = prototype;
+        }
+
+        if(init != null)
+            this.append(init);
+    }
+
+    /**
+     * Проверяет, существует ли ключ в текущем объекте
+     *
+     * @param {String} key ключ который прверяем
+     * @method
+     * @public
+     */
+    has(key){
+        return this.fields.has(key);
+    }
+
+    /**
+     * Получет значение из текущей области памяти по ключу `key`
+     *
+     * @param {String} key ключ, по которому происходит получение значения
+     * @method
+     * @public
+     */
+    get(key) {
+        let data = this.fields.get(key);
+
+        if(data != null) {
+            return data;
+        } else {
+            return this.prototype[GET](key, this);
+        }
+    }
+
+    /**
+     * Запрещает изменение поля
+     * 
+     * @param {String|Number} key ключ для получения поля
+     * @public
+     * @method
+     */
+    setConstant(key){
+        let current = 0x0;
+
+        if((current = this.field_attrs.get(key)) != null) {
+            this.field_attrs.set(key, current | FIELDFLAGS.CONSTANT)
+        } else {
+            throw new Error('Cannot find filed ' + key + ' in ' + this.prototype.name + '.Object');
+        }
+    }
+
+    /**
+     * Скрывает поле при выводе
+     * 
+     * @param {String|Number} key ключ для получения поля
+     * @public
+     * @method
+     */
+    setHide(key){
+        let current = 0x0;
+
+        if((current = this.field_attrs.get(key)) != null) {
+            this.field_attrs.set(key, current | FIELDFLAGS.NOOUTPUT)
+        } else {
+            throw new Error('Cannot find filed ' + key + ' in ' + this.prototype.name + '.Object');
+        }
+    }
+
+    /**
+     * Обновляет данные в текущем объекте
+     *
+     * @param {Object} data данные которые нужно обновить
+     * @method
+     * @public
+     */
+    append(data) {
+        if (typeof data === "object") {
+            if (Array.isArray(data)) {
+                for (let i = 0, leng = data.length; i < leng; i++)
+                    this.set(i, data[i], data);
+            } else {
+                if(data instanceof PoonyaObject) {
+                    for (let entry of data.fields) {
+                        this.set(entry[0], entry[1]);
+                    }
+                } else {
+                    for (let key in data)
+                        this.set(key, data[key]);
+                }
+            }
+        } else {
+            throw new TypeError();
+        }
+    }
+
+    /**
+     * Устанавливает значение для текущей области памяти
+     *
+     * @param {String} key ключ по которому будет происходить установка
+     * @param {Object} data данные которые будут установлены
+     * @param {?Array<Object>} parents_three стэк родителей
+     * @method
+     * @public
+     */
+    set(key, data, parents_three = new Array()) {
+        if (typeof key !== "string" && typeof key !== "number")
+            throw new Exceptions.BadKeyInvalidTypeException();
+
+        const attrs = this.field_attrs.get(key);
+
+        if (attrs != null && (attrs & FIELDFLAGS.CONSTANT) === 0)
+            throw new Exceptions.BadKeyProtectedFieldException();
+
+        try {
+            this.fields.set(key, Cast(data, this.context, parents_three));
+        } catch (e) {
+            console.error("Error when cast value of " + key);
+        }
+    }
+
+    /**
+     * Десерриализует значени объекта в javascript объект
+     *
+     * @param {?Context} context текущий контекст
+     * @param {?Array<String>} out Выходной массив
+     * @param {?Function} throw_error Функция вызывающаяся при ошибках
+     * @method
+     * @public
+     */
+    result(context, out, throw_error) {
+        let   output = new Object()
+            , data;
+
+        for (let [key, value] of this.fields) {
+            data = this.field_attrs.get(key);
+
+            if(data == null || (data & FIELDFLAGS.NOOUTPUT) === 0)
+                if(value instanceof NativeFunction)
+                    output[key] = value != null ? value.target : null;
+                else
+                    output[key] = value != null ? value.result(context, out, throw_error) : null;
+        }
+
+        return output;
+    }
+}
+
+/**
+ * @lends PoonyaArray
+ * @class
+ */
+class PoonyaArray extends PoonyaObject {
+    /**
+     * Дескриптор массива в poonya
+     *
+     * @param {Object} data
+     * @memberof Poonya
+     * @constructs PoonyaArray
+     * @extends PoonyaObject
+     * @public
+     */
+    constructor(prototype = null, init, context){
+        super(prototype, null, context);
+
+        for(let i = 0, leng = init.length; i < leng; i++){
+            this.push(init[i]);
+        }
     }
 
     /**
      * Добавляет данные в модуль памяти
      *
      * @param {Object} data данные которые добавляем
-     * @param {Object} subj родитель добавляемого значения
      * @param {Array<Any>} parents_three стэк родетелей добавляемого значения
      * @method
      * @public
      */
-    push(data, subj = null, parents_three = new Array()) {
-        super.set(this.length++, data, subj, parents_three);
+    push(data, parents_three = new Array()) {
+        this.fields.set(this.fields.size + 1, data, parents_three);
     }
 
     /**
@@ -1016,43 +1511,47 @@ class HeapIndexed extends Heap {
      * @public
      */
     get(key) {
-        if (key >= 0 && key < this.length) {
-            return super.get(key);
-        } else return null;
+        return this.fields.get(key);
     }
 
     /**
+     * Устанавливает индекс массива
+     * 
      * @override
      * @method
      * @public
      */
-    set(key, data, subj = null, parents_three = new Array()) {
+    set(key, data, parents_three = new Array()) {
         if (
             typeof key !== "number" ||
-            key < 0 ||
+            key < -Number.MAX_SAFE_INTEGER ||
             key > Number.MAX_SAFE_INTEGER
         )
-            throw new TypeError();
+            throw new TypeError('Bad key for ' + key);
 
-        if (this.length <= key) this.length = key + 1;
-
-        super.set(key, data, subj, parents_three);
+        super.set(key, data, parents_three);
     }
 
     /**
+     * Серриализует массив в javascript массив
+     * 
      * @override
      * @method
      * @public
      */
     result(context, out, throw_error) {
-        let output = new Array(this.length);
+        let   output = new Array(this.fields.size)
+            , data;
 
-        for (let [key, value] of this)
-            if (!(value instanceof NativeFunction))
-                output[key] =
-                    value != null
-                        ? value.result(context, out, throw_error)
-                        : null;
+        for (let [key, value] of this.fields) {
+            data = this.field_attrs.get(key);
+
+            if(data == null || (data & FIELDFLAGS.NOOUTPUT) === 0)
+                if(value instanceof NativeFunction)
+                    output[key] = value != null ? value.target : null;
+                else
+                    output[key] = value != null ? value.result(context, out, throw_error) : null;
+        }
 
         return output;
     }
@@ -2080,43 +2579,40 @@ class NativeFunction extends Operand {
      *
      * @param {Array<Any>} args аргументы функции
      * @param {Context} context Контекст выполнения фукнции
+     * @param {PoonyaObject} thisArgs родительский объект
      * @param {Function} throw_error Метод выбрасывания ошибок
      * @param {Number} call_pos Позиция из которой происходит вызов
-     * @returns {IntegerLiteral|NumberLiteral|StringLiteral|BooleanLiteral|HeapIndexed|Heap|NullLiteral}
+     * @returns {IntegerLiteral|NumberLiteral|StringLiteral|BooleanLiteral|PoonyaObject|NullLiteral}
      */
-    result(args, context, throw_error, call_pos) {
+    result(args, thisArgs = null, context, throw_error, call_pos) {
         let buff;
 
         try {
-            buff = this.target.call({ args, throw_error, context }, ...args);
+            buff = this.target.call(thisArgs, { args, context, throw_error }, ...args);
         } catch (e) {
+            console.error(e);
+
             throw_error(call_pos, new Exceptions.NativeFunctionExcecutionError(this.target.name));
         }
 
         switch(typeof buff){
             case "bigint":
-                if(isNaN(buff))
-                    return new NativeNull();
-                else
-                    return new NativeInteger(buff)
             case "number":
                 if(isNaN(buff))
-                    return new NativeNull();
+                    return null;
                 else 
-                    return new NativeNumber(buff);
+                    return buff;
             case "string":
-                return new NativeString(buff);
             case "boolean":
-                return new NativeBoolean(buff);
+            case "symbol":
+            case "function":
+                return buff;
             case "undefined":
             case "object":
                 if(buff == null)
-                    return new NativeNull();
+                    return null;
                 else {
-                    if (buff instanceof Array) 
-                        return new HeapIndexed(buff);
-                    else 
-                        return new Heap(buff);
+                    return buff;
                 }
             default:
                 throw_error(call_pos, new Exceptions.NativeFunctionReturnValueError());
@@ -2312,13 +2808,9 @@ class GetOperator extends Operand {
             i++
         ) {
             if (query_stack[i] instanceof ExpressionGroup)
-                query_stack[i] = query_stack[i].result(
-                    context,
-                    out,
-                    throw_error,
-                );
+                query_stack[i] = query_stack[i].result(context, out, throw_error);
 
-            if (query_data instanceof Heap) {
+            if (query_data instanceof PoonyaObject) {
                 query_data = query_data.get(query_stack[i]) || null;
             } else {
                 throw_error(
@@ -2328,8 +2820,10 @@ class GetOperator extends Operand {
             }
         }
 
-        if (query_data) return query_data.result(context, out, throw_error);
-        else return null;
+        if (query_data) 
+            return query_data.result(context, out, throw_error);
+        else 
+            return null;
     }
 
     /**
@@ -2360,11 +2854,11 @@ class FunctionCall extends Operand {
      * @protected
      */
     constructor(query_stack, args, position) {
-        super("call");
+        super("call function");
 
         this.query_stack = [...query_stack];
-        this.args = args;
         this.position = position;
+        this.args = args;
     }
 
     /**
@@ -2383,27 +2877,23 @@ class FunctionCall extends Operand {
     result(context, out, throw_error) {
         let query_data = context.get(this.query_stack[0]),
             query_stack = [...this.query_stack],
+            safe_parent = null,
             args = new Array();
 
         for (
             let i = 1, leng = this.query_stack.length;
-            query_data && i < leng;
+            i < leng;
             i++
         ) {
             if (query_stack[i] instanceof ExpressionGroup)
-                query_stack[i] = query_stack[i].result(
-                    context,
-                    out,
-                    throw_error,
-                );
+                query_stack[i] = query_stack[i].result(context, out, throw_error);
 
-            if (query_data instanceof Heap) {
+            if (query_data instanceof PoonyaObject) {
+                safe_parent = query_data;
+
                 query_data = query_data.get(query_stack[i]) || null;
             } else {
-                throw_error(
-                    this.position,
-                    new Exceptions.GetFieldOfNullException(query_stack[i]),
-                );
+                throw_error(this.position, new Exceptions.GetFieldOfNullException(query_stack[i]));
             }
         }
 
@@ -2412,14 +2902,13 @@ class FunctionCall extends Operand {
         }
 
         if (query_data instanceof NativeFunction)
-            return query_data
-                .result(args, context, throw_error, this.position)
-                .result(context, out, throw_error);
-        else
+            return query_data.result(args, safe_parent, context, throw_error, this.position);
+        else {
             throw_error(
                 this.position,
                 new Exceptions.FieldNotAFunctionException(query_stack[query_stack.length - 1])
             );
+        }
     }
 
     /**
@@ -2554,13 +3043,9 @@ class SetOperator {
      * @method
      */
     result(context, out, throw_error) {
-        if (!context.has(this.name, "up"))
-            context.set(
-                this.name,
-                this.value.result(context, out, throw_error),
-                "up",
-            );
-        else {
+        if (!context.has(this.name, "up")) {
+            context.set(this.name, this.value.result(context, out, throw_error), "up");
+        } else {
             throw_error(
                 this.position,
                 new Exceptions.TheFieldAlreadyHasBeenDeclaredException(this.name)
@@ -2626,7 +3111,7 @@ class PushOperator {
         let query_data = context.get(this.query_stack[0]),
             query_stack = [...this.query_stack];
 
-        if (query_data instanceof Heap) {
+        if (query_data instanceof PoonyaObject) {
             let index = 1;
 
             for (
@@ -2644,7 +3129,7 @@ class PushOperator {
                 query_data = query_data.get(query_stack[index]) || null;
             }
 
-            if (query_data instanceof HeapIndexed)
+            if (query_data instanceof PoonyaArray)
                 query_data.push(this.value.result(context, out, throw_error));
             else
                 throw_error(
@@ -2734,14 +3219,12 @@ class ResetOperator {
                 query_data = query_data.get(query_stack[index]) || null;
             }
 
-            if (query_data instanceof Heap) {
+            if (query_data instanceof PoonyaObject) {
                 const last_index = query_stack[query_stack.length - 1];
 
-                query_data.set(
-                    last_index instanceof ExpressionGroup
-                        ? last_index.result(context, out, throw_error)
-                        : last_index,
-                    this.value.result(context, out, throw_error),
+                query_data.set(last_index instanceof ExpressionGroup ?
+                    last_index.result(context, out, throw_error) : last_index,
+                    this.value.result(context, out, throw_error)
                 );
             } else
                 throw_error(
@@ -2778,6 +3261,7 @@ class OutOperator {
      */
     constructor(expression) {
         this.expression = expression;
+        this.position = expression.position;
     }
 
     /**
@@ -2943,19 +3427,21 @@ class ObjectContructorCall extends Operand {
     /**
      * Литеральный конструктор объекта
      *
-     * @param {String} name имя конструктора
+     * @param {String[]} query_stack путь к конструктору в памяти
      * @param {Map<String, ExpressionGroup>} fields поля объекта при инициализации
+     * @param {Number} position позиция начала объявления объекта
      *
      * @constructs ObjectContructorCall
      * @extends Operand
      * @memberof Poonya
      * @protected
      */
-    constructor(name = 'Object', fields) {
-        super('object');
+    constructor(query_stack = 'Object', fields, position) {
+        super('object-creator');
 
-        this.name = name;
+        this.query_stack = query_stack != null ? SERVICE.CONSTRUCTORS.OBJECT : query_stack;
         this.fields = fields;
+        this.position = position;
     }
 
     /**
@@ -2993,15 +3479,13 @@ class ObjectContructorCall extends Operand {
      * @method
      */
     result(context, out, throw_error) {
-        if(this.name === 'Object'){
-            const instance = new Heap();
+        let instance = new PoonyaObject(context.getByPath(this.query_stack, this.position, PoonyaPrototype), null, context);
 
-            for(let fieled of this.fields) {
-                instance.set(fieled[0], fieled[1].result(context, out, throw_error));
-            }
-
-            return instance;
+        for(let fieled of this.fields) {
+            instance.set(fieled[0], fieled[1].result(context, out, throw_error));
         }
+
+        return instance;
     }
 }
 
@@ -3357,11 +3841,8 @@ class ExpressionGroup extends Operand {
      * @method
      */
     result(context, out, throw_error) {
-        let result =
-            this.data[0] != null
-                ? this.data[0].result(context, out, throw_error)
-                : NullLiteral.create().result();
-
+        let result = this.data[0] != null ? this.data[0].result(context, out, throw_error) : null;
+        
         for (let i = 1, leng = this.data.length; i < leng; i += 2) {
             switch (true) {
                 case this.data[i].equals(OPERATOR.PLUS):
@@ -3900,6 +4381,7 @@ function linker(data, parent_path, throw_error) {
  * @param {Array<String|Number>} query_stack стек доступа к имени переменной
  * @param {Number} start начальная позиция разбора, для выражения
  * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Number} block_start начальная позиция вызова
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: FunctionCall, jump: Number}} объект вызова функции, и позиция с которой можно продолжить прасинг
@@ -3907,20 +4389,18 @@ function linker(data, parent_path, throw_error) {
  * @memberof Poonya
  * @protected
  */
-function parseFunctionCall(query_stack, start, data, throw_error) {
+function parseFunctionCall(query_stack, start, data, throw_error, block_start) {
     const args = segmentationParser(
         start,
         data,
         throw_error,
         ",",
         Infinity,
-        `(${query_stack
-            .map((e) => (typeof e === "number" ? `[${e}]` : e))
-            .join(" => ")})`,
+        `Function (${query_stack.map((e) => (typeof e === "number" ? `[${e}]` : e)).join(" => ")})`,
     );
 
     return {
-        data: new FunctionCall(query_stack, args.data, data[start]),
+        data: new FunctionCall(query_stack, args.data, block_start),
         jump: args.jump,
     };
 }
@@ -3934,16 +4414,17 @@ function parseFunctionCall(query_stack, start, data, throw_error) {
  *  key2 -> value2,
  *  key1 --> value1...
  *
+ * @param {Number[]|String[]|Operand[]} query_stack путь к конструктору объекта
  * @param {Number} start начальная позиция разбора, для выражения
  * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
- * @returns {{data: TernarOperator, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
+ * @returns {{data: ObjectContructorCall, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
  *
  * @memberof Poonya
  * @protected
  */
-function parseObject(start, data, throw_error, level = 0) {
+function parseObject(query_stack, start, data, throw_error, level = 0) {
     let result = null,
         count = 0,
         entries = new Array([]),   // Значения объекта
@@ -3959,7 +4440,7 @@ function parseObject(start, data, throw_error, level = 0) {
                     throw_error(data[i].position, new Exceptions.BadEmptyObjectException());
 
                 return {
-                    data: new ObjectContructorCall('Object', new Map()),
+                    data: new ObjectContructorCall(query_stack, new Map(), data[start].position),
                     jump: i - start
                 };
             case data[i] === undefined || expected === 3 && !data[i].equals(CHARTYPE.OPERATOR, ',') || data[i].equals(CHARTYPE.OPERATOR, ';'):
@@ -3967,7 +4448,7 @@ function parseObject(start, data, throw_error, level = 0) {
                     throw_error(data[i].position, new Exceptions.ParserEmtyArgumentException());
 
                 return {
-                    data: new ObjectContructorCall('Object', new Map(entries)),
+                    data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
                     jump: i - start
                 };
             default:
@@ -3998,7 +4479,7 @@ function parseObject(start, data, throw_error, level = 0) {
 
                             if(count < level + 1) {
                                 return {
-                                    data: new ObjectContructorCall('Object', new Map(entries)),
+                                    data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
                                     jump: last_row - start
                                 };
                             } else {
@@ -4019,7 +4500,7 @@ function parseObject(start, data, throw_error, level = 0) {
                             count === level + 2 && 
                             data[i + level + 3].equals(CHARTYPE.OPERATOR, '>')
                         ){                            
-                            result = parseObject(i, data, throw_error, level + 1);
+                            result = parseObject(SERVICE.CONSTRUCTORS.OBJECT, i, data, throw_error, level + 1);
 
                             i += result.jump - 1;
 
@@ -4301,6 +4782,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                         i + result[0].jump + 1,
                         data,
                         throw_error,
+                        data[i].position
                     );
 
                     i += result[0].jump + result[1].jump + 1;
@@ -4312,6 +4794,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                 ) {
                     // Конструктор объекта
                     result[1] = parseObject(
+                        result[0].data,
                         i + result[0].jump + 2,
                         data,
                         throw_error,
@@ -4334,6 +4817,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                 data[i + 1].equals(CHARTYPE.OPERATOR, ">"):
                 // Конструктор объекта
                 result[0] = parseObject(
+                    SERVICE.CONSTRUCTORS.OBJECT,
                     i + 2,
                     data,
                     throw_error,
@@ -5112,8 +5596,9 @@ class CodeEmitter {
 
         this.logger = logger;
 
-        this.heap = Import(["default.lib", ...import_s], logger);
         this.import = import_s;
+
+        this.libraries = Import(["default.lib", ...import_s], logger);
 
         if (typeof this.input !== "string")
             throw new TypeError("The `input` parameter must have a string type. But now `input` have a `" + typeof this.input + "` type.",);
@@ -5127,8 +5612,10 @@ class CodeEmitter {
      * @public
      */
     setHeap(heap) {
-        if (heap instanceof Heap) this.heap = heap;
-        else throw new TypeError();
+        if (heap instanceof Heap)
+            this.heap = heap;
+        else 
+            throw new TypeError();
     }
 
     /**
@@ -5165,29 +5652,35 @@ class CodeEmitter {
             this.path,
             ", at ",
             line,
-            ":" + line_dump[line].length,
-            " symbol :>\n",
+            ":", line_dump[line].length,
+            " symbol",
         );
 
-        for (let i = line_start; i < line_end; i++) {
-            buffer.push(" ", toFixed(i, ll), " |> ", data[i]);
+        if(pos != 0) {
+            buffer.push(' :>\n');
 
-            if (i === line) {
-                buffer.push(
-                    "\n ",
-                    new Array(ll + 1).join(" "),
-                    " |> " + new Array(line_dump[line].length).join(" "),
-                    "^",
-                );
+            for (let i = line_start; i < line_end; i++) {
+                buffer.push(" ", toFixed(i, ll), " |> ", data[i]);
+
+                if (i === line) {
+                    buffer.push(
+                        "\n ",
+                        new Array(ll + 1).join(" "),
+                        " |> " + new Array(line_dump[line].length).join(" "),
+                        "^",
+                    );
+                }
+
+                if (i + 1 !== line_end) buffer.push("\n");
             }
-
-            if (i + 1 !== line_end) buffer.push("\n");
         }
 
         this.logger.error(buffer.join(""));
 
-        if (message instanceof Error) throw message;
-        else throw new Exceptions.ParserException();
+        if (message instanceof Error) 
+            throw message;
+        else
+            throw new Exceptions.ParserException();
     }
 
     /**
@@ -5295,8 +5788,10 @@ class MessagePattern extends CodeEmitter {
                 }
             }
 
-            if (!hook_index === 0) buffer.push(entries[i].toString());
-            else buffer.push(entries[i]);
+            if (!hook_index === 0) 
+                buffer.push(entries[i].toString());
+            else 
+                buffer.push(entries[i]);
         }
 
         if (buffer.length !== 0)
@@ -5346,7 +5841,7 @@ class MessagePattern extends CodeEmitter {
                 }
 
             if (data.find((e) => !(e instanceof Heap)) == null) {
-                const context = new Context(this.heap, ...data);
+                const context = new Context(this.libraries, error, ...data[i]);
 
                 for (let i = 0, leng = this.data.length; i < leng; i++)
                     this.data[i].result(context, out, error);
@@ -5359,7 +5854,7 @@ class MessagePattern extends CodeEmitter {
             }
 
             if (data instanceof Heap) {
-                const context = new Context(this.heap, data);
+                const context = new Context(this.libraries, error, ...data);
 
                 for (let i = 0, leng = this.data.length; i < leng; i++)
                     this.data[i].result(context, out, error);
@@ -5439,7 +5934,7 @@ class ExcecutionPattern extends CodeEmitter {
                 }
 
             if (data.find((e) => !(e instanceof Heap)) == null) {
-                this.data.result(new Context(this.heap, ...data), out, error);
+                this.data.result(new Context(this.libraries, error, ...data), out, error);
             } else {
                 throw new TypeError("Data must have a Heap type");
             }
@@ -5449,7 +5944,7 @@ class ExcecutionPattern extends CodeEmitter {
             }
 
             if (data instanceof Heap) {
-                this.data.result(new Context(this.heap, data), out, error);
+                this.data.result(new Context(this.libraries, error, ...data), out, error);
             } else {
                 throw new TypeError("Data must have a Heap type");
             }
@@ -5522,7 +6017,7 @@ class ExpressionPattern extends CodeEmitter {
 
                 if (data.find((e) => !(e instanceof Heap)) == null) {
                     return this.data.result(
-                        new Context(this.heap, ...data),
+                        new Context(this.libraries, error, ...data),
                         [],
                         error,
                     );
@@ -5536,7 +6031,7 @@ class ExpressionPattern extends CodeEmitter {
 
                 if (data instanceof Heap) {
                     return this.data.result(
-                        new Context(this.heap, data),
+                        new Context(this.libraries, error, ...data),
                         [],
                         error,
                     );
@@ -5556,7 +6051,8 @@ class ExpressionPattern extends CodeEmitter {
 }
 
 module.exports.Heap = Heap;
-module.exports.HeapIndexed = HeapIndexed;
+module.exports.PoonyaArray = PoonyaArray;
+module.exports.PoonyaObject = PoonyaObject;
 module.exports.CodeEmitter = CodeEmitter;
 module.exports.MessagePattern = MessagePattern;
 module.exports.ExpressionPattern = ExpressionPattern;

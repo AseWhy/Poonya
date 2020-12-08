@@ -2,33 +2,33 @@ const date = new Date();
 
 new class DefaultMathStaticLibrary extends NativeLibrary {
     constructor(){
-        super('default.lib.math');
+        super('default.lib.math', false, false, 'math');
 
-        this.addMethod('floor', this.floor);
-        this.addMethod('round', this.round);
-        this.addMethod('ceil', this.ceil);
-        this.addMethod('abs', this.abs);
+        this.addField('floor', this.floor);
+        this.addField('round', this.round);
+        this.addField('ceil', this.ceil);
+        this.addField('abs', this.abs);
     }
 
-    ceil(n) {
+    ceil(service, n) {
         if(typeof n === 'number' && !isNaN(n))
             return Math.ceil(n);
         return null;
     }
 
-    floor(n) {
+    floor(service, n) {
         if(typeof n === 'number' && !isNaN(n))
             return Math.floor(n);
         return null;
     }
 
-    round(n){
+    round(service, n){
         if(typeof n === 'number' && !isNaN(n))
             return Math.round(n);
         return null;
     }
 
-    abs(n){
+    abs(service, n){
         if(typeof n === 'number' && !isNaN(n))
             return Math.abs(n);
         return null;
@@ -37,32 +37,32 @@ new class DefaultMathStaticLibrary extends NativeLibrary {
 
 new class DefaultRegExpStaticLibrary extends NativeLibrary {
     constructor(){
-        super('default.lib.regexp');
+        super('default.lib.regexp', false, false, 'regexp');
 
-        this.addMethod('test', this.test);
-        this.addMethod('replace', this.replace);
+        this.addField('test', this.test);
+        this.addField('replace', this.replace);
     }
 
-    test (expression, flags, string) {
+    test (service, expression, flags, string) {
         return new RegExp(expression, flags ? flags : undefined).test(string);
     }
 
-    replace (expression, flags, string, to) {
+    replace (service, expression, flags, string, to) {
         return string.replace(new RegExp(expression, flags ? flags : undefined), to);
     }
 }
 
 new class DefaultDatesStaticLibrary extends NativeLibrary {
     constructor(){
-        super('default.lib.dates');
+        super('default.lib.dates', false, false, 'dates');
 
-        this.addMethod('minutes', this.minutes);
-        this.addMethod('seconds', this.seconds);
-        this.addMethod('month', this.month);
-        this.addMethod('hours', this.hours);
-        this.addMethod('year', this.year);
-        this.addMethod('day', this.day);
-        this.addMethod('now', this.now);
+        this.addField('minutes', this.minutes);
+        this.addField('seconds', this.seconds);
+        this.addField('month', this.month);
+        this.addField('hours', this.hours);
+        this.addField('year', this.year);
+        this.addField('day', this.day);
+        this.addField('now', this.now);
     }
 
     year(){
@@ -96,105 +96,94 @@ new class DefaultDatesStaticLibrary extends NativeLibrary {
 
 new class DefaultNumbersStaticLibrary extends NativeLibrary {
     constructor(){
-        super('default.lib.numbers');
+        super('default.lib.numbers', false, false, 'numbers');
 
-        this.addMethod('random', this.random);
-        this.addMethod('isNumber', this.isNumber);
-        this.addMethod('parseInt', this.parseInt);
+        this.addField('random', this.random);
+        this.addField('isNumber', this.isNumber);
+        this.addField('parseInt', this.parseInt);
     }
 
-    random(f, t){
+    random(service, f, t){
         if(typeof f == 'number' && typeof t == 'number' && !isNaN(f) && !isNaN(t))
             return Math.random()
         else
             return Math.round(f + Math.random() * (t - f));
     }
 
-    isNumber(o){
+    isNumber(service, o){
         return !isNaN(o) && typeof o === 'number';
     }
 
-    parseInt(numb){
+    parseInt(service, numb){
         return isNaN(numb = parseInt(numb)) ? null : numb;
     }
 }
 
-new class DefaultObjectsStaticLibrary extends NativeLibrary {
+class PoonyaObjectPrototype extends PoonyaPrototype {
     constructor(){
-        super('default.lib.objects');
+        super([], 'Object');
 
-        this.addMethod('values', this.values);
-        this.addMethod('assign', this.assign);
-        this.addMethod('create', this.create);
-        this.addMethod('remove', this.remove);
-        this.addMethod('keys', this.keys);
-        this.addMethod('set', this.set);
-        this.addMethod('has', this.has);
-        this.addMethod('get', this.get);
+        this.addField('values', this.values, FIELDFLAGS.CONSTANT);
+        this.addField('assign', this.assign, FIELDFLAGS.CONSTANT);
+        this.addField('remove', this.remove, FIELDFLAGS.CONSTANT);
+        this.addField('keys', this.keys, FIELDFLAGS.CONSTANT);
+        this.addField('set', this.set, FIELDFLAGS.CONSTANT);
+        this.addField('has', this.has, FIELDFLAGS.CONSTANT);
+        this.addField('get', this.get, FIELDFLAGS.CONSTANT);
     }
 
-    keys(obj){
-        return Object.keys(obj);
+    keys(){
+        return this.keys();
     }
 
-    values(obj){
-        return Object.values(obj);
+    values(){
+        return this.values();
     }
 
-    assign(obj, ...args){
-        if(typeof obj === 'object')
-            return Object.assign(obj, ...args);
-        else
-            return null;
+    assign(service, ...args){
+        for(let i = 0, leng = args.length; i < leng; i++)
+            this.append(args[i]);
     }
 
-    set(obj, key, value){
-        obj[key] = value;
-
-        return obj;
+    set(service, key, value){
+        this.set(key, value);
     }
 
-    has(obj, key){
-        return obj[key] !== undefined;
+    has(service, key){
+        return this.has(key);
     }
 
-    get(obj, key){
-        return obj[key];
+    get(service, key){
+        return this.get(key);
     }
 
-    create(){
-        return new Object();
-    }
-
-    remove(obj, key){
-        delete obj[key];
-
-        return obj;
+    remove(service, key){
+        this.delete(key);
     }
 }
 
-new class DefaultArraysStaticLibrary extends NativeLibrary {
+class PoonyaArrayPrototype extends PoonyaPrototype {
     constructor(){
-        super('default.lib.arrays');
+        super([], 'Array');
 
-        this.addMethod('unregister', this.unregister);
-        this.addMethod('includes', this.includes);
-        this.addMethod('indexOf', this.indexOf);
-        this.addMethod('create', this.create);
-        this.addMethod('concat', this.concat);
-        this.addMethod('append', this.append);
-        this.addMethod('length', this.length);
-        this.addMethod('remove', this.remove);
-        this.addMethod('slice', this.slice);
-        this.addMethod('from', this.from);
-        this.addMethod('pop', this.pop);
+        this.addField('unregister', this.unregister, FIELDFLAGS.CONSTANT);
+        this.addField('includes', this.includes, FIELDFLAGS.CONSTANT);
+        this.addField('indexOf', this.indexOf, FIELDFLAGS.CONSTANT);
+        this.addField('create', this.create, FIELDFLAGS.CONSTANT);
+        this.addField('concat', this.concat, FIELDFLAGS.CONSTANT);
+        this.addField('append', this.append, FIELDFLAGS.CONSTANT);
+        this.addField('length', this.length, FIELDFLAGS.CONSTANT);
+        this.addField('remove', this.remove, FIELDFLAGS.CONSTANT);
+        this.addField('slice', this.slice, FIELDFLAGS.CONSTANT);
+        this.addField('from', this.from, FIELDFLAGS.CONSTANT);
+        this.addField('pop', this.pop, FIELDFLAGS.CONSTANT);
     }
 
-    from(...defs){
+    from(service,...defs){
         return defs;
     }
 
-    includes(arr, target){
+    includes(service, arr, target){
         if(arr != null){
             return arr.includes(target);
         } else {
@@ -202,7 +191,7 @@ new class DefaultArraysStaticLibrary extends NativeLibrary {
         }
     }
 
-    remove(arr, from, to){
+    remove(service, arr, from, to){
         const rest = arr.slice((to || from) + 1 || arr.length);
 
         arr.length = from < 0 ? arr.length + from : from;
@@ -212,15 +201,15 @@ new class DefaultArraysStaticLibrary extends NativeLibrary {
         return arr;
     }
 
-    indexOf(arr, value){
+    indexOf(service, arr, value){
         return arr.indexOf(value);
     }
 
-    length(array){
+    length(service, array){
         return array.length;
     }
 
-    append(arr, value){
+    append(service, arr, value){
         if(arr != null){
             arr.push(value);
 
@@ -230,11 +219,11 @@ new class DefaultArraysStaticLibrary extends NativeLibrary {
         }
     }
 
-    concat(...args){
+    concat(service, ...args){
         return [].concat(...args);
     }
 
-    slice(arr, ...args){
+    slice(service, arr, ...args){
         if(arr != null){
             return arr.slice(...args);
         } else {
@@ -242,7 +231,7 @@ new class DefaultArraysStaticLibrary extends NativeLibrary {
         }
     }
 
-    pop(arr){
+    pop(service, arr){
         if(arr != null){
             arr.pop();
 
@@ -256,7 +245,7 @@ new class DefaultArraysStaticLibrary extends NativeLibrary {
         return new Array();
     }
 
-    unregister(arr){
+    unregister(service, arr){
         if(arr != null){
             for(let i = 0, leng = arr.length;i < leng;i++)
                 arr[i] = arr[i] != null ? arr[i].toString().toLowerCase() : 'null';
@@ -270,20 +259,20 @@ new class DefaultArraysStaticLibrary extends NativeLibrary {
 
 new class DefaultStringStaticLibrary extends NativeLibrary {
     constructor(){
-        super('default.lib.strings');
+        super('default.lib.strings', false, false, 'strings');
 
-        this.addMethod('getUniqueIdent', this.getUniqueIdent);
-        this.addMethod('unregister', this.unregister);
-        this.addMethod('substring', this.substring);
-        this.addMethod('toString', this.toString);
-        this.addMethod('replace', this.replace);
-        this.addMethod('length', this.length);
-        this.addMethod('split', this.split);
-        this.addMethod('trim', this.trim);
-        this.addMethod('join', this.join);
+        this.addField('getUniqueIdent', this.getUniqueIdent);
+        this.addField('unregister', this.unregister);
+        this.addField('substring', this.substring);
+        this.addField('toString', this.toString);
+        this.addField('replace', this.replace);
+        this.addField('length', this.length);
+        this.addField('split', this.split);
+        this.addField('trim', this.trim);
+        this.addField('join', this.join);
     }
 
-    toString(obj){
+    toString(service, obj){
         if(obj != null){
             return obj.toString();
         } else {
@@ -295,43 +284,43 @@ new class DefaultStringStaticLibrary extends NativeLibrary {
         return Utils.unique_id() + Utils.random_id();
     }
 
-    substring (input, from, to) {
+    substring (service, input, from, to) {
         if(typeof input === "string")
             return input.substring(from, to);
         else
             return null
     }
 
-    replace(input, from, to){
+    replace(service, input, from, to){
         return input.replace(from, to);
     }
 
-    trim(str){
+    trim(service, str){
         if(typeof str === 'string')
             return str.trim();
         else
             return str;
     }
 
-    length(string){
+    length(service, string){
         return string.length;
     }
 
-    split(input, splitter){
+    split(service, input, splitter){
         if(typeof input === "string")
             return input.split(splitter);
         else
             return null
     }
 
-    unregister(input){
+    unregister(service, input){
         if(typeof input === "string")
             return input.toLowerCase();
         else
             return null
     }
 
-    join(arr, p, s){
+    join(service, arr, p, s){
         if(arr != null){
             s = s || "";
 
@@ -364,18 +353,19 @@ new class DefaultStaticLibrary extends NativeLibrary {
         this.addField('endd', '\n\n');
         this.addField('endl', '\n');
 
-        this.addMethod('log', this.log);
+        this.addField('log', this.log);
+
+        this.expandClass(new PoonyaObjectPrototype());
+        this.expandClass(new PoonyaArrayPrototype());
 
         this.addLib('default.lib.strings');
-        this.addLib('default.lib.objects');
         this.addLib('default.lib.numbers');
         this.addLib('default.lib.regexp');
-        this.addLib('default.lib.arrays');
         this.addLib('default.lib.dates');
         this.addLib('default.lib.math');
     }
 
-    log(...args){
+    log(service, ...args){
         global.common_logger.log(...args)
     }
 }
