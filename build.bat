@@ -21,7 +21,7 @@ if /i "%commit%" == "Y" (
 
     git commit --quiet -m'%message%'
 
-    REM git push
+    git push
 )
 
 pause
