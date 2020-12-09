@@ -17,9 +17,11 @@ set /p commit="Commit changes? (Y/N) "
 if /i "%commit%" == "Y" (
     set /p message="Commit message: "
 
-    git commit "%message%"
+    git add -A -- .
 
-    git push
+    git commit --quiet -m'%message%'
+
+    REM git push
 )
 
 pause
