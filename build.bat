@@ -19,7 +19,7 @@ if /i "%commit%" == "Y" (
 
     git add -A -- .
 
-    git commit --quiet -m'%message%'
+    git commit --quiet -m'"%message%"'
 
     git push
 )
