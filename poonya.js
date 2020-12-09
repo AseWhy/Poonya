@@ -1089,6 +1089,17 @@ class Context {
     }
 
     /**
+     * Клонирует текущий контекст, возвращает новый кнотекст, со всеми уровнями текущего контекста
+     * 
+     * @returns {Context} клонированный контекст
+     * @method
+     * @public
+     */
+    clone(){
+        return new Context(null, null, this.levels);
+    }
+
+    /**
      * Добавляет уроень в текущий контекст
      * @method
      * @public

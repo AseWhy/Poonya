@@ -1,5 +1,5 @@
 />
-    Empty object return
+    Empty array return
 </
 
 > Array -> *;

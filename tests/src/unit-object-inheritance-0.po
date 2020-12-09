@@ -9,4 +9,5 @@ set test1 = Object ->
 test1.set('SomeField', 1);
 
 > test1.has('SomeField');
+
 > test1;
