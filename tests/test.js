@@ -3,31 +3,31 @@ const poonya = require("../poonya")
 
 describe("poonya-common-test", () => {
     describe("#scope", () => {
-        it("Should return SomeValue-1 and SomeValue", () => {
+        it("Should return SomeValue-1 and SomeValue", async () => {
             const test_pattern = new poonya.ExcecutionPattern({
                 path: __dirname + "/src/unit-scope-1",
             });
 
-            assert.notStrictEqual(test_pattern.result(), [
+            assert.notStrictEqual(await test_pattern.result().complete(), [
                 "SomeValue-1",
                 "SomeValue",
             ]);
         });
 
-        it("Should return SomeValue and null", () => {
+        it("Should return SomeValue and null", async () => {
             const test_pattern = new poonya.ExcecutionPattern({
                 path: __dirname + "/src/unit-scope-2",
             });
 
-            assert.notStrictEqual(test_pattern.result(), ["SomeValue", null]);
+            assert.notStrictEqual(await test_pattern.result().complete(), ["SomeValue", null]);
         });
 
-        it("Should return an array with numbers", () => {
+        it("Should return an array with numbers", async () => {
             const test_pattern = new poonya.ExcecutionPattern({
                 path: __dirname + "/src/unit-scope-3",
             });
 
-            assert.notStrictEqual(test_pattern.result(), [
+            assert.notStrictEqual(await test_pattern.result().complete(), [
                 5,
                 10,
                 30,
@@ -44,20 +44,20 @@ describe("poonya-common-test", () => {
     });
 
     describe("#object-notation", () => {
-        it("Should return two empty objects", () => {
+        it("Should return two empty objects", async () => {
             const test_pattern = new poonya.ExcecutionPattern({
                 path: __dirname + "/src/unit-object-literal-0",
             });
 
-            assert.deepStrictEqual(test_pattern.result(), [{},{}]);
+            assert.deepStrictEqual(await test_pattern.result().complete(), [{},{}]);
         });
 
-        it("Should return one filled object", () => {
+        it("Should return one filled object", async () => {
             const test_pattern = new poonya.ExcecutionPattern({
                 path: __dirname + "/src/unit-object-literal-1",
             });
 
-            assert.deepStrictEqual(test_pattern.result(), [{
+            assert.deepStrictEqual(await test_pattern.result().complete(), [{
                 field1: 1,
                 field2: 2,
                 field3: 3,
@@ -74,12 +74,12 @@ describe("poonya-common-test", () => {
             }]);
         });
 
-        it("Should return indexed object", () => {
+        it("Should return indexed object", async () => {
             const test_pattern = new poonya.ExcecutionPattern({
                 path: __dirname + "/src/unit-object-literal-2",
             });
 
-            assert.deepStrictEqual(test_pattern.result(), [{
+            assert.deepStrictEqual(await test_pattern.result().complete(), [{
                 "0": 0,
                 "1": 1,
                 "2": 2,
@@ -95,22 +95,22 @@ describe("poonya-common-test", () => {
     });
 
     describe("#object-field-edit", () => {
-        it("Should return one field with string which equals 'NOT 1'", () => {
+        it("Should return one field with string which equals 'NOT 1'", async () => {
             const test_pattern = new poonya.ExcecutionPattern({
                 path: __dirname + "/src/unit-object-edit-field-0",
             });
 
-            assert.deepStrictEqual(test_pattern.result(), [{
+            assert.deepStrictEqual(await test_pattern.result().complete(), [{
                 field1: "NOT 1"
             }]);
         });
 
-        it("Should return filed, with 2 subfield which equals 'NOT 1' and 'NOT 2'", () => {
+        it("Should return filed, with 2 subfield which equals 'NOT 1' and 'NOT 2'", async () => {
             const test_pattern = new poonya.ExcecutionPattern({
                 path: __dirname + "/src/unit-object-edit-field-1",
             });
 
-            assert.deepStrictEqual(test_pattern.result(), [{
+            assert.deepStrictEqual(await test_pattern.result().complete(), [{
                 field1: {
                     subfield1: "NOT 1",
                     subfield2: "NOT 2"
@@ -118,24 +118,24 @@ describe("poonya-common-test", () => {
             }]);
         });
 
-        it("Should return 'NOT OBJECT' contains string field", () => {
+        it("Should return 'NOT OBJECT' contains string field", async () => {
             const test_pattern = new poonya.ExcecutionPattern({
                 path: __dirname + "/src/unit-object-edit-field-2",
             });
 
-            assert.deepStrictEqual(test_pattern.result(), [{
+            assert.deepStrictEqual(await test_pattern.result().complete(), [{
                 field1: 'NOT OBJECT'
             }]);
         });
     })
 
     describe("#object-inheritance", () => {
-        it("Checking the inheritance of fields from an object", () => {
+        it("Checking the inheritance of fields from an object", async () => {
             const test_pattern = new poonya.ExcecutionPattern({
                 path: __dirname + "/src/unit-object-inheritance-0",
             });
 
-            assert.deepStrictEqual(test_pattern.result(), [
+            assert.deepStrictEqual(await test_pattern.result().complete(), [
                 true,
                 {
                     field1: 1,
@@ -144,50 +144,50 @@ describe("poonya-common-test", () => {
             ]);
         });
 
-        it("Should return an array with numbers from 0 to 5", () => {
+        it("Should return an array with numbers from 0 to 5", async () => {
             const test_pattern = new poonya.ExcecutionPattern({
                 path: __dirname + "/src/unit-object-inheritance-1",
             });
 
-            assert.deepStrictEqual(test_pattern.result(), [
+            assert.deepStrictEqual(await test_pattern.result().complete(), [
                 [1, 2, 3, 4, 5]
             ]);
         });
 
-        it("Should return empty array", () => {
+        it("Should return empty array", async () => {
             const test_pattern = new poonya.ExcecutionPattern({
                 path: __dirname + "/src/unit-object-inheritance-2",
             });
 
-            assert.deepStrictEqual(test_pattern.result(), [[]]);
+            assert.deepStrictEqual(await test_pattern.result().complete(), [[]]);
         });
     })
 
     describe("#object-static-methods", () => {
-        it("Should return an array with values ​​from 0 to 5", () => {
+        it("Should return an array with values ​​from 0 to 5", async () => {
             const test_pattern = new poonya.ExcecutionPattern({
                 path: __dirname + "/src/unit-object-static-0",
             });
 
-            assert.deepStrictEqual(test_pattern.result(), [
+            assert.deepStrictEqual(await test_pattern.result().complete(), [
                 [0, 1, 2, 3, 4, 5]
             ]);
         });
 
-        it("Should return an empty array", () => {
+        it("Should return an empty array", async () => {
             const test_pattern = new poonya.ExcecutionPattern({
                 path: __dirname + "/src/unit-object-static-1",
             });
 
-            assert.deepStrictEqual(test_pattern.result(), [[]]);
+            assert.deepStrictEqual(await test_pattern.result().complete(), [[]]);
         });
 
-        it("Should return an empty object", () => {
+        it("Should return an empty object", async () => {
             const test_pattern = new poonya.ExcecutionPattern({
                 path: __dirname + "/src/unit-object-static-2",
             });
 
-            assert.deepStrictEqual(test_pattern.result(), [{}]);
+            assert.deepStrictEqual(await test_pattern.result().complete(), [{}]);
         });
     })
 });

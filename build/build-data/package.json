@@ -1,6 +1,6 @@
 {
   "name": "poonya.js",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "Simple preprocessor for text",
   "main": "poonya.js",
   "directories": {
@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build_and_commit": "node build/build-default.js",
+    "sandbox": "node --trace-warnings ./sandbox/sandbox.js",
     "test": "mocha ./tests"
   },
   "repository": {
