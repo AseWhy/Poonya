@@ -1,0 +1,4 @@
+/**
+ * @namespace Poonya.Storage
+ * @description Пространство имен, где собраны классы для управления памятью Poonya
+ */

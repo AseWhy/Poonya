@@ -1,5 +1,12 @@
-const PoonyaObject = require("./PoonyaObject")
-    , NativeFunction = require('../excecution/NativeFunction'),
+/**
+ * @file src/classes/data/PoonyaArray.js
+ * @description Cодержит класс массива Poonya
+ * @author Astecom
+ * @license MIT
+ */
+
+const       PoonyaObject = require("./PoonyaObject")
+    ,       NativeFunction = require('../excecution/expression/NativeFunction'),
     { 
             FIELDFLAGS
     } = require("../static");
@@ -13,7 +20,7 @@ class PoonyaArray extends PoonyaObject {
      * Дескриптор массива в poonya
      *
      * @param {Object} data
-     * @memberof Poonya
+     * @memberof Poonya.Data
      * @constructs PoonyaArray
      * @extends PoonyaObject
      * @public

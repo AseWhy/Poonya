@@ -1,56 +1,64 @@
+/**
+ * @file src/parser.js
+ * @description Содержит в себе парсер исходного кода poonya, на выходе экспортируемых функций можно получить либо выражение, либо главную исполняемую последовательность
+ * @license MIT
+ * @author Astecom
+ */
+
 const { 
-            PoonyaException
-        ,   BadEmptyObjectException
-        ,   ParserEmtyArgumentException
-        ,   UnexpectedTokenException
-        ,   BadArrowNotationJumpingToUpperLevel
-        ,   BadArrowNotationJumpingTwoLevels
-        ,   ParserLogicException
-        ,   InvalidSequenceForLetiableAccessException
-        ,   CriticalParserErrorUnexpectedEndOfInputException
-        ,   SegmentationFaultEmptyArgumentException
-        ,   SegmentationFaultMaximumSegmentsForBlockException
-        ,   UnexpectedTokenStatement
-        ,   UnexpectedWordTypeAndGetException
-        ,   CriticalParserErrorException
-        ,   CriticalParserErrorNoRawDataTransmittedException
+        ParserException
+    ,   BadEmptyObjectException
+    ,   ParserEmtyArgumentException
+    ,   UnexpectedTokenException
+    ,   BadArrowNotationJumpingToUpperLevel
+    ,   BadArrowNotationJumpingTwoLevels
+    ,   ParserLogicException
+    ,   InvalidSequenceForLetiableAccessException
+    ,   CriticalParserErrorUnexpectedEndOfInputException
+    ,   SegmentationFaultEmptyArgumentException
+    ,   SegmentationFaultMaximumSegmentsForBlockException
+    ,   UnexpectedTokenStatement
+    ,   UnexpectedWordTypeAndGetException
+    ,   CriticalParserErrorException
+    ,   CriticalParserErrorNoRawDataTransmittedException
     } = require('./classes/exceptions'),
     { 
-            maybeEquals
-        ,   countKeys
+        maybeEquals
+    ,   countKeys
     } = require('./utils'),
     {
-            CHARTYPE
-        ,   SERVICE
+        CHARTYPE
+    ,   SERVICE
     } = require('./classes/static')
-    ,       FunctionCall = require('./classes/excecution/FunctionCall')
-    ,       ObjectContructorCall = require('./classes/excecution/ObjectContructorCall')
-    ,       TernarOperator = require('./classes/excecution/TernarOperator')
-    ,       ExpressionGroup = require('./classes/excecution/ExpressionGroup')
-    ,       GetOperator = require('./classes/excecution/GetOperator')
-    ,       IfStatement = require('./classes/excecution/IfStatement')
-    ,       SequenceGroup = require('./classes/excecution/SequenceGroup')
-    ,       OutOperator = require('./classes/excecution/OutOperator')
-    ,       WhileStatement = require('./classes/excecution/WhileStatement')
-    ,       RepeatStatement = require('./classes/excecution/RepeatStatement')
-    ,       SetOperator = require('./classes/excecution/SetOperator')
-    ,       ResetOperator = require('./classes/excecution/ResetOperator')
-    ,       PushOperator = require('./classes/excecution/PushOperator')
-    ,       SequenceMainGroup = require('./classes/excecution/SequenceMainGroup')
-    ,       linker = require('./linker');
+    ,   FunctionCall = require('./classes/excecution/expression/FunctionCall')
+    ,   ObjectContructorCall = require('./classes/excecution/expression/ObjectContructorCall')
+    ,   TernarOperator = require('./classes/excecution/expression/TernarOperator')
+    ,   ExpressionGroup = require('./classes/excecution/expression/ExpressionGroup')
+    ,   GetOperator = require('./classes/excecution/expression/GetOperator')
+    ,   IfStatement = require('./classes/excecution/statements/IfStatement')
+    ,   SequenceGroup = require('./classes/excecution/statements/SequenceGroup')
+    ,   OutOperator = require('./classes/excecution/statements/OutOperator')
+    ,   WhileStatement = require('./classes/excecution/statements/WhileStatement')
+    ,   RepeatStatement = require('./classes/excecution/statements/RepeatStatement')
+    ,   SetOperator = require('./classes/excecution/statements/SetOperator')
+    ,   ResetOperator = require('./classes/excecution/statements/ResetOperator')
+    ,   PushOperator = require('./classes/excecution/statements/PushOperator')
+    ,   SequenceMainGroup = require('./classes/excecution/statements/SequenceMainGroup')
+    ,   NativeString = require('./classes/common/native/NativeString')
+    ,   linker = require('./linker');
 
 /**
  * Парсит вызов функции, возвращает объект вызова функции, и позицию с которой можно продолжить прасинг
  *
  * @param {Array<String|Number>} query_stack стек доступа к имени переменной
- * @param {Number} start начальная позиция разбора, для выражения
+ * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
- * @param {Number} block_start начальная позиция вызова
+ * @param {Number} block_start Начальная позиция вызова
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: FunctionCall, jump: Number}} объект вызова функции, и позиция с которой можно продолжить прасинг
  *
- * @memberof Poonya
+ * @memberof Poonya.Parser
  * @protected
  */
 function parseFunctionCall(query_stack, start, data, throw_error, block_start) {
@@ -77,13 +85,13 @@ function parseFunctionCall(query_stack, start, data, throw_error, block_start) {
  *  key1 --> value1...
  *
  * @param {Number[]|String[]|Operand[]} query_stack путь к конструктору объекта
- * @param {Number} start начальная позиция разбора, для выражения
+ * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: ObjectContructorCall, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
  *
- * @memberof Poonya
+ * @memberof Poonya.Parser
  * @protected
  */
 function parseObject(query_stack, start, data, throw_error, level = 0) {
@@ -207,13 +215,13 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
  * Парсит тернарное выражение, возвращает объект тернарного выражения, и позицию с которой можно продолжить прасинг
  *
  * @param {ExpressionGroup} condition Условие, при котором тернарное выражение будет верным
- * @param {Number} start начальная позиция разбора, для выражения
+ * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: TernarOperator, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
  *
- * @memberof Poonya
+ * @memberof Poonya.Parser
  * @protected
  */
 function parseTernar(condition, start, data, throw_error) {
@@ -291,13 +299,13 @@ function parseTernar(condition, start, data, throw_error) {
 /**
  * Парсит название, позвращает массив со стэком запроса, по которому можно получит доступ к переменной, и позицию с которой можно продолжить парсинг
  *
- * @param {Number} start начальная позиция разбора, для выражения
+ * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: Array<Number|String>, jump: Number}} массив со стэком запроса, по которому можно получит доступ к переменной, и позиция с которой можно продолжить парсинг
  *
- * @memberof Poonya
+ * @memberof Poonya.Parser
  * @protected
  */
 function parseVarName(start, data, throw_error) {
@@ -377,14 +385,14 @@ function parseVarName(start, data, throw_error) {
 /**
  * Парсит выражение, позвращает выражение и позицию, с которой можно продолжить парсинг
  *
- * @param {Number} start начальная позиция разбора, для выражения
+ * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
- * @param {String} end_marker маркер конца выражения
+ * @param {String} end_marker Маркер конца выражения
  *
  * @returns {{data: ExpressionGroup, jump: Number}} выражение и позиция, с которой можно продолжить парсинг
  *
- * @memberof Poonya
+ * @memberof Poonya.Parser
  * @protected
  */
 function parseExpression(start, data, throw_error, end_marker = ';') {
@@ -536,7 +544,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
 /**
  * Парсит исполняемый сегмент, после чего возвращает величину прыжка и данные исполнения
  *
- * @param {Number} start начальная позиция разбора, для выражения
+ * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызывается при ошибке функция, котора первым ��ргументм принимает позицию вхождения на котором произошла ошибка
  * @param {String} segment_separator Разделитель для сегментов
@@ -545,7 +553,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
  *
  * @returns {{data: Array<ExpressionGroup>, jump: Number}} массив со стэком запроса, по которому можно получит доступ к переменной, и позиция с которой можно продолжить парсинг
  *
- * @memberof Poonya
+ * @memberof Poonya.Parser
  * @protected
  */
 function segmentationParser(
@@ -560,6 +568,8 @@ function segmentationParser(
         buffer = [new Array()];
 
     for (let i = start; true; i++) {
+        maybeEquals(entries, i, CHARTYPE.NEWLINE);
+
         switch (true) {
             case entries[i] === undefined ||
                 (entries[i].equals(CHARTYPE.OPERATOR, ")") && hook_index <= 0):
@@ -633,13 +643,13 @@ function segmentationParser(
 /**
  * Используется для того, чтобы вырезать исполняемые сегменты из исполняемых блоков `{}`
  *
- * @param {Number} start начальная позиция разбора, для выражения
+ * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: Array<SequenceGroup>, jump: Number}} массив с выражениями, и позиция с которой можно продолжить парсинг
  *
- * @memberof Poonya
+ * @memberof Poonya.Parser
  * @protected
  */
 function segmentCutter(start, entries, throw_error) {
@@ -682,13 +692,13 @@ function segmentCutter(start, entries, throw_error) {
 /**
  * Парсит блок if, возвращзает серриализованый блок if.
  *
- * @param {Number} start начальная позиция разбора, для выражения
+ * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: IfStatement, jump: Number}} Объякт дескриптор блока if, и позиция с которой можно продолжить парсинг
  *
- * @memberof Poonya
+ * @memberof Poonya.Parser
  * @protected
  */
 function ifStatementParser(start, entries, throw_error) {
@@ -792,7 +802,7 @@ function ifStatementParser(start, entries, throw_error) {
 /**
  * Парсит тело (главное тело или секции исполняемых блоков) преобразуя вхождения в исполняемую последовательность.
  *
- * @param {Number} start начальная позиция разбора, для выражения
+ * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
@@ -802,7 +812,7 @@ function ifStatementParser(start, entries, throw_error) {
  *          jump: Number
  *      }
  * } Исполняемый стэк, и позиция с которой можно продолжить парсинг
- * @memberof Poonya
+ * @memberof Poonya.Parser
  * @protected
  */
 function codeBlockParser(start, entries, throw_error) {
@@ -1080,7 +1090,7 @@ function codeBlockParser(start, entries, throw_error) {
                     );
             }
         } catch (e) {
-            if (!e instanceof PoonyaException) {
+            if (!e instanceof ParserException) {
                 if (entries.length != 0) {
                     if (entries[i] != null)
                         throw_error(entries[i].position, new CriticalParserErrorException());
@@ -1107,29 +1117,146 @@ function codeBlockParser(start, entries, throw_error) {
  *
  * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
- * @param {?String} parent_path путь к шаблону
+ * @param {?String} parent_path Путь к шаблону
  *
  * @returns {SequenceMainGroup} Тело исполнителя
  *
- * @memberof Poonya
+ * @memberof Poonya.Parser
  * @protected
  */
 function parser(entries, throw_error, parent_path) {
-    const exports = new SequenceMainGroup(),
-        body = codeBlockParser(
-            0,
-            linker(
-                entries,
-                parent_path,
-                throw_error
-            ),
+    return new SequenceMainGroup(codeBlockParser(
+        0,
+        linker(
+            entries,
+            parent_path,
             throw_error
-        );
-
-    exports.Sequence = body.data.Sequence;
-
-    return exports;
+        ),
+        throw_error
+    ).data.Sequence);
 }
 
+/**
+ * Парсит шаблон сообщения, которое помимо кода Poonya может содержать и любые другие символы вне префикса
+ * 
+ * @param {Array<LexerEntry>} entries Вхождения для парсинга
+ * @param {String} block_prefix Префикс для обозначения начала блока кода poonya
+ * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождени
+ * @param {String} parent_path Путь к шаблону
+ * 
+ * @returns {SequenceMainGroup} Тело исполнителя
+ *
+ * @memberof Poonya.Parser
+ * @protected
+ */
+function parserMP(entries, block_prefix, throw_error, parent_path) {
+    let   hook_index = 0
+        , buffer = new Array()
+        , out = new SequenceMainGroup();
+
+    for (let i = 0; true; i++) {
+        if(entries[i] == null)
+            break;
+
+        if (
+            (
+                block_prefix == null &&
+                entries[i].equals(CHARTYPE.OPERATOR, "{") ||
+                block_prefix != null && 
+                entries[i].contentEquals(block_prefix.toString()) &&
+                (
+                    entries[i + 1].equals(CHARTYPE.OPERATOR, "{") ||
+                    entries[i + 1].equals(CHARTYPE.SPACE) &&
+                    entries[i + 2].equals(CHARTYPE.OPERATOR, "{")
+                )
+            ) &&
+            hook_index === 0
+        ) {
+            if(block_prefix != null)
+                i += entries[i + 1].equals(CHARTYPE.SPACE) ? 2 : 1;
+
+            if (buffer.length > 0) {
+                out.push(new OutOperator(new NativeString(buffer.join(""))));
+
+                buffer.splice(0, buffer.length);
+            }
+
+            hook_index++;
+
+            continue;
+        } else if (
+            entries[i].equals(CHARTYPE.OPERATOR, "}") &&
+            hook_index === 1
+        ) {
+            out.push(
+                codeBlockParser(
+                    0,
+                    linker(
+                        buffer.filter((e) => e.type !== CHARTYPE.SPACE),
+                        parent_path,
+                        throw_error
+                    ),
+                    throw_error
+                ).data
+            );
+
+            buffer.splice(0, buffer.length);
+
+            hook_index--;
+
+            continue;
+        } else {
+            if(hook_index >= 1)
+                switch (true) {
+                    case entries[i].equals(CHARTYPE.OPERATOR, "{"):
+                        hook_index++;
+                        break;
+                    case entries[i].equals(CHARTYPE.OPERATOR, "}"):
+                        hook_index--;
+                        break;
+                }
+        }
+
+        if (!hook_index === 0) 
+            buffer.push(entries[i].toString());
+        else 
+            buffer.push(entries[i]);
+    }
+
+    if (buffer.length !== 0)
+        if (hook_index === 1) {
+            out.push(
+                codeBlockParser(
+                    0,
+                    linker(
+                        buffer.filter((e) => e.type !== CHARTYPE.SPACE),
+                        parent_path,
+                        throw_error
+                    ),
+                    throw_error
+                ).data
+            );
+
+            buffer.splice(0, buffer.length);
+        } else if (hook_index === 0) {
+            out.push(
+                new OutOperator(
+                    new NativeString(buffer.join("")),
+                ),
+            );
+
+            buffer.splice(0, buffer.length);
+        } else {
+            throw_error(
+                entries[entries.length - 1].position,
+                new UnexpectedTokenException(entries[entries.length - 1], "}"),
+            );
+        }
+
+    return out;
+}
+
+
 module.exports.parser = parser;
+module.exports.parserMP = parserMP;
 module.exports.parseExpression = parseExpression;

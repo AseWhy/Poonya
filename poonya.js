@@ -1,18 +1,12 @@
 /**
  * @author Astecom
  * @license MIT
- * @namespace Poonya
  * @version 0.4.5
  * @see {@link https://github.com/AseWhy/Poonya|GitHub}
- * 
- * @todo Сделать литерал класса
- * @todo Сделать литерал функции
- * @todo что-то сделать с контекстом в этом случае
- * 
+ * @namespace Poonya
  * @description Шаблонизатор, используется для создания шаблонов, и их последующего вывода
  * 
- * <pre><code style='font-family: monospace'>
- *                      + @ W
+ * <pre style="background: whitesmoke;overflow: hidden;border-left: 0.25em dashed;padding: 1em"><code>                     + @ W
  *                   + @ @ @ W #                                                         ____________________________________________________
  *                 : @ @ @ @ @ @                                                        |                      POONYA                       |
  *                 # * * * * @ @ *                                                     |      IS A TEMPLATING ENGINE THAT I HOPE WILL      |
@@ -57,7 +51,6 @@
  *                                   W W @ @ @ @ W                 # @ @ @ @ @ @ @ @ @ W @ @ @ @ *
  *                                         @ @ @ @                     @ W @ @ @ @ W @
  *                                         + @ @ *                           + # +
- * ==========================================================================================================================================
  * </code></pre>
  */
 
@@ -66,29 +59,12 @@
 const { EventEmitter } = require("events")
     , { readFileSync } = require("fs")
     , { normalize, extname } = require("path")
-    , { PoonyaStaticLibrary, Import, ImportDir } = require("./src/native/Import")
+    , { PoonyaException } = require('./src/classes/exceptions')
+    , { PoonyaStaticLibrary, Import, ImportDir } = require("./src/importer.js")
     , { Context, Heap } = require("./src/classes/storage")
-    , { parser, parseExpression } = require("./src/parser")
-    , { CHARTYPE } = require('./src/classes/static')
-    , { UnexpectedTokenException, PoonyaException } = require('./src/classes/exceptions')
-    , { NativeString } = require('./src/classes/common/Native')
-    , { maybeEquals } = require('./src/utils')
-    , OutOperator = require("./src/classes/excecution/OutOperator")
-    , lexer = require("./src/lexer");
-
-/**
- * Форматирует число подгоняя его под общую длинну
- *
- * @param {Number} d Чило для формата
- * @param {Number} l Желаемая длинна
- * @memberof Poonya
- * @function toFixed
- * @protected
- * @static
- */
-function toFixed(d, l) {
-    return "0x" + d.toString(16).padStart(l - 2, "0");
-}
+    , { parser, parseExpression, parserMP } = require("./src/parser.js")
+    , { toFixed } = require('./src/utils')
+    , lexer = require("./src/lexer/lexer.js");
 
 /**
  * @lends PoonyaOutputStream
@@ -206,7 +182,7 @@ class CodeEmitter {
 
         this.import = import_s;
 
-        this.libraries = Import(["default.lib", ...import_s], logger);
+        this.libraries = Import(["default", ...import_s], logger);
 
         if (typeof this.input !== "string")
             throw new TypeError("The `input` parameter must have a string type. But now `input` have a `" + typeof this.input + "` type.",);
@@ -284,21 +260,54 @@ class CodeEmitter {
         }
 
         if (message instanceof PoonyaException) 
-            throw message;
+            throw message.message;
         else
             throw new PoonyaException(buffer.join(""));
     }
 
     /**
-     * Интерфейс выводу результат выполнения блока
+     * Возвращает результат выполенения блока
      *
-     * @param {Heap|Object} data Входные данные
-     * @abstract
+     * @param {String|Heap} data данные преданые в исполнитель
+     * @param {Function} error функция вывода ошибок, опциаонально
+     * 
+     * @returns {Array<Any>} результат выполнения блока
      * @method
      * @public
      */
-    result(data = new Heap()) {
-        // Do something
+    result(data = new Heap(), error = this.throwError.bind(this)) {
+        const out = new PoonyaOutputStream(), _ = this;
+
+        setImmediate(() => {
+            if (Array.isArray(data)) {
+                for (let i = 0, leng = data.length; i < leng; i++)
+                    if (typeof data[i] === "object" && !(data[i] instanceof Heap)) {
+                        data[i] = new Heap(data[i]);
+                    }
+    
+                if (data.find((e) => !(e instanceof Heap)) == null) {
+                    _.data.result(new Context(_.libraries, error, ...data), out, error);
+
+                    out.end();
+                } else {
+                    throw new TypeError("Data must have a Heap type");
+                }
+            } else {
+                if (typeof data === "object" && !(data instanceof Heap)) {
+                    data = new Heap(data);
+                }
+    
+                if (data instanceof Heap) {
+                    _.data.result(new Context(_.libraries, error, ...data), out, error);
+
+                    out.end();
+                } else {
+                    throw new TypeError("Data must have a Heap type");
+                }
+            }
+        })
+
+        return out;
     }
 }
 
@@ -344,157 +353,7 @@ class MessagePattern extends CodeEmitter {
     constructor(input, block_prefix = 'poonya', import_s, logger = console) {
         super(input, import_s, logger);
 
-        this.data = new Array();
-
-        const entries = lexer(Buffer.from(this.input)),
-            buffer = new Array();
-
-        let hook_index = 0;
-
-        for (let i = 0; true; i++) {
-            if(entries[i] == null)
-                break;
-
-            if (
-                (
-                    block_prefix == null &&
-                    entries[i].equals(CHARTYPE.OPERATOR, "{") ||
-                    entries[i].contentEquals(block_prefix.toString()) &&
-                    (
-                        entries[i + 1].equals(CHARTYPE.OPERATOR, "{") ||
-                        entries[i + 1].equals(CHARTYPE.SPACE) &&
-                        entries[i + 2].equals(CHARTYPE.OPERATOR, "{")
-                    )
-                ) &&
-                hook_index === 0
-            ) {
-                if(block_prefix != null)
-                    i += entries[i + 1].equals(CHARTYPE.SPACE) ? 2 : 1;
-
-                if (buffer.length > 0) {
-                    this.data.push(
-                        new OutOperator(
-                            new NativeString(buffer.join("")),
-                        ),
-                    );
-
-                    buffer.splice(0, buffer.length);
-                }
-
-                hook_index++;
-
-                continue;
-            } else if (
-                entries[i].equals(CHARTYPE.OPERATOR, "}") &&
-                hook_index === 1
-            ) {
-                this.data.push(
-                    parser(
-                        buffer.filter((e) => e.type !== CHARTYPE.SPACE),
-                        this.throwError.bind(this),
-                        this.path,
-                    ),
-                );
-
-                buffer.splice(0, buffer.length);
-
-                hook_index--;
-
-                continue;
-            } else {
-                if(hook_index >= 1)
-                    switch (true) {
-                        case entries[i].equals(CHARTYPE.OPERATOR, "{"):
-                            hook_index++;
-                            break;
-                        case entries[i].equals(CHARTYPE.OPERATOR, "}"):
-                            hook_index--;
-                            break;
-                    }
-            }
-
-            if (!hook_index === 0) 
-                buffer.push(entries[i].toString());
-            else 
-                buffer.push(entries[i]);
-        }
-
-        if (buffer.length !== 0)
-            if (hook_index === 1) {
-                this.data.push(
-                    parser(
-                        buffer.filter((e) => e.type !== CHARTYPE.SPACE),
-                        this.throwError.bind(this),
-                        this.path,
-                    ),
-                );
-
-                buffer.splice(0, buffer.length);
-            } else if (hook_index === 0) {
-                this.data.push(
-                    new OutOperator(
-                        new NativeString(buffer.join("")),
-                    ),
-                );
-
-                buffer.splice(0, buffer.length);
-            } else {
-                this.throwError(
-                    entries[entries.length - 1].position,
-                    new UnexpectedTokenException(
-                        entries[entries.length - 1],
-                        "}",
-                    ),
-                );
-            }
-    }
-
-    /**
-     * Возвращает результат выполенения блока
-     *
-     * @returns {Array<Any>} результат выполнения блока
-     * @method
-     * @public
-     */
-    result(data = new Heap(), error = this.throwError.bind(this)) {
-        const out = new PoonyaOutputStream(), _ = this;
-
-        setImmediate(() => {
-            if (Array.isArray(data)) {
-                for (let i = 0, leng = data.length; i < leng; i++)
-                    if (typeof data[i] === "object" && !(data[i] instanceof Heap)) {
-                        data[i] = new Heap(data[i]);
-                    }
-    
-                if (data.find((e) => !(e instanceof Heap)) == null) {
-                    const context = new Context(_.libraries, error, ...data[i]);
-    
-                    for (let i = 0, leng = _.data.length; i < leng; i++)
-                        _.data[i].result(context, out, error);
-
-                    out.end();
-                } else {
-                    throw new TypeError("Data must have a Heap type");
-                }
-            } else {
-                if (typeof data === "object" && !(data instanceof Heap)) {
-                    data = new Heap(data);
-                }
-    
-                if (data instanceof Heap) {
-                    const context = new Context(_.libraries, error, ...data);
-    
-                    for (let i = 0, leng = _.data.length; i < leng; i++)
-                        _.data[i].result(context, out, error);
-
-                    out.end();
-                } else {
-                    throw new TypeError("Data must have a Heap type");
-                }
-            }
-        });
-
-        return out;
+        this.data = parserMP(lexer(Buffer.from(this.input)), block_prefix, this.throwError.bind(this), this.path);
     }
 }
 
@@ -544,50 +403,8 @@ class ExcecutionPattern extends CodeEmitter {
         this.data = parser(
             lexer(Buffer.from(this.input), false),
             this.throwError.bind(this),
-            this.path,
+            this.path
         );
-    }
-
-    /**
-     * Возвращает результат выполенения блока
-     *
-     * @returns {Array<Any>} результат выполнения блока
-     * @method
-     * @public
-     */
-    result(data = new Heap(), error = this.throwError.bind(this)) {
-        const out = new PoonyaOutputStream(), _ = this;
-
-        setImmediate(() => {
-            if (Array.isArray(data)) {
-                for (let i = 0, leng = data.length; i < leng; i++)
-                    if (typeof data[i] === "object" && !(data[i] instanceof Heap)) {
-                        data[i] = new Heap(data[i]);
-                    }
-    
-                if (data.find((e) => !(e instanceof Heap)) == null) {
-                    _.data.result(new Context(_.libraries, error, ...data), out, error);
-
-                    out.end();
-                } else {
-                    throw new TypeError("Data must have a Heap type");
-                }
-            } else {
-                if (typeof data === "object" && !(data instanceof Heap)) {
-                    data = new Heap(data);
-                }
-    
-                if (data instanceof Heap) {
-                    _.data.result(new Context(_.libraries, error, ...data), out, error);
-
-                    out.end();
-                } else {
-                    throw new TypeError("Data must have a Heap type");
-                }
-            }
-        })
-
-        return out;
     }
 }
 

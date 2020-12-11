@@ -8,7 +8,7 @@
     "test": "tests"
   },
   "scripts": {
-    "build_and_commit": "node build/build-default.js",
+    "build": "node build/build-default.js",
     "sandbox": "node --trace-warnings ./sandbox/sandbox.js",
     "test": "mocha ./tests"
   },

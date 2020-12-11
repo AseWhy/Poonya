@@ -1,9 +1,16 @@
+/**
+ * @file src/storage.js
+ * @description Содержит в себе напиор классов и функций для управления динамической памятью.
+ * @license MIT
+ * @author Astecom
+ */
+
 const { GetFieldOfNullException } = require('./exceptions')
-    , { GET } = require('./static')
-    , { Cast } = require('../utils')
+    , { GET, SERVICE } = require('./static')
+    , { Cast } = require('../utils.js')
     , { iContext, iPoonyaPrototype } = require('./interfaces')
-    , { PoonyaStaticLibrary } = require('../native/Import')
-    , ExpressionGroup = require('./excecution/ExpressionGroup')
+    , { PoonyaStaticLibrary } = require('../importer.js')
+    , ExpressionGroup = require('./excecution/expression/ExpressionGroup')
     , PoonyaObject = require('./data/PoonyaObject')
     , PoonyaArray = require('./data/PoonyaArray');
 
@@ -21,7 +28,7 @@ class Heap extends Map {
      *
      * @property {iContext} context
      *
-     * @memberof Poonya
+     * @memberof Poonya.Storage
      * @constructs Heap
      * @public
      */
@@ -34,10 +41,18 @@ class Heap extends Map {
             this.append(data);
     }
 
+    /**
+     * Удаляет контекст исполнения текущему блоку памяти
+     */
     removeContext() {
         this.context = null;
     }
 
+    /**
+     * Устанавливает нотекст исполнения текущему блоку памяти
+     * 
+     * @param {Context} context контекст который устанавливаем текущему хипу памяти
+     */
     setContext(context) {
         if (context instanceof iContext)
             this.context = context;
@@ -142,7 +157,7 @@ class Context extends iContext {
      *
      * @param {PoonyaStaticLibrary[]} libraries бибилиотеки для инициалзиции контекста
      * @param {...Heap} initial Значения переданные для инициализации
-     * @memberof Poonya
+     * @memberof Poonya.Storage
      * @constructs Context
      * @implements iContext
      * @classdesc Определяет набор данных для манипуляции в шаблонизаторе
@@ -159,11 +174,11 @@ class Context extends iContext {
                     if (libraries[i].global) {
                         libraries[i].importTo(this, this, throw_error);
                     } else {
-                        const target = this.createObject(null, -1, throw_error, SERVICE.CONSTRUCTORS.OBJECT);
+                        const target = this.createObject(null, -1, SERVICE.CONSTRUCTORS.OBJECT, throw_error);
 
                         libraries[i].importTo(target, this, throw_error);
 
-                        this.levels[this.levels.length - 1].set(key, target);
+                        this.levels[this.levels.length - 1].set(libraries[i].namespace, target);
                     }
                 }
             }

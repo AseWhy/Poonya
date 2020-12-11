@@ -1,11 +1,9 @@
 const poonya = require("../poonya");
 
-const test_pattern = new poonya.MessagePattern({ path: __dirname + "/sandbox-data/sandbox" });
+const test_pattern = new poonya.MessagePattern({ path: __dirname + "/sandbox-data/sandbox" }, undefined, [ 'default.html' ]);
 
-async function a() {
-    const stream = test_pattern.result();
-
-    console.log((await stream.complete()).join(''))
+async function main() {
+    console.log((await test_pattern.result().complete()).join(''))
 }
 
-a();
+main();

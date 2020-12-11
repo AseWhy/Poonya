@@ -1,5 +1,5 @@
 const { execSync } = require("child_process")
-    , { copyFileSync, renameSync, rmdirSync } = require('fs')
+    , { copyFileSync, rmdirSync } = require('fs')
     , readline = require("readline");
 
 let question, allow = ["y", "yes", "н", "нуы"];
@@ -22,11 +22,9 @@ let question, allow = ["y", "yes", "н", "нуы"];
 async function main(){
     console.log("building jsdoc");
 
-    execSync('jsdoc poonya.js');
+    rmdirSync('docs', { recursive: true, force: true });
 
-    rmdirSync('docs', { recursive: true });
-
-    renameSync('out', 'docs');
+    execSync('jsdoc -c ./jsdoc.json');
 
     try {
         const old_conf = require(__dirname + '/build-data/package.json')

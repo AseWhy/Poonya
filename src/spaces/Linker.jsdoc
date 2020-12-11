@@ -1,0 +1,4 @@
+/**
+ * @namespace Poonya.Linker
+ * @description Пространство имен линкера, которые связывает файлы.
+ */

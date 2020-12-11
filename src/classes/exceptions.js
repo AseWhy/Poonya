@@ -1,15 +1,17 @@
 /**
  * @file src/classes/exceptions.js
- * @description Файл, куда я группировал всевозможные исклюения
- * @namespace Poonya.Exceptions
+ * @description Тут я сгруппировал всевозможные исклюения
  * @author Astecom
  * @license MIT
  */
 
+const { SERVICE } = require('./static')
+    , { dirname } = require('path');
+
 /**
  * Класс ошибки шаблонизатора
  *
- * @memberof Poonya
+ * @memberof Poonya.Exceptions
  * @name ParserException
  * @class
  * @protected
@@ -149,8 +151,24 @@ class LinkerIOError extends PoonyaException {
  * @protected
  */
 class NativeFunctionExcecutionError extends PoonyaException {
-    constructor(name) {
-        super("Critical error while executing a native function '" + name + "'");
+    static StackTraceRGExp = /^\s*at\s(?:new\s)?([aA-zZ.аА-яЯё]+)\s\((.*)\)$/
+
+    constructor(name, stack) {
+        stack = stack.split('\n');
+
+        for(let i = 0, leng = stack.length, cur; i < leng; i++) {
+            if(NativeFunctionExcecutionError.StackTraceRGExp.test(stack[i])){
+                cur = stack[i].match(NativeFunctionExcecutionError.StackTraceRGExp);
+
+                if(cur[1] === 'NativeFunction.result' && SERVICE.ROOTPATH == dirname(cur[2]).substring(0, SERVICE.ROOTPATH.length)) {
+                    stack = stack.slice(0, i);
+
+                    break;
+                }
+            }
+        }
+
+        super(" * > Critical error while executing a native function '" + name + "':\n * > \t" + stack.join('\n * > \t'));
     }
 }
 

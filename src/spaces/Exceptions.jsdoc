@@ -1,0 +1,4 @@
+/**
+ * @namespace Poonya.Exceptions
+ * @description Пространство имен, где собраны всевозможные исключения
+ */

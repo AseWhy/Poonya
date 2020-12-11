@@ -1,3 +1,12 @@
+const { dirname } = require('path');
+
+/**
+ * @file src/static.js
+ * @description Содержит в себе набор статических полей
+ * @license MIT
+ * @author Astecom
+ */
+
 // Защищенные поля для PoonyaPrototype
 const GET = Symbol('GET')
     , IS = Symbol('IS')
@@ -6,7 +15,7 @@ const GET = Symbol('GET')
 /**
  * Типы символов
  *
- * @memberof Poonya
+ * @memberof Poonya.Static
  * @constant CHARTYPE
  * @property {String} START     - Стартовый символ, ничего не значит        ``
  * @property {String} NUMBER    - Числовой тип                              `0-9.0-9`
@@ -33,7 +42,7 @@ const CHARTYPE = {
 /**
  * Типы операторов
  *
- * @memberof Poonya
+ * @memberof Poonya.Static
  * @constant OPERATOR
  * @property {String} PLUS      - Оператор сложения                         `+`
  * @property {String} MINUS     - Оператор вычитания                        `-`
@@ -68,7 +77,7 @@ const OPERATOR = {
 /**
  * Флаги для полей
  *
- * @memberof Poonya
+ * @memberof Poonya.Static
  * @constant FIELDFLAGS
  * @property {Number} NOOUTPUT - Запрет вывода, при серриализации объекта в объект js, это поле будет скрыто
  * @property {Number} CONSTANT - Константное значение, невозможно изменить оператором присваивания
@@ -86,9 +95,10 @@ const FIELDFLAGS = {
 /**
  * Сервисная константа, для служебной информации
  *
- * @memberof Poonya
+ * @memberof Poonya.Static
  * @constant SERVICE
  * @property {Number} CONSTRUCTORS - конструкторы объектов
+ * @property {String} ROOTPATH - путь к src папке
  * @protected
  * @static
  */
@@ -96,13 +106,14 @@ const SERVICE = {
     CONSTRUCTORS: {
         OBJECT: [ 'Object' ],
         ARRAY: [ 'Array' ]
-    }
+    },
+    ROOTPATH: dirname(__dirname)
 }
 
 /**
  * Занимаемая область в глобальном контексте
  * 
- * @memberof Poonya
+ * @memberof Poonya.Static
  * @constant NAMESPACE
  * @protected
  * @static

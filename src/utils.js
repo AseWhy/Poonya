@@ -1,11 +1,11 @@
+/**
+ * @file src/utils.js
+ * @description Содержит в себе набор утилит, которые нужны много где, и их нельзя отнести к какой-либо конкретной группе
+ * @license MIT
+ * @author Astecom
+ */
+
 const {
-        NativeInteger,
-        NativeNumber,
-        NativeString,
-        NativeBoolean,
-        NativeNull
-    } = require("./classes/common/Native"),
-    {
         SERVICE
     } = require('./classes/static'),
     {
@@ -15,12 +15,17 @@ const {
         iPoonyaObject,
         iPoonyaPrototype
     } = require('./classes/interfaces')
-    ,   NativeFunction = require('./classes/excecution/NativeFunction');
+    ,   NativeFunction = require('./classes/excecution/expression/NativeFunction')
+    ,   NativeString = require('./classes/common/native/NativeString')
+    ,   NativeNumber = require('./classes/common/native/NativeNumber')
+    ,   NativeInteger = require('./classes/common/native/NativeInteger')
+    ,   NativeBoolean = require('./classes/common/native/NativeBoolean')
+    ,   NativeNull = require('./classes/common/native/NativeNull');
 
 /**
  * Фукция которая преобразует нативное значение в значение Poonya
  *
- * @memberof Poonya
+ * @memberof Poonya.Utils
  * @function Cast
  *
  * @param {Any} data Данные которые необходимо преобразовать
@@ -87,7 +92,7 @@ function Cast(data, context, parents_three = new Array()) {
  * @param {String} equalts_t Тип с которым сравниваем
  * @param {String|Array<String>} equalts_v Значение(я) с которым(и) сравниваем
  *
- * @memberof Poonya
+ * @memberof Poonya.Utils
  * @private
  */
 function maybeEquals(entries, index, equalts_t, equalts_v) {
@@ -107,7 +112,7 @@ function maybeEquals(entries, index, equalts_t, equalts_v) {
  * @param {String} equalts_t Тип с которым сравниваем
  * @param {String|Array<String>} equalts_v Значение(я) с которым(и) сравниваем
  * 
- * @memberof Poonya
+ * @memberof Poonya.Utils
  * @private
  */
 function countKeys(entries, start, equalts_t, equalts_v){
@@ -117,6 +122,21 @@ function countKeys(entries, start, equalts_t, equalts_v){
     }
 }
 
+/**
+ * Форматирует число подгоняя его под общую длинну
+ *
+ * @param {Number} d Чило для формата
+ * @param {Number} l Желаемая длинна
+ * @memberof Poonya.Utils
+ * @function toFixed
+ * @protected
+ * @static
+ */
+function toFixed(d, l) {
+    return "0x" + d.toString(16).padStart(l - 2, "0");
+}
+
 module.exports.maybeEquals = maybeEquals;
 module.exports.countKeys = countKeys;
+module.exports.toFixed = toFixed;
 module.exports.Cast = Cast;

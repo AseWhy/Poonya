@@ -1,3 +1,10 @@
+/**
+ * @file src/classes/data/PoonyaObject.js
+ * @description Cодержит класс объекта Poonya
+ * @author Astecom
+ * @license MIT
+ */
+
 const { 
             BadKeyInvalidTypeException
         ,   BadKeyProtectedFieldException 
@@ -12,12 +19,12 @@ const {
     } = require('../static'), 
     { 
             Cast
-    } = require('../../utils'),
+    } = require('../../utils.js'),
     {
             iPoonyaObject
         ,   iPoonyaPrototype
     } = require('../interfaces'),
-            NativeFunction = require('../excecution/NativeFunction');
+            NativeFunction = require('../excecution/expression/NativeFunction');
 
 /**
  * @lends PoonyaObject
@@ -29,7 +36,7 @@ class PoonyaObject extends iPoonyaObject {
      *
      * @param {PoonyaObject} prototype Прототип объекта, если необходимо
      * @param {Object} init Объект инициализации
-     * @memberof Poonya
+     * @memberof Poonya.Data
      * @constructs PoonyaObject
      * @public
      */
@@ -41,7 +48,6 @@ class PoonyaObject extends iPoonyaObject {
 
         if (context instanceof iContext)
             this.context = context;
-
         else
             throw new Error('No context passed: dynamic data needs context.');
 
@@ -201,7 +207,6 @@ class PoonyaObject extends iPoonyaObject {
             if (data == null || (data & FIELDFLAGS.NOOUTPUT) === 0)
                 if (value instanceof NativeFunction)
                     output[key] = value != null ? value.target : null;
-
                 else
                     output[key] = value != null ? value.result(context, out, throw_error) : null;
         }

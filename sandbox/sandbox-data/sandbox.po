@@ -10,7 +10,13 @@
 
         poonya {
             repeat(0; 5) {
-                > '<p>' + current + ' абзац</p>';
+                > html.createElement(
+                    html.TAGS.P,
+                    current + ' абзац',
+                    (Object ->
+                        defined -> 'Some string with "double brackets..."',
+                        attr -> false)
+                ) + endl + tab;
             }
         }
     </body>

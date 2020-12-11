@@ -1,3 +1,10 @@
+/**
+ * @file src/classes/common/ParserData.js
+ * @description Cодержит прототипы исполняемых данных.
+ * @author Astecom
+ * @license MIT
+ */
+
 const { OPERATOR } = require('../static');
 
 /**

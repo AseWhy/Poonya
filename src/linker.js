@@ -1,8 +1,15 @@
+/**
+ * @file src/linker.js
+ * @description Содержит в себе линкер, который позваоляет импортировать содержимое других файлов в исполняему последовательность poonya
+ * @license MIT
+ * @author Astecom
+ */
+
 const { readFileSync } = require("fs")
     , { join, dirname } = require("path")
     , { maybeEquals } = require("./utils")
     , { CHARTYPE } = require('./classes/static')
-    , lexer = require('./lexer');
+    , lexer = require('./lexer/lexer');
 
 /**
  * Препроцессораня функция, линкует файлы.
@@ -11,7 +18,7 @@ const { readFileSync } = require("fs")
  * @param {String} parent_path Путь к файлу, который сейчас обрабатываем
  * @param {Function} throw_error Фукцния выбрасывания ошибок
  *
- * @memberof Poonya
+ * @memberof Poonya.Linker
  * @protected
  */
 function linker(data, parent_path, throw_error) {

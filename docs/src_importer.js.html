@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/importer.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/importer.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file src/importer.js
+ * @description Содержит в себе набор фнукций, которые необходимы для импорта нативных, написанных на js в нашем случае, библиотека в память poonya
+ * @license MIT
+ * @author Astecom
+ */
+
+const { 
+            readdirSync
+        ,   readFileSync 
+    } = require("fs"),
+    { 
+            join
+        ,   normalize
+        ,   resolve
+    } = require("path"),
+    { 
+            NAMESPACE
+        ,   FIELDFLAGS
+        ,   SERVICE
+    } = require('./classes/static')
+    , PoonyaObject = require('./classes/data/PoonyaObject')
+    , Exceptions = require('./classes/exceptions')
+    , NativeFunction = require('./classes/excecution/expression/NativeFunction')
+    , PoonyaPrototype = require('./classes/data/PoonyaPrototype')
+    , NativeString = require('./classes/common/native/NativeString')
+    , NativeNumber = require('./classes/common/native/NativeNumber')
+    , NativeInteger = require('./classes/common/native/NativeInteger')
+    , NativeBoolean = require('./classes/common/native/NativeBoolean')
+    , NativeNull = require('./classes/common/native/NativeNull');
+
+/**
+ * Функция, которая возвращает библиотеку при импорте
+ *
+ * @memberof Poonya.Import
+ * @function Import
+ *
+ * @param {string[]} import_statements Массив с идентификаторами библиотек
+ * @param {
+ *      {
+ *          log: Function,
+ *          error: Function,
+ *          warn: Function
+ *      }
+ * } logger Логгер, в случае ошибок ипорта
+ *
+ * @protected
+ */
+let Import = () => {};
+
+/**
+ * Функция, которая добавляет новую библиотеку
+ *
+ * @memberof Poonya.Import
+ * @function AddLibrary
+ *
+ * @param {String} lib_id Идентификатор библиотеки
+ * @param {PoonyaStaticLibrary} lib_object Объект библиотеки
+ * @param {Boolean} override если true, то если такая бибилотека уже была ранее создана, она будет переопределена
+ *
+ * @protected
+ */
+let AddLibrary = () => {};
+
+/**
+ * Функция, которая добавляет новую библиотеку
+ *
+ * @memberof Poonya.Import
+ * @function ImportDir
+ *
+ * @param {String} lib_dir Путь к папке, библиотеки из которой будем ипортировать
+ *
+ * @protected
+ */
+let ImportDir = () => {};
+
+/**
+ * @lends PoonyaStaticLibrary
+ * @class
+ */
+class PoonyaStaticLibrary {
+    /**
+     * Статическая библиотека, добавляется глобально.
+     *
+     * @param {Object} data
+     * @memberof Poonya.Import
+     * @constructs PoonyaStaticLibrary
+     * @public
+     */
+    constructor(id, global = false, override = false, namespace) {
+        AddLibrary(id, this, override);
+
+        this.namespace = namespace;
+        this.global = global;
+
+        this._fields = new Map();
+    }
+
+    /**
+     * Добавляет поле для импорта из библиотеки
+     *
+     * @param {String} field название поля, которое устанавливаем
+     * @param {Any} data данные, который нужно импортировать
+     * @public
+     * @method
+     */
+    addField(field, data) {
+        this._fields.set(field, data);
+    }
+
+    /**
+     * Расширяет прототип класса переданного как proto
+     *
+     * @param {PoonyaPrototype} proto название поля, которое устанавливаем
+     * @public
+     * @method
+     */
+    expandClass(proto) {
+        if (proto instanceof PoonyaPrototype) {
+            this._fields.set(proto.name, proto);
+        } else {
+            throw new Error(`Only PoonyaPrototype instance can be passed as a prototype.`);
+        }
+    }
+
+    /**
+     * Добавляет стороннюю библиотеку как поле этой бибилотеки
+     *
+     * @param {String} ident идентификатор ассимилируемой библиотеки
+     * @public
+     * @method
+     */
+    addLib(ident) {
+        const lib = global[NAMESPACE][Symbol.for('Modules')][Symbol.for(ident)];
+
+        if (lib != null) {
+            this._fields.set(lib.namespace, lib);
+        } else {
+            throw new Error(`Can't find library with identifier ${ident}`);
+        }
+    }
+
+    /**
+     * Вызывается для преобразования библиотеки в модуль памяти, к которому в последствии можно будет получить доступ
+     *
+     * @param {Context|PoonyaObject} parent контекст выполнения
+     * @public
+     * @method
+     */
+    importTo(parent, context, throw_error) {
+        for (let [key, value] of this._fields)
+            switch (typeof value) {
+                case "bigint":
+                    if (isNaN(value))
+                        parent.set(key, new NativeNull());
+
+                    else
+                        parent.set(key, new NativeInteger(value));
+                    break;
+                case "number":
+                    if (isNaN(value))
+                        parent.set(key, new NativeNull());
+
+                    else
+                        parent.set(key, new NativeNumber(value));
+                    break;
+                case "string":
+                    parent.set(key, new NativeString(value));
+                    break;
+                case "symbol":
+                    parent.set(key, new NativeString(Symbol.keyFor(value)));
+                    break;
+                case "function":
+                    parent.set(key, new NativeFunction(value));
+                    break;
+                case "boolean":
+                    parent.set(key, new NativeBoolean(value));
+                    break;
+                case "undefined":
+                case "object":
+                    if (value == null)
+                        parent.set(new NativeNull());
+                    else {
+                        if (value instanceof PoonyaStaticLibrary) {
+                            const target = new PoonyaObject(context.getByPath(SERVICE.CONSTRUCTORS.OBJECT, -1, PoonyaPrototype, throw_error), null, context);
+
+                            value.importTo(target, context, throw_error);
+
+                            parent.set(key, target);
+                        } else if (value instanceof PoonyaPrototype) {
+                            parent.set(key, value);
+                        } else if (value instanceof Array) {
+                            parent.set(key, new PoonyaArray(context.getByPath(SERVICE.CONSTRUCTORS.ARRAY, -1, PoonyaPrototype, throw_error), value, null, context));
+                        } else
+                            parent.set(key, new PoonyaObject(context.getByPath(SERVICE.CONSTRUCTORS.OBJECT, -1, PoonyaPrototype, throw_error), value, null, context));
+                    }
+                    break;
+            }
+    }
+}
+
+class PoonyaNativePrototype extends PoonyaPrototype {
+    constructor(parents, name){
+        super(parents, name);
+    }
+}
+
+(() => {
+    const modules = Symbol.for('Modules');
+
+    if (global[NAMESPACE] == null) {
+        global[NAMESPACE] = new Object();
+
+        global[NAMESPACE][modules] = new Map();
+    }
+
+    AddLibrary = (lib_id, lib_object, override = false) => {
+        if (override || global[NAMESPACE][modules][lib_id = Symbol.for(lib_id)] == null) {
+            global[NAMESPACE][modules][lib_id] = lib_object;
+        } else {
+            throw new TypeError('Library, with this id already imported. For ' + lib_id.toString());
+        }
+    };
+
+    Import = (import_statements, logger) => {
+        if (!(import_statements instanceof Array))
+            throw new TypeError("import_statements must be Array");
+
+        const statements = new Array();
+
+        for (let i = 0, leng = import_statements.length; i &lt; leng; i++) {
+            statements.push(global[NAMESPACE][modules][Symbol.for(import_statements[i])]);
+        }
+
+        return statements;
+    };
+
+    ImportDir = (parent_path, lib_dir) => {
+        lib_dir = resolve(lib_dir) !== normalize(lib_dir) ? join(parent_path, lib_dir) : lib_dir;
+
+        const default_libs = readdirSync(lib_dir);
+
+        for (let i = 0, leng = default_libs.length, cur, path; i &lt; leng; i++) {
+            cur = new module.constructor();
+            path = join(lib_dir, default_libs[i]);
+
+            cur.import = () => ({
+                FIELDFLAGS:             FIELDFLAGS,
+                Exceptions:             Exceptions,
+                PoonyaStaticLibrary:    PoonyaStaticLibrary,
+                PoonyaNativePrototype:  PoonyaNativePrototype
+            })
+
+            cur._compile(`"use strict";${readFileSync(path, 'utf-8')};`, path);
+        };
+    };
+})();
+
+module.exports.PoonyaNativePrototype = PoonyaNativePrototype;
+module.exports.PoonyaStaticLibrary = PoonyaStaticLibrary;
+module.exports.ImportDir = ImportDir;
+module.exports.Import = Import;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="Poonya.html">Poonya</a></li><li><a href="Poonya.Exceptions.html">Exceptions</a></li><li><a href="Poonya.Expression.html">Expression</a></li><li><a href="Poonya.Lexer.html">Lexer</a></li><li><a href="Poonya.Linker.html">Linker</a></li><li><a href="Poonya.Parser.html">Parser</a></li><li><a href="Poonya.Statements.html">Statements</a></li><li><a href="Poonya.Static.html">Static</a></li><li><a href="Poonya.Storage.html">Storage</a></li><li><a href="Poonya.Utils.html">Utils</a></li></ul><h3>Classes</h3><ul><li><a href="BooleanLiteral.html">BooleanLiteral</a></li><li><a href="CodeEmitter.html">CodeEmitter</a></li><li><a href="Context.html">Context</a></li><li><a href="ExcecutionPattern.html">ExcecutionPattern</a></li><li><a href="ExpressionPattern.html">ExpressionPattern</a></li><li><a href="FunctionCall.html">FunctionCall</a></li><li><a href="GetOperator.html">GetOperator</a></li><li><a href="Heap.html">Heap</a></li><li><a href="IfStatement.html">IfStatement</a></li><li><a href="IntegerLiteral.html">IntegerLiteral</a></li><li><a href="LexerEntry.html">LexerEntry</a></li><li><a href="Literal.html">Literal</a></li><li><a href="MessagePattern.html">MessagePattern</a></li><li><a href="Native.html">Native</a></li><li><a href="NativeBoolean.html">NativeBoolean</a></li><li><a href="NativeFunction.html">NativeFunction</a></li><li><a href="NativeInteger.html">NativeInteger</a></li><li><a href="NativeNull.html">NativeNull</a></li><li><a href="NativeNumber.html">NativeNumber</a></li><li><a href="NativeString.html">NativeString</a></li><li><a href="NullLiteral.html">NullLiteral</a></li><li><a href="NumberLiteral.html">NumberLiteral</a></li><li><a href="ObjectContructorCall.html">ObjectContructorCall</a></li><li><a href="Operand.html">Operand</a></li><li><a href="Operator.html">Operator</a></li><li><a href="OutOperator.html">OutOperator</a></li><li><a href="ParserData.html">ParserData</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingToUpperLevel.html">BadArrowNotationJumpingToUpperLevel</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingTwoLevels.html">BadArrowNotationJumpingTwoLevels</a></li><li><a href="Poonya.Exceptions.BadEmptyObjectException.html">BadEmptyObjectException</a></li><li><a href="Poonya.Exceptions.BadKeyInvalidTypeException.html">BadKeyInvalidTypeException</a></li><li><a href="Poonya.Exceptions.BadKeyProtectedFieldException.html">BadKeyProtectedFieldException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorException.html">CriticalParserErrorException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorNoRawDataTransmittedException.html">CriticalParserErrorNoRawDataTransmittedException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfInputException.html">CriticalParserErrorUnexpectedEndOfInputException</a></li><li><a href="Poonya.Exceptions.FieldNotAFunctionException.html">FieldNotAFunctionException</a></li><li><a href="Poonya.Exceptions.GetFieldOfNullException.html">GetFieldOfNullException</a></li><li><a href="Poonya.Exceptions.InvalidSequenceForLetiableAccessException.html">InvalidSequenceForLetiableAccessException</a></li><li><a href="Poonya.Exceptions.IsNotAConstructorException.html">IsNotAConstructorException</a></li><li><a href="Poonya.Exceptions.LinkerIOError.html">LinkerIOError</a></li><li><a href="Poonya.Exceptions.LinkerPathNotGiveExceptrion.html">LinkerPathNotGiveExceptrion</a></li><li><a href="Poonya.Exceptions.NativeFunctionExcecutionError.html">NativeFunctionExcecutionError</a></li><li><a href="Poonya.Exceptions.NativeFunctionReturnValueError.html">NativeFunctionReturnValueError</a></li><li><a href="Poonya.Exceptions.ParserEmtyArgumentException.html">ParserEmtyArgumentException</a></li><li><a href="Poonya.Exceptions.ParserException.html">ParserException</a></li><li><a href="Poonya.Exceptions.ParserLogicException.html">ParserLogicException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultEmptyArgumentException.html">SegmentationFaultEmptyArgumentException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultMaximumSegmentsForBlockException.html">SegmentationFaultMaximumSegmentsForBlockException</a></li><li><a href="Poonya.Exceptions.TheFieldAlreadyHasBeenDeclaredException.html">TheFieldAlreadyHasBeenDeclaredException</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeAnArrayInstanceExceprion.html">TheFieldMustBeAnArrayInstanceExceprion</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeNumberException.html">TheFieldMustBeNumberException</a></li><li><a href="Poonya.Exceptions.TheFieldNotHasDeclaredExceprion.html">TheFieldNotHasDeclaredExceprion</a></li><li><a href="Poonya.Exceptions.TheSequenceException.html">TheSequenceException</a></li><li><a href="Poonya.Exceptions.UnableToCreateAnObjectException.html">UnableToCreateAnObjectException</a></li><li><a href="Poonya.Exceptions.UnableToRecognizeTypeException.html">UnableToRecognizeTypeException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenException.html">UnexpectedTokenException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenStatement.html">UnexpectedTokenStatement</a></li><li><a href="Poonya.Exceptions.UnexpectedWordTypeAndGetException.html">UnexpectedWordTypeAndGetException</a></li><li><a href="PoonyaArray.html">PoonyaArray</a></li><li><a href="PoonyaObject.html">PoonyaObject</a></li><li><a href="PoonyaPrototype.html">PoonyaPrototype</a></li><li><a href="PoonyaStaticLibrary.html">PoonyaStaticLibrary</a></li><li><a href="PushOperator.html">PushOperator</a></li><li><a href="RepeatStatement.html">RepeatStatement</a></li><li><a href="SequenceGroup.html">SequenceGroup</a></li><li><a href="SequenceMainGroup.html">SequenceMainGroup</a></li><li><a href="SetOperator.html">SetOperator</a></li><li><a href="StringLiteral.html">StringLiteral</a></li><li><a href="TernarOperator.html">TernarOperator</a></li><li><a href="WhileStatement.html">WhileStatement</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Fri Dec 11 2020 18:03:35 GMT+0400 (Самарское стандартное время)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

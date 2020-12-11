@@ -1,3 +1,10 @@
+/**
+ * @file src/classes/data/PoonyaPrototype.js
+ * @description Cодержит объект прототипа объекта Poonya
+ * @author Astecom
+ * @license MIT
+ */
+
 const { 
             IS
         ,   GET
@@ -8,8 +15,8 @@ const {
             iPoonyaPrototype
     } = require('../interfaces'),
     {
-        Cast
-    } = require('../../utils');
+            Cast
+    } = require('../../utils.js');
 
 /**
  * @lends PoonyaPrototype
@@ -27,7 +34,7 @@ class PoonyaPrototype extends iPoonyaPrototype {
      * @property {Map<String|Number, Operand>} _fields_data
      * @property {Map<String|Number, Number>} _fields
      *
-     * @memberof Poonya
+     * @memberof Poonya.Data
      * @constructs PoonyaPrototype
      * @public
      */

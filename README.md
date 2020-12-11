@@ -62,8 +62,10 @@ async function main(){
 main();
 ```
 In this case, the code for Poonya should be written in {} - curly braces
+
 > Note, you can specify your own prefix for {} - curly braces. If you pass null or undefined, then any parentheses will be accepted
-Also, Poonya can read expressions, you should use ExpressionPattern for this
+
+also, Poonya can read expressions, you should use ExpressionPattern for this
 ```js
 async function main(){
     const Pattern = new poonya.ExpressionPattern('5 > 3 & 3 > 2 & 2 > 1');
