@@ -17,26 +17,27 @@ const GET = Symbol('GET')
  *
  * @memberof Poonya.Static
  * @constant CHARTYPE
- * @property {String} START     - Стартовый символ, ничего не значит        ``
- * @property {String} NUMBER    - Числовой тип                              `0-9.0-9`
- * @property {String} WORD      - Литеральный тип `                         `set`
- * @property {String} SPACE     - Тип пробела                               ` \t`
- * @property {String} POINT     - Тип точки                                 `.`
- * @property {String} STRING    - Строковой тип                             `'something...'`
- * @property {String} NEWLINE   - Тип новой строки                          `\n|\r`
- * @property {String} OPERATOR  - Тип оператора                             `= > <...`
+ * @property {Number} START     - Стартовый символ, ничего не значит        ``
+ * @property {Number} NUMBER    - Числовой тип                              `0-9.0-9`
+ * @property {Number} WORD      - Литеральный тип `                         `set`
+ * @property {Number} SPACE     - Тип пробела                               ` \t`
+ * @property {Number} POINT     - Тип точки                                 `.`
+ * @property {Number} STRING    - Строковой тип                             `'something...'`
+ * @property {Number} NEWLINE   - Тип новой строки                          `\n|\r`
+ * @property {Number} OPERATOR  - Тип оператора                             `= > <...`
  * @protected
+ * @enum
  * @static
  */
 const CHARTYPE = {
-    START: "START",
-    NUMBER: "NUMBER",
-    WORD: "WORD",
-    SPACE: "SPACE",
-    POINT: "POINT",
-    STRING: "STRING",
-    NEWLINE: "NEWLINE",
-    OPERATOR: "OPERATOR"
+    START: 0x0,
+    NUMBER: 0x2,
+    WORD: 0x3,
+    SPACE: 0x4,
+    POINT: 0x5,
+    STRING: 0x6,
+    NEWLINE: 0x7,
+    OPERATOR: 0x8,
 };
 
 /**
@@ -44,34 +45,35 @@ const CHARTYPE = {
  *
  * @memberof Poonya.Static
  * @constant OPERATOR
- * @property {String} PLUS      - Оператор сложения                         `+`
- * @property {String} MINUS     - Оператор вычитания                        `-`
- * @property {String} MULT      - Оператор умножения                        `*`
- * @property {String} DIVIDE    - Оператор деления                          `/`
- * @property {String} EQUAL     - Оператор сравнения                        `=`
- * @property {String} NEQUAL    - Оператор сложжения (отр)                  `!=`
- * @property {String} LARGER    - Оператор сравнение (a больше b)           `>`
- * @property {String} LESS      - Оператор сравнение (a меньше b)           `<`
- * @property {String} ELARGER   - Оператор сравнение (a больше или равно b) `>=`
- * @property {String} ELESS     - Оператор сравнение (a меньши или равно b) `<=`
- * @property {String} AND       - Оператор сравнение (a и b)                `&`
- * @property {String} OR        - Оператор сравнение (a или b)              `|`
+ * @property {Number} PLUS      - Оператор сложения                         `+`
+ * @property {Number} MINUS     - Оператор вычитания                        `-`
+ * @property {Number} MULT      - Оператор умножения                        `*`
+ * @property {Number} DIVIDE    - Оператор деления                          `/`
+ * @property {Number} EQUAL     - Оператор сравнения                        `=`
+ * @property {Number} NEQUAL    - Оператор сложжения (отр)                  `!=`
+ * @property {Number} LARGER    - Оператор сравнение (a больше b)           `>`
+ * @property {Number} LESS      - Оператор сравнение (a меньше b)           `<`
+ * @property {Number} ELARGER   - Оператор сравнение (a больше или равно b) `>=`
+ * @property {Number} ELESS     - Оператор сравнение (a меньши или равно b) `<=`
+ * @property {Number} AND       - Оператор сравнение (a и b)                `&`
+ * @property {Number} OR        - Оператор сравнение (a или b)              `|`
  * @protected
+ * @enum
  * @static
  */
 const OPERATOR = {
-    PLUS: "PLUS",
-    MINUS: "MINUS",
-    MULT: "MULT",
-    DIVIDE: "DIVIDE",
-    EQUAL: "EQUAL",
-    NEQUAL: "NEQUAL",
-    LARGER: "LARGER",
-    LESS: "LESS",
-    ELARGER: "ELARGER",
-    ELESS: "ELESS",
-    AND: "AND",
-    OR: "OR"
+    PLUS: 0x0,
+    MINUS: 0x1,
+    MULT: 0x2,
+    DIVIDE: 0x3,
+    EQUAL: 0x4,
+    NEQUAL: 0x5,
+    LARGER: 0x6,
+    LESS: 0x7,
+    ELARGER: 0x8,
+    ELESS: 0x9,
+    AND: 0xa,
+    OR: 0xb,
 };
 
 /**
@@ -82,15 +84,17 @@ const OPERATOR = {
  * @property {Number} NOOUTPUT - Запрет вывода, при серриализации объекта в объект js, это поле будет скрыто
  * @property {Number} CONSTANT - Константное значение, невозможно изменить оператором присваивания
  * @property {Number} STATIC   - Статическое значение прототипа
+ * @property {Number} PROPERTY - Сделать это поле доступным как свойство
  * @protected
+ * @enum
  * @static
  */
 const FIELDFLAGS = {
-    NOOUTPUT:   0x1,
-    CONSTANT:   0x2,
-    STATIC:     0x4
+    NOOUTPUT: 0x1,
+    CONSTANT: 0x2,
+    STATIC: 0x4,
+    PROPERTY: 0x8
 };
-
 
 /**
  * Сервисная константа, для служебной информации
@@ -104,21 +108,31 @@ const FIELDFLAGS = {
  */
 const SERVICE = {
     CONSTRUCTORS: {
-        OBJECT: [ 'Object' ],
-        ARRAY: [ 'Array' ]
+        OBJECT: ['Object'],
+        ARRAY: ['Array'],
+        BOOLEAN: ['Boolean'],
+        STRING: ['String'],
+        NUMBER: ['Number'],
+        INTEGER: ['Integer'],
+        NULL: ['Null'],
     },
-    ROOTPATH: dirname(__dirname)
-}
+
+    ROOTPATH: dirname(__dirname),
+
+    CONFIG: {
+        DEBUG: false,
+    },
+};
 
 /**
  * Занимаемая область в глобальном контексте
- * 
+ *
  * @memberof Poonya.Static
  * @constant NAMESPACE
  * @protected
  * @static
  */
-const NAMESPACE = Symbol.for('POONYA-' + process.pid + '-' + process.platform)
+const NAMESPACE = Symbol.for('POONYA-' + process.pid + '-' + process.platform);
 
 module.exports.FIELDFLAGS = FIELDFLAGS;
 module.exports.SUPER_CALL = SUPER_CALL;
@@ -126,5 +140,6 @@ module.exports.NAMESPACE = NAMESPACE;
 module.exports.OPERATOR = OPERATOR;
 module.exports.CHARTYPE = CHARTYPE;
 module.exports.SERVICE = SERVICE;
+module.exports.CONFIG = SERVICE.CONFIG;
 module.exports.GET = GET;
 module.exports.IS = IS;

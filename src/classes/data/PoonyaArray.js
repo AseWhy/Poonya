@@ -5,11 +5,9 @@
  * @license MIT
  */
 
-const       PoonyaObject = require("./PoonyaObject")
-    ,       NativeFunction = require('../excecution/expression/NativeFunction'),
-    { 
-            FIELDFLAGS
-    } = require("../static");
+const { FIELDFLAGS } = require("../static")
+    ,   PoonyaObject = require("./PoonyaObject")
+    ,   NativeFunction = require('./NativeFunction');
 
 /**
  * @lends PoonyaArray
@@ -19,49 +17,49 @@ class PoonyaArray extends PoonyaObject {
     /**
      * Дескриптор массива в poonya
      *
-     * @param {Object} data
+     * @param {iPoonyaPrototype} prototype Прототип массива
+     * @param {Object} init Объект, который будет использоваться для иницализации текущего массива
+     * @param {iContext} context Текущий контекст, который будет использовать при кастинге значений
+     * 
      * @memberof Poonya.Data
      * @constructs PoonyaArray
      * @extends PoonyaObject
      * @public
      */
     constructor(prototype = null, init, context) {
-        super(prototype, null, context);
+        super(prototype);
 
         if (init)
             for (let i = 0, leng = init.length; i < leng; i++) {
-                this.push(init[i]);
+                this.push(context, init[i]);
             }
     }
 
+    /**
+     * Возвращает копию этого объекта
+     * 
+     * @returns {PoonyaArray} клонированый объект
+     */
+    clone(){
+        const obj = new PoonyaArray(this.prototype);
 
+        obj.fields = new Map(this.fields);
+        obj.field_attrs = new Map(this.field_attrs);
+
+        return obj;
+    }
 
     /**
      * Добавляет данные в модуль памяти
      *
-     * @param {Object} data данные которые добавляем
-     * @param {Array<Any>} parents_three стэк родетелей добавляемого значения
+     * @param {iContext} context контекст, по которому будет преобразовано значение в случе необходимости
+     * @param {Object} data данные которые нужно добавить
+     * @param {Array<Any>} parents_three стэк родителей добавляемого значения
      * @method
      * @public
      */
-    push(data, parents_three = new Array()) {
-        super.set(this.fields.size, data, parents_three);
-    }
-
-    /**
-     * Устанавливает индекс массива
-     *
-     * @override
-     * @method
-     * @public
-     */
-    set(key, data, parents_three = new Array()) {
-        if (typeof key !== "number" ||
-            key < -Number.MAX_SAFE_INTEGER ||
-            key > Number.MAX_SAFE_INTEGER)
-            throw new TypeError('Bad key for ' + key);
-
-        super.set(key, data, parents_three);
+    push(context, data, parents_three = new Array()) {
+        this.set(context, this.fields.size, data, parents_three);
     }
 
     /**
@@ -86,6 +84,17 @@ class PoonyaArray extends PoonyaObject {
         }
 
         return output;
+    }
+
+    /**
+     * Сериализует массив в простое значение.
+     *
+     * @override
+     * @method
+     * @public
+     */
+    toRawData(){
+        return `[Array:${this.prototype.name}]`;
     }
 }
 

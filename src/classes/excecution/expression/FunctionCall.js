@@ -5,10 +5,10 @@
  * @license MIT
  */
 
-const { Operand } = require("../../common/ParserData")
+const { Operand } = require('../../common/ParserData')
     , { UnableToCreateAnObjectException, FieldNotAFunctionException } = require('../../exceptions')
     , { iPoonyaPrototype } = require('../../interfaces')
-    ,   NativeFunction = require('./NativeFunction');
+        NativeFunction = require('../../data/NativeFunction');
 
 /**
  * @lends FunctionCall
@@ -26,7 +26,7 @@ class FunctionCall extends Operand {
      * @protected
      */
     constructor(query_stack, args, position) {
-        super("call function");
+        super('call function');
 
         this.query_stack = [...query_stack];
         this.position = position;
@@ -52,15 +52,9 @@ class FunctionCall extends Operand {
         if (data.instance instanceof NativeFunction)
             return data.instance.result(data.parent, this.args, context, out, this.position, throw_error);
         else if (data.instance instanceof iPoonyaPrototype)
-            throw_error(
-                this.position,
-                new UnableToCreateAnObjectException()
-            );
+            throw_error(this.position, new UnableToCreateAnObjectException());
         else {
-            throw_error(
-                this.position,
-                new FieldNotAFunctionException(query_stack[query_stack.length - 1])
-            );
+            throw_error(this.position, new FieldNotAFunctionException(this.query_stack[this.query_stack.length - 1]));
         }
     }
 
@@ -72,13 +66,7 @@ class FunctionCall extends Operand {
      * @method
      */
     toString() {
-        return (
-            "(" +
-                this.query_stack.join(" => ") +
-            ") <== (" +
-                this.args.join(", ") +
-            ")"
-        );
+        return '(' + this.query_stack.join(' => ') + ') <== (' + this.args.join(', ') + ')';
     }
 }
 

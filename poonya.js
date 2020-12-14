@@ -4,7 +4,7 @@
  * @version 0.4.5
  * @see {@link https://github.com/AseWhy/Poonya|GitHub}
  * @namespace Poonya
- * @description Шаблонизатор, используется для создания шаблонов, и их последующего вывода
+ * @description A templating engine used to create templates and then render them
  * 
  * <pre style="background: whitesmoke;overflow: hidden;border-left: 0.25em dashed;padding: 1em"><code>                     + @ W
  *                   + @ @ @ W #                                                         ____________________________________________________
@@ -52,6 +52,17 @@
  *                                         @ @ @ @                     @ W @ @ @ @ W @
  *                                         + @ @ *                           + # +
  * </code></pre>
+ * 
+ * * * * * * * * * * * * * * * * * 
+ *                               *
+ * If disagree - criticize       *
+ * Criticizing - suggest         *
+ * Suggesting - perform          *
+ * Performing - be responsible!  *
+ *                               *
+ * - S.P. Korolev                *
+ *                               *
+ * * * * * * * * * * * * * * * * *
  */
 
 "use strict";
@@ -240,7 +251,7 @@ class CodeEmitter {
             " symbol",
         );
 
-        if(pos != 0) {
+        if(pos != -1) {
             buffer.push(' :>\n');
 
             for (let i = line_start; i < line_end; i++) {
@@ -259,10 +270,9 @@ class CodeEmitter {
             }
         }
 
-        if (message instanceof PoonyaException) 
-            throw message.message;
-        else
-            throw new PoonyaException(buffer.join(""));
+        this.logger.error(message.message)
+        
+        throw new Error(buffer.join(""));
     }
 
     /**
@@ -298,7 +308,7 @@ class CodeEmitter {
                 }
     
                 if (data instanceof Heap) {
-                    _.data.result(new Context(_.libraries, error, ...data), out, error);
+                    _.data.result(new Context(_.libraries, error, data), out, error);
 
                     out.end();
                 } else {
@@ -485,7 +495,7 @@ class ExpressionPattern extends CodeEmitter {
 
                 if (data instanceof Heap) {
                     return this.data.result(
-                        new Context(this.libraries, error, ...data),
+                        new Context(this.libraries, error, data),
                         [],
                         error,
                     );

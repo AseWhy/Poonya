@@ -5,8 +5,7 @@
  * @license MIT
  */
 
-const { Operand } = require("../../common/ParserData")
-    , { BooleanLiteral } = require('../../common/Literals');
+const { Operand } = require('../../common/ParserData');
 
 /**
  * @lends TernarOperator
@@ -26,7 +25,7 @@ class TernarOperator extends Operand {
      * @protected
      */
     constructor(condition, v1, v2) {
-        super("ternar");
+        super('ternar');
 
         this.condition = condition;
         this.v_o = v1;
@@ -42,12 +41,7 @@ class TernarOperator extends Operand {
      */
     toString(indent) {
         return (
-            "< " +
-            this.condition.toString(indent + "\t") +
-            " > ? " +
-            this.v_o +
-            " : " +
-            this.v_t
+            '< ' + this.condition.toString(indent + '\t') + ' > ? ' + this.v_o + ' : ' + this.v_t
         );
     }
 
@@ -65,14 +59,9 @@ class TernarOperator extends Operand {
      * @method
      */
     result(context, out, throw_error) {
-        if (BooleanLiteral.toPoonyaBoolean(
-            this.condition.result(context, out, throw_error),
-            this.condition.position
-        ).result())
+        if (context.toBooleanResult(this.condition.result(context, out, throw_error)))
             return this.v_o.result(context, out, throw_error);
-
-        else
-            return this.v_t.result(context, out, throw_error);
+        else return this.v_t.result(context, out, throw_error);
     }
 }
 

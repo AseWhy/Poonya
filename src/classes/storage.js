@@ -5,15 +5,19 @@
  * @author Astecom
  */
 
-const { GetFieldOfNullException } = require('./exceptions')
-    , { GET, SERVICE } = require('./static')
+const { GetFieldOfNullException, IsNotAConstructorException } = require('./exceptions')
+    , { GET, SERVICE, IS } = require('./static')
     , { Cast } = require('../utils.js')
     , { iContext, iPoonyaPrototype } = require('./interfaces')
     , { PoonyaStaticLibrary } = require('../importer.js')
-    , ExpressionGroup = require('./excecution/expression/ExpressionGroup')
-    , PoonyaObject = require('./data/PoonyaObject')
-    , PoonyaArray = require('./data/PoonyaArray');
-
+    ,   ExpressionGroup = require('./excecution/expression/ExpressionGroup')
+    ,   PoonyaObject = require('./data/PoonyaObject')
+    ,   PoonyaArray = require('./data/PoonyaArray')
+    ,   PoonyaInteger = require('./data/PoonyaInteger')
+    ,   PoonyaNumber = require('./data/PoonyaNumber')
+    ,   PoonyaString = require('./data/PoonyaString')
+    ,   PoonyaBoolean = require('./data/PoonyaBoolean')
+    ,   PoonyaNull = require('./data/PoonyaNull');
 
 /**
  * @lends Heap
@@ -23,67 +27,43 @@ class Heap extends Map {
     /**
      * Модуль памяти, может использоваться для манипульций с памятью.
      *
-     * @param {Object} data
-     * @param {iContext} context
-     *
-     * @property {iContext} context
+     * @param {iContext} context - Контекст, типы из которого будт использоваться для кастинга значений, при необходимости
+     * @param {Object} data - Данные инициализации модуля памяти
      *
      * @memberof Poonya.Storage
      * @constructs Heap
      * @public
      */
-    constructor(data, context) {
+    constructor(context, data) {
         super();
 
-        this.context = context;
-
-        if (data != null)
-            this.append(data);
-    }
-
-    /**
-     * Удаляет контекст исполнения текущему блоку памяти
-     */
-    removeContext() {
-        this.context = null;
-    }
-
-    /**
-     * Устанавливает нотекст исполнения текущему блоку памяти
-     * 
-     * @param {Context} context контекст который устанавливаем текущему хипу памяти
-     */
-    setContext(context) {
-        if (context instanceof iContext)
-            this.context = context;
-        else
-            throw new Error('context must be an object of type Сontext');
+        if (data != null) this.append(context, data);
     }
 
     /**
      * Обновляет данные в текущем объекте
      *
-     * @param {Object} data данные которые нужно обновить
+     * @param {iContext} context - Контекст, типы из которого будт использоваться для кастинга значений, при необходимости
+     * @param {Object} data - Данные которые нужно обновить
+     *
      * @method
      * @public
      */
-    append(data) {
-        if (typeof data === "object") {
+    append(context, data) {
+        if (typeof data === 'object') {
             if (Array.isArray(data)) {
-                for (let i = 0, leng = data.length; i < leng; i++)
-                    this.set(i, data[i]);
+                for (let i = 0, leng = data.length; i < leng; i++) this.set(context, i, data[i]);
             } else {
                 if (data instanceof PoonyaObject) {
                     for (let entry of data.fields) {
-                        this.set(entry[0], entry[1]);
+                        this.set(context, entry[0], entry[1]);
                     }
                 } else if (data instanceof Heap) {
                     for (let entry of data) {
-                        this.set(entry[0], entry[1]);
+                        this.set(context, entry[0], entry[1]);
                     }
                 } else {
-                    for (let key in data)
-                        this.set(key, data[key]);
+                    for (let key in data) this.set(context, key, data[key]);
                 }
             }
         } else {
@@ -111,16 +91,16 @@ class Heap extends Map {
      * @method
      * @public
      */
-    set(key, data, parents_three = new Array()) {
-        if (typeof key !== "string" && typeof key !== "number")
-            throw new TypeError('Bad key.');
+    set(context, key, data, parents_three = new Array()) {
+        if (typeof key !== 'string' && typeof key !== 'number')
+            throw new TypeError('Bad key ' + key);
 
         try {
-            super.set(key, Cast(data, this.context, parents_three));
+            super.set(key, Cast(data, context, parents_three));
         } catch (e) {
-            console.log(e)
+            console.log(e);
 
-            console.error("Error when cast value of " + key);
+            console.error('Error when cast value of ' + key);
         }
     }
 
@@ -139,9 +119,7 @@ class Heap extends Map {
         for (let [key, value] of this)
             if (value instanceof NativeFunction)
                 output[key] = value != null ? value.result(context, out, throw_error) : null;
-
-            else
-                output[key] = value != null ? value.target : null;
+            else output[key] = value != null ? value.target : null;
 
         return output;
     }
@@ -156,7 +134,9 @@ class Context extends iContext {
      * Контекст выполнения
      *
      * @param {PoonyaStaticLibrary[]} libraries бибилиотеки для инициалзиции контекста
+     * @param {Function} throw_error функция, которая будет вызвана при ошибке
      * @param {...Heap} initial Значения переданные для инициализации
+     *
      * @memberof Poonya.Storage
      * @constructs Context
      * @implements iContext
@@ -166,25 +146,33 @@ class Context extends iContext {
     constructor(libraries, throw_error, ...initial) {
         super();
 
-        this.levels = new Array(new Heap(null, this));
+        this.levels = new Array();
 
         if (libraries != null) {
-            for (let i = 0, leng = libraries.length; i < leng; i++) {
+            // Корневой слой
+            this.levels.push(new Heap(this, null));
+
+            for (let i = 0, leng = libraries.length, target; i < leng; i++) {
                 if (libraries[i] instanceof PoonyaStaticLibrary) {
                     if (libraries[i].global) {
-                        libraries[i].importTo(this, this, throw_error);
+                        libraries[i].importTo(this.levels[0], this, throw_error);
                     } else {
-                        const target = this.createObject(null, -1, SERVICE.CONSTRUCTORS.OBJECT, throw_error);
+                        target = this.createObject(
+                            null,
+                            -1,
+                            SERVICE.CONSTRUCTORS.OBJECT,
+                            throw_error
+                        );
 
                         libraries[i].importTo(target, this, throw_error);
 
-                        this.levels[this.levels.length - 1].set(libraries[i].namespace, target);
+                        this.levels[0].set(this, libraries[i].namespace, target);
                     }
                 }
             }
         }
 
-        this.levels.push(...initial.filter(e => !(e instanceof Heap)).length === 0 ? initial : new Array());
+        this.levels.push(...initial.filter(e => e instanceof Heap));
     }
 
     /**
@@ -205,17 +193,10 @@ class Context extends iContext {
      */
     addLevel(level) {
         if (level != null) {
-            if (level instanceof Heap) {
-                level.setContext(this);
-
-                this.levels.push(level);
-            }
-            else
-                throw new Error(
-                    "The level for the context must be heap, or indexed by the heap"
-                );
+            if (level instanceof Heap) this.levels.push(level);
+            else throw new Error('The level for the context must be heap, or indexed by the heap');
         } else {
-            this.levels.push(new Heap(null, this));
+            this.levels.push(new Heap(this, null));
         }
     }
 
@@ -225,7 +206,7 @@ class Context extends iContext {
      * @public
      */
     popLevel() {
-        this.levels.pop().removeContext();
+        this.levels.pop();
     }
 
     /**
@@ -239,11 +220,7 @@ class Context extends iContext {
         let b = null,
             p = this.levels.length - 1;
 
-        while (p >= 0 &&
-            (
-                b = this.levels[p--].get(val)
-            ) == null)
-            ;
+        while (p >= 0 && (b = this.levels[p--].get(val)) == null);
 
         return b;
     }
@@ -262,13 +239,13 @@ class Context extends iContext {
      *  `up` - поиск по самомой верхней области памяти
      *  `root` - поиск по самой нижней области памяти
      */
-    has(val, params = "tree") {
+    has(val, params = 'tree') {
         switch (params) {
-            case "tree":
+            case 'tree':
                 return this.get(val) !== null;
-            case "up":
+            case 'up':
                 return this.levels[this.levels.length - 1].has(val);
-            case "root":
+            case 'root':
                 return this.levels[0].has(val);
         }
     }
@@ -288,26 +265,26 @@ class Context extends iContext {
      *  `up` - поиск по самомой верхней области памяти
      *  `root` - поиск по самой нижней области памяти
      */
-    set(val, data, params = "tree") {
+    set(val, data, params = 'tree') {
         switch (params) {
-            case "tree":
+            case 'tree':
                 let p = this.levels.length;
 
                 while (--p >= 0) {
                     if (this.levels[p].get(val) != null) {
-                        this.levels[p].set(val, data);
+                        this.levels[p].set(this, val, data);
 
                         return;
                     }
                 }
 
-                this.levels[this.levels.length - 1].set(val, data);
+                this.levels[this.levels.length - 1].set(this, val, data);
                 break;
-            case "up":
-                this.levels[this.levels.length - 1].set(val, data);
+            case 'up':
+                this.levels[this.levels.length - 1].set(this, val, data);
                 break;
-            case "down":
-                this.levels[0].set(val, data);
+            case 'down':
+                this.levels[0].set(this, val, data);
                 break;
         }
     }
@@ -332,18 +309,23 @@ class Context extends iContext {
     getByPath(path, position, type = null, throw_error, return_full_info = false) {
         let instance = this.get(path[0]),
             parent = null,
+            flags = 0,
             query_stack = Array.from(path),
             leng = query_stack.length,
             index = 1;
 
         for (; instance && index < leng; index++) {
             if (query_stack[index] instanceof ExpressionGroup)
-                query_stack[index] = query_stack[index].result(this, out, throw_error);
+                query_stack[index] = query_stack[index].result(this, null, throw_error).toRawData();
 
             if (instance instanceof PoonyaObject) {
-                parent = instance; instance = instance.get(query_stack[index]);
+                parent = instance;
+
+                flags = instance.field_attrs.get(query_stack[index]);
+
+                instance = instance.get(query_stack[index]);
             } else if (instance instanceof iPoonyaPrototype) {
-                parent = instance; instance = instance[GET](query_stack[index], this);
+                instance = instance[GET](query_stack[index], this);
             } else {
                 throw_error(position, new GetFieldOfNullException(query_stack[index]));
             }
@@ -354,25 +336,122 @@ class Context extends iContext {
                 return {
                     instance,
                     parent,
-                    index
+                    index,
+                    flags
                 };
             } else {
                 return instance;
             }
-        else
-            return null;
+        else return null;
     }
 
-    createObject(entries, position, path, throw_error, parents_three = new Array()) {
-        for (let key in entries) {
-            if (typeof entries[key] === 'object' && entries[key] != null && !parents_three.includes(entries[key])) {
-                parents_three.push(entries[key]);
-
-                entries[key] = this.createObject(entries[key], position, [Array.isArray(entries[key]) ? 'Array' : 'Object'], throw_error, Array.from(parents_three));
-            }
+    /**
+     * Сравнивает инстанцию, возвращает эквивалент в boolean
+     *
+     * @param {Any} instance инстанция которую стравнием
+     * @returns {Boolean}
+     */
+    toBooleanResult(instance) {
+        if (instance instanceof PoonyaBoolean) {
+            return instance.data;
         }
 
-        return new (path[0] === 'Object' ? PoonyaObject : PoonyaArray)(this.getByPath(path, position, iPoonyaPrototype, throw_error), entries, this);
+        if (instance instanceof PoonyaInteger || instance instanceof PoonyaNumber) {
+            return instance.data != 0;
+        }
+
+        if (instance instanceof PoonyaNull) {
+            return false;
+        }
+
+        if (instance instanceof PoonyaObject || instance instanceof PoonyaArray) {
+            return true;
+        }
+
+        if (instance instanceof PoonyaString) {
+            return instance.data.length != 0;
+        }
+
+        return instance != null;
+    }
+
+    /**
+     *
+     * @param {*} initial
+     * @param {*} position
+     * @param {*} path
+     * @param {*} throw_error
+     * @param {*} parents_three
+     *
+     * @returns {PoonyaObject} если по заданому пути существует значение вернет его, если нет то вернет null
+     * @method
+     * @public
+     */
+    createObject(initial, position, path, throw_error, parents_three = new Array()) {
+        const prototype = this.getByPath(path, position, iPoonyaPrototype, throw_error);
+
+        if (prototype != null) {
+            if(prototype[IS]('Array')) {
+                let init = new Array();
+
+                if (initial instanceof Map) {
+                    for (let entry of initial) {
+                        if (!parents_three.includes(entry[1])) {
+                            if(typeof entry[1].result === 'function')
+                                init[entry[0]] = entry[1].result(this, null, throw_error);
+                            else
+                                init[entry[0]] = entry[1];
+                        }
+                    }
+                } else if (typeof initial === 'object' && initial != null) {
+                    for (let key in initial) {
+                        if (!parents_three.includes(initial[key])) {
+                            if(typeof initial[key].result === 'function')
+                                init[key] = initial[key].result(this, null, throw_error);
+                            else
+                                init[key] = initial[key];
+                        }
+                    }
+                }
+
+                return new PoonyaArray(prototype, init, this);
+            } else {
+                let init = new Object();
+
+                if (initial instanceof Map) {
+                    for (let entry of initial) {
+                        if (!parents_three.includes(entry[1])) {
+                            if(typeof entry[1].result === 'function')
+                                init[entry[0]] = entry[1].result(this, null, throw_error);
+                            else
+                                init[entry[0]] = entry[1];
+                        }
+                    }
+                } else if (typeof initial === 'object' && initial != null) {
+                    for (let key in initial) {
+                        if (!parents_three.includes(initial[key])) {
+                            if(typeof initial[key].result === 'function')
+                                init[key] = initial[key].result(this, null, throw_error);
+                            else
+                                init[key] = initial[key];
+                        }
+                    }
+                } else {
+                    init = initial;
+                }
+    
+                switch (true) {
+                    case prototype[IS]('String'): return new PoonyaString(prototype, init, this);
+                    case prototype[IS]('Integer'): return new PoonyaInteger(prototype, init, this);
+                    case prototype[IS]('Boolean'): return new PoonyaBoolean(prototype, init, this);
+                    case prototype[IS]('Number'): return new PoonyaNumber(prototype, init, this);
+                    case prototype[IS]('Null'): return new PoonyaNull(prototype, init, this);
+                    default: return new PoonyaObject(prototype, init, this);
+                }
+            }
+        } else {
+            throw_error(position, new IsNotAConstructorException(path));
+        }
     }
 }
 

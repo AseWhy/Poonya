@@ -5,8 +5,6 @@
  * @license MIT
  */
 
-const { iPoonyaObject } = require('../../interfaces');
-
 /**
  * @lends OutOperator
  * @protected
@@ -36,7 +34,7 @@ class OutOperator {
      * @method
      */
     toString() {
-        return "> " + this.expression.toString();
+        return '> ' + this.expression.toString();
     }
 
     /**
@@ -52,13 +50,9 @@ class OutOperator {
      * @method
      */
     result(context, out, throw_error) {
-        const data = this.expression.result(context, out, throw_error);
-
-        if(data instanceof iPoonyaObject) {
-            out.write(data.result(context, out, throw_error));
-        } else {
-            out.write(data);
-        }
+        out.write(
+            this.expression.result(context, out, throw_error).result(context, out, throw_error)
+        );
     }
 }
 

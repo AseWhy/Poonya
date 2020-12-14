@@ -5,29 +5,12 @@
  * @author Astecom
  */
 
-const { 
-            readdirSync
-        ,   readFileSync 
-    } = require("fs"),
-    { 
-            join
-        ,   normalize
-        ,   resolve
-    } = require("path"),
-    { 
-            NAMESPACE
-        ,   FIELDFLAGS
-        ,   SERVICE
-    } = require('./classes/static')
-    , PoonyaObject = require('./classes/data/PoonyaObject')
-    , Exceptions = require('./classes/exceptions')
-    , NativeFunction = require('./classes/excecution/expression/NativeFunction')
-    , PoonyaPrototype = require('./classes/data/PoonyaPrototype')
-    , NativeString = require('./classes/common/native/NativeString')
-    , NativeNumber = require('./classes/common/native/NativeNumber')
-    , NativeInteger = require('./classes/common/native/NativeInteger')
-    , NativeBoolean = require('./classes/common/native/NativeBoolean')
-    , NativeNull = require('./classes/common/native/NativeNull');
+const { readdirSync, readFileSync } = require('fs')
+    , { join, normalize, resolve } = require('path')
+    , { NAMESPACE, SERVICE } = require('./classes/static')
+    ,   PoonyaObject = require('./classes/data/PoonyaObject')
+    ,   NativeFunction = require('./classes/data/NativeFunction')
+    ,   PoonyaPrototype = require('./classes/data/PoonyaPrototype');
 
 /**
  * Функция, которая возвращает библиотеку при импорте
@@ -115,8 +98,8 @@ class PoonyaStaticLibrary {
      * @public
      * @method
      */
-    expandClass(proto) {
-        if (proto instanceof PoonyaPrototype) {
+    expandPrototype(proto) {
+        if (PoonyaPrototype.isPrototypeOf(proto)) {
             this._fields.set(proto.name, proto);
         } else {
             throw new Error(`Only PoonyaPrototype instance can be passed as a prototype.`);
@@ -143,65 +126,143 @@ class PoonyaStaticLibrary {
     /**
      * Вызывается для преобразования библиотеки в модуль памяти, к которому в последствии можно будет получить доступ
      *
-     * @param {Context|PoonyaObject} parent контекст выполнения
+     * @param {PoonyaObject|Heap} parent хип памяти, или объект в который нужно ипортировать библиотеку
      * @public
      * @method
      */
     importTo(parent, context, throw_error) {
-        for (let [key, value] of this._fields)
+        for (let [key, value] of this._fields){
             switch (typeof value) {
-                case "bigint":
+                case 'bigint':
                     if (isNaN(value))
-                        parent.set(key, new NativeNull());
-
+                        parent.set(
+                            context,
+                            key,
+                            context.createObject(null, -1, SERVICE.CONSTRUCTORS.NULL, throw_error)
+                        );
                     else
-                        parent.set(key, new NativeInteger(value));
+                        parent.set(
+                            context,
+                            key,
+                            context.createObject(
+                                value,
+                                -1,
+                                SERVICE.CONSTRUCTORS.INTEGER,
+                                throw_error
+                            )
+                        );
                     break;
-                case "number":
+                case 'number':
                     if (isNaN(value))
-                        parent.set(key, new NativeNull());
-
+                        parent.set(
+                            context,
+                            key,
+                            context.createObject(null, -1, SERVICE.CONSTRUCTORS.NULL, throw_error)
+                        );
                     else
-                        parent.set(key, new NativeNumber(value));
+                        parent.set(
+                            context,
+                            key,
+                            context.createObject(
+                                value,
+                                -1,
+                                SERVICE.CONSTRUCTORS.NUMBER,
+                                throw_error
+                            )
+                        );
                     break;
-                case "string":
-                    parent.set(key, new NativeString(value));
+                case 'string':
+                    parent.set(
+                        context,
+                        key,
+                        context.createObject(value, -1, SERVICE.CONSTRUCTORS.STRING, throw_error)
+                    );
                     break;
-                case "symbol":
-                    parent.set(key, new NativeString(Symbol.keyFor(value)));
+                case 'symbol':
+                    parent.set(
+                        context,
+                        key,
+                        context.createObject(
+                            Symbol.keyFor(value),
+                            -1,
+                            SERVICE.CONSTRUCTORS.STRING,
+                            throw_error
+                        )
+                    );
                     break;
-                case "function":
-                    parent.set(key, new NativeFunction(value));
+                case 'function':
+                    if (PoonyaPrototype.isPrototypeOf(value)) {
+                        parent.set(context, (value = new value(context)).name, value);
+                    } else {
+                        parent.set(context, key, new NativeFunction(value));
+                    }
                     break;
-                case "boolean":
-                    parent.set(key, new NativeBoolean(value));
+                case 'boolean':
+                    parent.set(
+                        context,
+                        key,
+                        context.createObject(value, -1, SERVICE.CONSTRUCTORS.BOOLEAN, throw_error)
+                    );
                     break;
-                case "undefined":
-                case "object":
+                case 'undefined':
+                case 'object':
                     if (value == null)
-                        parent.set(new NativeNull());
+                        parent.set(
+                            context,
+                            key,
+                            context.createObject(null, -1, SERVICE.CONSTRUCTORS.NULL, throw_error)
+                        );
                     else {
                         if (value instanceof PoonyaStaticLibrary) {
-                            const target = new PoonyaObject(context.getByPath(SERVICE.CONSTRUCTORS.OBJECT, -1, PoonyaPrototype, throw_error), null, context);
+                            const target = new PoonyaObject(
+                                context.getByPath(
+                                    SERVICE.CONSTRUCTORS.OBJECT,
+                                    -1,
+                                    PoonyaPrototype,
+                                    throw_error
+                                ),
+                                null
+                            );
 
                             value.importTo(target, context, throw_error);
 
-                            parent.set(key, target);
-                        } else if (value instanceof PoonyaPrototype) {
-                            parent.set(key, value);
+                            parent.set(context, key, target);
                         } else if (value instanceof Array) {
-                            parent.set(key, new PoonyaArray(context.getByPath(SERVICE.CONSTRUCTORS.ARRAY, -1, PoonyaPrototype, throw_error), value, null, context));
+                            parent.set(
+                                context,
+                                key,
+                                new PoonyaArray(
+                                    context.getByPath(
+                                        SERVICE.CONSTRUCTORS.ARRAY,
+                                        -1,
+                                        PoonyaPrototype,
+                                        throw_error
+                                    ),
+                                    value,
+                                    null,
+                                    context
+                                )
+                            );
                         } else
-                            parent.set(key, new PoonyaObject(context.getByPath(SERVICE.CONSTRUCTORS.OBJECT, -1, PoonyaPrototype, throw_error), value, null, context));
+                            parent.set(
+                                context,
+                                key,
+                                new PoonyaObject(
+                                    context.getByPath(
+                                        SERVICE.CONSTRUCTORS.OBJECT,
+                                        -1,
+                                        PoonyaPrototype,
+                                        throw_error
+                                    ),
+                                    value,
+                                    null,
+                                    context
+                                )
+                            );
                     }
                     break;
             }
-    }
-}
-
-class PoonyaNativePrototype extends PoonyaPrototype {
-    constructor(parents, name){
-        super(parents, name);
+        }
     }
 }
 
@@ -215,7 +276,7 @@ class PoonyaNativePrototype extends PoonyaPrototype {
     }
 
     AddLibrary = (lib_id, lib_object, override = false) => {
-        if (override || global[NAMESPACE][modules][lib_id = Symbol.for(lib_id)] == null) {
+        if (override || global[NAMESPACE][modules][(lib_id = Symbol.for(lib_id))] == null) {
             global[NAMESPACE][modules][lib_id] = lib_object;
         } else {
             throw new TypeError('Library, with this id already imported. For ' + lib_id.toString());
@@ -224,7 +285,7 @@ class PoonyaNativePrototype extends PoonyaPrototype {
 
     Import = (import_statements, logger) => {
         if (!(import_statements instanceof Array))
-            throw new TypeError("import_statements must be Array");
+            throw new TypeError('import_statements must be Array');
 
         const statements = new Array();
 
@@ -242,21 +303,20 @@ class PoonyaNativePrototype extends PoonyaPrototype {
 
         for (let i = 0, leng = default_libs.length, cur, path; i < leng; i++) {
             cur = new module.constructor();
+
             path = join(lib_dir, default_libs[i]);
 
-            cur.import = () => ({
-                FIELDFLAGS:             FIELDFLAGS,
-                Exceptions:             Exceptions,
-                PoonyaStaticLibrary:    PoonyaStaticLibrary,
-                PoonyaNativePrototype:  PoonyaNativePrototype
-            })
+            cur.paths = [__dirname + '\\data'];
+
+            cur.loaded = true;
+
+            cur.file = default_libs[i];
 
             cur._compile(`"use strict";${readFileSync(path, 'utf-8')};`, path);
-        };
+        }
     };
 })();
 
-module.exports.PoonyaNativePrototype = PoonyaNativePrototype;
 module.exports.PoonyaStaticLibrary = PoonyaStaticLibrary;
 module.exports.ImportDir = ImportDir;
 module.exports.Import = Import;

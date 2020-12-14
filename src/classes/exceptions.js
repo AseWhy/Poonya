@@ -17,8 +17,8 @@ const { SERVICE } = require('./static')
  * @protected
  */
 class PoonyaException {
-    constructor(message){
-        this.message = "There were some errors while executing the template:\n" + message;
+    constructor(header, message) {
+        this.message = 'PoonyaException / ' + header + (message != null ? ': \n' + message : '');
     }
 }
 
@@ -32,7 +32,7 @@ class PoonyaException {
  */
 class ParserException extends PoonyaException {
     constructor() {
-        super("Error when processing raw data");
+        super('Error when processing raw data');
     }
 }
 
@@ -60,9 +60,7 @@ class TheSequenceException extends PoonyaException {
  */
 class UnexpectedTokenException extends PoonyaException {
     constructor(token, expected) {
-        super(
-            `Unexpected token '${token.toString()}' when expected '${expected.toString()}'`,
-        );
+        super(`Unexpected token '${token.toString()}' when expected '${expected.toString()}'`);
     }
 }
 
@@ -77,7 +75,7 @@ class UnexpectedTokenException extends PoonyaException {
 class UnexpectedTokenStatement extends PoonyaException {
     constructor(statement, token, expected) {
         super(
-            `Error parsing the '${statement.toString()}' statement. Expected '${expected.toString()}', when actually: '${token.toString()}'`,
+            `Error parsing the '${statement.toString()}' statement. Expected '${expected.toString()}', when actually: '${token.toString()}'`
         );
     }
 }
@@ -92,7 +90,7 @@ class UnexpectedTokenStatement extends PoonyaException {
  */
 class ParserLogicException extends PoonyaException {
     constructor() {
-        super("The expression has incorrect logic");
+        super('The expression has incorrect logic');
     }
 }
 
@@ -107,7 +105,7 @@ class ParserLogicException extends PoonyaException {
 class ParserEmtyArgumentException extends PoonyaException {
     constructor() {
         super(
-            "It is not possible to pass an empty argument to a function, use null to denote an empty value",
+            'It is not possible to pass an empty argument to a function, use null to denote an empty value'
         );
     }
 }
@@ -122,9 +120,7 @@ class ParserEmtyArgumentException extends PoonyaException {
  */
 class LinkerPathNotGiveExceptrion extends PoonyaException {
     constructor() {
-        super(
-            "To use include, you must pass the path to the current execution file",
-        );
+        super('To use include, you must pass the path to the current execution file');
     }
 }
 
@@ -151,16 +147,19 @@ class LinkerIOError extends PoonyaException {
  * @protected
  */
 class NativeFunctionExcecutionError extends PoonyaException {
-    static StackTraceRGExp = /^\s*at\s(?:new\s)?([aA-zZ.аА-яЯё]+)\s\((.*)\)$/
+    static StackTraceRGExp = /^\s*at\s(?:new\s)?([aA-zZ.аА-яЯё]+)\s\((.*)\)$/;
 
     constructor(name, stack) {
         stack = stack.split('\n');
 
-        for(let i = 0, leng = stack.length, cur; i < leng; i++) {
-            if(NativeFunctionExcecutionError.StackTraceRGExp.test(stack[i])){
+        for (let i = 0, leng = stack.length, cur; i < leng; i++) {
+            if (NativeFunctionExcecutionError.StackTraceRGExp.test(stack[i])) {
                 cur = stack[i].match(NativeFunctionExcecutionError.StackTraceRGExp);
 
-                if(cur[1] === 'NativeFunction.result' && SERVICE.ROOTPATH == dirname(cur[2]).substring(0, SERVICE.ROOTPATH.length)) {
+                if (
+                    cur[1] === 'NativeFunction.result' &&
+                    SERVICE.ROOTPATH == dirname(cur[2]).substring(0, SERVICE.ROOTPATH.length)
+                ) {
                     stack = stack.slice(0, i);
 
                     break;
@@ -168,7 +167,10 @@ class NativeFunctionExcecutionError extends PoonyaException {
             }
         }
 
-        super(" * > Critical error while executing a native function '" + name + "':\n * > \t" + stack.join('\n * > \t'));
+        super(
+            "Critical error while executing a native function '" + name + "'",
+            '* > \t' + stack.join('\n * > \t')
+        );
     }
 }
 
@@ -182,7 +184,7 @@ class NativeFunctionExcecutionError extends PoonyaException {
  */
 class NativeFunctionReturnValueError extends PoonyaException {
     constructor() {
-        super("Function can only return simple types");
+        super('Function can only return simple types');
     }
 }
 
@@ -286,7 +288,7 @@ class UnableToRecognizeTypeException extends PoonyaException {
 
 /**
  * Ошибка сегментации сегментов вызова (...exp, ...exp, ) <-
- * 
+ *
  * @memberof Poonya.Exceptions
  * @name SegmentationFaultEmptyArgumentException
  * @class
@@ -300,7 +302,7 @@ class SegmentationFaultEmptyArgumentException extends PoonyaException {
 
 /**
  * Ошибка сегментации сегментов вызова (...exp, ...exp, ) <-
- * 
+ *
  * @memberof Poonya.Exceptions
  * @name SegmentationFaultMaximumSegmentsForBlockException
  * @class
@@ -314,7 +316,7 @@ class SegmentationFaultMaximumSegmentsForBlockException extends PoonyaException 
 
 /**
  * somed.dss[ <...exp> ] <-
- * 
+ *
  * @memberof Poonya.Exceptions
  * @name UnexpectedWordTypeAndGetException
  * @class
@@ -328,7 +330,7 @@ class UnexpectedWordTypeAndGetException extends PoonyaException {
 
 /**
  * Невозможно получить доступ к полю, неправильно сотавлено выражение
- * 
+ *
  * @memberof Poonya.Exceptions
  * @name InvalidSequenceForLetiableAccessException
  * @class
@@ -342,7 +344,7 @@ class InvalidSequenceForLetiableAccessException extends PoonyaException {
 
 /**
  * Критическая ошибка парсера
- * 
+ *
  * @memberof Poonya.Exceptions
  * @name CriticalParserErrorException
  * @class
@@ -356,7 +358,7 @@ class CriticalParserErrorException extends PoonyaException {
 
 /**
  * Критическая ошибка парсера, неожиданный конец ввода
- * 
+ *
  * @memberof Poonya.Exceptions
  * @name CriticalParserErrorUnexpectedEndOfInputException
  * @class
@@ -370,7 +372,7 @@ class CriticalParserErrorUnexpectedEndOfInputException extends PoonyaException {
 
 /**
  * Критическая ошибка парсера, не переданны данные для парсинга
- * 
+ *
  * @memberof Poonya.Exceptions
  * @name CriticalParserErrorNoRawDataTransmittedException
  * @class
@@ -384,7 +386,7 @@ class CriticalParserErrorNoRawDataTransmittedException extends PoonyaException {
 
 /**
  * Прыжок через два уровня
- * 
+ *
  * @memberof Poonya.Exceptions
  * @name BadArrowNotationJumpingTwoLevels
  * @class
@@ -398,7 +400,7 @@ class BadArrowNotationJumpingTwoLevels extends PoonyaException {
 
 /**
  * Неожиданный переход на более высокий уровень
- * 
+ *
  * @memberof Poonya.Exceptions
  * @name BadArrowNotationJumpingToUpperLevel
  * @class
@@ -412,7 +414,7 @@ class BadArrowNotationJumpingToUpperLevel extends PoonyaException {
 
 /**
  * Невозможно создать пустой объект, ключи уже объявлены
- * 
+ *
  * @memberof Poonya.Exceptions
  * @name BadEmptyObjectException
  * @class
@@ -426,7 +428,7 @@ class BadEmptyObjectException extends PoonyaException {
 
 /**
  * Неправильный тип ключа
- * 
+ *
  * @memberof Poonya.Exceptions
  * @name BadKeyInvalidTypeException
  * @class
@@ -440,7 +442,7 @@ class BadKeyInvalidTypeException extends PoonyaException {
 
 /**
  * Невозможно создать пустой объект, ключи уже объявлены
- * 
+ *
  * @memberof Poonya.Exceptions
  * @name BadKeyProtectedFieldException
  * @class
@@ -454,7 +456,7 @@ class BadKeyProtectedFieldException extends PoonyaException {
 
 /**
  * Попытка создать объект вызывав его как функцию
- * 
+ *
  * @memberof Poonya.Exceptions
  * @name UnableToCreateAnObjectException
  * @class
@@ -462,13 +464,15 @@ class BadKeyProtectedFieldException extends PoonyaException {
  */
 class UnableToCreateAnObjectException extends PoonyaException {
     constructor() {
-        super(`Unable to create an object by calling its constructor as a function, pick ConstructorName -> *;`);
+        super(
+            `Unable to create an object by calling its constructor as a function, pick ConstructorName -> *;`
+        );
     }
 }
 
 /**
  * Попытка вызывать несуществующий констурктор
- * 
+ *
  * @memberof Poonya.Exceptions
  * @name IsNotAConstructorException
  * @class
@@ -476,7 +480,11 @@ class UnableToCreateAnObjectException extends PoonyaException {
  */
 class IsNotAConstructorException extends PoonyaException {
     constructor(path) {
-        super(`${path.map(e => typeof e === 'number' ? '[' + e + ']' : e.toString()).join(' -> ')} - not a co-constructor`);
+        super(
+            `${path
+                .map(e => (typeof e === 'number' ? '[' + e + ']' : e.toString()))
+                .join(' -> ')} - not a constructor`
+        );
     }
 }
 

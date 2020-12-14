@@ -5,7 +5,8 @@
  * @license MIT
  */
 
-const { TheFieldMustBeNumberException } = require('../../exceptions');
+const { TheFieldMustBeNumberException } = require('../../exceptions')
+    ,   PoonyaNumber = require('../../data/PoonyaNumber');
 
 /**
  * @lends RepeatStatement;
@@ -38,7 +39,14 @@ class RepeatStatement {
      * @method
      */
     toString(indent) {
-        return "repeat (" + this.from.toString(indent) + "; " + this.to.toString(indent) + ") " + this.body.toString(indent);
+        return (
+            'repeat (' +
+            this.from.toString(indent) +
+            '; ' +
+            this.to.toString(indent) +
+            ') ' +
+            this.body.toString(indent)
+        );
     }
 
     /**
@@ -56,27 +64,23 @@ class RepeatStatement {
     result(context, out, throw_error) {
         let from = this.from.result(context, out, throw_error),
             to = this.to.result(context, out, throw_error),
-            difference = from < to ? 1 : -1;
+            difference;
 
-        if (typeof from !== "number")
-            throw_error(
-                this.from.position,
-                new TheFieldMustBeNumberException("From")
-            );
+        if (!(from instanceof PoonyaNumber))
+            throw_error(this.from.position, new TheFieldMustBeNumberException('From'));
 
-        if (typeof to !== "number")
-            throw_error(
-                this.to.position,
-                new TheFieldMustBeNumberException("To")
-            );
+        if (!(to instanceof PoonyaNumber))
+            throw_error(this.to.position, new TheFieldMustBeNumberException('To'));
 
-        from = parseInt(from);
-        to = parseInt(to);
+        difference =
+            (from = Math.floor(from.result(context, out, throw_error))) <
+            (to = Math.floor(to.result(context, out, throw_error)))
+                ? 1 : -1;
 
         while (from != to) {
             context.addLevel();
 
-            context.set("current", from, "up");
+            context.set('current', from, 'up');
 
             this.body.result(context, out, throw_error, false);
 

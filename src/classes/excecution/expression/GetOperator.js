@@ -5,7 +5,9 @@
  * @license MIT
  */
 
-const { Operand } = require("../../common/ParserData");
+const { Operand } = require('../../common/ParserData')
+    , { SERVICE, FIELDFLAGS } = require('../../static')
+    ,   NativeFunction = require('../../data/NativeFunction');
 
 /**
  * @lends GetOperator
@@ -23,7 +25,7 @@ class GetOperator extends Operand {
      * @protected
      */
     constructor(position, stack) {
-        super("get");
+        super('get');
 
         this.position = position;
         this.query_stack = stack;
@@ -43,13 +45,18 @@ class GetOperator extends Operand {
      * @method
      */
     result(context, out, throw_error) {
-        const data = context.getByPath(this.query_stack, this.position, null, throw_error);
+        const data = context.getByPath(this.query_stack, this.position, null, throw_error, true);
 
         if (data != null)
-            return data.result(context, out, throw_error);
-
+            if(data.instance instanceof NativeFunction)
+                if((data.flags & FIELDFLAGS.PROPERTY) != 0)
+                    return data.instance.result(data.parent, [], context, out, this.position, throw_error);
+                else
+                    return context.createObject(`[NativeCode:${data.instance.name}]`, this.position, SERVICE.CONSTRUCTORS.STRING, throw_error);
+            else
+                return data.instance;
         else
-            return null;
+            return context.createObject(null, this.position, SERVICE.CONSTRUCTORS.NULL, throw_error);
     }
 
     /**
@@ -60,7 +67,7 @@ class GetOperator extends Operand {
      * @method
      */
     toString() {
-        return "(" + this.query_stack.join(" => ") + ")";
+        return '(' + this.query_stack.join(' => ') + ')';
     }
 }
 

@@ -7,20 +7,13 @@
 
 const {
         SERVICE
-    } = require('./classes/static'),
-    {
+    } = require('./classes/static'), {
         Operand
-    } = require('./classes/common/ParserData'),
-    {
+    } = require('./classes/common/ParserData'), {
         iPoonyaObject,
         iPoonyaPrototype
-    } = require('./classes/interfaces')
-    ,   NativeFunction = require('./classes/excecution/expression/NativeFunction')
-    ,   NativeString = require('./classes/common/native/NativeString')
-    ,   NativeNumber = require('./classes/common/native/NativeNumber')
-    ,   NativeInteger = require('./classes/common/native/NativeInteger')
-    ,   NativeBoolean = require('./classes/common/native/NativeBoolean')
-    ,   NativeNull = require('./classes/common/native/NativeNull');
+    } = require('./classes/interfaces'),
+        NativeFunction = require('./classes/data/NativeFunction');
 
 /**
  * Фукция которая преобразует нативное значение в значение Poonya
@@ -29,40 +22,42 @@ const {
  * @function Cast
  *
  * @param {Any} data Данные которые необходимо преобразовать
- * @param {iContext} Контекст
- * @param {Array<Any>} дерево родителей объекта
+ * @param {iContext} context Контекст
+ * @param {Array<Any>} parents_three дерево родителей объекта
  *
  * @protected
  */
 function Cast(data, context, parents_three = new Array()) {
     switch (typeof data) {
-        case "bigint":
-            return new NativeInteger(data);
-        case "number":
-            return new NativeNumber(data);
-        case "string":
-            return new NativeString(data);
-        case "symbol":
-            return new NativeString(Symbol.keyFor(data));
-        case "boolean":
-            return new NativeBoolean(data);
-        case "object":
+        case 'bigint':
+            return context.createObject(data, -1, SERVICE.CONSTRUCTORS.INTEGER, null, parents_three);
+        case 'number':
+            return context.createObject(data, -1, SERVICE.CONSTRUCTORS.NUMBER, null, parents_three);
+        case 'string':
+            return context.createObject(data, -1, SERVICE.CONSTRUCTORS.STRING, null, parents_three);
+        case 'symbol':
+            return context.createObject(Symbol.keyFor(data), -1, SERVICE.CONSTRUCTORS.STRING, null, parents_three);
+        case 'boolean':
+            return context.createObject(data, -1, SERVICE.CONSTRUCTORS.BOOLEAN, null, parents_three);
+        case 'undefined':
+            return context.createObject(data, -1, SERVICE.CONSTRUCTORS.NULL, null);
+        case 'object':
             switch (true) {
                 case data === null:
-                    return new NativeNull();
+                    return context.createObject(data, -1, SERVICE.CONSTRUCTORS.NULL, null, parents_three);
                 case data instanceof iPoonyaObject:
-                case data instanceof Operand:
                 case data instanceof iPoonyaPrototype:
+                case data instanceof Operand:
                     return data;
                 default:
                     parents_three.push(data);
 
-                    if(Array.isArray(data))
-                        return context.createObject(data, -1, SERVICE.CONSTRUCTORS.ARRAY);
+                    if (Array.isArray(data))
+                        return context.createObject(data, -1, SERVICE.CONSTRUCTORS.ARRAY, null, parents_three);
                     else
-                        return context.createObject(data, -1, SERVICE.CONSTRUCTORS.OBJECT);
+                        return context.createObject(data, -1, SERVICE.CONSTRUCTORS.OBJECT, null, parents_three);
             }
-        case "function":
+        case 'function':
             return new NativeFunction(data);
     }
 }
@@ -103,22 +98,20 @@ function maybeEquals(entries, index, equalts_t, equalts_v) {
     return true;
 }
 
-
 /**
  * Подсчитывает количиство неприрывных одинаковых вхождений
- * 
+ *
  * @param {Array<LexerEntry>} entries вхождения для парсинга
  * @param {Number} start начальная позиция парсинга
  * @param {String} equalts_t Тип с которым сравниваем
  * @param {String|Array<String>} equalts_v Значение(я) с которым(и) сравниваем
- * 
+ *
  * @memberof Poonya.Utils
  * @private
  */
-function countKeys(entries, start, equalts_t, equalts_v){
-    for(let i = start, to = entries.length; i < to; i++){
-        if(entries[i] == null || !entries[i].equals(equalts_t, equalts_v))
-            return i - start;
+function countKeys(entries, start, equalts_t, equalts_v) {
+    for (let i = start, to = entries.length; i < to; i++) {
+        if (entries[i] == null || !entries[i].equals(equalts_t, equalts_v)) return i - start;
     }
 }
 
@@ -133,7 +126,7 @@ function countKeys(entries, start, equalts_t, equalts_v){
  * @static
  */
 function toFixed(d, l) {
-    return "0x" + d.toString(16).padStart(l - 2, "0");
+    return '0x' + d.toString(16).padStart(l - 2, '0');
 }
 
 module.exports.maybeEquals = maybeEquals;

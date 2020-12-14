@@ -5,7 +5,6 @@
  * @license MIT
  */
 
-const BooleanLiteral = require("../../common/literals/BooleanLiteral");
 
 /**
  * @lends IfStatement
@@ -39,15 +38,11 @@ class IfStatement {
      */
     toString(indent) {
         return (
-            "if (" +
+            'if (' +
             this.condition.toString(indent) +
-            ") " +
+            ') ' +
             this.body_true.toString(indent) +
-            (
-                this.body_false != null
-                    ? " else " + this.body_false.toString(indent)
-                    : ""
-            )
+            (this.body_false != null ? ' else ' + this.body_false.toString(indent) : '')
         );
     }
 
@@ -64,13 +59,9 @@ class IfStatement {
      * @method
      */
     result(context, out, throw_error) {
-        if (BooleanLiteral.toPoonyaBoolean(
-            this.condition.result(context, out, throw_error),
-            this.condition.position
-        ).result())
+        if (context.toBooleanResult(this.condition.result(context, out, throw_error)))
             this.body_true.result(context, out, throw_error);
-        else if (this.body_false != null)
-            this.body_false.result(context, out, throw_error);
+        else if (this.body_false != null) this.body_false.result(context, out, throw_error);
     }
 }
 

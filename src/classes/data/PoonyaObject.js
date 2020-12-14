@@ -15,7 +15,8 @@ const {
     { 
             SUPER_CALL
         ,   GET
-        ,   FIELDFLAGS 
+        ,   FIELDFLAGS
+        ,   CONFIG
     } = require('../static'), 
     { 
             Cast
@@ -24,7 +25,7 @@ const {
             iPoonyaObject
         ,   iPoonyaPrototype
     } = require('../interfaces'),
-            NativeFunction = require('../excecution/expression/NativeFunction');
+            NativeFunction = require('./NativeFunction');
 
 /**
  * @lends PoonyaObject
@@ -34,9 +35,12 @@ class PoonyaObject extends iPoonyaObject {
     /**
      * Дескриптор объекта в poonya
      *
-     * @param {PoonyaObject} prototype Прототип объекта, если необходимо
-     * @param {Object} init Объект инициализации
+     * @param {PoonyaObject} prototype - Прототип объекта, если необходимо
+     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память
+     * @param {Object} init - Объект инициализации
+     * 
      * @memberof Poonya.Data
+     * 
      * @constructs PoonyaObject
      * @public
      */
@@ -45,11 +49,7 @@ class PoonyaObject extends iPoonyaObject {
 
         this.fields = new Map();
         this.field_attrs = new Map();
-
-        if (context instanceof iContext)
-            this.context = context;
-        else
-            throw new Error('No context passed: dynamic data needs context.');
+        this.raw = false;
 
         if (prototype instanceof iPoonyaPrototype) {
             prototype[SUPER_CALL](this);
@@ -58,7 +58,21 @@ class PoonyaObject extends iPoonyaObject {
         }
 
         if (init != null)
-            this.append(init);
+            this.append(context, init);
+    }
+
+    /**
+     * Возвращает копию этого объекта
+     * 
+     * @returns {PoonyaObject} клонированый объект
+     */
+    clone(){
+        const obj = new PoonyaObject(this.prototype);
+
+        obj.fields = new Map(this.fields);
+        obj.field_attrs = new Map(this.field_attrs);
+
+        return obj;
     }
 
     /**
@@ -87,16 +101,17 @@ class PoonyaObject extends iPoonyaObject {
      * Получет значение из текущей области памяти по ключу `key`
      *
      * @param {String} key ключ, по которому происходит получение значения
+     * @param {iContext} context контекст, который будет использоваться для кастинга значения
      * @method
      * @public
      */
-    get(key) {
+    get(key, context) {
         let data = this.fields.get(key);
 
         if (data != null) {
             return data;
         } else {
-            return this.prototype[GET](key, this.context);
+            return this.prototype[GET](key, context, false);
         }
     }
 
@@ -137,23 +152,25 @@ class PoonyaObject extends iPoonyaObject {
     /**
      * Обновляет данные в текущем объекте
      *
+     * @param {iContext} context контекст, по которому будет приобразовано значение в случае необходимости
      * @param {Object} data данные которые нужно обновить
+     * 
      * @method
      * @public
      */
-    append(data) {
+    append(context, data) {
         if (typeof data === "object") {
             if (Array.isArray(data)) {
                 for (let i = 0, leng = data.length; i < leng; i++)
-                    this.set(i, data[i], data);
+                    this.set(context, i, data[i], data);
             } else {
                 if (data instanceof PoonyaObject) {
                     for (let entry of data.fields) {
-                        this.set(entry[0], entry[1]);
+                        this.set(context, entry[0], entry[1]);
                     }
                 } else {
                     for (let key in data)
-                        this.set(key, data[key]);
+                        this.set(context, key, data[key]);
                 }
             }
         } else {
@@ -170,7 +187,7 @@ class PoonyaObject extends iPoonyaObject {
      * @method
      * @public
      */
-    set(key, data, parents_three = new Array()) {
+    set(context, key, data, parents_three = new Array()) {
         if (typeof key !== "string" && typeof key !== "number")
             throw new BadKeyInvalidTypeException();
 
@@ -180,11 +197,31 @@ class PoonyaObject extends iPoonyaObject {
             throw new BadKeyProtectedFieldException();
 
         try {
-            this.fields.set(key, Cast(data, this.context, parents_three));
+            this.fields.set(key, Cast(data, context, parents_three));
         } catch (e) {
-            console.log(e)
+            if(CONFIG.DEBUG)
+                console.error(e);
 
-            console.error("Error when cast value of " + key);
+            throw new Error("Error when cast value of " + key);
+        }
+    }
+
+    /**
+     * Возвращает строковой эквивалент объекта
+     *
+     * @param {iContext} context текущий контекст
+     * @param {Array<String>} out Выходной массив
+     * @param {Function} throw_error Функция вызывающаяся при ошибках
+     * 
+     * @returns {String}
+     */
+    toString(context, out, throw_error){
+        let toString = this.fields.get('toString');
+
+        if(toString != null) {
+            return toString.result(context, out, throw_error);
+        } else {
+            return `[Object${this.prototype.name}]`;
         }
     }
 
@@ -212,6 +249,17 @@ class PoonyaObject extends iPoonyaObject {
         }
 
         return output;
+    }
+
+    /**
+     * Сериализует объект в простое значение.
+     *
+     * @override
+     * @method
+     * @public
+     */
+    toRawData(){
+        return `[Object:${this.prototype.name}]`;
     }
 }
 

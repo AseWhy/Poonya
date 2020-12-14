@@ -14,7 +14,7 @@ class SequenceMainGroup {
      * Главная исполняемая последовательность
      *
      * @param {Array} init Данные для инициалзации
-     * 
+     *
      * @constructs SequenceMainGroup
      * @memberof Poonya.Statements
      * @protected
@@ -56,9 +56,10 @@ class SequenceMainGroup {
      * @param {String} indent отступ слева, для лучшей читаемости
      * @returns {String} отфрматированный текст
      */
-    toString(indent = "\t") {
-        return `{\n${indent}${this.Sequence.map((e) => e.toString(indent + "\t")
-        ).join("\n\n" + indent)}\n${indent.substring(0, indent.length - 1)}}`;
+    toString(indent = '\t') {
+        return `{\n${indent}${this.Sequence.map(e => e.toString(indent + '\t')).join(
+            '\n\n' + indent
+        )}\n${indent.substring(0, indent.length - 1)}}`;
     }
 }
 

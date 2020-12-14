@@ -19,7 +19,7 @@ class ParserData {
      * @abstract
      * @protected
      */
-    constructor(type = "undefined") {
+    constructor(type = 'undefined') {
         this.type = type;
     }
 }
@@ -36,8 +36,8 @@ class Operand extends ParserData {
      * @abstract
      * @protected
      */
-    constructor(name = "undefined") {
-        super('operand')
+    constructor(name = 'undefined') {
+        super('operand');
 
         this.name = name;
     }
@@ -56,46 +56,46 @@ class Operator extends ParserData {
      * @protected
      */
     constructor(data) {
-        super("operator");
+        super('operator');
 
         this.position = data.position;
         this.raw = data.data;
 
         switch (data.data.toString()) {
-            case "+":
+            case '+':
                 this.op_p = OPERATOR.PLUS;
                 break;
-            case "-":
+            case '-':
                 this.op_p = OPERATOR.MINUS;
                 break;
-            case "*":
+            case '*':
                 this.op_p = OPERATOR.MULT;
                 break;
-            case "/":
+            case '/':
                 this.op_p = OPERATOR.DIVIDE;
                 break;
-            case ">":
+            case '>':
                 this.op_p = OPERATOR.LARGER;
                 break;
-            case "<":
+            case '<':
                 this.op_p = OPERATOR.LESS;
                 break;
-            case ">=":
+            case '>=':
                 this.op_p = OPERATOR.ELARGER;
                 break;
-            case "<=":
+            case '<=':
                 this.op_p = OPERATOR.ELESS;
                 break;
-            case "=":
+            case '=':
                 this.op_p = OPERATOR.EQUAL;
                 break;
-            case "!=":
+            case '!=':
                 this.op_p = OPERATOR.NEQUAL;
                 break;
-            case "&":
+            case '&':
                 this.op_p = OPERATOR.AND;
                 break;
-            case "|":
+            case '|':
                 this.op_p = OPERATOR.OR;
                 break;
         }
@@ -110,7 +110,7 @@ class Operator extends ParserData {
      * @returns {Boolean}
      */
     equals(t) {
-        return this.op_p === OPERATOR[t];
+        return this.op_p === t;
     }
 
     /**

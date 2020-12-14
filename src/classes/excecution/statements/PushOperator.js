@@ -5,8 +5,11 @@
  * @license MIT
  */
 
-const { ExpressionGroup } = require("../expression/ExpressionGroup")
-    , { TheFieldMustBeAnArrayInstanceExceprion, GetFieldOfNullException } = require('../../exceptions');
+const { ExpressionGroup } = require('../expression/ExpressionGroup'),
+    {
+        TheFieldMustBeAnArrayInstanceExceprion,
+        GetFieldOfNullException,
+    } = require('../../exceptions');
 
 /**
  * @lends PushOperator
@@ -40,12 +43,10 @@ class PushOperator {
      */
     toString(indent) {
         return (
-            "(" +
-            this.query_stack
-                .map((e) => (typeof e === "number" ? `[${e}]` : e))
-                .join(" => ") +
-            ") < " +
-            this.value.toString(indent + "\t")
+            '(' +
+            this.query_stack.map(e => (typeof e === 'number' ? `[${e}]` : e)).join(' => ') +
+            ') < ' +
+            this.value.toString(indent + '\t')
         );
     }
 
@@ -70,29 +71,21 @@ class PushOperator {
 
             for (let leng = query_stack.length; query_data && index < leng; index++) {
                 if (query_stack[index] instanceof ExpressionGroup)
-                    query_stack[index] = query_stack[index].result(
-                        context,
-                        out,
-                        throw_error
-                    );
+                    query_stack[index] = query_stack[index]
+                        .result(context, out, throw_error)
+                        .toRawData();
 
                 query_data = query_data.get(query_stack[index]) || null;
             }
 
             if (query_data instanceof PoonyaArray)
                 query_data.push(this.value.result(context, out, throw_error));
-
             else
                 throw_error(
                     this.position,
                     new TheFieldMustBeAnArrayInstanceExceprion(query_stack[index - 1])
                 );
-        }
-        else
-            throw_error(
-                this.position,
-                new GetFieldOfNullException(query_stack[0])
-            );
+        } else throw_error(this.position, new GetFieldOfNullException(query_stack[0]));
     }
 }
 

@@ -44,15 +44,13 @@ class SequenceGroup {
      * @method
      */
     result(context, out, throw_error, level_ops = true) {
-        if (level_ops)
-            context.addLevel();
+        if (level_ops) context.addLevel();
 
         for (let i = 0, leng = this.Sequence.length; i < leng; i++) {
             this.Sequence[i].result(context, out, throw_error);
         }
 
-        if (level_ops)
-            context.popLevel();
+        if (level_ops) context.popLevel();
     }
 
     /**
@@ -62,8 +60,9 @@ class SequenceGroup {
      * @returns {String} отфрматированный текст
      */
     toString(indent = 0) {
-        return `{\n${indent}${this.Sequence.map((e) => e.toString(indent + "\t")
-        ).join("\n\n" + indent)}\n${indent.substring(0, indent.length - 1)}}`;
+        return `{\n${indent}${this.Sequence.map(e => e.toString(indent + '\t')).join(
+            '\n\n' + indent
+        )}\n${indent.substring(0, indent.length - 1)}}`;
     }
 }
 

@@ -36,7 +36,7 @@ class SetOperator {
      * @method
      */
     toString(indent) {
-        return "set " + this.name + " = " + this.value.toString(indent + "\t");
+        return 'set ' + this.name + ' = ' + this.value.toString(indent + '\t');
     }
 
     /**
@@ -52,13 +52,10 @@ class SetOperator {
      * @method
      */
     result(context, out, throw_error) {
-        if (!context.has(this.name, "up")) {
-            context.set(this.name, this.value.result(context, out, throw_error), "up");
+        if (!context.has(this.name, 'up')) {
+            context.set(this.name, this.value.result(context, out, throw_error), 'up');
         } else {
-            throw_error(
-                this.position,
-                new TheFieldAlreadyHasBeenDeclaredException(this.name)
-            );
+            throw_error(this.position, new TheFieldAlreadyHasBeenDeclaredException(this.name));
         }
     }
 }

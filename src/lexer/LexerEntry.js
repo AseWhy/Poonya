@@ -24,14 +24,11 @@ class LexerEntry {
      * @protected
      */
     constructor(type, data, p, s_separator) {
-        this.type = CHARTYPE[type];
+        this.type = type;
         this.data = data;
         this.position = p - data.byteLength > 0 ? p - data.byteLength + 1 : 0;
         this.leng = data.byteLength;
-        this.string_separator =
-            s_separator != null
-                ? String.fromCharCode(s_separator)
-                : null;
+        this.string_separator = s_separator != null ? String.fromCharCode(s_separator) : null;
     }
 
     /**
@@ -59,9 +56,7 @@ class LexerEntry {
      * @returns {Boolean}
      */
     contentEquals(s) {
-        return Array.isArray(s)
-            ? s.includes(this.toString())
-            : this.toString() == s;
+        return Array.isArray(s) ? s.includes(this.toString()) : this.toString() == s;
     }
 
     /**
@@ -72,8 +67,8 @@ class LexerEntry {
      */
     toString() {
         return this.type != CHARTYPE.STRING
-            ? this.data.toString("utf8")
-            : this.string_separator + this.data.toString("utf8") + this.string_separator;
+            ? this.data.toString('utf8')
+            : this.string_separator + this.data.toString('utf8') + this.string_separator;
     }
 
     /**
@@ -83,7 +78,7 @@ class LexerEntry {
      * @method
      */
     toRawString() {
-        return this.data.toString("utf8");
+        return this.data.toString('utf8');
     }
 }
 

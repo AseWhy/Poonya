@@ -44,7 +44,6 @@ const {
     ,   ResetOperator = require('./classes/excecution/statements/ResetOperator')
     ,   PushOperator = require('./classes/excecution/statements/PushOperator')
     ,   SequenceMainGroup = require('./classes/excecution/statements/SequenceMainGroup')
-    ,   NativeString = require('./classes/common/native/NativeString')
     ,   linker = require('./linker');
 
 /**
@@ -1176,7 +1175,7 @@ function parserMP(entries, block_prefix, throw_error, parent_path) {
                 i += entries[i + 1].equals(CHARTYPE.SPACE) ? 2 : 1;
 
             if (buffer.length > 0) {
-                out.push(new OutOperator(new NativeString(buffer.join(""))));
+                out.push(new OutOperator(new ObjectContructorCall(SERVICE.CONSTRUCTORS.STRING, buffer.join(""), entries[i].position)));
 
                 buffer.splice(0, buffer.length);
             }
@@ -1239,13 +1238,13 @@ function parserMP(entries, block_prefix, throw_error, parent_path) {
 
             buffer.splice(0, buffer.length);
         } else if (hook_index === 0) {
-            out.push(
-                new OutOperator(
-                    new NativeString(buffer.join("")),
-                ),
-            );
+            if(buffer.length != 0) {
+                out.push(
+                    new OutOperator(new ObjectContructorCall(SERVICE.CONSTRUCTORS.STRING, buffer.join(""), entries[entries.length - 1].position))
+                );
 
-            buffer.splice(0, buffer.length);
+                buffer.splice(0, buffer.length);
+            }
         } else {
             throw_error(
                 entries[entries.length - 1].position,

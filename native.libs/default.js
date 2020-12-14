@@ -1,14 +1,14 @@
-const { PoonyaStaticLibrary, PoonyaNativePrototype, FIELDFLAGS, Exceptions } = module.import()
+const { PoonyaStaticLibrary, PoonyaPrototype, FIELDFLAGS, Exceptions } = require('library')
     ,   date = new Date();
 
 new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
         super('default.math', false, false, 'math');
 
-        this.addField('floor', this.floor);
-        this.addField('round', this.round);
-        this.addField('ceil', this.ceil);
-        this.addField('abs', this.abs);
+        this.addField('floor', this.floor, FIELDFLAGS.CONSTANT);
+        this.addField('round', this.round, FIELDFLAGS.CONSTANT);
+        this.addField('ceil', this.ceil, FIELDFLAGS.CONSTANT);
+        this.addField('abs', this.abs, FIELDFLAGS.CONSTANT);
     }
 
     ceil(service, n) {
@@ -40,8 +40,8 @@ new class DefaultRegExpStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
         super('default.regexp', false, false, 'regexp');
 
-        this.addField('test', this.test);
-        this.addField('replace', this.replace);
+        this.addField('test', this.test, FIELDFLAGS.CONSTANT);
+        this.addField('replace', this.replace, FIELDFLAGS.CONSTANT);
     }
 
     test (service, expression, flags, string) {
@@ -57,13 +57,13 @@ new class DefaultDatesStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
         super('default.dates', false, false, 'dates');
 
-        this.addField('minutes', this.minutes);
-        this.addField('seconds', this.seconds);
-        this.addField('month', this.month);
-        this.addField('hours', this.hours);
-        this.addField('year', this.year);
-        this.addField('day', this.day);
-        this.addField('now', this.now);
+        this.addField('minutes', this.minutes, FIELDFLAGS.CONSTANT);
+        this.addField('seconds', this.seconds, FIELDFLAGS.CONSTANT);
+        this.addField('month', this.month, FIELDFLAGS.CONSTANT);
+        this.addField('hours', this.hours, FIELDFLAGS.CONSTANT);
+        this.addField('year', this.year, FIELDFLAGS.CONSTANT);
+        this.addField('day', this.day, FIELDFLAGS.CONSTANT);
+        this.addField('now', this.now, FIELDFLAGS.CONSTANT);
     }
 
     year(){
@@ -99,9 +99,9 @@ new class DefaultNumbersStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
         super('default.numbers', false, false, 'numbers');
 
-        this.addField('random', this.random);
-        this.addField('isNumber', this.isNumber);
-        this.addField('parseInt', this.parseInt);
+        this.addField('random', this.random, FIELDFLAGS.CONSTANT);
+        this.addField('isNumber', this.isNumber, FIELDFLAGS.CONSTANT);
+        this.addField('parseInt', this.parseInt, FIELDFLAGS.CONSTANT);
     }
 
     random(service, f, t){
@@ -120,7 +120,7 @@ new class DefaultNumbersStaticLibrary extends PoonyaStaticLibrary {
     }
 }
 
-class PoonyaObjectPrototype extends PoonyaNativePrototype {
+class PoonyaObjectPrototype extends PoonyaPrototype {
     constructor(){
         super([], 'Object');
 
@@ -148,7 +148,7 @@ class PoonyaObjectPrototype extends PoonyaNativePrototype {
     }
 
     set(service, key, value){
-        this.set(key, value);
+        this.set(service.context, key, value);
     }
 
     has(service, key){
@@ -168,21 +168,62 @@ class PoonyaObjectPrototype extends PoonyaNativePrototype {
     }
 }
 
-class PoonyaArrayPrototype extends PoonyaNativePrototype {
+class PoonyaIntegerPrototype extends PoonyaPrototype {
     constructor(){
+        super([], 'Integer');
+    }
+}
+
+class PoonyaNumberPrototype extends PoonyaPrototype {
+    constructor(){
+        super([], 'Number');
+    }
+}
+
+class PoonyaBooleanPrototype extends PoonyaPrototype {
+    constructor(){
+        super([], 'Boolean');
+    }
+}
+
+class PoonyaNullPrototype extends PoonyaPrototype {
+    constructor(){
+        super([], 'Null');
+    }
+}
+
+class PoonyaStringPrototype extends PoonyaPrototype {
+    constructor(context){
+        super([], 'String');
+
+        this.addField('charAt', this.charAt, FIELDFLAGS.CONSTANT, context);
+        this.addField('length', this.length, FIELDFLAGS.CONSTANT | FIELDFLAGS.PROPERTY, context);
+    }
+
+    charAt(service, index){
+        return this.data.charAt(index);
+    }
+
+    length(service) {
+        return this.data.length;
+    }
+}
+
+class PoonyaArrayPrototype extends PoonyaPrototype {
+    constructor(context){
         super([], 'Array');
 
-        this.addField('unregister', this.unregister, FIELDFLAGS.CONSTANT);
-        this.addField('includes', this.includes, FIELDFLAGS.CONSTANT);
-        this.addField('indexOf', this.indexOf, FIELDFLAGS.CONSTANT);
-        this.addField('create', this.create, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC);
-        this.addField('concat', this.concat, FIELDFLAGS.CONSTANT);
-        this.addField('append', this.append, FIELDFLAGS.CONSTANT);
-        this.addField('length', this.length, FIELDFLAGS.CONSTANT);
-        this.addField('remove', this.remove, FIELDFLAGS.CONSTANT);
-        this.addField('slice', this.slice, FIELDFLAGS.CONSTANT);
-        this.addField('from', this.from, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC);
-        this.addField('pop', this.pop, FIELDFLAGS.CONSTANT);
+        this.addField('unregister', this.unregister, FIELDFLAGS.CONSTANT, context);
+        this.addField('includes', this.includes, FIELDFLAGS.CONSTANT, context);
+        this.addField('indexOf', this.indexOf, FIELDFLAGS.CONSTANT, context);
+        this.addField('create', this.create, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC, context);
+        this.addField('concat', this.concat, FIELDFLAGS.CONSTANT, context);
+        this.addField('append', this.append, FIELDFLAGS.CONSTANT, context);
+        this.addField('length', this.length, FIELDFLAGS.CONSTANT, context);
+        this.addField('remove', this.remove, FIELDFLAGS.CONSTANT, context);
+        this.addField('slice', this.slice, FIELDFLAGS.CONSTANT, context);
+        this.addField('from', this.from, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC, context);
+        this.addField('pop', this.pop, FIELDFLAGS.CONSTANT, context);
     }
 
     from(service,...defs){
@@ -275,109 +316,24 @@ class PoonyaArrayPrototype extends PoonyaNativePrototype {
     }
 }
 
-new class DefaultStringStaticLibrary extends PoonyaStaticLibrary {
-    constructor(){
-        super('default.strings', false, false, 'strings');
-
-        this.addField('getUniqueIdent', this.getUniqueIdent);
-        this.addField('unregister', this.unregister);
-        this.addField('substring', this.substring);
-        this.addField('toString', this.toString);
-        this.addField('replace', this.replace);
-        this.addField('length', this.length);
-        this.addField('split', this.split);
-        this.addField('trim', this.trim);
-        this.addField('join', this.join);
-    }
-
-    toString(service, obj){
-        if(obj != null){
-            return obj.toString();
-        } else {
-            return 'null';
-        }
-    }
-
-    getUniqueIdent(){
-        return Utils.unique_id() + Utils.random_id();
-    }
-
-    substring (service, input, from, to) {
-        if(typeof input === "string")
-            return input.substring(from, to);
-        else
-            return null
-    }
-
-    replace(service, input, from, to){
-        return input.replace(from, to);
-    }
-
-    trim(service, str){
-        if(typeof str === 'string')
-            return str.trim();
-        else
-            return str;
-    }
-
-    length(service, string){
-        return string.length;
-    }
-
-    split(service, input, splitter){
-        if(typeof input === "string")
-            return input.split(splitter);
-        else
-            return null
-    }
-
-    unregister(service, input){
-        if(typeof input === "string")
-            return input.toLowerCase();
-        else
-            return null
-    }
-
-    join(service, arr, p, s){
-        if(arr != null){
-            s = s || "";
-
-            if(p !== null){
-                const o = new Array(),
-                    l = arr.length,
-                    r = [/#/g, /&/g];
-                
-                if(p.indexOf("&") === -1)
-                    for(let i = 0; i < l; i++) 
-                        o.push(arr[i], p.replace(r[0], i + 1));
-                else
-                    for(let i = 0; i < l; i++) 
-                        o.push(p.replace(r[0], i + 1).replace(r[1], arr[i]));
-
-                return o.join(s);
-            } else {
-                return arr.join(s);
-            }
-        } else {
-            return null;
-        }
-    }
-}
-
 new class DefaultStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
         super('default', true);
 
-        this.addField('endd', '\n\n');
-        this.addField('endl', '\n');
-        this.addField('tab', '\t');
+        this.expandPrototype(PoonyaObjectPrototype);
+        this.expandPrototype(PoonyaArrayPrototype);
+        this.expandPrototype(PoonyaStringPrototype);
+        this.expandPrototype(PoonyaIntegerPrototype);
+        this.expandPrototype(PoonyaBooleanPrototype);
+        this.expandPrototype(PoonyaNumberPrototype);
+        this.expandPrototype(PoonyaNullPrototype);
 
-        this.addField('log', this.log);
+        this.addField('endd', '\n\n', FIELDFLAGS.CONSTANT);
+        this.addField('endl', '\n', FIELDFLAGS.CONSTANT);
+        this.addField('tab', '\t', FIELDFLAGS.CONSTANT);
 
-        this.expandClass(new PoonyaObjectPrototype());
-        this.expandClass(new PoonyaArrayPrototype());
+        this.addField('log', this.log, FIELDFLAGS.CONSTANT);
 
-        this.addLib('default.strings');
         this.addLib('default.numbers');
         this.addLib('default.regexp');
         this.addLib('default.dates');
@@ -385,6 +341,6 @@ new class DefaultStaticLibrary extends PoonyaStaticLibrary {
     }
 
     log(service, ...args){
-        global.common_logger.log(...args)
+        console.log(...args)
     }
 }

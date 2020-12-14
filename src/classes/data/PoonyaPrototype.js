@@ -56,6 +56,20 @@ class PoonyaPrototype extends iPoonyaPrototype {
     }
 
     /**
+     * Возвращает копию этого объекта
+     * 
+     * @returns {PoonyaPrototype} клонированый объект
+     */
+    clone(){
+        const obj = new PoonyaPrototype(this._parents, this.name);
+
+        obj._fields = new Map(this._fields);
+        obj._fields_data = new Map(this._fields_data);
+
+        return obj;
+    }
+
+    /**
      * Добавляет родительский прототип целевому
      *
      * @param {iPoonyaPrototype} parent прототип объекта
@@ -80,8 +94,9 @@ class PoonyaPrototype extends iPoonyaPrototype {
      * @method
      * @public
      */
-    addField(field, data, flags) {
-        this._fields.set(field, data);
+    addField(field, data, flags, context) {
+        this._fields.set(field, Cast(data, context));
+
         this._fields_data.set(field, flags);
     }
 
@@ -94,16 +109,13 @@ class PoonyaPrototype extends iPoonyaPrototype {
      * @method
      */
     [IS](key) {
-        if (key !== this.name)
+        if (key === this.name)
             return true;
+        else for (let i = 0, leng = this._parents; i < leng; i++) {
+            if (this._parents[IS](key)) return true;
+        }
 
-        else
-            for (let i = 0, leng = this._parents; i < leng; i++) {
-                if (this._parents[IS](key))
-                    return true;
-            }
-
-        false;
+        return false;
     }
 
     /**
@@ -111,6 +123,7 @@ class PoonyaPrototype extends iPoonyaPrototype {
      *
      * @param {String} key ключ, по которому получаем значение
      * @param {iContext} context объект, который хочет получить поле
+     * @param {Boolean} static_assces если true - то значит поле пытваются получить не создав объект - т.е. статически
      * @protected
      * @method
      * @returns {Operand|null}
@@ -120,8 +133,8 @@ class PoonyaPrototype extends iPoonyaPrototype {
         let data;
 
         if ((data = this._fields.get(key)) != null) {
-            if (static_assces || (this._fields_data.get(key) & FIELDFLAGS.STATIC) !== 0)
-                return Cast(data, context);
+            if (!static_assces || (this._fields_data.get(key) & FIELDFLAGS.STATIC) !== 0)
+                return data
             else
                 return null;
         } else {
@@ -147,9 +160,20 @@ class PoonyaPrototype extends iPoonyaPrototype {
         for (let [key, value] of this._fields_data)
             child.field_attrs.set(key, value);
 
-        // Вызываем конструкеторы родителейских прототипов
+        // Вызываем конструкторы родительских прототипов
         for (let i = 0, leng = this._parents.length; i < leng; i++)
-            this._parents[i].superCall(child);
+            this._parents[i][SUPER_CALL](child);
+    }
+
+    /**
+     * Сериализует объект в простое значение.
+     *
+     * @override
+     * @method
+     * @public
+     */
+    toRawData(){
+        return `[Prototype:${this.name}]`;
     }
 }
 

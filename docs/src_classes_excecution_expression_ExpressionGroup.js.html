@@ -33,13 +33,11 @@
  * @license MIT
  */
 
-const { Operand, Operator } = require("../../common/ParserData")
-    , { CHARTYPE, OPERATOR } = require("../../static")
+const { Operand, Operator } = require('../../common/ParserData')
+    , { CHARTYPE, OPERATOR, SERVICE } = require('../../static')
     , { UnableToRecognizeTypeException, TheSequenceException } = require('../../exceptions')
-    , BooleanLiteral = require('../../common/literals/BooleanLiteral')
-    , NumberLiteral = require('../../common/literals/NumberLiteral')
-    , StringLiteral = require('../../common/literals/StringLiteral')
-    , NullLiteral = require('../../common/literals/NullLiteral');
+    , { Cast } = require('../../../utils')
+    ,   ObjectContructorCall = require('./ObjectContructorCall');
 
 /**
  * @lends MessagePattern;
@@ -56,7 +54,7 @@ class ExpressionGroup extends Operand {
      * @protected
      */
     constructor(position, initial) {
-        super("expression");
+        super('expression');
 
         this.data = initial != null ? [...initial] : new Array();
         this.position = position;
@@ -82,7 +80,7 @@ class ExpressionGroup extends Operand {
      * @method
      */
     toString(indent) {
-        return this.data.map(e => e.toString(indent)).join(" ");
+        return this.data.map(e => e.toString(indent)).join(' ');
     }
 
     /**
@@ -101,38 +99,58 @@ class ExpressionGroup extends Operand {
 
         switch (entry.type) {
             case CHARTYPE.NUMBER:
-                current = new NumberLiteral(entry);
+                current = new ObjectContructorCall(
+                    SERVICE.CONSTRUCTORS.NUMBER,
+                    parseInt(entry.data.toString()),
+                    entry.position
+                );
                 break;
             case CHARTYPE.STRING:
-                current = new StringLiteral(entry);
+                current = new ObjectContructorCall(
+                    SERVICE.CONSTRUCTORS.STRING,
+                    entry.data.toString(),
+                    entry.position
+                );
                 break;
             case CHARTYPE.OPERATOR:
                 current = new Operator(entry);
                 break;
             case CHARTYPE.WORD:
                 switch (entry.data.toString()) {
-                    case "true":
-                    case "false":
-                        current = new BooleanLiteral(entry);
-                    break;
-                    case "null":
-                        current = new NullLiteral(entry);
-                    break;
+                    case 'true':
+                        current = new ObjectContructorCall(
+                            SERVICE.CONSTRUCTORS.BOOLEAN,
+                            true,
+                            entry.position
+                        );
+                        break;
+                    case 'false':
+                        current = new ObjectContructorCall(
+                            SERVICE.CONSTRUCTORS.BOOLEAN,
+                            false,
+                            entry.position
+                        );
+                        break;
+                    case 'null':
+                        current = new ObjectContructorCall(
+                            SERVICE.CONSTRUCTORS.NULL,
+                            null,
+                            entry.position
+                        );
+                        break;
                 }
                 break;
             default:
-                if (entry instanceof Operator || entry instanceof Operand)
-                    current = entry;
-
-                else
-                    throw_error(entry.position, new UnableToRecognizeTypeException(entry.type));
+                if (entry instanceof Operator || entry instanceof Operand) current = entry;
+                else throw_error(entry.position, new UnableToRecognizeTypeException(entry.type));
                 break;
         }
 
-        if (this.data.length !== 0 &amp;&amp; (
-            current instanceof Operator &amp;&amp; this.data[this.data.length - 1] instanceof Operator ||
-            current instanceof Operand &amp;&amp; this.data[this.data.length - 1] instanceof Operand
-        ))
+        if (
+            this.data.length !== 0 &amp;&amp;
+            ((current instanceof Operator &amp;&amp; this.data[this.data.length - 1] instanceof Operator) ||
+                (current instanceof Operand &amp;&amp; this.data[this.data.length - 1] instanceof Operand))
+        )
             throw_error(entry.position, new TheSequenceException(entry));
 
         this.data.push(current);
@@ -150,9 +168,9 @@ class ExpressionGroup extends Operand {
      */
     complete(throw_error) {
         // Stage 1 => 2 + 2 * 2 => 2 + (2 * 2)
-        if (this.data.filter(
-            (e) => e.op_p === OPERATOR.MULT || e.op_p === OPERATOR.DIVIDE
-        ).length > 0) {
+        if (
+            this.data.filter(e => e.op_p === OPERATOR.MULT || e.op_p === OPERATOR.DIVIDE).length > 0
+        ) {
             let mltexp = false,
                 dump = Array.from(this.data),
                 stack = null;
@@ -160,12 +178,11 @@ class ExpressionGroup extends Operand {
             this.data.splice(0, this.data.length);
 
             for (let i = 0, leng = dump.length; i &lt; leng; i++) {
-                if (dump[i + 1] &amp;&amp; dump[i + 1].type === "operator")
+                if (dump[i + 1] &amp;&amp; dump[i + 1].type === 'operator')
                     switch (dump[i + 1].op_p) {
                         case OPERATOR.MULT:
                         case OPERATOR.DIVIDE:
-                            if (mltexp)
-                                break;
+                            if (mltexp) break;
 
                             mltexp = true;
 
@@ -180,8 +197,7 @@ class ExpressionGroup extends Operand {
                         case OPERATOR.LESS:
                         case OPERATOR.OR:
                         case OPERATOR.AND:
-                            if (!mltexp)
-                                break;
+                            if (!mltexp) break;
 
                             mltexp = false;
 
@@ -204,16 +220,14 @@ class ExpressionGroup extends Operand {
         }
 
         // Stage 2 => a &amp; b => (a) &amp; (b)
-        if (this.data.filter((e) => e.op_p === OPERATOR.AND).length > 0) {
+        if (this.data.filter(e => e.op_p === OPERATOR.AND).length > 0) {
             let dump = Array.from(this.data),
                 stack = new ExpressionGroup(dump[0].position);
 
             this.data.splice(0, this.data.length);
 
             for (let i = 0, leng = dump.length; i &lt; leng; i++) {
-                if (dump[i] &amp;&amp;
-                    dump[i].type === "operator" &amp;&amp;
-                    dump[i].op_p === OPERATOR.AND) {
+                if (dump[i] &amp;&amp; dump[i].type === 'operator' &amp;&amp; dump[i].op_p === OPERATOR.AND) {
                     stack.complete();
 
                     this.append(stack, throw_error);
@@ -234,16 +248,14 @@ class ExpressionGroup extends Operand {
         }
 
         // Stage 3 => a | b => (a) | (b)
-        if (this.data.filter((e) => e.op_p === OPERATOR.OR).length > 0) {
+        if (this.data.filter(e => e.op_p === OPERATOR.OR).length > 0) {
             let dump = Array.from(this.data),
                 stack = new ExpressionGroup(dump[0].position);
 
             this.data.splice(0, this.data.length);
 
             for (let i = 0, leng = dump.length; i &lt; leng; i++) {
-                if (dump[i] &amp;&amp;
-                    dump[i].type === "operator" &amp;&amp;
-                    dump[i].op_p === OPERATOR.OR) {
+                if (dump[i] &amp;&amp; dump[i].type === 'operator' &amp;&amp; dump[i].op_p === OPERATOR.OR) {
                     stack.complete();
 
                     this.append(stack, throw_error);
@@ -280,88 +292,62 @@ class ExpressionGroup extends Operand {
      * @method
      */
     result(context, out, throw_error) {
-        let result = this.data[0] != null ? this.data[0].result(context, out, throw_error) : null;
+        let result =
+            this.data[0] != null
+                ? this.data[0]
+                      .result(context, out, throw_error) // Результируем значение функции
+                      .result(context, out, throw_error) // Результируем значение контейнера
+                : null;
 
-        for (let i = 1, leng = this.data.length; i &lt; leng; i += 2) {
+        for (let i = 1, leng = this.data.length, cur; i &lt; leng; i += 2) {
+            // Получем значение функции
+            cur = this.data[i + 1].result(context, out, throw_error);
+
             switch (true) {
                 case this.data[i].equals(OPERATOR.PLUS):
-                    result += this.data[i + 1].result(
-                        context,
-                        out,
-                        throw_error
-                    );
-                    break;
+                    result += cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.MINUS):
-                    result -= this.data[i + 1].result(
-                        context,
-                        out,
-                        throw_error
-                    );
-                    break;
+                    result -= cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.MULT):
-                    result *= this.data[i + 1].result(
-                        context,
-                        out,
-                        throw_error
-                    );
-                    break;
+                    result *= cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.DIVIDE):
-                    result /= this.data[i + 1].result(
-                        context,
-                        out,
-                        throw_error
-                    );
-                    break;
+                    result /= cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.LARGER):
-                    result =
-                        result >
-                        this.data[i + 1].result(context, out, throw_error);
-                    break;
+                    result = result > cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.LESS):
-                    result =
-                        result &lt;
-                        this.data[i + 1].result(context, out, throw_error);
-                    break;
+                    result = result &lt; cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.EQUAL):
-                    result =
-                        result ==
-                        this.data[i + 1].result(context, out, throw_error);
-                    break;
+                    result = result == cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.ELARGER):
-                    result =
-                        result >=
-                        this.data[i + 1].result(context, out, throw_error);
-                    break;
+                    result = result >= cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.ELESS):
-                    result =
-                        result &lt;=
-                        this.data[i + 1].result(context, out, throw_error);
-                    break;
+                    result = result &lt;= cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.NEQUAL):
-                    result =
-                        result !=
-                        this.data[i + 1].result(context, out, throw_error);
-                    break;
+                    result = result != cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.AND):
-                    result =
-                        result &amp;&amp;
-                        this.data[i + 1].result(context, out, throw_error);
+                    result = result &amp;&amp; cur.toRawData();
 
-                    if (!result)
-                        return result;
-                    break;
+                    if (!result) return result;
+                break;
                 case this.data[i].equals(OPERATOR.OR):
-                    result =
-                        result ||
-                        this.data[i + 1].result(context, out, throw_error);
+                    result = result || cur.toRawData();
 
-                    if (result)
-                        return result;
-                    break;
+                    if (result) return result;
+                break;
             }
         }
 
-        return result;
+        return Cast(result, context);
     }
 }
 
@@ -375,13 +361,13 @@ module.exports = ExpressionGroup;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="Poonya.html">Poonya</a></li><li><a href="Poonya.Exceptions.html">Exceptions</a></li><li><a href="Poonya.Expression.html">Expression</a></li><li><a href="Poonya.Lexer.html">Lexer</a></li><li><a href="Poonya.Linker.html">Linker</a></li><li><a href="Poonya.Parser.html">Parser</a></li><li><a href="Poonya.Statements.html">Statements</a></li><li><a href="Poonya.Static.html">Static</a></li><li><a href="Poonya.Storage.html">Storage</a></li><li><a href="Poonya.Utils.html">Utils</a></li></ul><h3>Classes</h3><ul><li><a href="BooleanLiteral.html">BooleanLiteral</a></li><li><a href="CodeEmitter.html">CodeEmitter</a></li><li><a href="Context.html">Context</a></li><li><a href="ExcecutionPattern.html">ExcecutionPattern</a></li><li><a href="ExpressionPattern.html">ExpressionPattern</a></li><li><a href="FunctionCall.html">FunctionCall</a></li><li><a href="GetOperator.html">GetOperator</a></li><li><a href="Heap.html">Heap</a></li><li><a href="IfStatement.html">IfStatement</a></li><li><a href="IntegerLiteral.html">IntegerLiteral</a></li><li><a href="LexerEntry.html">LexerEntry</a></li><li><a href="Literal.html">Literal</a></li><li><a href="MessagePattern.html">MessagePattern</a></li><li><a href="Native.html">Native</a></li><li><a href="NativeBoolean.html">NativeBoolean</a></li><li><a href="NativeFunction.html">NativeFunction</a></li><li><a href="NativeInteger.html">NativeInteger</a></li><li><a href="NativeNull.html">NativeNull</a></li><li><a href="NativeNumber.html">NativeNumber</a></li><li><a href="NativeString.html">NativeString</a></li><li><a href="NullLiteral.html">NullLiteral</a></li><li><a href="NumberLiteral.html">NumberLiteral</a></li><li><a href="ObjectContructorCall.html">ObjectContructorCall</a></li><li><a href="Operand.html">Operand</a></li><li><a href="Operator.html">Operator</a></li><li><a href="OutOperator.html">OutOperator</a></li><li><a href="ParserData.html">ParserData</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingToUpperLevel.html">BadArrowNotationJumpingToUpperLevel</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingTwoLevels.html">BadArrowNotationJumpingTwoLevels</a></li><li><a href="Poonya.Exceptions.BadEmptyObjectException.html">BadEmptyObjectException</a></li><li><a href="Poonya.Exceptions.BadKeyInvalidTypeException.html">BadKeyInvalidTypeException</a></li><li><a href="Poonya.Exceptions.BadKeyProtectedFieldException.html">BadKeyProtectedFieldException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorException.html">CriticalParserErrorException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorNoRawDataTransmittedException.html">CriticalParserErrorNoRawDataTransmittedException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfInputException.html">CriticalParserErrorUnexpectedEndOfInputException</a></li><li><a href="Poonya.Exceptions.FieldNotAFunctionException.html">FieldNotAFunctionException</a></li><li><a href="Poonya.Exceptions.GetFieldOfNullException.html">GetFieldOfNullException</a></li><li><a href="Poonya.Exceptions.InvalidSequenceForLetiableAccessException.html">InvalidSequenceForLetiableAccessException</a></li><li><a href="Poonya.Exceptions.IsNotAConstructorException.html">IsNotAConstructorException</a></li><li><a href="Poonya.Exceptions.LinkerIOError.html">LinkerIOError</a></li><li><a href="Poonya.Exceptions.LinkerPathNotGiveExceptrion.html">LinkerPathNotGiveExceptrion</a></li><li><a href="Poonya.Exceptions.NativeFunctionExcecutionError.html">NativeFunctionExcecutionError</a></li><li><a href="Poonya.Exceptions.NativeFunctionReturnValueError.html">NativeFunctionReturnValueError</a></li><li><a href="Poonya.Exceptions.ParserEmtyArgumentException.html">ParserEmtyArgumentException</a></li><li><a href="Poonya.Exceptions.ParserException.html">ParserException</a></li><li><a href="Poonya.Exceptions.ParserLogicException.html">ParserLogicException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultEmptyArgumentException.html">SegmentationFaultEmptyArgumentException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultMaximumSegmentsForBlockException.html">SegmentationFaultMaximumSegmentsForBlockException</a></li><li><a href="Poonya.Exceptions.TheFieldAlreadyHasBeenDeclaredException.html">TheFieldAlreadyHasBeenDeclaredException</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeAnArrayInstanceExceprion.html">TheFieldMustBeAnArrayInstanceExceprion</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeNumberException.html">TheFieldMustBeNumberException</a></li><li><a href="Poonya.Exceptions.TheFieldNotHasDeclaredExceprion.html">TheFieldNotHasDeclaredExceprion</a></li><li><a href="Poonya.Exceptions.TheSequenceException.html">TheSequenceException</a></li><li><a href="Poonya.Exceptions.UnableToCreateAnObjectException.html">UnableToCreateAnObjectException</a></li><li><a href="Poonya.Exceptions.UnableToRecognizeTypeException.html">UnableToRecognizeTypeException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenException.html">UnexpectedTokenException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenStatement.html">UnexpectedTokenStatement</a></li><li><a href="Poonya.Exceptions.UnexpectedWordTypeAndGetException.html">UnexpectedWordTypeAndGetException</a></li><li><a href="PoonyaArray.html">PoonyaArray</a></li><li><a href="PoonyaObject.html">PoonyaObject</a></li><li><a href="PoonyaPrototype.html">PoonyaPrototype</a></li><li><a href="PoonyaStaticLibrary.html">PoonyaStaticLibrary</a></li><li><a href="PushOperator.html">PushOperator</a></li><li><a href="RepeatStatement.html">RepeatStatement</a></li><li><a href="SequenceGroup.html">SequenceGroup</a></li><li><a href="SequenceMainGroup.html">SequenceMainGroup</a></li><li><a href="SetOperator.html">SetOperator</a></li><li><a href="StringLiteral.html">StringLiteral</a></li><li><a href="TernarOperator.html">TernarOperator</a></li><li><a href="WhileStatement.html">WhileStatement</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="Poonya.html">Poonya</a></li><li><a href="Poonya.Data.html">Data</a></li><li><a href="Poonya.Exceptions.html">Exceptions</a></li><li><a href="Poonya.Expression.html">Expression</a></li><li><a href="Poonya.Lexer.html">Lexer</a></li><li><a href="Poonya.Linker.html">Linker</a></li><li><a href="Poonya.Parser.html">Parser</a></li><li><a href="Poonya.Statements.html">Statements</a></li><li><a href="Poonya.Static.html">Static</a></li><li><a href="Poonya.Storage.html">Storage</a></li><li><a href="Poonya.Utils.html">Utils</a></li></ul><h3>Classes</h3><ul><li><a href="CodeEmitter.html">CodeEmitter</a></li><li><a href="Context.html">Context</a></li><li><a href="ExcecutionPattern.html">ExcecutionPattern</a></li><li><a href="ExpressionPattern.html">ExpressionPattern</a></li><li><a href="FunctionCall.html">FunctionCall</a></li><li><a href="GetOperator.html">GetOperator</a></li><li><a href="Heap.html">Heap</a></li><li><a href="IfStatement.html">IfStatement</a></li><li><a href="LexerEntry.html">LexerEntry</a></li><li><a href="MessagePattern.html">MessagePattern</a></li><li><a href="NativeFunction.html">NativeFunction</a></li><li><a href="ObjectContructorCall.html">ObjectContructorCall</a></li><li><a href="Operand.html">Operand</a></li><li><a href="Operator.html">Operator</a></li><li><a href="OutOperator.html">OutOperator</a></li><li><a href="ParserData.html">ParserData</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingToUpperLevel.html">BadArrowNotationJumpingToUpperLevel</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingTwoLevels.html">BadArrowNotationJumpingTwoLevels</a></li><li><a href="Poonya.Exceptions.BadEmptyObjectException.html">BadEmptyObjectException</a></li><li><a href="Poonya.Exceptions.BadKeyInvalidTypeException.html">BadKeyInvalidTypeException</a></li><li><a href="Poonya.Exceptions.BadKeyProtectedFieldException.html">BadKeyProtectedFieldException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorException.html">CriticalParserErrorException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorNoRawDataTransmittedException.html">CriticalParserErrorNoRawDataTransmittedException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfInputException.html">CriticalParserErrorUnexpectedEndOfInputException</a></li><li><a href="Poonya.Exceptions.FieldNotAFunctionException.html">FieldNotAFunctionException</a></li><li><a href="Poonya.Exceptions.GetFieldOfNullException.html">GetFieldOfNullException</a></li><li><a href="Poonya.Exceptions.InvalidSequenceForLetiableAccessException.html">InvalidSequenceForLetiableAccessException</a></li><li><a href="Poonya.Exceptions.IsNotAConstructorException.html">IsNotAConstructorException</a></li><li><a href="Poonya.Exceptions.LinkerIOError.html">LinkerIOError</a></li><li><a href="Poonya.Exceptions.LinkerPathNotGiveExceptrion.html">LinkerPathNotGiveExceptrion</a></li><li><a href="Poonya.Exceptions.NativeFunctionExcecutionError.html">NativeFunctionExcecutionError</a></li><li><a href="Poonya.Exceptions.NativeFunctionReturnValueError.html">NativeFunctionReturnValueError</a></li><li><a href="Poonya.Exceptions.ParserEmtyArgumentException.html">ParserEmtyArgumentException</a></li><li><a href="Poonya.Exceptions.ParserException.html">ParserException</a></li><li><a href="Poonya.Exceptions.ParserLogicException.html">ParserLogicException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultEmptyArgumentException.html">SegmentationFaultEmptyArgumentException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultMaximumSegmentsForBlockException.html">SegmentationFaultMaximumSegmentsForBlockException</a></li><li><a href="Poonya.Exceptions.TheFieldAlreadyHasBeenDeclaredException.html">TheFieldAlreadyHasBeenDeclaredException</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeAnArrayInstanceExceprion.html">TheFieldMustBeAnArrayInstanceExceprion</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeNumberException.html">TheFieldMustBeNumberException</a></li><li><a href="Poonya.Exceptions.TheFieldNotHasDeclaredExceprion.html">TheFieldNotHasDeclaredExceprion</a></li><li><a href="Poonya.Exceptions.TheSequenceException.html">TheSequenceException</a></li><li><a href="Poonya.Exceptions.UnableToCreateAnObjectException.html">UnableToCreateAnObjectException</a></li><li><a href="Poonya.Exceptions.UnableToRecognizeTypeException.html">UnableToRecognizeTypeException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenException.html">UnexpectedTokenException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenStatement.html">UnexpectedTokenStatement</a></li><li><a href="Poonya.Exceptions.UnexpectedWordTypeAndGetException.html">UnexpectedWordTypeAndGetException</a></li><li><a href="PoonyaArray.html">PoonyaArray</a></li><li><a href="PoonyaBoolean.html">PoonyaBoolean</a></li><li><a href="PoonyaInteger.html">PoonyaInteger</a></li><li><a href="PoonyaNull.html">PoonyaNull</a></li><li><a href="PoonyaNumber.html">PoonyaNumber</a></li><li><a href="PoonyaObject.html">PoonyaObject</a></li><li><a href="PoonyaPrototype.html">PoonyaPrototype</a></li><li><a href="PoonyaStaticLibrary.html">PoonyaStaticLibrary</a></li><li><a href="PoonyaString.html">PoonyaString</a></li><li><a href="PushOperator.html">PushOperator</a></li><li><a href="RepeatStatement.html">RepeatStatement</a></li><li><a href="SequenceGroup.html">SequenceGroup</a></li><li><a href="SequenceMainGroup.html">SequenceMainGroup</a></li><li><a href="SetOperator.html">SetOperator</a></li><li><a href="TernarOperator.html">TernarOperator</a></li><li><a href="WhileStatement.html">WhileStatement</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Fri Dec 11 2020 18:03:35 GMT+0400 (Самарское стандартное время)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Mon Dec 14 2020 16:38:08 GMT+0400 (Самарское стандартное время)
 </footer>
 
 <script> prettyPrint(); </script>

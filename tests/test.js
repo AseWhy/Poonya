@@ -189,5 +189,27 @@ describe("poonya-common-test", () => {
 
             assert.deepStrictEqual(await test_pattern.result().complete(), [{}]);
         });
+    });
+
+    /*
+    describe("#message-pattern-testing", () => {
+        it("Test for html generation", async () => {
+            const test_pattern = new poonya.MessagePattern({
+                path: __dirname + "/src/unit-message-pattern-0",
+            }, undefined, [ 'default.html' ]);
+
+            assert.notStrictEqual((await test_pattern.result().complete()).join(''), "");
+        });
+
+        it("Test for markdown generation", async () => {
+            const test_pattern = new poonya.ExcecutionPattern({
+                path: __dirname + "/src/unit-message-pattern-2",
+            }, [ 'default.html' ]);
+
+            console.log((await test_pattern.result({
+                input: 'Выделять слова можно при помощи `*` и `_` . Например, это _italic_ и это тоже *italic*. А вот так уже __strong__, и так тоже **strong**.'
+            }).complete()).join(''))
+        });
     })
+     */
 });

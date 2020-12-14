@@ -7,12 +7,7 @@
  * @license MIT
  */
 
-const { Operand } = require("../../common/ParserData")
-    , { IS } = require('../../static')
-    , { iPoonyaPrototype } = require('../../interfaces')
-    , { IsNotAConstructorException } = require('../../exceptions')
-    , PoonyaObject = require('../../data/PoonyaObject')
-    , PoonyaArray = require('../../data/PoonyaArray');
+const { Operand } = require('../../common/ParserData');
 
 /**
  * @lends ObjectContructorCall
@@ -23,7 +18,7 @@ class ObjectContructorCall extends Operand {
      * Литеральный конструктор объекта
      *
      * @param {String[]} query_stack путь к конструктору в памяти
-     * @param {Map<String, ExpressionGroup>} fields поля объекта при инициализации
+     * @param {Map<String, ExpressionGroup>|String|Number|Boolean|BigInt} initial данные объекта для инициализации
      * @param {Number} position позиция начала объявления объекта
      *
      * @constructs ObjectContructorCall
@@ -31,11 +26,11 @@ class ObjectContructorCall extends Operand {
      * @memberof Poonya.Expression
      * @protected
      */
-    constructor(query_stack = 'Object', fields, position) {
+    constructor(query_stack, initial, position) {
         super('object-creator');
 
         this.query_stack = query_stack != null ? query_stack : SERVICE.CONSTRUCTORS.OBJECT;
-        this.fields = fields;
+        this.initial = initial;
         this.position = position;
     }
 
@@ -47,23 +42,43 @@ class ObjectContructorCall extends Operand {
      * @public
      * @method
      */
-    toString(indent) {
-        const items = [...this.fields.entries()];
+    toString(indent = '\t') {
+        if (this.initial instanceof Map) {
+            const items = [...this.initial.entries()];
 
-        return (
-            "new (" + this.name + ") -> \n" +
-            items.map((e, i) => {
-                if (e[1] instanceof ObjectContructorCall)
-                    return indent + e[0] + ' -> ' + e[1].toString(indent + '\t');
-
-                else
-                    return indent + e[0] + ' -> ' + e[1].toString(indent + '\t') + (i + 1 != items.length ? ',' : '');
-            }).join('\n')
-        );
+            return (
+                'new (' +
+                this.query_stack
+                    .map(e => (typeof e !== 'string' ? `[${e.toString()}]` : e.toString()))
+                    .join(' => ') +
+                ') -> ' +
+                    (
+                        items.length > 0 ? (
+                            '\n' + items.map((e, i) => {
+                                if (e[1] instanceof ObjectContructorCall)
+                                    return indent + e[0] + ' -> ' + e[1].toString(indent + '\t');
+                                else
+                                    return (
+                                        indent +
+                                        e[0] +
+                                        ' -> ' +
+                                        e[1].toString(indent + '\t') +
+                                        (i + 1 != items.length ? ',' : '')
+                                    );
+                            })
+                            .join('\n')
+                        ) : '*'
+                    )
+            );
+        } else {
+            return `(${this.initial}) <- (${this.query_stack
+                .map(e => (typeof e !== 'string' ? `[${e.toString()}]` : e.toString()))
+                .join(' => ')})`;
+        }
     }
 
     /**
-     * Выполняет основной блок, до тех пор, пока выполняется условие переданное первым аргументом
+     * Коздает новый объект с инициированным значением `initial`
      *
      * @param {iContext} context Контекст выполнения
      * @param {PoonyaOutputStream} out вывод шаблонизатора
@@ -75,19 +90,7 @@ class ObjectContructorCall extends Operand {
      * @method
      */
     result(context, out, throw_error) {
-        const proto = context.getByPath(this.query_stack, this.position, iPoonyaPrototype);
-
-        if (proto != null) {
-            let instance = new (proto[IS]('Array') ? PoonyaObject : PoonyaArray)(proto, null, context);
-
-            for (let fieled of this.fields) {
-                instance.set(fieled[0], fieled[1].result(context, out, throw_error));
-            }
-
-            return instance;
-        } else {
-            throw_error(this.position, new IsNotAConstructorException(this.query_stack));
-        }
+        return context.createObject(this.initial, this.position, this.query_stack, throw_error);
     }
 }
 

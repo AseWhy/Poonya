@@ -5,8 +5,6 @@
  * @license MIT
  */
 
-const { BooleanLiteral } = require("../../common/ParserData");
-
 /**
  * @lends WhileStatement
  * @protected
@@ -36,12 +34,7 @@ class WhileStatement {
      * @method
      */
     toString(indent) {
-        return (
-            "while (" +
-            this.condition.toString(indent) +
-            ") " +
-            this.body.toString(indent)
-        );
+        return 'while (' + this.condition.toString(indent) + ') ' + this.body.toString(indent);
     }
 
     /**
@@ -57,10 +50,7 @@ class WhileStatement {
      * @method
      */
     result(context, out, throw_error) {
-        while (BooleanLiteral.toPoonyaBoolean(
-            this.condition.result(context, out, throw_error),
-            this.condition.position
-        ).result())
+        while (context.toBooleanResult(this.condition.result(context, out, throw_error)))
             this.body.result(context, out, throw_error);
     }
 }

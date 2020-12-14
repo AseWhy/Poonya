@@ -6,14 +6,12 @@
  */
 
 // Storage
-class iContext { };
+class iContext {}
 
 // Datas
-class iPoonyaObject { };
-class iPoonyaArray { };
-class iPoonyaPrototype { };
+class iPoonyaObject {}
+class iPoonyaPrototype {}
 
 module.exports.iContext = iContext;
 module.exports.iPoonyaObject = iPoonyaObject;
-module.exports.iPoonyaArray = iPoonyaArray;
 module.exports.iPoonyaPrototype = iPoonyaPrototype;

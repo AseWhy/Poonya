@@ -5,13 +5,11 @@
  * @license MIT
  */
 
-const { Operand, Operator } = require("../../common/ParserData")
-    , { CHARTYPE, OPERATOR } = require("../../static")
+const { Operand, Operator } = require('../../common/ParserData')
+    , { CHARTYPE, OPERATOR, SERVICE } = require('../../static')
     , { UnableToRecognizeTypeException, TheSequenceException } = require('../../exceptions')
-    , BooleanLiteral = require('../../common/literals/BooleanLiteral')
-    , NumberLiteral = require('../../common/literals/NumberLiteral')
-    , StringLiteral = require('../../common/literals/StringLiteral')
-    , NullLiteral = require('../../common/literals/NullLiteral');
+    , { Cast } = require('../../../utils')
+    ,   ObjectContructorCall = require('./ObjectContructorCall');
 
 /**
  * @lends MessagePattern;
@@ -28,7 +26,7 @@ class ExpressionGroup extends Operand {
      * @protected
      */
     constructor(position, initial) {
-        super("expression");
+        super('expression');
 
         this.data = initial != null ? [...initial] : new Array();
         this.position = position;
@@ -54,7 +52,7 @@ class ExpressionGroup extends Operand {
      * @method
      */
     toString(indent) {
-        return this.data.map(e => e.toString(indent)).join(" ");
+        return this.data.map(e => e.toString(indent)).join(' ');
     }
 
     /**
@@ -73,38 +71,58 @@ class ExpressionGroup extends Operand {
 
         switch (entry.type) {
             case CHARTYPE.NUMBER:
-                current = new NumberLiteral(entry);
+                current = new ObjectContructorCall(
+                    SERVICE.CONSTRUCTORS.NUMBER,
+                    parseInt(entry.data.toString()),
+                    entry.position
+                );
                 break;
             case CHARTYPE.STRING:
-                current = new StringLiteral(entry);
+                current = new ObjectContructorCall(
+                    SERVICE.CONSTRUCTORS.STRING,
+                    entry.data.toString(),
+                    entry.position
+                );
                 break;
             case CHARTYPE.OPERATOR:
                 current = new Operator(entry);
                 break;
             case CHARTYPE.WORD:
                 switch (entry.data.toString()) {
-                    case "true":
-                    case "false":
-                        current = new BooleanLiteral(entry);
-                    break;
-                    case "null":
-                        current = new NullLiteral(entry);
-                    break;
+                    case 'true':
+                        current = new ObjectContructorCall(
+                            SERVICE.CONSTRUCTORS.BOOLEAN,
+                            true,
+                            entry.position
+                        );
+                        break;
+                    case 'false':
+                        current = new ObjectContructorCall(
+                            SERVICE.CONSTRUCTORS.BOOLEAN,
+                            false,
+                            entry.position
+                        );
+                        break;
+                    case 'null':
+                        current = new ObjectContructorCall(
+                            SERVICE.CONSTRUCTORS.NULL,
+                            null,
+                            entry.position
+                        );
+                        break;
                 }
                 break;
             default:
-                if (entry instanceof Operator || entry instanceof Operand)
-                    current = entry;
-
-                else
-                    throw_error(entry.position, new UnableToRecognizeTypeException(entry.type));
+                if (entry instanceof Operator || entry instanceof Operand) current = entry;
+                else throw_error(entry.position, new UnableToRecognizeTypeException(entry.type));
                 break;
         }
 
-        if (this.data.length !== 0 && (
-            current instanceof Operator && this.data[this.data.length - 1] instanceof Operator ||
-            current instanceof Operand && this.data[this.data.length - 1] instanceof Operand
-        ))
+        if (
+            this.data.length !== 0 &&
+            ((current instanceof Operator && this.data[this.data.length - 1] instanceof Operator) ||
+                (current instanceof Operand && this.data[this.data.length - 1] instanceof Operand))
+        )
             throw_error(entry.position, new TheSequenceException(entry));
 
         this.data.push(current);
@@ -122,9 +140,9 @@ class ExpressionGroup extends Operand {
      */
     complete(throw_error) {
         // Stage 1 => 2 + 2 * 2 => 2 + (2 * 2)
-        if (this.data.filter(
-            (e) => e.op_p === OPERATOR.MULT || e.op_p === OPERATOR.DIVIDE
-        ).length > 0) {
+        if (
+            this.data.filter(e => e.op_p === OPERATOR.MULT || e.op_p === OPERATOR.DIVIDE).length > 0
+        ) {
             let mltexp = false,
                 dump = Array.from(this.data),
                 stack = null;
@@ -132,12 +150,11 @@ class ExpressionGroup extends Operand {
             this.data.splice(0, this.data.length);
 
             for (let i = 0, leng = dump.length; i < leng; i++) {
-                if (dump[i + 1] && dump[i + 1].type === "operator")
+                if (dump[i + 1] && dump[i + 1].type === 'operator')
                     switch (dump[i + 1].op_p) {
                         case OPERATOR.MULT:
                         case OPERATOR.DIVIDE:
-                            if (mltexp)
-                                break;
+                            if (mltexp) break;
 
                             mltexp = true;
 
@@ -152,8 +169,7 @@ class ExpressionGroup extends Operand {
                         case OPERATOR.LESS:
                         case OPERATOR.OR:
                         case OPERATOR.AND:
-                            if (!mltexp)
-                                break;
+                            if (!mltexp) break;
 
                             mltexp = false;
 
@@ -176,16 +192,14 @@ class ExpressionGroup extends Operand {
         }
 
         // Stage 2 => a & b => (a) & (b)
-        if (this.data.filter((e) => e.op_p === OPERATOR.AND).length > 0) {
+        if (this.data.filter(e => e.op_p === OPERATOR.AND).length > 0) {
             let dump = Array.from(this.data),
                 stack = new ExpressionGroup(dump[0].position);
 
             this.data.splice(0, this.data.length);
 
             for (let i = 0, leng = dump.length; i < leng; i++) {
-                if (dump[i] &&
-                    dump[i].type === "operator" &&
-                    dump[i].op_p === OPERATOR.AND) {
+                if (dump[i] && dump[i].type === 'operator' && dump[i].op_p === OPERATOR.AND) {
                     stack.complete();
 
                     this.append(stack, throw_error);
@@ -206,16 +220,14 @@ class ExpressionGroup extends Operand {
         }
 
         // Stage 3 => a | b => (a) | (b)
-        if (this.data.filter((e) => e.op_p === OPERATOR.OR).length > 0) {
+        if (this.data.filter(e => e.op_p === OPERATOR.OR).length > 0) {
             let dump = Array.from(this.data),
                 stack = new ExpressionGroup(dump[0].position);
 
             this.data.splice(0, this.data.length);
 
             for (let i = 0, leng = dump.length; i < leng; i++) {
-                if (dump[i] &&
-                    dump[i].type === "operator" &&
-                    dump[i].op_p === OPERATOR.OR) {
+                if (dump[i] && dump[i].type === 'operator' && dump[i].op_p === OPERATOR.OR) {
                     stack.complete();
 
                     this.append(stack, throw_error);
@@ -252,88 +264,62 @@ class ExpressionGroup extends Operand {
      * @method
      */
     result(context, out, throw_error) {
-        let result = this.data[0] != null ? this.data[0].result(context, out, throw_error) : null;
+        let result =
+            this.data[0] != null
+                ? this.data[0]
+                      .result(context, out, throw_error) // Результируем значение функции
+                      .result(context, out, throw_error) // Результируем значение контейнера
+                : null;
 
-        for (let i = 1, leng = this.data.length; i < leng; i += 2) {
+        for (let i = 1, leng = this.data.length, cur; i < leng; i += 2) {
+            // Получем значение функции
+            cur = this.data[i + 1].result(context, out, throw_error);
+
             switch (true) {
                 case this.data[i].equals(OPERATOR.PLUS):
-                    result += this.data[i + 1].result(
-                        context,
-                        out,
-                        throw_error
-                    );
-                    break;
+                    result += cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.MINUS):
-                    result -= this.data[i + 1].result(
-                        context,
-                        out,
-                        throw_error
-                    );
-                    break;
+                    result -= cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.MULT):
-                    result *= this.data[i + 1].result(
-                        context,
-                        out,
-                        throw_error
-                    );
-                    break;
+                    result *= cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.DIVIDE):
-                    result /= this.data[i + 1].result(
-                        context,
-                        out,
-                        throw_error
-                    );
-                    break;
+                    result /= cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.LARGER):
-                    result =
-                        result >
-                        this.data[i + 1].result(context, out, throw_error);
-                    break;
+                    result = result > cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.LESS):
-                    result =
-                        result <
-                        this.data[i + 1].result(context, out, throw_error);
-                    break;
+                    result = result < cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.EQUAL):
-                    result =
-                        result ==
-                        this.data[i + 1].result(context, out, throw_error);
-                    break;
+                    result = result == cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.ELARGER):
-                    result =
-                        result >=
-                        this.data[i + 1].result(context, out, throw_error);
-                    break;
+                    result = result >= cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.ELESS):
-                    result =
-                        result <=
-                        this.data[i + 1].result(context, out, throw_error);
-                    break;
+                    result = result <= cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.NEQUAL):
-                    result =
-                        result !=
-                        this.data[i + 1].result(context, out, throw_error);
-                    break;
+                    result = result != cur.toRawData();
+                break;
                 case this.data[i].equals(OPERATOR.AND):
-                    result =
-                        result &&
-                        this.data[i + 1].result(context, out, throw_error);
+                    result = result && cur.toRawData();
 
-                    if (!result)
-                        return result;
-                    break;
+                    if (!result) return result;
+                break;
                 case this.data[i].equals(OPERATOR.OR):
-                    result =
-                        result ||
-                        this.data[i + 1].result(context, out, throw_error);
+                    result = result || cur.toRawData();
 
-                    if (result)
-                        return result;
-                    break;
+                    if (result) return result;
+                break;
             }
         }
 
-        return result;
+        return Cast(result, context);
     }
 }
 
