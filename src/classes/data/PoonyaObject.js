@@ -94,7 +94,7 @@ class PoonyaObject extends iPoonyaObject {
      * @public
      */
     remove(key) {
-        return this.fields.delete(key);
+        return this.fields.delete(key) && this.field_attrs.delete(key);
     }
 
     /**

@@ -45,13 +45,26 @@ class PoonyaNull extends PoonyaObject {
     append(value){ }
 
     /**
-     * Устанавливать значения null нельзя
+     * Устанавливать значения для null нельзя
      * 
      * @override
      * @method
      * @public
      */
-    set() { }
+    set() {
+        
+    }
+
+    /**
+     * Удалять значения для null нельзя
+     * 
+     * @override
+     * @method
+     * @public
+     */
+    remove() {
+
+    }
 
     /**
      * Сериализует null в значение резуьтата выполнения

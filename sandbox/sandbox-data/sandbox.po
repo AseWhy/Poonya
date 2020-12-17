@@ -2,6 +2,11 @@
     Multilevel object notation
 </
 
-set test1 = 'SOMEasdasdasdasdasddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd';
+set test1 = Object -> 
+                array -> Array -> *;
 
-> test1.length();
+test1.array <- 1;
+test1.array <- 2;
+test1.array <- 3;
+
+> test1;

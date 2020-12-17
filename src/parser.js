@@ -181,7 +181,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                             expected = 3;
 
                             /// Неправильная нотация
-                            ///
+                            /// Попытка произвести нотация на два уровня выше чем родительская
                             ///
                         } else if (count > level + 2) {
                             throw_error(data[i + 1].position, new BadArrowNotationJumpingTwoLevels());
@@ -191,9 +191,9 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                         } else {
                             result = parseExpression(i, data, throw_error, [',', ';']);
 
-                            i += result.jump - 1;
-
                             entries[entries.length - 1][1] = result.data;
+
+                            i += result.jump - 1;
 
                             expected = 3;
                         }

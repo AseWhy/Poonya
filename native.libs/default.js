@@ -201,7 +201,9 @@ class PoonyaStringPrototype extends PoonyaPrototype {
     }
 
     charAt(service, index){
-        return this.data.charAt(index);
+        if(index != null) {
+            return this.data.charAt(index);
+        } else return null;
     }
 
     length(service) {
@@ -213,16 +215,13 @@ class PoonyaArrayPrototype extends PoonyaPrototype {
     constructor(context){
         super([], 'Array');
 
-        this.addField('unregister', this.unregister, FIELDFLAGS.CONSTANT, context);
         this.addField('includes', this.includes, FIELDFLAGS.CONSTANT, context);
         this.addField('indexOf', this.indexOf, FIELDFLAGS.CONSTANT, context);
-        this.addField('create', this.create, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC, context);
         this.addField('concat', this.concat, FIELDFLAGS.CONSTANT, context);
         this.addField('append', this.append, FIELDFLAGS.CONSTANT, context);
         this.addField('length', this.length, FIELDFLAGS.CONSTANT, context);
         this.addField('remove', this.remove, FIELDFLAGS.CONSTANT, context);
         this.addField('slice', this.slice, FIELDFLAGS.CONSTANT, context);
-        this.addField('from', this.from, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC, context);
         this.addField('pop', this.pop, FIELDFLAGS.CONSTANT, context);
     }
 
@@ -305,14 +304,6 @@ class PoonyaArrayPrototype extends PoonyaPrototype {
         this.fields.remove(this.fields.size - 1);
 
         return buffer;
-    }
-
-    create(){
-        return new Array();
-    }
-
-    unregister(service){
-        
     }
 }
 

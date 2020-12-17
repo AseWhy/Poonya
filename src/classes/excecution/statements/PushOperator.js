@@ -5,11 +5,13 @@
  * @license MIT
  */
 
-const { ExpressionGroup } = require('../expression/ExpressionGroup'),
+const ExpressionGroup = require('../expression/ExpressionGroup'),
     {
         TheFieldMustBeAnArrayInstanceExceprion,
         GetFieldOfNullException,
-    } = require('../../exceptions');
+    } = require('../../exceptions')
+    ,   PoonyaArray = require('../../data/PoonyaArray')
+    ,   PoonyaObject = require('../../data/PoonyaObject');
 
 /**
  * @lends PushOperator
@@ -45,7 +47,7 @@ class PushOperator {
         return (
             '(' +
             this.query_stack.map(e => (typeof e === 'number' ? `[${e}]` : e)).join(' => ') +
-            ') < ' +
+            ') <- ' +
             this.value.toString(indent + '\t')
         );
     }
@@ -79,7 +81,7 @@ class PushOperator {
             }
 
             if (query_data instanceof PoonyaArray)
-                query_data.push(this.value.result(context, out, throw_error));
+                query_data.push(context, this.value.result(context, out, throw_error));
             else
                 throw_error(
                     this.position,

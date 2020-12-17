@@ -56,7 +56,20 @@ class PoonyaBoolean extends PoonyaObject {
      * @method
      * @public
      */
-    set() { }
+    set() {
+
+    }
+
+    /**
+     * Удалять значения булевому значеню нельзя
+     * 
+     * @override
+     * @method
+     * @public
+     */
+    remove() {
+
+    }
 
     /**
      * Сериализует булевое значение в значение результата выполнения

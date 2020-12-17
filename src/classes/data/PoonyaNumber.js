@@ -56,7 +56,20 @@ class PoonyaNumber extends PoonyaObject {
      * @method
      * @public
      */
-    set() { }
+    set() {
+
+    }
+
+    /**
+     * Удалять значения числу нельзя
+     * 
+     * @override
+     * @method
+     * @public
+     */
+    remove() {
+
+    }
 
     /**
      * Сериализует число значение результата выполнения

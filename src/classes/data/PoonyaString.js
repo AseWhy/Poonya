@@ -13,9 +13,9 @@ const PoonyaObject = require("./PoonyaObject");
  */
 class PoonyaString extends PoonyaObject {
     /**
-     * Дескриптор массива в poonya
+     * Дескриптор объекта строки в poonya
      *
-     * @param {iPoonyaPrototype} prototype Прототип массива
+     * @param {iPoonyaPrototype} prototype Прототип строки
      * @param {String} init Исходная строка
      * 
      * @memberof Poonya.Data
@@ -50,7 +50,7 @@ class PoonyaString extends PoonyaObject {
     }
 
     /**
-     * Получает по индексу
+     * Получает символ по индексу, или значени из прототипа по ключу.
      * 
      * @param {String|Number} key ключ, по которому нужно получить значение
      * @param {iContext} context контекст, который будет использоваться для кастинга значения
@@ -76,6 +76,17 @@ class PoonyaString extends PoonyaObject {
      * @public
      */
     set() {
+
+    }
+
+    /**
+     * Удалять значения строке нельзя
+     * 
+     * @override
+     * @method
+     * @public
+     */
+    remove() {
 
     }
 

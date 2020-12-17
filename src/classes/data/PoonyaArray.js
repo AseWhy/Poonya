@@ -29,10 +29,24 @@ class PoonyaArray extends PoonyaObject {
     constructor(prototype = null, init, context) {
         super(prototype);
 
-        if (init)
-            for (let i = 0, leng = init.length; i < leng; i++) {
-                this.push(context, init[i]);
+        if (init) {
+            if(Array.isArray(init)) {
+                for (let i = 0, leng = init.length; i < leng; i++) {
+                    this.push(context, init[i]);
+                }
+            } else {
+                for(let key in init) {
+                    switch(typeof key) {
+                        case "string":
+                            this.set(context, parseInt(key), init[key]);
+                        break;
+                        case "number":
+                            this.set(context, key, init[key]);
+                        break;
+                    }
+                }
             }
+        }
     }
 
     /**

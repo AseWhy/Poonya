@@ -56,7 +56,20 @@ class PoonyaInteger extends PoonyaObject {
      * @method
      * @public
      */
-    set() { }
+    set() {
+
+    }
+
+    /**
+     * Удалять значения целому числу нельзя
+     * 
+     * @override
+     * @method
+     * @public
+     */
+    remove() {
+
+    }
 
     /**
      * Сериализует челое число в значение результата выполнения
