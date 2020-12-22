@@ -48,6 +48,7 @@ function Cast(data, context, parents_three = new Array()) {
                 case data instanceof iPoonyaObject:
                 case data instanceof iPoonyaPrototype:
                 case data instanceof Operand:
+                case data instanceof NativeFunction:
                     return data;
                 default:
                     parents_three.push(data);
@@ -139,7 +140,7 @@ function toFixed(d, l) {
  * @static
  */
 function toBytes(s) {
-    return unescape(encodeURIComponent(s)).split('').map(e => e.charCodeAt());
+    return s.split('').map(e => e.charCodeAt());
 }
 
 module.exports.maybeEquals = maybeEquals;

@@ -15,7 +15,7 @@ function format(val){
     return val.toString();
 }
 
-new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
+new class DefaultTagsStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
         super('default.html.tags', false, false, 'TAGS');
 
@@ -57,7 +57,12 @@ new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
 		this.addField('FIGURE', 'figure', FIELDFLAGS.CONSTANT);
 		this.addField('FOOTER', 'footer', FIELDFLAGS.CONSTANT);
 		this.addField('FORM', 'form', FIELDFLAGS.CONSTANT);
-		this.addField('H1-H6', 'h1-h6', FIELDFLAGS.CONSTANT);
+		this.addField('H1', 'h1', FIELDFLAGS.CONSTANT);
+		this.addField('H2', 'h2', FIELDFLAGS.CONSTANT);
+		this.addField('H3', 'h3', FIELDFLAGS.CONSTANT);
+		this.addField('H4', 'h4', FIELDFLAGS.CONSTANT);
+		this.addField('H5', 'h5', FIELDFLAGS.CONSTANT);
+		this.addField('H6', 'h6', FIELDFLAGS.CONSTANT);
 		this.addField('HEAD', 'head', FIELDFLAGS.CONSTANT);
 		this.addField('HEADER', 'header', FIELDFLAGS.CONSTANT);
 		this.addField('HR', 'hr', FIELDFLAGS.CONSTANT);
@@ -128,7 +133,7 @@ new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
     }
 }
 
-new class DefaultNumbersStaticLibrary extends PoonyaStaticLibrary {
+new class DefaultHtmlStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
         super('default.html', false, false, 'html');
 

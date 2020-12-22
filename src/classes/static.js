@@ -5,10 +5,11 @@
  * @author Astecom
  */
 
-// #!if platform === 'node'
-const { dirname } = require('path')
-    , { EventEmitter } = require('events');
-// #!endif
+const 
+    // #!if platform === 'node'
+        { dirname } = require('path'),
+    // #!endif
+        { EventEmitter } = require('events');
 
 // Защищенные поля для PoonyaPrototype
 const GET = Symbol('GET')

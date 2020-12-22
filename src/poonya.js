@@ -634,3 +634,33 @@ module.exports.ImportFile = ImportFile.bind(null, module.parent != null ? module
 // #!if platform === 'node'
 module.exports.ImportDir = ImportDir.bind(null, module.parent != null ? module.parent.path : module.path);
 // #!endif
+
+// #!if platform === 'browser'
+// ~ const load = new Event('poonya:load');
+// ~
+// ~ function parseHTML(html) {
+// ~     var t = document.createElement('template');
+// ~ 
+// ~     t.innerHTML = html;
+// ~ 
+// ~     return t.content.cloneNode(true);
+// ~ }
+// ~ 
+// ~ document.addEventListener('DOMContentLoaded', async () => {
+// ~     const entries = document.querySelectorAll('script[type="text/poonya"], script[lang="text/poonya"]');
+// ~ 
+// ~     for(let i = 0, leng = entries.length; i < leng; i++){
+// ~         const pattern = new ExcecutionPattern(entries[i].innerHTML, ['default.html']);
+// ~         
+// ~         await new Promise((res, rej) => {
+// ~            pattern.on('load', async () => {
+// ~                entries[i].replaceWith(...(await (pattern.result()).complete()).map(e => parseHTML(e)));
+// ~
+// ~                res();
+// ~            })
+// ~         })
+// ~
+// ~         window.dispatchEvent(load);
+// ~     }
+// ~ });
+// #!endif

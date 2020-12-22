@@ -1,13 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sandbox</title>
+
+    <title>Web-example-0</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
     
     <style>
+        @keyframes blink {
+            from {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
         .h-button {
             padding: 0.5em 2em;
             border: none;
@@ -36,13 +51,17 @@
             width: 100%;
             display: grid;
             grid-template-areas: '. .';
-            background-image: url(https://www.pixeden.com/media/k2/galleries/93/002-subtle-light-pattern-background-texture.jpg);
+            background-image: url(./data/0.jpg);
             background-position: center;
             background-size: cover;
         }
 
         body {
             margin: 0;
+        }
+
+        p {
+            text-align: justify;
         }
 
         .wrap-body-container {
@@ -53,6 +72,7 @@
         .right-hand {
             font-size: 7em;
             font-family: monospace;
+            filter: drop-shadow(5px 5px 10px black);
             margin: auto;
         }
 
@@ -62,7 +82,7 @@
             display: flex;
             top: 0;
             left: 0;
-            transition: 0.25s cubic-bezier(0.79,-0.29, 0.26, 1.26);
+            transition: 0.3s cubic-bezier(0.79,-0.29, 0.26, 1.26);
         }
 
         .content-unit {
@@ -72,13 +92,23 @@
             font-size: large;
         }
 
+        .content-img {
+            width: 100%;
+            margin: 0.5em 0;
+        }
+
         .d-content-limiter {
             width: 40%;
+        }
+
+        .blink {
+            opacity: 0;
+            animation: blink 0.75s infinite;
         }
     </style>
 </head>
 <body>
-    <script src="../../dist/poonya.browser.var.bundle.js"></script>
+    <script src="./data/poonya.browser.var.bundle.js"></script>
 
     <script type='text/poonya'>
         set TAGS = html.TAGS;
@@ -87,7 +117,7 @@
             html.createElement(TAGS.DIV,
                 html.createElement(TAGS.IMG, 
                     '', ( -> 
-                        src -> 'https://raw.githubusercontent.com/AseWhy/Poonya/master/data/icon_wo_poo.png',
+                        src -> './data/2.png',
                         loading -> 'lazy'
                     )
                 ) + html.createElement(TAGS.DIV, 
@@ -95,7 +125,7 @@
                             TAGS.BUTTON, 'main',
                             ( -> class -> 'h-button')
                         ) + html.createElement(
-                            TAGS.BUTTON, 'news',
+                            TAGS.BUTTON, 'Features',
                             ( -> class -> 'h-button')
                         ) + html.createElement(
                             TAGS.BUTTON, 'about',
@@ -104,7 +134,10 @@
                     ( -> class -> 'header-buttons')),
                 ( -> class -> 'left-hand')
             ) + html.createElement(TAGS.DIV,
-                '_ Poonya!',
+                'Poonya! ' + html.createElement(TAGS.B, '_', ( -> 
+                        class -> 'blink'
+                    )
+                ),
                 ( -> class -> 'right-hand')
             ),
         ( -> class -> 'header'));
@@ -131,35 +164,54 @@
                                     href -> 'https://github.com/AseWhy/Poonya'
                                 )
                             )
-                        ),
-                    ( -> 
-                        class -> 'd-content-limiter'
-                    )),
-                ( ->
-                    class -> 'content-unit'
-                )) + html.createElement(TAGS.DIV,
-                    html.createElement(
-                        TAGS.P,
-                        'Новостей не будет, это демонстрация.'
-                    ),
-                ( ->
-                    class -> 'content-unit'
-                )) + html.createElement(TAGS.DIV,
-                    html.createElement(
-                        TAGS.H1, 
-                        'Poonya'
-                    ) + html.createElement(
-                        TAGS.P,
-                        'Ну впринципе рассказывать нечего.'
-                    ),
-                ( ->
-                    class -> 'content-unit'
-                )),
-            ( -> 
-                class -> 'content',
-                id -> 'content'
-            )),
-        ( -> class -> 'wrap-body-container'));
+                        ), ( -> 
+                            class -> 'd-content-limiter'
+                        )
+                    ), ( ->
+                        class -> 'content-unit'
+                    )
+                ) + html.createElement(TAGS.DIV,
+                    html.createElement(TAGS.DIV,
+                        html.createElement(
+                            TAGS.H1,
+                            'Особенности'
+                        ), ( -> 
+                            class -> 'd-content-limiter'
+                        )
+                    ), ( ->
+                        class -> 'content-unit'
+                    )
+                ) + html.createElement(TAGS.DIV,
+                    html.createElement(TAGS.DIV,
+                        html.createElement(
+                            TAGS.H1, 
+                            'О названии...'
+                        ) + html.createElement(
+                            TAGS.P,
+                            'Китайцы назвали этого зверя огненной лисой, что звучало как «хон хо». Другим именем было «кошачий медведь». Жители Непала называли это животное «пунья» и именно от этого слова и произошло название «панда».'
+                        ) + html.createElement(TAGS.IMG, 
+                            '', ( -> 
+                                src -> './data/1.jpg',
+                                class -> 'content-img',
+                                loading -> 'lazy'
+                            )
+                        )  + html.createElement(
+                            TAGS.P,
+                            'Вначале Томас Хардвик предлагал назвать малую панду «Ya» (Wah). Так называли это животное в некоторых местностях Китая по аналогии со звуками, которые издавало это животное. Однако его инициатива оказалась пустой, поскольку его возвращение в Англию было отложено, а за это время другой натуралист, на этот раз уже из Франции, Фредерик Кювье, дал новому животному его нынешнее латинское название – Ailurus fulgens, что в переводе на русский означает «блистающая (сверкающая) кошка». Британских ученых такое пренебрежение нормами этики возмутило, однако ничего изменить уже было нельзя, поскольку согласно принятым в этой среде нормам научное название, будучи однажды присвоено, не может быть изменено, а первооткрывателем вида считается тот, кто это название дал.'
+                        ), ( -> 
+                            class -> 'd-content-limiter'
+                        )
+                    ), ( ->
+                        class -> 'content-unit'
+                    )
+                ), ( -> 
+                    class -> 'content',
+                    id -> 'content'
+                )
+            ), ( -> 
+                class -> 'wrap-body-container'
+            )
+        );
     </script>
 
     <script type="text/javascript">

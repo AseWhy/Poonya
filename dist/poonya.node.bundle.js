@@ -1505,15 +1505,13 @@ class ExpressionGroup extends Operand {
         break;
     }
 
-    if (this.data.length !== 0 && (current instanceof Operator && this.data[this.data.length - 1] instanceof Operator || current instanceof Operand && this.data[this.data.length - 1] instanceof Operand)) throw_error(entry.position, new TheSequenceException(entry));
+    if (this.data.length !== 0 && (current instanceof Operator && this.data[this.data.length - 1] instanceof Operator || current instanceof Operand && this.data[this.data.length - 1] instanceof Operand)) throw_error(entry.position, new TheSequenceException(current, this.data[this.data.length - 1]));
     this.data.push(current);
   }
   /**
    * Окончательно форматирует выражение по всем правилоам алгебры.
    *
    * @param {Function} throw_error Функция выбрасывания ошибок
-   *
-   * @throws {TheSequenceException}
    *
    * @public
    * @method
@@ -2767,8 +2765,8 @@ class ParserException extends PoonyaException {
 
 
 class TheSequenceException extends PoonyaException {
-  constructor(entry) {
-    super(`Wrong order: condition operator: '${entry.toString()}'`);
+  constructor(entry, last) {
+    super(`Wrong order: condition operator: '${entry.toString()}' after '${last.toString()}'`);
   }
 
 }
@@ -5979,7 +5977,7 @@ module.exports.MessagePattern = MessagePattern;
 module.exports.ExpressionPattern = ExpressionPattern;
 module.exports.ExcecutionPattern = ExcecutionPattern;
 module.exports.ImportFile = ImportFile.bind(null, module.parent != null ? module.parent.path : module.path);
-module.exports.ImportDir = ImportDir.bind(null, module.parent != null ? module.parent.path : module.path); // #!endif
+module.exports.ImportDir = ImportDir.bind(null, module.parent != null ? module.parent.path : module.path);
 
 /***/ }),
 
@@ -6055,6 +6053,7 @@ function Cast(data, context, parents_three = new Array()) {
         case data instanceof iPoonyaObject:
         case data instanceof iPoonyaPrototype:
         case data instanceof Operand:
+        case data instanceof NativeFunction:
           return data;
 
         default:
@@ -6148,7 +6147,7 @@ function toFixed(d, l) {
 
 
 function toBytes(s) {
-  return unescape(encodeURIComponent(s)).split('').map(e => e.charCodeAt());
+  return s.split('').map(e => e.charCodeAt());
 }
 
 module.exports.maybeEquals = maybeEquals;

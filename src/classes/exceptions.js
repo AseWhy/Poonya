@@ -45,8 +45,8 @@ class ParserException extends PoonyaException {
  * @protected
  */
 class TheSequenceException extends PoonyaException {
-    constructor(entry) {
-        super(`Wrong order: condition operator: '${entry.toString()}'`);
+    constructor(entry, last) {
+        super(`Wrong order: condition operator: '${entry.toString()}' after '${last.toString()}'`);
     }
 }
 

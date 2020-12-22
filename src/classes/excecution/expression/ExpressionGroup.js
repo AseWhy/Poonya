@@ -120,10 +120,12 @@ class ExpressionGroup extends Operand {
 
         if (
             this.data.length !== 0 &&
-            ((current instanceof Operator && this.data[this.data.length - 1] instanceof Operator) ||
-                (current instanceof Operand && this.data[this.data.length - 1] instanceof Operand))
+            (
+                (current instanceof Operator && this.data[this.data.length - 1] instanceof Operator) ||
+                (current instanceof Operand && this.data[this.data.length - 1] instanceof Operand)
+            )
         )
-            throw_error(entry.position, new TheSequenceException(entry));
+            throw_error(entry.position, new TheSequenceException(current, this.data[this.data.length - 1]));
 
         this.data.push(current);
     }
@@ -132,8 +134,6 @@ class ExpressionGroup extends Operand {
      * Окончательно форматирует выражение по всем правилоам алгебры.
      *
      * @param {Function} throw_error Функция выбрасывания ошибок
-     *
-     * @throws {TheSequenceException}
      *
      * @public
      * @method
