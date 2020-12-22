@@ -13,9 +13,9 @@ function l(...messages) {
 module.paths.push('C:/Users/alecs/AppData/Roaming/npm/node_modules');
 
 module.exports = (env, b) => {
-    env.platform = env.platform || 'node';
-    env.type = env.type || 'var';
-    env.path = env.platform != 'node' ? 'poonya.browser.' + env.type + '.bundle.js' : 'poonya.node.bundle.js';
+    env.platform = env && env.platform || 'node';
+    env.type = env && env.type || 'var';
+    env.path = env && env.platform != 'node' ? 'poonya.browser.' + env.type + '.bundle.js' : 'poonya.node.bundle.js';
 
     l(
         '\n',

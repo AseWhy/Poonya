@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lexer/lexer.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: lexer/lexer.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file src/lexer.js
+ * @description Содержит в себе лексер, который преобразует строку в набор токенов.
+ * @license MIT
+ * @author Astecom
+ */
+
+const { CHARTYPE } = require('../classes/static')
+    ,   LexerEntry = require('./LexerEntry');
+
+/**
+ * Лексер, который производит лексический разбор подаваемого текста в буффере
+ *
+ * @param {Buffer|UInt8Array|Array} input Вход с `сырыми` данными
+ * @param {Boolean} allow_spaces разрешены ли пробелы, если `false`, то лексер вернет ответ без пробелов
+ *
+ * @memberof Poonya.Lexer
+ * @protected
+ */
+function lexer(input, allow_spaces = true) {
+    const Export = new Array();
+
+    let buff = new Array(),
+        is_string = false,
+        is_comment = false,
+        is_multiline = false,
+        string_entry = null,
+        cur = null,
+        last = null;
+
+    if(Array.isArray(input)) {
+        // Преобразуем входные данные в обычный массив, если на вход были поданы массив подобные данные
+        input = Array.from(input);
+    } else {
+        throw TypeError('Only array-like data can be input to the lexer');
+    }
+
+    for (let i = 0, leng = input.length; i &lt; leng; i++) {
+        switch (input[i]) {
+            case 32:
+            case 9:
+                cur = CHARTYPE.SPACE;
+                break;
+            case 46:
+                cur = CHARTYPE.POINT;
+                break;
+            case 10:
+            case 13:
+                cur = CHARTYPE.NEWLINE;
+                break;
+            case 48:
+            case 49:
+            case 50:
+            case 51:
+            case 52:
+            case 53:
+            case 54:
+            case 55:
+            case 56:
+            case 57:
+                cur = CHARTYPE.NUMBER;
+                break;
+            case 34:
+            case 39:
+            case 96:
+                cur = CHARTYPE.STRING;
+                break;
+            case 60:
+            case 61:
+            case 62:
+            case 63:
+            case 43:
+            case 44:
+            case 45:
+            case 47:
+            case 40:
+            case 41:
+            case 42:
+            case 59:
+            case 58:
+            case 38:
+            case 123:
+            case 124:
+            case 125:
+            case 91:
+            case 93:
+            case 33:
+                cur = CHARTYPE.OPERATOR;
+                break;
+            default:
+                cur = CHARTYPE.WORD;
+                break;
+        }
+
+        if (
+            (cur === CHARTYPE.NEWLINE &amp;&amp; last === CHARTYPE.NEWLINE) ||
+            (cur === CHARTYPE.POINT &amp;&amp; last === CHARTYPE.NUMBER) ||
+            (cur === CHARTYPE.NUMBER &amp;&amp; last === CHARTYPE.WORD)
+        ) {
+            buff.push(input[i]);
+
+            continue;
+        }
+
+        // Если предыдущий и текущий тип символов это операторы
+        if (cur === CHARTYPE.OPERATOR &amp;&amp; last === CHARTYPE.OPERATOR) {
+            if (
+                buff.length === 1 &amp;&amp; // В буффере не больше одного символа
+                (buff[0] === 33 || // пердыдущий символ был '!'
+                    buff[0] === 60 || // пердыдущий символ был '&lt;'
+                    buff[0] === 62) &amp;&amp; // пердыдущий символ был '>'
+                input[i] === 61 // текущий символ '='
+            ) {
+                buff.push(input[i]);
+
+                if (allow_spaces || last !== CHARTYPE.SPACE)
+                    Export.push(new LexerEntry(last, buff, i, string_entry));
+
+                string_entry = null;
+
+                buff.splice(0, buff.length);
+
+                last = undefined;
+
+                if (i + 1 === leng) return Export;
+
+                continue;
+            }
+
+            if (
+                buff.length === 1 &amp;&amp; // В буффере не больше одного символа
+                buff[0] === 47 // Предыдущий символ это /
+            ) {
+                if (
+                    input[i] === 47 // Текущий символ это /
+                ) {
+                    is_comment = true;
+                    is_multiline = false;
+
+                    continue;
+                } else if (
+                    input[i] === 62 // Текущий символ это >
+                ) {
+                    is_comment = true;
+                    is_multiline = true;
+
+                    continue;
+                }
+            }
+        }
+
+        if (!is_string &amp;&amp; !is_comment) {
+            if (
+                (cur !== last || last === CHARTYPE.STRING || last === CHARTYPE.OPERATOR) &amp;&amp;
+                last != null
+            ) {
+                if (allow_spaces || last !== CHARTYPE.SPACE)
+                    Export.push(new LexerEntry(last, buff, i, string_entry));
+
+                string_entry = null;
+
+                buff.splice(0, buff.length);
+            }
+
+            if (cur === CHARTYPE.STRING) {
+                is_string = true;
+
+                string_entry = input[i];
+
+                last = cur;
+
+                continue;
+            }
+
+            buff.push(input[i]);
+
+            last = cur;
+        } else if (is_comment) {
+            if (is_multiline) {
+                if (
+                    input[i] === 47 &amp;&amp; // Текущий символ это /
+                    buff[buff.length - 1] === 60 // Предыдущий символ это &lt;
+                ) {
+                    is_comment = false;
+
+                    last = undefined;
+
+                    buff.splice(0, buff.length);
+
+                    continue;
+                }
+            } else {
+                if (cur === CHARTYPE.NEWLINE) {
+                    is_comment = false;
+
+                    last = CHARTYPE.NEWLINE;
+
+                    buff.splice(0, buff.length);
+
+                    continue;
+                }
+            }
+
+            buff.push(input[i]);
+        } else {
+            if (cur === CHARTYPE.STRING &amp;&amp; input[i] === string_entry) {
+                is_string = false;
+
+                last = cur;
+
+                continue;
+            }
+
+            buff.push(input[i]);
+
+            last = cur;
+        }
+    }
+
+    if (allow_spaces || cur !== CHARTYPE.SPACE)
+        Export.push(
+            new LexerEntry(
+                cur,
+                buff,
+                input.byteLength - buff.length - 1,
+                string_entry
+            )
+        );
+
+    return Export;
+}
+
+module.exports = lexer;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="Poonya.html">Poonya</a></li><li><a href="Poonya.Data.html">Data</a></li><li><a href="Poonya.Exceptions.html">Exceptions</a></li><li><a href="Poonya.Expression.html">Expression</a></li><li><a href="Poonya.Lexer.html">Lexer</a></li><li><a href="Poonya.Linker.html">Linker</a></li><li><a href="Poonya.Parser.html">Parser</a></li><li><a href="Poonya.Statements.html">Statements</a></li><li><a href="Poonya.Static.html">Static</a></li><li><a href="Poonya.Storage.html">Storage</a></li><li><a href="Poonya.Utils.html">Utils</a></li></ul><h3>Classes</h3><ul><li><a href="CodeEmitter.html">CodeEmitter</a></li><li><a href="Context.html">Context</a></li><li><a href="ExcecutionPattern.html">ExcecutionPattern</a></li><li><a href="ExpressionPattern.html">ExpressionPattern</a></li><li><a href="FunctionCall.html">FunctionCall</a></li><li><a href="GetOperator.html">GetOperator</a></li><li><a href="Heap.html">Heap</a></li><li><a href="IfStatement.html">IfStatement</a></li><li><a href="LexerEntry.html">LexerEntry</a></li><li><a href="MessagePattern.html">MessagePattern</a></li><li><a href="NativeFunction.html">NativeFunction</a></li><li><a href="ObjectContructorCall.html">ObjectContructorCall</a></li><li><a href="Operand.html">Operand</a></li><li><a href="Operator.html">Operator</a></li><li><a href="OutOperator.html">OutOperator</a></li><li><a href="ParserData.html">ParserData</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingToUpperLevel.html">BadArrowNotationJumpingToUpperLevel</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingTwoLevels.html">BadArrowNotationJumpingTwoLevels</a></li><li><a href="Poonya.Exceptions.BadEmptyObjectException.html">BadEmptyObjectException</a></li><li><a href="Poonya.Exceptions.BadKeyInvalidTypeException.html">BadKeyInvalidTypeException</a></li><li><a href="Poonya.Exceptions.BadKeyProtectedFieldException.html">BadKeyProtectedFieldException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorException.html">CriticalParserErrorException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorNoRawDataTransmittedException.html">CriticalParserErrorNoRawDataTransmittedException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfInputException.html">CriticalParserErrorUnexpectedEndOfInputException</a></li><li><a href="Poonya.Exceptions.FieldNotAFunctionException.html">FieldNotAFunctionException</a></li><li><a href="Poonya.Exceptions.GetFieldOfNullException.html">GetFieldOfNullException</a></li><li><a href="Poonya.Exceptions.InvalidSequenceForLetiableAccessException.html">InvalidSequenceForLetiableAccessException</a></li><li><a href="Poonya.Exceptions.IsNotAConstructorException.html">IsNotAConstructorException</a></li><li><a href="Poonya.Exceptions.LinkerIOError.html">LinkerIOError</a></li><li><a href="Poonya.Exceptions.LinkerPathNotGiveExceptrion.html">LinkerPathNotGiveExceptrion</a></li><li><a href="Poonya.Exceptions.NativeFunctionExcecutionError.html">NativeFunctionExcecutionError</a></li><li><a href="Poonya.Exceptions.NativeFunctionReturnValueError.html">NativeFunctionReturnValueError</a></li><li><a href="Poonya.Exceptions.ParserEmtyArgumentException.html">ParserEmtyArgumentException</a></li><li><a href="Poonya.Exceptions.ParserException.html">ParserException</a></li><li><a href="Poonya.Exceptions.ParserLogicException.html">ParserLogicException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultEmptyArgumentException.html">SegmentationFaultEmptyArgumentException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultMaximumSegmentsForBlockException.html">SegmentationFaultMaximumSegmentsForBlockException</a></li><li><a href="Poonya.Exceptions.TheFieldAlreadyHasBeenDeclaredException.html">TheFieldAlreadyHasBeenDeclaredException</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeAnArrayInstanceExceprion.html">TheFieldMustBeAnArrayInstanceExceprion</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeNumberException.html">TheFieldMustBeNumberException</a></li><li><a href="Poonya.Exceptions.TheFieldNotHasDeclaredExceprion.html">TheFieldNotHasDeclaredExceprion</a></li><li><a href="Poonya.Exceptions.TheSequenceException.html">TheSequenceException</a></li><li><a href="Poonya.Exceptions.UnableToCreateAnObjectException.html">UnableToCreateAnObjectException</a></li><li><a href="Poonya.Exceptions.UnableToRecognizeTypeException.html">UnableToRecognizeTypeException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenException.html">UnexpectedTokenException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenStatement.html">UnexpectedTokenStatement</a></li><li><a href="Poonya.Exceptions.UnexpectedWordTypeAndGetException.html">UnexpectedWordTypeAndGetException</a></li><li><a href="PoonyaArray.html">PoonyaArray</a></li><li><a href="PoonyaBoolean.html">PoonyaBoolean</a></li><li><a href="PoonyaInteger.html">PoonyaInteger</a></li><li><a href="PoonyaNull.html">PoonyaNull</a></li><li><a href="PoonyaNumber.html">PoonyaNumber</a></li><li><a href="PoonyaObject.html">PoonyaObject</a></li><li><a href="PoonyaPrototype.html">PoonyaPrototype</a></li><li><a href="PoonyaStaticLibrary.html">PoonyaStaticLibrary</a></li><li><a href="PoonyaString.html">PoonyaString</a></li><li><a href="PushOperator.html">PushOperator</a></li><li><a href="RepeatStatement.html">RepeatStatement</a></li><li><a href="SequenceGroup.html">SequenceGroup</a></li><li><a href="SequenceMainGroup.html">SequenceMainGroup</a></li><li><a href="SetOperator.html">SetOperator</a></li><li><a href="TernarOperator.html">TernarOperator</a></li><li><a href="WhileStatement.html">WhileStatement</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Tue Dec 22 2020 23:19:58 GMT+0400 (Самарское стандартное время)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

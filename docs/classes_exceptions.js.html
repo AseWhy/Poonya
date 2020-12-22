@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: classes/exceptions.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: classes/exceptions.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file src/classes/exceptions.js
+ * @description Тут я сгруппировал всевозможные исклюения
+ * @author Astecom
+ * @license MIT
+ */
+
+const { SERVICE } = require('./static')
+    , { dirname } = require('path');
+
+/**
+ * Класс ошибки шаблонизатора
+ *
+ * @memberof Poonya.Exceptions
+ * @name ParserException
+ * @class
+ * @protected
+ */
+class PoonyaException {
+    constructor(header, message) {
+        this.message = 'PoonyaException / ' + header + (message != null ? ': \n' + message : '');
+    }
+}
+
+/**
+ * Основное исключение шаблонизатора
+ *
+ * @memberof Poonya.Exceptions
+ * @name ParserException
+ * @class
+ * @protected
+ */
+class ParserException extends PoonyaException {
+    constructor() {
+        super('Error when processing raw data');
+    }
+}
+
+/**
+ * Исключение последовательности, неожиданная последовательность
+ *
+ * @memberof Poonya.Exceptions
+ * @name TheSequenceException
+ * @class
+ * @protected
+ */
+class TheSequenceException extends PoonyaException {
+    constructor(entry) {
+        super(`Wrong order: condition operator: '${entry.toString()}'`);
+    }
+}
+
+/**
+ * Исключение неизвестного токена
+ *
+ * @memberof Poonya.Exceptions
+ * @name UnexpectedTokenException
+ * @class
+ * @protected
+ */
+class UnexpectedTokenException extends PoonyaException {
+    constructor(token, expected) {
+        super(`Unexpected token '${token.toString()}' when expected '${expected.toString()}'`);
+    }
+}
+
+/**
+ * Исключение неизвестного токена
+ *
+ * @memberof Poonya.Exceptions
+ * @name UnexpectedTokenStatement
+ * @class
+ * @protected
+ */
+class UnexpectedTokenStatement extends PoonyaException {
+    constructor(statement, token, expected) {
+        super(
+            `Error parsing the '${statement.toString()}' statement. Expected '${expected.toString()}', when actually: '${token.toString()}'`
+        );
+    }
+}
+
+/**
+ * Логическое исключение
+ *
+ * @memberof Poonya.Exceptions
+ * @name ParserLogicException
+ * @class
+ * @protected
+ */
+class ParserLogicException extends PoonyaException {
+    constructor() {
+        super('The expression has incorrect logic');
+    }
+}
+
+/**
+ * Исключение пустого аргумента при вызове функции
+ *
+ * @memberof Poonya.Exceptions
+ * @name ParserEmtyArgumentException
+ * @class
+ * @protected
+ */
+class ParserEmtyArgumentException extends PoonyaException {
+    constructor() {
+        super(
+            'It is not possible to pass an empty argument to a function, use null to denote an empty value'
+        );
+    }
+}
+
+/**
+ * Не передан путь родтельскому шаблону
+ *
+ * @memberof Poonya.Exceptions
+ * @name LinkerPathNotGiveExceptrion
+ * @class
+ * @protected
+ */
+class LinkerPathNotGiveExceptrion extends PoonyaException {
+    constructor() {
+        super('To use include, you must pass the path to the current execution file');
+    }
+}
+
+/**
+ * Ошибка открытия файла
+ *
+ * @memberof Poonya.Exceptions
+ * @name LinkerIOError
+ * @class
+ * @protected
+ */
+class IOError extends PoonyaException {
+    constructor(path) {
+        super("An error occured while opening file: '" + path + "'");
+    }
+}
+
+/**
+ * Ошибка использования стороннего шаблона
+ *
+ * @memberof Poonya.Exceptions
+ * @name LinkerIOError
+ * @class
+ * @protected
+ */
+class LinkerIOError extends IOError {
+    constructor(path) {
+        super(path);
+    }
+}
+
+/**
+ * Ошибка выполнения нативной функции
+ *
+ * @memberof Poonya.Exceptions
+ * @name NativeFunctionExcecutionError
+ * @class
+ * @protected
+ */
+class NativeFunctionExcecutionError extends PoonyaException {
+    constructor(name, stack) {
+        const exp = /^\s*at\s(?:new\s)?([aA-zZ.аА-яЯё]+)\s\((.*)\)$/;
+
+        stack = stack.split('\n');
+
+        for (let i = 0, leng = stack.length, cur; i &lt; leng; i++) {
+            if (exp.test(stack[i])) {
+                cur = stack[i].match(exp);
+
+                if (
+                    cur[1] === 'NativeFunction.result' &amp;&amp;
+                    SERVICE.ROOTPATH == dirname(cur[2]).substring(0, SERVICE.ROOTPATH.length)
+                ) {
+                    stack = stack.slice(0, i);
+
+                    break;
+                }
+            }
+        }
+
+        super(
+            "Critical error while executing a native function '" + name + "'",
+            '* > \t' + stack.join('\n * > \t')
+        );
+    }
+}
+
+/**
+ * Ошибка типа, возвращаемого нативной функцией
+ *
+ * @memberof Poonya.Exceptions
+ * @name NativeFunctionReturnValueError
+ * @class
+ * @protected
+ */
+class NativeFunctionReturnValueError extends PoonyaException {
+    constructor() {
+        super('Function can only return simple types');
+    }
+}
+
+/**
+ * Невозможно получить n от null
+ *
+ * @memberof Poonya.Exceptions
+ * @name GetFieldOfNullException
+ * @class
+ * @protected
+ */
+class GetFieldOfNullException extends PoonyaException {
+    constructor(field) {
+        super(`Cannot get property '${field}' of null`);
+    }
+}
+
+/**
+ * Поле не является функцией
+ *
+ * @memberof Poonya.Exceptions
+ * @name FieldNotAFunctionException
+ * @class
+ * @protected
+ */
+class FieldNotAFunctionException extends PoonyaException {
+    constructor(field) {
+        super(`The field '${field}' is not a function`);
+    }
+}
+
+/**
+ * Поле уже объявлено
+ *
+ * @memberof Poonya.Exceptions
+ * @name TheFieldAlreadyHasBeenDeclaredException
+ * @class
+ * @protected
+ */
+class TheFieldAlreadyHasBeenDeclaredException extends PoonyaException {
+    constructor(field) {
+        super(`The '${field}' field is already declared`);
+    }
+}
+
+/**
+ * Поле должно быть массивом
+ *
+ * @memberof Poonya.Exceptions
+ * @name TheFieldMustBeAnArrayInstanceExceprion
+ * @class
+ * @protected
+ */
+class TheFieldMustBeAnArrayInstanceExceprion extends PoonyaException {
+    constructor(field) {
+        super(`Field '${field}' must be an Array instance`);
+    }
+}
+
+/**
+ * Поле не объявлено
+ *
+ * @memberof Poonya.Exceptions
+ * @name TheFieldNotHasDeclaredExceprion
+ * @class
+ * @protected
+ */
+class TheFieldNotHasDeclaredExceprion extends PoonyaException {
+    constructor(field) {
+        super(`Field '${field}' is not declared`);
+    }
+}
+
+/**
+ * Поле должно иметь тип числа
+ *
+ * @memberof Poonya.Exceptions
+ * @name TheFieldMustBeNumberException
+ * @class
+ * @protected
+ */
+class TheFieldMustBeNumberException extends PoonyaException {
+    constructor(field) {
+        super(`'${field}' must be a number, or a container containing a number`);
+    }
+}
+
+/**
+ * Невозможно распознать тип вхождения
+ *
+ * @memberof Poonya.Exceptions
+ * @name UnableToRecognizeTypeException
+ * @class
+ * @protected
+ */
+class UnableToRecognizeTypeException extends PoonyaException {
+    constructor(type) {
+        super(`Unable to recognize type '${type}'`);
+    }
+}
+
+/**
+ * Ошибка сегментации сегментов вызова (...exp, ...exp, ) &lt;-
+ *
+ * @memberof Poonya.Exceptions
+ * @name SegmentationFaultEmptyArgumentException
+ * @class
+ * @protected
+ */
+class SegmentationFaultEmptyArgumentException extends PoonyaException {
+    constructor(blockname) {
+        super(`Segmentation fault: empty argument for ` + blockname);
+    }
+}
+
+/**
+ * Ошибка сегментации сегментов вызова (...exp, ...exp, ) &lt;-
+ *
+ * @memberof Poonya.Exceptions
+ * @name SegmentationFaultMaximumSegmentsForBlockException
+ * @class
+ * @protected
+ */
+class SegmentationFaultMaximumSegmentsForBlockException extends PoonyaException {
+    constructor(blockname) {
+        super(`Segmentation fault exceeded the maximum number of segments for block ` + blockname);
+    }
+}
+
+/**
+ * somed.dss[ &lt;...exp> ] &lt;-
+ *
+ * @memberof Poonya.Exceptions
+ * @name UnexpectedWordTypeAndGetException
+ * @class
+ * @protected
+ */
+class UnexpectedWordTypeAndGetException extends PoonyaException {
+    constructor(value, type) {
+        super(`Expected word type expression and get ${value}[${type}]`);
+    }
+}
+
+/**
+ * Невозможно получить доступ к полю, неправильно сотавлено выражение
+ *
+ * @memberof Poonya.Exceptions
+ * @name InvalidSequenceForLetiableAccessException
+ * @class
+ * @protected
+ */
+class InvalidSequenceForLetiableAccessException extends PoonyaException {
+    constructor() {
+        super(`Invalid sequence for letiable access`);
+    }
+}
+
+/**
+ * Критическая ошибка парсера
+ *
+ * @memberof Poonya.Exceptions
+ * @name CriticalParserErrorException
+ * @class
+ * @protected
+ */
+class CriticalParserErrorException extends PoonyaException {
+    constructor() {
+        super(`Critical parser error`);
+    }
+}
+
+/**
+ * Критическая ошибка парсера, неожиданный конец ввода
+ *
+ * @memberof Poonya.Exceptions
+ * @name CriticalParserErrorUnexpectedEndOfInputException
+ * @class
+ * @protected
+ */
+class CriticalParserErrorUnexpectedEndOfInputException extends PoonyaException {
+    constructor() {
+        super(`Critical parser error: unexpected end of input`);
+    }
+}
+
+/**
+ * Критическая ошибка парсера, не переданны данные для парсинга
+ *
+ * @memberof Poonya.Exceptions
+ * @name CriticalParserErrorNoRawDataTransmittedException
+ * @class
+ * @protected
+ */
+class CriticalParserErrorNoRawDataTransmittedException extends PoonyaException {
+    constructor() {
+        super(`Critical parser error: no raw data transmitted`);
+    }
+}
+
+/**
+ * Прыжок через два уровня
+ *
+ * @memberof Poonya.Exceptions
+ * @name BadArrowNotationJumpingTwoLevels
+ * @class
+ * @protected
+ */
+class BadArrowNotationJumpingTwoLevels extends PoonyaException {
+    constructor() {
+        super(`Bad array notation: jumping two levels is not possible`);
+    }
+}
+
+/**
+ * Неожиданный переход на более высокий уровень
+ *
+ * @memberof Poonya.Exceptions
+ * @name BadArrowNotationJumpingToUpperLevel
+ * @class
+ * @protected
+ */
+class BadArrowNotationJumpingToUpperLevel extends PoonyaException {
+    constructor() {
+        super(`Bad array notation: unexpected transition to a upper level`);
+    }
+}
+
+/**
+ * Невозможно создать пустой объект, ключи уже объявлены
+ *
+ * @memberof Poonya.Exceptions
+ * @name BadEmptyObjectException
+ * @class
+ * @protected
+ */
+class BadEmptyObjectException extends PoonyaException {
+    constructor() {
+        super(`Cannot create an empty object after declaring its keys`);
+    }
+}
+
+/**
+ * Неправильный тип ключа
+ *
+ * @memberof Poonya.Exceptions
+ * @name BadKeyInvalidTypeException
+ * @class
+ * @protected
+ */
+class BadKeyInvalidTypeException extends PoonyaException {
+    constructor() {
+        super(`Wrong key type: it can be set only by a numeric or string key`);
+    }
+}
+
+/**
+ * Невозможно создать пустой объект, ключи уже объявлены
+ *
+ * @memberof Poonya.Exceptions
+ * @name BadKeyProtectedFieldException
+ * @class
+ * @protected
+ */
+class BadKeyProtectedFieldException extends PoonyaException {
+    constructor() {
+        super(`Cannot set this field, the field is protected from changes`);
+    }
+}
+
+/**
+ * Попытка создать объект вызывав его как функцию
+ *
+ * @memberof Poonya.Exceptions
+ * @name UnableToCreateAnObjectException
+ * @class
+ * @protected
+ */
+class UnableToCreateAnObjectException extends PoonyaException {
+    constructor() {
+        super(
+            `Unable to create an object by calling its constructor as a function, pick ConstructorName -> *;`
+        );
+    }
+}
+
+/**
+ * Попытка вызывать несуществующий констурктор
+ *
+ * @memberof Poonya.Exceptions
+ * @name IsNotAConstructorException
+ * @class
+ * @protected
+ */
+class IsNotAConstructorException extends PoonyaException {
+    constructor(path) {
+        super(
+            `${path
+                .map(e => (typeof e === 'number' ? '[' + e + ']' : e.toString()))
+                .join(' -> ')} - not a constructor`
+        );
+    }
+}
+
+module.exports.IOError = IOError;
+module.exports.LinkerIOError = LinkerIOError;
+module.exports.PoonyaException = PoonyaException;
+module.exports.ParserException = ParserException;
+module.exports.TheSequenceException = TheSequenceException;
+module.exports.ParserLogicException = ParserLogicException;
+module.exports.GetFieldOfNullException = GetFieldOfNullException;
+module.exports.BadEmptyObjectException = BadEmptyObjectException;
+module.exports.UnexpectedTokenException = UnexpectedTokenException;
+module.exports.UnexpectedTokenStatement = UnexpectedTokenStatement;
+module.exports.FieldNotAFunctionException = FieldNotAFunctionException;
+module.exports.BadKeyInvalidTypeException = BadKeyInvalidTypeException;
+module.exports.IsNotAConstructorException = IsNotAConstructorException;
+module.exports.ParserEmtyArgumentException = ParserEmtyArgumentException;
+module.exports.LinkerPathNotGiveExceptrion = LinkerPathNotGiveExceptrion;
+module.exports.CriticalParserErrorException = CriticalParserErrorException;
+module.exports.NativeFunctionExcecutionError = NativeFunctionExcecutionError;
+module.exports.BadKeyProtectedFieldException = BadKeyProtectedFieldException;
+module.exports.TheFieldMustBeNumberException = TheFieldMustBeNumberException;
+module.exports.NativeFunctionReturnValueError = NativeFunctionReturnValueError;
+module.exports.UnableToRecognizeTypeException = UnableToRecognizeTypeException;
+module.exports.TheFieldNotHasDeclaredExceprion = TheFieldNotHasDeclaredExceprion;
+module.exports.UnableToCreateAnObjectException = UnableToCreateAnObjectException;
+module.exports.BadArrowNotationJumpingTwoLevels = BadArrowNotationJumpingTwoLevels;
+module.exports.UnexpectedWordTypeAndGetException = UnexpectedWordTypeAndGetException;
+module.exports.BadArrowNotationJumpingToUpperLevel = BadArrowNotationJumpingToUpperLevel;
+module.exports.TheFieldMustBeAnArrayInstanceExceprion = TheFieldMustBeAnArrayInstanceExceprion;
+module.exports.TheFieldAlreadyHasBeenDeclaredException = TheFieldAlreadyHasBeenDeclaredException;
+module.exports.SegmentationFaultEmptyArgumentException = SegmentationFaultEmptyArgumentException;
+module.exports.InvalidSequenceForLetiableAccessException = InvalidSequenceForLetiableAccessException;
+module.exports.CriticalParserErrorUnexpectedEndOfInputException = CriticalParserErrorUnexpectedEndOfInputException;
+module.exports.CriticalParserErrorNoRawDataTransmittedException = CriticalParserErrorNoRawDataTransmittedException;
+module.exports.SegmentationFaultMaximumSegmentsForBlockException = SegmentationFaultMaximumSegmentsForBlockException;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="Poonya.html">Poonya</a></li><li><a href="Poonya.Data.html">Data</a></li><li><a href="Poonya.Exceptions.html">Exceptions</a></li><li><a href="Poonya.Expression.html">Expression</a></li><li><a href="Poonya.Lexer.html">Lexer</a></li><li><a href="Poonya.Linker.html">Linker</a></li><li><a href="Poonya.Parser.html">Parser</a></li><li><a href="Poonya.Statements.html">Statements</a></li><li><a href="Poonya.Static.html">Static</a></li><li><a href="Poonya.Storage.html">Storage</a></li><li><a href="Poonya.Utils.html">Utils</a></li></ul><h3>Classes</h3><ul><li><a href="CodeEmitter.html">CodeEmitter</a></li><li><a href="Context.html">Context</a></li><li><a href="ExcecutionPattern.html">ExcecutionPattern</a></li><li><a href="ExpressionPattern.html">ExpressionPattern</a></li><li><a href="FunctionCall.html">FunctionCall</a></li><li><a href="GetOperator.html">GetOperator</a></li><li><a href="Heap.html">Heap</a></li><li><a href="IfStatement.html">IfStatement</a></li><li><a href="LexerEntry.html">LexerEntry</a></li><li><a href="MessagePattern.html">MessagePattern</a></li><li><a href="NativeFunction.html">NativeFunction</a></li><li><a href="ObjectContructorCall.html">ObjectContructorCall</a></li><li><a href="Operand.html">Operand</a></li><li><a href="Operator.html">Operator</a></li><li><a href="OutOperator.html">OutOperator</a></li><li><a href="ParserData.html">ParserData</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingToUpperLevel.html">BadArrowNotationJumpingToUpperLevel</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingTwoLevels.html">BadArrowNotationJumpingTwoLevels</a></li><li><a href="Poonya.Exceptions.BadEmptyObjectException.html">BadEmptyObjectException</a></li><li><a href="Poonya.Exceptions.BadKeyInvalidTypeException.html">BadKeyInvalidTypeException</a></li><li><a href="Poonya.Exceptions.BadKeyProtectedFieldException.html">BadKeyProtectedFieldException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorException.html">CriticalParserErrorException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorNoRawDataTransmittedException.html">CriticalParserErrorNoRawDataTransmittedException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfInputException.html">CriticalParserErrorUnexpectedEndOfInputException</a></li><li><a href="Poonya.Exceptions.FieldNotAFunctionException.html">FieldNotAFunctionException</a></li><li><a href="Poonya.Exceptions.GetFieldOfNullException.html">GetFieldOfNullException</a></li><li><a href="Poonya.Exceptions.InvalidSequenceForLetiableAccessException.html">InvalidSequenceForLetiableAccessException</a></li><li><a href="Poonya.Exceptions.IsNotAConstructorException.html">IsNotAConstructorException</a></li><li><a href="Poonya.Exceptions.LinkerIOError.html">LinkerIOError</a></li><li><a href="Poonya.Exceptions.LinkerPathNotGiveExceptrion.html">LinkerPathNotGiveExceptrion</a></li><li><a href="Poonya.Exceptions.NativeFunctionExcecutionError.html">NativeFunctionExcecutionError</a></li><li><a href="Poonya.Exceptions.NativeFunctionReturnValueError.html">NativeFunctionReturnValueError</a></li><li><a href="Poonya.Exceptions.ParserEmtyArgumentException.html">ParserEmtyArgumentException</a></li><li><a href="Poonya.Exceptions.ParserException.html">ParserException</a></li><li><a href="Poonya.Exceptions.ParserLogicException.html">ParserLogicException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultEmptyArgumentException.html">SegmentationFaultEmptyArgumentException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultMaximumSegmentsForBlockException.html">SegmentationFaultMaximumSegmentsForBlockException</a></li><li><a href="Poonya.Exceptions.TheFieldAlreadyHasBeenDeclaredException.html">TheFieldAlreadyHasBeenDeclaredException</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeAnArrayInstanceExceprion.html">TheFieldMustBeAnArrayInstanceExceprion</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeNumberException.html">TheFieldMustBeNumberException</a></li><li><a href="Poonya.Exceptions.TheFieldNotHasDeclaredExceprion.html">TheFieldNotHasDeclaredExceprion</a></li><li><a href="Poonya.Exceptions.TheSequenceException.html">TheSequenceException</a></li><li><a href="Poonya.Exceptions.UnableToCreateAnObjectException.html">UnableToCreateAnObjectException</a></li><li><a href="Poonya.Exceptions.UnableToRecognizeTypeException.html">UnableToRecognizeTypeException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenException.html">UnexpectedTokenException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenStatement.html">UnexpectedTokenStatement</a></li><li><a href="Poonya.Exceptions.UnexpectedWordTypeAndGetException.html">UnexpectedWordTypeAndGetException</a></li><li><a href="PoonyaArray.html">PoonyaArray</a></li><li><a href="PoonyaBoolean.html">PoonyaBoolean</a></li><li><a href="PoonyaInteger.html">PoonyaInteger</a></li><li><a href="PoonyaNull.html">PoonyaNull</a></li><li><a href="PoonyaNumber.html">PoonyaNumber</a></li><li><a href="PoonyaObject.html">PoonyaObject</a></li><li><a href="PoonyaPrototype.html">PoonyaPrototype</a></li><li><a href="PoonyaStaticLibrary.html">PoonyaStaticLibrary</a></li><li><a href="PoonyaString.html">PoonyaString</a></li><li><a href="PushOperator.html">PushOperator</a></li><li><a href="RepeatStatement.html">RepeatStatement</a></li><li><a href="SequenceGroup.html">SequenceGroup</a></li><li><a href="SequenceMainGroup.html">SequenceMainGroup</a></li><li><a href="SetOperator.html">SetOperator</a></li><li><a href="TernarOperator.html">TernarOperator</a></li><li><a href="WhileStatement.html">WhileStatement</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Tue Dec 22 2020 23:19:58 GMT+0400 (Самарское стандартное время)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

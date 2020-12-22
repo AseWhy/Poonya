@@ -329,11 +329,11 @@ let ImportDir = async (parent_path, lib_dir) => {
     const default_libs = readdirSync(lib_dir);
 
     for (let i = 0, leng = default_libs.length; i < leng; i++) {
-        await ImportFile(default_libs[i])
+        await ImportFile(lib_dir, default_libs[i])
     }
 };
 
-ImportFile = async (origin, file) => {
+ImportFile = (lib_dir, file) => {
     const cur = new PoonyaModule(file);
 
     const path = join(lib_dir, file);
@@ -348,7 +348,7 @@ ImportFile = async (origin, file) => {
         readFile(path, 'utf-8', (err, data) => {
             if(err)
                 throw new IOError(path);
-
+            
             cur._compile(`"use strict";${data};`, path);
 
             res();
@@ -362,14 +362,7 @@ module.exports.ImportDir = ImportDir;
 // #!if platform === 'browser'
 // ~ function crequire(id){
 // ~     if(id === 'poonya') {
-// ~         const exports = new Object();
-// ~ 
-// ~         exports.FIELDFLAGS = FIELDFLAGS;
-// ~         exports.Exceptions = require('./classes/exceptions');
-// ~         exports.PoonyaStaticLibrary = PoonyaStaticLibrary;
-// ~         exports.PoonyaPrototype = PoonyaPrototype;
-// ~ 
-// ~         return exports;
+// ~         return require('./preset');
 // ~     } else {
 // ~         throw new Error('Unknown module ' + id);
 // ~     }

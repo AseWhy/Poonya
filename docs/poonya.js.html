@@ -83,27 +83,43 @@
  * 
  * * * * * * * * * * * * * * * * * 
  *                               *
- * If disagree - criticize       *
- * Criticizing - suggest         *
- * Suggesting - perform          *
- * Performing - be responsible!  *
+ *  If disagree - criticize      *
+ *  Criticizing - suggest        *
+ *  Suggesting - perform         *
+ *  Performing - be responsible! *
  *                               *
- * - S.P. Korolev                *
+ *  - S.P. Korolev               *
  *                               *
  * * * * * * * * * * * * * * * * *
  */
 
+// #!if platform === 'node'
+// This file is compiled specifically for the node runtime, if you need a browser version use poonya.browser.bundle.js
+// #!else
+// This file is compiled specifically for the browser, if you need a node.js version use poonya.node.bundle.js
+// #!endif
+
 "use strict";
 
-const { EventEmitter } = require("events")
-    , { readFileSync } = require("fs")
-    , { normalize, extname } = require("path")
-    , { PoonyaException } = require('./src/classes/exceptions')
-    , { PoonyaStaticLibrary, Import, ImportDir } = require("./src/importer.js")
-    , { Context, Heap } = require("./src/classes/storage")
-    , { parser, parseExpression, parserMP } = require("./src/parser.js")
-    , { toFixed } = require('./src/utils')
-    , lexer = require("./src/lexer/lexer.js");
+// #!secret
+console.warn('Attention! You use raw version of poonya! Please, use poonya.browser.bundle.js or poonya.node.bundle.js for correct work it.');
+
+const 
+    { EventEmitter } = require("events"),
+    // #!if platform === 'node'
+    { readFile } = require("fs"),
+    { normalize, extname } = require("path"),
+    // #!endif
+    { PoonyaException } = require('./classes/exceptions'),
+    { Import, ImportDir, ImportFile } = require("./importer.js"),
+    { Context, Heap } = require("./classes/storage"),
+    { parser, parseExpression, parserMP } = require("./parser.js"),
+    { SERVICE } = require('./classes/static'),
+    { toFixed, toBytes } = require('./utils'),
+    lexer = require("./lexer/lexer.js");
+
+const RESULT = Symbol('RESULT')
+    , INIT = Symbol('Init');
 
 /**
  * @lends PoonyaOutputStream
@@ -162,7 +178,7 @@ class PoonyaOutputStream extends EventEmitter {
 /**
  * @lends CodeEmitter;
  */
-class CodeEmitter {
+class CodeEmitter extends EventEmitter {
     /**
      * Абстрактный класс который предназначен для подготовке всех наследуемых эмитттеров.
      *
@@ -176,26 +192,49 @@ class CodeEmitter {
      *
      * @param {Array&lt;String>} import_s Массив с нативными библиотеками для импорта
      *
-     * @param {
-     *      {
-     *          log: Function,
-     *          warn: Function,
-     *          error: Function
-     *      }
-     *  } logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
+     * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
      *
      * @memberof Poonya
      * @constructs CodeEmitter
      * @abstract
      * @protected
      */
-    constructor(input, import_s = [], logger = console) {
-        if (typeof input === "string") 
-            this.input = input;
-        else if (typeof input === "object") {
-            this.charset = typeof input.charset === "string" ? input.charset : "utf-8";
+    constructor(input, import_s = [], logger = console, onload) {
+        super();
 
-            this.path = normalize(
+        const _ = this;
+
+        _.input = null;
+
+        _.loaded = false;
+
+        _.logger = logger;
+
+        if (typeof input === "string") {
+            _.input = input;
+
+            if(SERVICE.LOADED) {
+                _[INIT](import_s, logger);
+
+                // #!if platform === 'node'
+                setImmediate(() => onload.call(_));
+                // #!endif
+
+                // #!if platform === 'browser'
+                // ~ setTimeout(() => onload.call(_), 0);
+                // #!endif
+            } else {
+                SERVICE.ACTIONS.on('load', () => {
+                    _[INIT](import_s, logger);
+
+                    onload.call(_)
+                });
+            }
+        } else if (typeof input === "object") {
+            _.charset = typeof input.charset === "string" ? input.charset : "utf-8";
+
+            // #!if platform === 'node'
+            _.path = normalize(
                 typeof input.path === "string" ? 
                     ['', '.'].includes(extname(input.path)) ?
                         input.path + '.po' :
@@ -204,41 +243,67 @@ class CodeEmitter {
                         module.parent.filename :
                         module.filename
             );
+            // #!endif
+
+            // Защищаю от выполнения браузерного кода в nodejs
+            // #!if platform === 'browser'
+            // ~ _.path = typeof input.path === 'string' ? input.path.split('/').pop().split('.').length > 0 ? input.path : input.path + '.po' : 'anonymous.po';
+            // #!endif
 
             if (typeof input.raw === "string")
-                this.input = input.raw;
+                _.input = input.raw;
             else if (typeof input.path === "string") {
-                this.input = readFileSync(
-                    this.path,
-                    this.charset
-                );
+                try {
+                    // #!if platform === 'node'
+                    readFile(
+                        _.path,
+                        _.charset,
+                        (error, data) => {
+                            _.input = data;
+
+                            if(SERVICE.LOADED) {
+                                _[INIT](import_s, logger);
+
+                                onload.call(_);
+                            } else {
+                                SERVICE.ACTIONS.on('load', () => {
+                                    _[INIT](import_s, logger);
+
+                                    onload.call(_);
+                                });
+                            }
+                        }
+                    );
+                    // #!endif
+
+                    // Защищаю от выполнения браузерного кода в nodejs
+                    // #!if platform === 'browser'
+                    // ~ fetch(input.path, { method: "GET" })
+                    // ~   .catch(e => { throw e })
+                    // ~   .then(e => e.text())
+                    // ~       .then(e => {
+                    // ~           _.input = e
+                    // ~
+                    // ~           if(SERVICE.LOADED) {
+                    // ~                _[INIT](import_s, logger);
+                    // ~
+                    // ~                onload.call(_);
+                    // ~           } else {
+                    // ~                SERVICE.ACTIONS.on('load', () => {
+                    // ~                    _[INIT](import_s, logger);
+                    // ~
+                    // ~                    onload.call(_);
+                    // ~                });
+                    // ~           }
+                    // ~       })
+                    // #!endif
+                } catch (e) {
+                    throw new IOError(input.path);
+                }
             } else throw new Error("BAD_DATA_FORMAT");
         } else {
             throw new Error("BAD_DATA_FORMAT");
         }
-
-        this.logger = logger;
-
-        this.import = import_s;
-
-        this.libraries = Import(["default", ...import_s], logger);
-
-        if (typeof this.input !== "string")
-            throw new TypeError("The `input` parameter must have a string type. But now `input` have a `" + typeof this.input + "` type.",);
-    }
-
-    /**
-     * Устанавливает новый хип памяти как текущий
-     *
-     * @param {Heap} heap Хип памяти который нужно установить.
-     * @method
-     * @public
-     */
-    setHeap(heap) {
-        if (heap instanceof Heap)
-            this.heap = heap;
-        else 
-            throw new TypeError();
     }
 
     /**
@@ -254,20 +319,27 @@ class CodeEmitter {
         rad_of = parseInt(rad_of);
 
         let buffer = [message instanceof PoonyaException ? message.message : message],
+
             data = this.input.split("\n"),
-            line_dump = Buffer.from(this.input)
-                .subarray(0, pos)
-                .toString("utf8")
+
+            line_dump = toBytes(this.input)
+                .slice(0, pos)
+                .map(e => String.fromCharCode(e))
+                .join('')
                 .split("\n"),
+
             line = line_dump.length - 1,
+
             line_start =
                 line - parseInt(rad_of / 2) &lt; 0
                     ? 0
                     : line - parseInt(rad_of / 2),
+
             line_end =
                 line_start + rad_of &lt; data.length
                     ? line_start + rad_of
                     : data.length,
+
             ll = line_end.toString(16).length + 2;
 
         buffer.push(
@@ -297,10 +369,64 @@ class CodeEmitter {
                 if (i + 1 !== line_end) buffer.push("\n");
             }
         }
-
-        this.logger.error(message.message)
         
-        throw new Error(buffer.join(""));
+        throw new Error(message.message + '\n' + buffer.join(""));
+    }
+
+    /**
+     * Инициалзирует блок инструкций/
+     *
+     * @param {String|Heap} import_s названия нативных библиотек для импорта
+     * @param {Console} logger интерфейс логгинга, Console like
+     * 
+     * @method
+     * @private
+     */
+    [INIT](import_s, logger){
+        this.libraries = Import(["default", ...import_s], logger);
+
+        this.import = import_s;
+
+        this.data = null;
+    }
+
+    /**
+     * Выполняет заданную блоку последовательность инструкций
+     *
+     * @param {String|Heap} data данные преданые в исполнитель
+     * @param {Function} error функция вывода ошибок, опциаонально
+     * @param {PoonyaOutputStream} out поток вывода из poonya
+     * 
+     * @method
+     * @private
+     */
+    [RESULT](data, error, out){
+        if (Array.isArray(data)) {
+            for (let i = 0, leng = data.length; i &lt; leng; i++)
+                if (typeof data[i] === "object" &amp;&amp; !(data[i] instanceof Heap)) {
+                    data[i] = new Heap(data[i]);
+                }
+
+            if (data.find((e) => !(e instanceof Heap)) == null) {
+                this.data.result(new Context(this.libraries, error, ...data), out, error);
+
+                out.end();
+            } else {
+                throw new TypeError("Data must have a Heap type");
+            }
+        } else {
+            if (typeof data === "object" &amp;&amp; !(data instanceof Heap)) {
+                data = new Heap(data);
+            }
+
+            if (data instanceof Heap) {
+                this.data.result(new Context(this.libraries, error, data), out, error);
+
+                out.end();
+            } else {
+                throw new TypeError("Data must have a Heap type");
+            }
+        }
     }
 
     /**
@@ -314,36 +440,20 @@ class CodeEmitter {
      * @public
      */
     result(data = new Heap(), error = this.throwError.bind(this)) {
-        const out = new PoonyaOutputStream(), _ = this;
+        const out = new PoonyaOutputStream();
 
-        setImmediate(() => {
-            if (Array.isArray(data)) {
-                for (let i = 0, leng = data.length; i &lt; leng; i++)
-                    if (typeof data[i] === "object" &amp;&amp; !(data[i] instanceof Heap)) {
-                        data[i] = new Heap(data[i]);
-                    }
-    
-                if (data.find((e) => !(e instanceof Heap)) == null) {
-                    _.data.result(new Context(_.libraries, error, ...data), out, error);
+        // Если вхождения уже загружены, выполняем последовательность
+        if(this.loaded) {
+            // #!if platform === 'node'
+            setImmediate(() => this[RESULT](data, error, out));
+            // #!endif
 
-                    out.end();
-                } else {
-                    throw new TypeError("Data must have a Heap type");
-                }
-            } else {
-                if (typeof data === "object" &amp;&amp; !(data instanceof Heap)) {
-                    data = new Heap(data);
-                }
-    
-                if (data instanceof Heap) {
-                    _.data.result(new Context(_.libraries, error, data), out, error);
-
-                    out.end();
-                } else {
-                    throw new TypeError("Data must have a Heap type");
-                }
-            }
-        })
+            // #!if platform === 'browser'
+            // ~ setTimeout(() => this[RESULT](data, error, out), 0);
+            // #!endif
+        } else
+            // Иначе, ждем окончания загрузки и выполняем последовательность
+            this.on('load', () => this[RESULT](data, error, out));
 
         return out;
     }
@@ -376,22 +486,20 @@ class MessagePattern extends CodeEmitter {
      *
      * @param {Array&lt;String>} import_s Массив с нативными библиотеками для импорта
      *
-     * @param {
-     *      {
-     *          log: Function,
-     *          warn: Function,
-     *          error: Function
-     *      }
-     *  } logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
+     * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
      *
      * @memberof Poonya
      * @constructs MessagePattern
      * @protected
      */
     constructor(input, block_prefix = 'poonya', import_s, logger = console) {
-        super(input, import_s, logger);
+        super(input, import_s, logger, async () => {
+            this.data = await parserMP(lexer(toBytes(this.input)), block_prefix, this.throwError.bind(this), this.path);
 
-        this.data = parserMP(lexer(Buffer.from(this.input)), block_prefix, this.throwError.bind(this), this.path);
+            this.loaded = true;
+
+            this.emit('load');
+        });
     }
 }
 
@@ -423,26 +531,20 @@ class ExcecutionPattern extends CodeEmitter {
      *
      * @param {Array&lt;String>} import_s Массив с нативными библиотеками для импорта
      *
-     * @param {
-     *      {
-     *          log: Function,
-     *          warn: Function,
-     *          error: Function
-     *      }
-     *  } logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
+     * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
      *
      * @memberof Poonya
      * @constructs ExcecutionPattern
      * @protected
      */
     constructor(input, import_s, logger = console) {
-        super(input, import_s, logger);
+        super(input, import_s, logger, async () => {
+            this.data = await parser(lexer(toBytes(this.input), false), this.throwError.bind(this), this.path);
 
-        this.data = parser(
-            lexer(Buffer.from(this.input), false),
-            this.throwError.bind(this),
-            this.path
-        );
+            this.loaded = true;
+
+            this.emit('load');
+        });
     }
 }
 
@@ -457,46 +559,27 @@ class ExpressionPattern extends CodeEmitter {
      * &lt;/code> &lt;br> &lt;br>
      * Пример выше выведет 22
      *
-     * @param {
-     *      String | {
-     *          raw: String,
-     *          path: String,
-     *          charset: String
-     *      }
-     * } input Входящая строка с выражением
+     * @param {String} input Входящая строка с выражением
      *
      * @param {Array&lt;String>} import_s Массив с нативными библиотеками для импорта
      *
-     * @param {
-     *      {
-     *          log: Function,
-     *          warn: Function,
-     *          error: Function
-     *      }
-     *  } logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
+     * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
      *
      * @memberof Poonya
      * @constructs ExpressionPattern
      * @protected
      */
     constructor(input, import_s, logger = console) {
-        super(input, import_s, logger);
+        super(input, import_s, logger, () => {
+            this.data = parseExpression(0, lexer(toBytes(this.input), false), this.throwError.bind(this)).data;
+            
+            this.loaded = true;
 
-        this.data = parseExpression(
-            0,
-            lexer(Buffer.from(this.input), false),
-            this.throwError.bind(this),
-        ).data;
+            this.emit('load');
+        });
     }
 
-    /**
-     * Возвращает результат выполенения выражения
-     *
-     * @returns {Object} результат выполнения выражения
-     * @method
-     * @public
-     */
-    result(data = new Heap(), error = this.throwError.bind(this)) {
+    [RESULT](data, error){
         if (!(data instanceof Context)) {
             if (Array.isArray(data)) {
                 for (let i = 0, leng = data.length; i &lt; leng; i++)
@@ -535,19 +618,50 @@ class ExpressionPattern extends CodeEmitter {
             return this.data.result(data, [], error);
         }
     }
+
+    /**
+     * Возвращает результат выполенения выражения
+     *
+     * @returns {Object} результат выполнения выражения
+     * @override
+     * @method
+     * @public
+     * @async
+     */
+    result(data = new Heap(), error = this.throwError.bind(this)) {
+        const _ = this;
+
+        return new Promise((res, rej) => {
+            if(_.loaded)
+                res(_[RESULT](data, error));
+            else
+                _.on('load', () => res(_[RESULT](data, error)));
+        });
+    }
 }
 
-// Load native default libraries
-{
-    ImportDir(__dirname, '/native.libs');
-}
+(async () => {
+    // #!if platform === 'node'
+    // Load native default libraries
+    await ImportDir(__dirname, '../native.libs');
+    // #!endif
+    // #!if platform === 'browser'
+    // ~ require('../native.libs/default');
+    // ~ require('../native.libs/default.html');
+    // #!endif
+    SERVICE.ACTIONS.emit('load');
+})();
+
 
 module.exports.CodeEmitter = CodeEmitter;
 module.exports.MessagePattern = MessagePattern;
 module.exports.ExpressionPattern = ExpressionPattern;
 module.exports.ExcecutionPattern = ExcecutionPattern;
-module.exports.NativeLibrary = PoonyaStaticLibrary;
-module.exports.ImportDir = ImportDir.bind(null, module.parent != null ? module.parent.path : module.path);</code></pre>
+module.exports.ImportFile = ImportFile.bind(null, module.parent != null ? module.parent.path : module.path);
+
+// #!if platform === 'node'
+module.exports.ImportDir = ImportDir.bind(null, module.parent != null ? module.parent.path : module.path);
+// #!endif</code></pre>
         </article>
     </section>
 
@@ -563,7 +677,7 @@ module.exports.ImportDir = ImportDir.bind(null, module.parent != null ? module.p
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Thu Dec 17 2020 13:05:46 GMT+0400 (Самарское стандартное время)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Tue Dec 22 2020 23:19:58 GMT+0400 (Самарское стандартное время)
 </footer>
 
 <script> prettyPrint(); </script>

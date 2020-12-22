@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: classes/data/PoonyaBoolean.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: classes/data/PoonyaBoolean.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file src/classes/data/PoonyaBoolean.js
+ * @description Cодержит класс булевого значения Poonya
+ * @author Astecom
+ * @license MIT
+ */
+
+const PoonyaObject = require("./PoonyaObject");
+
+/**
+ * @lends PoonyaBoolean
+ * @class
+ */
+class PoonyaBoolean extends PoonyaObject {
+    /**
+     * Дескриптор массива в poonya
+     *
+     * @param {iPoonyaPrototype} prototype Прототип массива
+     * @param {Boolean} init Исходное значение
+     * 
+     * @memberof Poonya.Data
+     * @constructs PoonyaBoolean
+     * @extends PoonyaObject
+     * @public
+     */
+    constructor(prototype = null, init) {
+        super(prototype);
+
+        this.data = init;
+    }
+
+    /**
+     * Применяет новое значение к текущему объекту
+     * 
+     * @param {Boolean} value значение, которое нужно применить к этомй объекту
+     * @method
+     * @override
+     */
+    append(value){
+        this.data = value;
+    }
+
+    /**
+     * Возвращает копию этого объекта
+     * 
+     * @returns {PoonyaBoolean} клонированый объект
+     */
+    clone(){
+        return new PoonyaBoolean(this.prototype, this.data)
+    }
+
+    /**
+     * Устанавливать значения булевому значеню нельзя
+     * 
+     * @override
+     * @method
+     * @public
+     */
+    set() {
+
+    }
+
+    /**
+     * Удалять значения булевому значеню нельзя
+     * 
+     * @override
+     * @method
+     * @public
+     */
+    remove() {
+
+    }
+
+    /**
+     * Сериализует булевое значение в значение результата выполнения
+     *
+     * @override
+     * @method
+     * @public
+     */
+    result(context, out, throw_error) {
+        return this.data;
+    }
+
+    /**
+     * Сериализует булевое значение в javascript boolean
+     *
+     * @override
+     * @method
+     * @public
+     */
+    toRawData(){
+        return this.data;
+    }
+}
+
+module.exports = PoonyaBoolean;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="Poonya.html">Poonya</a></li><li><a href="Poonya.Data.html">Data</a></li><li><a href="Poonya.Exceptions.html">Exceptions</a></li><li><a href="Poonya.Expression.html">Expression</a></li><li><a href="Poonya.Lexer.html">Lexer</a></li><li><a href="Poonya.Linker.html">Linker</a></li><li><a href="Poonya.Parser.html">Parser</a></li><li><a href="Poonya.Statements.html">Statements</a></li><li><a href="Poonya.Static.html">Static</a></li><li><a href="Poonya.Storage.html">Storage</a></li><li><a href="Poonya.Utils.html">Utils</a></li></ul><h3>Classes</h3><ul><li><a href="CodeEmitter.html">CodeEmitter</a></li><li><a href="Context.html">Context</a></li><li><a href="ExcecutionPattern.html">ExcecutionPattern</a></li><li><a href="ExpressionPattern.html">ExpressionPattern</a></li><li><a href="FunctionCall.html">FunctionCall</a></li><li><a href="GetOperator.html">GetOperator</a></li><li><a href="Heap.html">Heap</a></li><li><a href="IfStatement.html">IfStatement</a></li><li><a href="LexerEntry.html">LexerEntry</a></li><li><a href="MessagePattern.html">MessagePattern</a></li><li><a href="NativeFunction.html">NativeFunction</a></li><li><a href="ObjectContructorCall.html">ObjectContructorCall</a></li><li><a href="Operand.html">Operand</a></li><li><a href="Operator.html">Operator</a></li><li><a href="OutOperator.html">OutOperator</a></li><li><a href="ParserData.html">ParserData</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingToUpperLevel.html">BadArrowNotationJumpingToUpperLevel</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingTwoLevels.html">BadArrowNotationJumpingTwoLevels</a></li><li><a href="Poonya.Exceptions.BadEmptyObjectException.html">BadEmptyObjectException</a></li><li><a href="Poonya.Exceptions.BadKeyInvalidTypeException.html">BadKeyInvalidTypeException</a></li><li><a href="Poonya.Exceptions.BadKeyProtectedFieldException.html">BadKeyProtectedFieldException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorException.html">CriticalParserErrorException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorNoRawDataTransmittedException.html">CriticalParserErrorNoRawDataTransmittedException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfInputException.html">CriticalParserErrorUnexpectedEndOfInputException</a></li><li><a href="Poonya.Exceptions.FieldNotAFunctionException.html">FieldNotAFunctionException</a></li><li><a href="Poonya.Exceptions.GetFieldOfNullException.html">GetFieldOfNullException</a></li><li><a href="Poonya.Exceptions.InvalidSequenceForLetiableAccessException.html">InvalidSequenceForLetiableAccessException</a></li><li><a href="Poonya.Exceptions.IsNotAConstructorException.html">IsNotAConstructorException</a></li><li><a href="Poonya.Exceptions.LinkerIOError.html">LinkerIOError</a></li><li><a href="Poonya.Exceptions.LinkerPathNotGiveExceptrion.html">LinkerPathNotGiveExceptrion</a></li><li><a href="Poonya.Exceptions.NativeFunctionExcecutionError.html">NativeFunctionExcecutionError</a></li><li><a href="Poonya.Exceptions.NativeFunctionReturnValueError.html">NativeFunctionReturnValueError</a></li><li><a href="Poonya.Exceptions.ParserEmtyArgumentException.html">ParserEmtyArgumentException</a></li><li><a href="Poonya.Exceptions.ParserException.html">ParserException</a></li><li><a href="Poonya.Exceptions.ParserLogicException.html">ParserLogicException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultEmptyArgumentException.html">SegmentationFaultEmptyArgumentException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultMaximumSegmentsForBlockException.html">SegmentationFaultMaximumSegmentsForBlockException</a></li><li><a href="Poonya.Exceptions.TheFieldAlreadyHasBeenDeclaredException.html">TheFieldAlreadyHasBeenDeclaredException</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeAnArrayInstanceExceprion.html">TheFieldMustBeAnArrayInstanceExceprion</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeNumberException.html">TheFieldMustBeNumberException</a></li><li><a href="Poonya.Exceptions.TheFieldNotHasDeclaredExceprion.html">TheFieldNotHasDeclaredExceprion</a></li><li><a href="Poonya.Exceptions.TheSequenceException.html">TheSequenceException</a></li><li><a href="Poonya.Exceptions.UnableToCreateAnObjectException.html">UnableToCreateAnObjectException</a></li><li><a href="Poonya.Exceptions.UnableToRecognizeTypeException.html">UnableToRecognizeTypeException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenException.html">UnexpectedTokenException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenStatement.html">UnexpectedTokenStatement</a></li><li><a href="Poonya.Exceptions.UnexpectedWordTypeAndGetException.html">UnexpectedWordTypeAndGetException</a></li><li><a href="PoonyaArray.html">PoonyaArray</a></li><li><a href="PoonyaBoolean.html">PoonyaBoolean</a></li><li><a href="PoonyaInteger.html">PoonyaInteger</a></li><li><a href="PoonyaNull.html">PoonyaNull</a></li><li><a href="PoonyaNumber.html">PoonyaNumber</a></li><li><a href="PoonyaObject.html">PoonyaObject</a></li><li><a href="PoonyaPrototype.html">PoonyaPrototype</a></li><li><a href="PoonyaStaticLibrary.html">PoonyaStaticLibrary</a></li><li><a href="PoonyaString.html">PoonyaString</a></li><li><a href="PushOperator.html">PushOperator</a></li><li><a href="RepeatStatement.html">RepeatStatement</a></li><li><a href="SequenceGroup.html">SequenceGroup</a></li><li><a href="SequenceMainGroup.html">SequenceMainGroup</a></li><li><a href="SetOperator.html">SetOperator</a></li><li><a href="TernarOperator.html">TernarOperator</a></li><li><a href="WhileStatement.html">WhileStatement</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Tue Dec 22 2020 23:19:58 GMT+0400 (Самарское стандартное время)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

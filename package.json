@@ -10,6 +10,7 @@
   "scripts": {
     "build": "node build/build-default.js",
     "sandbox": "node --trace-warnings ./sandbox/node/sandbox.js",
+    "pack": "webpack --env platform=node && webpack --env platform=browser",
     "test": "mocha ./tests"
   },
   "repository": {

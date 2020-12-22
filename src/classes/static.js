@@ -6,7 +6,8 @@
  */
 
 // #!if platform === 'node'
-const { dirname } = require('path');
+const { dirname } = require('path')
+    , { EventEmitter } = require('events');
 // #!endif
 
 // Защищенные поля для PoonyaPrototype
@@ -99,6 +100,21 @@ const FIELDFLAGS = {
 };
 
 /**
+ * Занимаемая область в глобальном контексте
+ *
+ * @memberof Poonya.Static
+ * @constant NAMESPACE
+ * @protected
+ * @static
+ */
+// #!if platform === 'node'
+const NAMESPACE = Symbol.for('POONYA-' + process.pid + '-' + process.platform);
+// #!endif
+// #!if platform === 'browser'
+// ~ const NAMESPACE = Symbol.for('POONYA-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) + '-win32');
+// #!endif
+
+/**
  * Сервисная константа, для служебной информации
  *
  * @memberof Poonya.Static
@@ -126,22 +142,17 @@ const SERVICE = {
     CONFIG: {
         DEBUG: false,
     },
+
+    LOADED: false,
+
+    ACTIONS: new EventEmitter(),
+
+    get SPACE(){
+        return global[NAMESPACE]
+    }
 };
 
-/**
- * Занимаемая область в глобальном контексте
- *
- * @memberof Poonya.Static
- * @constant NAMESPACE
- * @protected
- * @static
- */
-// #!if platform === 'node'
-const NAMESPACE = Symbol.for('POONYA-' + process.pid + '-' + process.platform);
-// #!endif
-// #!if platform === 'browser'
-// ~ const NAMESPACE = Symbol.for('POONYA-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) + '-win32');
-// #!endif
+SERVICE.ACTIONS.on('load', () => SERVICE.LOADED = true);
 
 module.exports.FIELDFLAGS = FIELDFLAGS;
 module.exports.SUPER_CALL = SUPER_CALL;

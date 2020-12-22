@@ -132,7 +132,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                         }
 
                         expected = 1;
-                        continue;
+                    continue;
                     case 1:
                         count = countKeys(data, i, CHARTYPE.OPERATOR, '-');
 
@@ -157,7 +157,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                                 throw_error(data[i].position, new BadArrowNotationJumpingToUpperLevel());
                             }
                         }
-                        continue;
+                    continue;
                     case 2:
                         count = countKeys(data, i + 1, CHARTYPE.OPERATOR, '-');
 
@@ -191,20 +191,29 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                         } else {
                             result = parseExpression(i, data, throw_error, [',', ';']);
 
+                            // Текущие данные ставим как результат парсинга выражения
                             entries[entries.length - 1][1] = result.data;
 
-                            i += result.jump - 1;
-
+                            // Ожидаем следующий маркер
                             expected = 3;
+
+                            // Отматываем маркер пасинга назад
+                            if(data[i].equals(CHARTYPE.OPERATOR, ';')) {
+                                // Перемщаем картку за символ ;
+                                i += result.jump - 2;
+                            } else {
+                                // Перемещаем картку после возвращенного маркера
+                                i += result.jump - 1;
+                            }
                         }
-                        continue;
+                    continue;
                     case 3:
                         entries.push([]);
 
                         last_row = i;
 
                         expected = 0;
-                        continue;
+                    continue;
                 }
                 break;
         }
@@ -401,8 +410,8 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
             jump: 0,
         };
 
-    const buffer = new ExpressionGroup(data[0].position),
-        result = new Array();
+    const buffer = new ExpressionGroup(data[0].position)
+        , result = new Array();
 
     for (let i = start; true; i++) {
         if (data[i] == undefined ||

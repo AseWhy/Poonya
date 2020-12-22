@@ -6,7 +6,7 @@
         "recurse": true
     },
     "source": {
-        "include": ["poonya.js", "src"]
+        "include": ["src"]
     },
     "templates": {
         "cleverLinks": false,

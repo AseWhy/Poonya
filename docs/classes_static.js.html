@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: classes/static.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: classes/static.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file src/static.js
+ * @description Содержит в себе набор статических полей
+ * @license MIT
+ * @author Astecom
+ */
+
+// #!if platform === 'node'
+const { dirname } = require('path')
+    , { EventEmitter } = require('events');
+// #!endif
+
+// Защищенные поля для PoonyaPrototype
+const GET = Symbol('GET')
+    , IS = Symbol('IS')
+    , SUPER_CALL = Symbol('SEPER_CALL');
+
+/**
+ * Типы символов
+ *
+ * @memberof Poonya.Static
+ * @constant CHARTYPE
+ * @property {Number} START     - Стартовый символ, ничего не значит        ``
+ * @property {Number} NUMBER    - Числовой тип                              `0-9.0-9`
+ * @property {Number} WORD      - Литеральный тип `                         `set`
+ * @property {Number} SPACE     - Тип пробела                               ` \t`
+ * @property {Number} POINT     - Тип точки                                 `.`
+ * @property {Number} STRING    - Строковой тип                             `'something...'`
+ * @property {Number} NEWLINE   - Тип новой строки                          `\n|\r`
+ * @property {Number} OPERATOR  - Тип оператора                             `= > &lt;...`
+ * @protected
+ * @enum
+ * @static
+ */
+const CHARTYPE = {
+    START: 0x0,
+    NUMBER: 0x2,
+    WORD: 0x3,
+    SPACE: 0x4,
+    POINT: 0x5,
+    STRING: 0x6,
+    NEWLINE: 0x7,
+    OPERATOR: 0x8,
+};
+
+/**
+ * Типы операторов
+ *
+ * @memberof Poonya.Static
+ * @constant OPERATOR
+ * @property {Number} PLUS      - Оператор сложения                         `+`
+ * @property {Number} MINUS     - Оператор вычитания                        `-`
+ * @property {Number} MULT      - Оператор умножения                        `*`
+ * @property {Number} DIVIDE    - Оператор деления                          `/`
+ * @property {Number} EQUAL     - Оператор сравнения                        `=`
+ * @property {Number} NEQUAL    - Оператор сложжения (отр)                  `!=`
+ * @property {Number} LARGER    - Оператор сравнение (a больше b)           `>`
+ * @property {Number} LESS      - Оператор сравнение (a меньше b)           `&lt;`
+ * @property {Number} ELARGER   - Оператор сравнение (a больше или равно b) `>=`
+ * @property {Number} ELESS     - Оператор сравнение (a меньши или равно b) `&lt;=`
+ * @property {Number} AND       - Оператор сравнение (a и b)                `&amp;`
+ * @property {Number} OR        - Оператор сравнение (a или b)              `|`
+ * @protected
+ * @enum
+ * @static
+ */
+const OPERATOR = {
+    PLUS: 0x0,
+    MINUS: 0x1,
+    MULT: 0x2,
+    DIVIDE: 0x3,
+    EQUAL: 0x4,
+    NEQUAL: 0x5,
+    LARGER: 0x6,
+    LESS: 0x7,
+    ELARGER: 0x8,
+    ELESS: 0x9,
+    AND: 0xa,
+    OR: 0xb,
+};
+
+/**
+ * Флаги для полей
+ *
+ * @memberof Poonya.Static
+ * @constant FIELDFLAGS
+ * @property {Number} NOOUTPUT - Запрет вывода, при серриализации объекта в объект js, это поле будет скрыто
+ * @property {Number} CONSTANT - Константное значение, невозможно изменить оператором присваивания
+ * @property {Number} STATIC   - Статическое значение прототипа
+ * @property {Number} PROPERTY - Сделать это поле доступным как свойство
+ * @protected
+ * @enum
+ * @static
+ */
+const FIELDFLAGS = {
+    NOOUTPUT: 0x1,
+    CONSTANT: 0x2,
+    STATIC: 0x4,
+    PROPERTY: 0x8
+};
+
+/**
+ * Занимаемая область в глобальном контексте
+ *
+ * @memberof Poonya.Static
+ * @constant NAMESPACE
+ * @protected
+ * @static
+ */
+// #!if platform === 'node'
+const NAMESPACE = Symbol.for('POONYA-' + process.pid + '-' + process.platform);
+// #!endif
+// #!if platform === 'browser'
+// ~ const NAMESPACE = Symbol.for('POONYA-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) + '-win32');
+// #!endif
+
+/**
+ * Сервисная константа, для служебной информации
+ *
+ * @memberof Poonya.Static
+ * @constant SERVICE
+ * @property {Number} CONSTRUCTORS - конструкторы объектов
+ * @property {String} ROOTPATH - путь к src папке
+ * @protected
+ * @static
+ */
+const SERVICE = {
+    CONSTRUCTORS: {
+        OBJECT: ['Object'],
+        ARRAY: ['Array'],
+        BOOLEAN: ['Boolean'],
+        STRING: ['String'],
+        NUMBER: ['Number'],
+        INTEGER: ['Integer'],
+        NULL: ['Null'],
+    },
+
+    // #!if platform === 'node'
+    ROOTPATH: dirname(__dirname),
+    // #!endif
+
+    CONFIG: {
+        DEBUG: false,
+    },
+
+    LOADED: false,
+
+    ACTIONS: new EventEmitter(),
+
+    get SPACE(){
+        return global[NAMESPACE]
+    }
+};
+
+SERVICE.ACTIONS.on('load', () => SERVICE.LOADED = true);
+
+module.exports.FIELDFLAGS = FIELDFLAGS;
+module.exports.SUPER_CALL = SUPER_CALL;
+module.exports.NAMESPACE = NAMESPACE;
+module.exports.OPERATOR = OPERATOR;
+module.exports.CHARTYPE = CHARTYPE;
+module.exports.SERVICE = SERVICE;
+module.exports.CONFIG = SERVICE.CONFIG;
+module.exports.GET = GET;
+module.exports.IS = IS;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="Poonya.html">Poonya</a></li><li><a href="Poonya.Data.html">Data</a></li><li><a href="Poonya.Exceptions.html">Exceptions</a></li><li><a href="Poonya.Expression.html">Expression</a></li><li><a href="Poonya.Lexer.html">Lexer</a></li><li><a href="Poonya.Linker.html">Linker</a></li><li><a href="Poonya.Parser.html">Parser</a></li><li><a href="Poonya.Statements.html">Statements</a></li><li><a href="Poonya.Static.html">Static</a></li><li><a href="Poonya.Storage.html">Storage</a></li><li><a href="Poonya.Utils.html">Utils</a></li></ul><h3>Classes</h3><ul><li><a href="CodeEmitter.html">CodeEmitter</a></li><li><a href="Context.html">Context</a></li><li><a href="ExcecutionPattern.html">ExcecutionPattern</a></li><li><a href="ExpressionPattern.html">ExpressionPattern</a></li><li><a href="FunctionCall.html">FunctionCall</a></li><li><a href="GetOperator.html">GetOperator</a></li><li><a href="Heap.html">Heap</a></li><li><a href="IfStatement.html">IfStatement</a></li><li><a href="LexerEntry.html">LexerEntry</a></li><li><a href="MessagePattern.html">MessagePattern</a></li><li><a href="NativeFunction.html">NativeFunction</a></li><li><a href="ObjectContructorCall.html">ObjectContructorCall</a></li><li><a href="Operand.html">Operand</a></li><li><a href="Operator.html">Operator</a></li><li><a href="OutOperator.html">OutOperator</a></li><li><a href="ParserData.html">ParserData</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingToUpperLevel.html">BadArrowNotationJumpingToUpperLevel</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingTwoLevels.html">BadArrowNotationJumpingTwoLevels</a></li><li><a href="Poonya.Exceptions.BadEmptyObjectException.html">BadEmptyObjectException</a></li><li><a href="Poonya.Exceptions.BadKeyInvalidTypeException.html">BadKeyInvalidTypeException</a></li><li><a href="Poonya.Exceptions.BadKeyProtectedFieldException.html">BadKeyProtectedFieldException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorException.html">CriticalParserErrorException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorNoRawDataTransmittedException.html">CriticalParserErrorNoRawDataTransmittedException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfInputException.html">CriticalParserErrorUnexpectedEndOfInputException</a></li><li><a href="Poonya.Exceptions.FieldNotAFunctionException.html">FieldNotAFunctionException</a></li><li><a href="Poonya.Exceptions.GetFieldOfNullException.html">GetFieldOfNullException</a></li><li><a href="Poonya.Exceptions.InvalidSequenceForLetiableAccessException.html">InvalidSequenceForLetiableAccessException</a></li><li><a href="Poonya.Exceptions.IsNotAConstructorException.html">IsNotAConstructorException</a></li><li><a href="Poonya.Exceptions.LinkerIOError.html">LinkerIOError</a></li><li><a href="Poonya.Exceptions.LinkerPathNotGiveExceptrion.html">LinkerPathNotGiveExceptrion</a></li><li><a href="Poonya.Exceptions.NativeFunctionExcecutionError.html">NativeFunctionExcecutionError</a></li><li><a href="Poonya.Exceptions.NativeFunctionReturnValueError.html">NativeFunctionReturnValueError</a></li><li><a href="Poonya.Exceptions.ParserEmtyArgumentException.html">ParserEmtyArgumentException</a></li><li><a href="Poonya.Exceptions.ParserException.html">ParserException</a></li><li><a href="Poonya.Exceptions.ParserLogicException.html">ParserLogicException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultEmptyArgumentException.html">SegmentationFaultEmptyArgumentException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultMaximumSegmentsForBlockException.html">SegmentationFaultMaximumSegmentsForBlockException</a></li><li><a href="Poonya.Exceptions.TheFieldAlreadyHasBeenDeclaredException.html">TheFieldAlreadyHasBeenDeclaredException</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeAnArrayInstanceExceprion.html">TheFieldMustBeAnArrayInstanceExceprion</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeNumberException.html">TheFieldMustBeNumberException</a></li><li><a href="Poonya.Exceptions.TheFieldNotHasDeclaredExceprion.html">TheFieldNotHasDeclaredExceprion</a></li><li><a href="Poonya.Exceptions.TheSequenceException.html">TheSequenceException</a></li><li><a href="Poonya.Exceptions.UnableToCreateAnObjectException.html">UnableToCreateAnObjectException</a></li><li><a href="Poonya.Exceptions.UnableToRecognizeTypeException.html">UnableToRecognizeTypeException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenException.html">UnexpectedTokenException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenStatement.html">UnexpectedTokenStatement</a></li><li><a href="Poonya.Exceptions.UnexpectedWordTypeAndGetException.html">UnexpectedWordTypeAndGetException</a></li><li><a href="PoonyaArray.html">PoonyaArray</a></li><li><a href="PoonyaBoolean.html">PoonyaBoolean</a></li><li><a href="PoonyaInteger.html">PoonyaInteger</a></li><li><a href="PoonyaNull.html">PoonyaNull</a></li><li><a href="PoonyaNumber.html">PoonyaNumber</a></li><li><a href="PoonyaObject.html">PoonyaObject</a></li><li><a href="PoonyaPrototype.html">PoonyaPrototype</a></li><li><a href="PoonyaStaticLibrary.html">PoonyaStaticLibrary</a></li><li><a href="PoonyaString.html">PoonyaString</a></li><li><a href="PushOperator.html">PushOperator</a></li><li><a href="RepeatStatement.html">RepeatStatement</a></li><li><a href="SequenceGroup.html">SequenceGroup</a></li><li><a href="SequenceMainGroup.html">SequenceMainGroup</a></li><li><a href="SetOperator.html">SetOperator</a></li><li><a href="TernarOperator.html">TernarOperator</a></li><li><a href="WhileStatement.html">WhileStatement</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Tue Dec 22 2020 23:19:58 GMT+0400 (Самарское стандартное время)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

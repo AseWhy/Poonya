@@ -55,12 +55,12 @@
  * 
  * * * * * * * * * * * * * * * * * 
  *                               *
- * If disagree - criticize       *
- * Criticizing - suggest         *
- * Suggesting - perform          *
- * Performing - be responsible!  *
+ *  If disagree - criticize      *
+ *  Criticizing - suggest        *
+ *  Suggesting - perform         *
+ *  Performing - be responsible! *
  *                               *
- * - S.P. Korolev                *
+ *  - S.P. Korolev               *
  *                               *
  * * * * * * * * * * * * * * * * *
  */
@@ -83,13 +83,15 @@ const
     { normalize, extname } = require("path"),
     // #!endif
     { PoonyaException } = require('./classes/exceptions'),
-    { PoonyaStaticLibrary, Import, ImportDir, ImportFile } = require("./importer.js"),
+    { Import, ImportDir, ImportFile } = require("./importer.js"),
     { Context, Heap } = require("./classes/storage"),
     { parser, parseExpression, parserMP } = require("./parser.js"),
+    { SERVICE } = require('./classes/static'),
     { toFixed, toBytes } = require('./utils'),
     lexer = require("./lexer/lexer.js");
 
-const RESULT = Symbol('RESULT');
+const RESULT = Symbol('RESULT')
+    , INIT = Symbol('Init');
 
 /**
  * @lends PoonyaOutputStream
@@ -162,13 +164,7 @@ class CodeEmitter extends EventEmitter {
      *
      * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
      *
-     * @param {
-     *      {
-     *          log: Function,
-     *          warn: Function,
-     *          error: Function
-     *      }
-     *  } logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
+     * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
      *
      * @memberof Poonya
      * @constructs CodeEmitter
@@ -182,26 +178,30 @@ class CodeEmitter extends EventEmitter {
 
         _.input = null;
 
-        _.logger = logger;
-
-        _.import = import_s;
-
-        _.libraries = Import(["default", ...import_s], logger);
-
         _.loaded = false;
 
-        _.data = null;
+        _.logger = logger;
 
         if (typeof input === "string") {
             _.input = input;
 
-            // #!if platform === 'node'
-            setImmediate(() => onload.call(_));
-            // #!endif
+            if(SERVICE.LOADED) {
+                _[INIT](import_s, logger);
 
-            // #!if platform === 'browser'
-            // ~ setTimeout(() => onload.call(_), 0);
-            // #!endif
+                // #!if platform === 'node'
+                setImmediate(() => onload.call(_));
+                // #!endif
+
+                // #!if platform === 'browser'
+                // ~ setTimeout(() => onload.call(_), 0);
+                // #!endif
+            } else {
+                SERVICE.ACTIONS.on('load', () => {
+                    _[INIT](import_s, logger);
+
+                    onload.call(_)
+                });
+            }
         } else if (typeof input === "object") {
             _.charset = typeof input.charset === "string" ? input.charset : "utf-8";
 
@@ -233,7 +233,17 @@ class CodeEmitter extends EventEmitter {
                         (error, data) => {
                             _.input = data;
 
-                            onload.call(_);
+                            if(SERVICE.LOADED) {
+                                _[INIT](import_s, logger);
+
+                                onload.call(_);
+                            } else {
+                                SERVICE.ACTIONS.on('load', () => {
+                                    _[INIT](import_s, logger);
+
+                                    onload.call(_);
+                                });
+                            }
                         }
                     );
                     // #!endif
@@ -246,7 +256,17 @@ class CodeEmitter extends EventEmitter {
                     // ~       .then(e => {
                     // ~           _.input = e
                     // ~
-                    // ~           onload.call(_);
+                    // ~           if(SERVICE.LOADED) {
+                    // ~                _[INIT](import_s, logger);
+                    // ~
+                    // ~                onload.call(_);
+                    // ~           } else {
+                    // ~                SERVICE.ACTIONS.on('load', () => {
+                    // ~                    _[INIT](import_s, logger);
+                    // ~
+                    // ~                    onload.call(_);
+                    // ~                });
+                    // ~           }
                     // ~       })
                     // #!endif
                 } catch (e) {
@@ -256,20 +276,6 @@ class CodeEmitter extends EventEmitter {
         } else {
             throw new Error("BAD_DATA_FORMAT");
         }
-    }
-
-    /**
-     * Устанавливает новый хип памяти как текущий
-     *
-     * @param {Heap} heap Хип памяти который нужно установить.
-     * @method
-     * @public
-     */
-    setHeap(heap) {
-        if (heap instanceof Heap)
-            this.heap = heap;
-        else 
-            throw new TypeError();
     }
 
     /**
@@ -335,12 +341,37 @@ class CodeEmitter extends EventEmitter {
                 if (i + 1 !== line_end) buffer.push("\n");
             }
         }
-
-        this.logger.error(message.message)
         
-        throw new Error(buffer.join(""));
+        throw new Error(message.message + '\n' + buffer.join(""));
     }
 
+    /**
+     * Инициалзирует блок инструкций/
+     *
+     * @param {String|Heap} import_s названия нативных библиотек для импорта
+     * @param {Console} logger интерфейс логгинга, Console like
+     * 
+     * @method
+     * @private
+     */
+    [INIT](import_s, logger){
+        this.libraries = Import(["default", ...import_s], logger);
+
+        this.import = import_s;
+
+        this.data = null;
+    }
+
+    /**
+     * Выполняет заданную блоку последовательность инструкций
+     *
+     * @param {String|Heap} data данные преданые в исполнитель
+     * @param {Function} error функция вывода ошибок, опциаонально
+     * @param {PoonyaOutputStream} out поток вывода из poonya
+     * 
+     * @method
+     * @private
+     */
     [RESULT](data, error, out){
         if (Array.isArray(data)) {
             for (let i = 0, leng = data.length; i < leng; i++)
@@ -383,6 +414,7 @@ class CodeEmitter extends EventEmitter {
     result(data = new Heap(), error = this.throwError.bind(this)) {
         const out = new PoonyaOutputStream();
 
+        // Если вхождения уже загружены, выполняем последовательность
         if(this.loaded) {
             // #!if platform === 'node'
             setImmediate(() => this[RESULT](data, error, out));
@@ -392,6 +424,7 @@ class CodeEmitter extends EventEmitter {
             // ~ setTimeout(() => this[RESULT](data, error, out), 0);
             // #!endif
         } else
+            // Иначе, ждем окончания загрузки и выполняем последовательность
             this.on('load', () => this[RESULT](data, error, out));
 
         return out;
@@ -425,13 +458,7 @@ class MessagePattern extends CodeEmitter {
      *
      * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
      *
-     * @param {
-     *      {
-     *          log: Function,
-     *          warn: Function,
-     *          error: Function
-     *      }
-     *  } logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
+     * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
      *
      * @memberof Poonya
      * @constructs MessagePattern
@@ -476,13 +503,7 @@ class ExcecutionPattern extends CodeEmitter {
      *
      * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
      *
-     * @param {
-     *      {
-     *          log: Function,
-     *          warn: Function,
-     *          error: Function
-     *      }
-     *  } logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
+     * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
      *
      * @memberof Poonya
      * @constructs ExcecutionPattern
@@ -514,37 +535,23 @@ class ExpressionPattern extends CodeEmitter {
      *
      * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
      *
-     * @param {
-     *      {
-     *          log: Function,
-     *          warn: Function,
-     *          error: Function
-     *      }
-     *  } logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
+     * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
      *
      * @memberof Poonya
      * @constructs ExpressionPattern
      * @protected
      */
     constructor(input, import_s, logger = console) {
-        super(input, import_s, logger);
+        super(input, import_s, logger, () => {
+            this.data = parseExpression(0, lexer(toBytes(this.input), false), this.throwError.bind(this)).data;
+            
+            this.loaded = true;
 
-        this.data = parseExpression(
-            0,
-            lexer(toBytes(this.input), false),
-            this.throwError.bind(this),
-        ).data;
+            this.emit('load');
+        });
     }
 
-    /**
-     * Возвращает результат выполенения выражения
-     *
-     * @returns {Object} результат выполнения выражения
-     * @override
-     * @method
-     * @public
-     */
-    result(data = new Heap(), error = this.throwError.bind(this)) {
+    [RESULT](data, error){
         if (!(data instanceof Context)) {
             if (Array.isArray(data)) {
                 for (let i = 0, leng = data.length; i < leng; i++)
@@ -583,23 +590,46 @@ class ExpressionPattern extends CodeEmitter {
             return this.data.result(data, [], error);
         }
     }
+
+    /**
+     * Возвращает результат выполенения выражения
+     *
+     * @returns {Object} результат выполнения выражения
+     * @override
+     * @method
+     * @public
+     * @async
+     */
+    result(data = new Heap(), error = this.throwError.bind(this)) {
+        const _ = this;
+
+        return new Promise((res, rej) => {
+            if(_.loaded)
+                res(_[RESULT](data, error));
+            else
+                _.on('load', () => res(_[RESULT](data, error)));
+        });
+    }
 }
 
-// #!if platform === 'node'
-// Load native default libraries
-    ImportDir(__dirname, '../native.libs');
-// #!endif
-// #!if platform === 'browser'
-// ~ require('../native.libs/default');
-// ~ require('../native.libs/default.html');
-// #endif
+(async () => {
+    // #!if platform === 'node'
+    // Load native default libraries
+    await ImportDir(__dirname, '../native.libs');
+    // #!endif
+    // #!if platform === 'browser'
+    // ~ require('../native.libs/default');
+    // ~ require('../native.libs/default.html');
+    // #!endif
+    SERVICE.ACTIONS.emit('load');
+})();
 
 
 module.exports.CodeEmitter = CodeEmitter;
 module.exports.MessagePattern = MessagePattern;
 module.exports.ExpressionPattern = ExpressionPattern;
 module.exports.ExcecutionPattern = ExcecutionPattern;
-module.exports.NativeLibrary = PoonyaStaticLibrary;
+module.exports.ImportFile = ImportFile.bind(null, module.parent != null ? module.parent.path : module.path);
 
 // #!if platform === 'node'
 module.exports.ImportDir = ImportDir.bind(null, module.parent != null ? module.parent.path : module.path);
