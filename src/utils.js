@@ -129,7 +129,21 @@ function toFixed(d, l) {
     return '0x' + d.toString(16).padStart(l - 2, '0');
 }
 
+/**
+ * Преобразует строку в массив байтов
+ *
+ * @param {String} s Строка для преобразования
+ * @memberof Poonya.Utils
+ * @function toBytes
+ * @protected
+ * @static
+ */
+function toBytes(s) {
+    return unescape(encodeURIComponent(s)).split('').map(e => e.charCodeAt());
+}
+
 module.exports.maybeEquals = maybeEquals;
 module.exports.countKeys = countKeys;
 module.exports.toFixed = toFixed;
+module.exports.toBytes = toBytes;
 module.exports.Cast = Cast;

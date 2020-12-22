@@ -5,57 +5,26 @@
  * @author Astecom
  */
 
-const { readdirSync, readFileSync } = require('fs')
-    , { join, normalize, resolve } = require('path')
-    , { NAMESPACE, SERVICE } = require('./classes/static')
-    ,   PoonyaObject = require('./classes/data/PoonyaObject')
-    ,   NativeFunction = require('./classes/data/NativeFunction')
-    ,   PoonyaPrototype = require('./classes/data/PoonyaPrototype');
+const 
+    // #!if platform === 'node'
+    Module = require('module'),
+    { readdirSync, readFile } = require('fs'),
+    { join, normalize, resolve } = require('path'),
+    // #!endif
+    { NAMESPACE, SERVICE } = require('./classes/static'),
+    { IOError } = require('./classes/exceptions'),
+    PoonyaObject = require('./classes/data/PoonyaObject'),
+    NativeFunction = require('./classes/data/NativeFunction'),
+    PoonyaPrototype = require('./classes/data/PoonyaPrototype');
 
-/**
- * Функция, которая возвращает библиотеку при импорте
- *
- * @memberof Poonya.Import
- * @function Import
- *
- * @param {string[]} import_statements Массив с идентификаторами библиотек
- * @param {
- *      {
- *          log: Function,
- *          error: Function,
- *          warn: Function
- *      }
- * } logger Логгер, в случае ошибок ипорта
- *
- * @protected
- */
-let Import = () => {};
+// Пространство модулей в глобальном контексте
+const modules = Symbol.for('Modules');
 
-/**
- * Функция, которая добавляет новую библиотеку
- *
- * @memberof Poonya.Import
- * @function AddLibrary
- *
- * @param {String} lib_id Идентификатор библиотеки
- * @param {PoonyaStaticLibrary} lib_object Объект библиотеки
- * @param {Boolean} override если true, то если такая бибилотека уже была ранее создана, она будет переопределена
- *
- * @protected
- */
-let AddLibrary = () => {};
+if (global[NAMESPACE] == null) {
+    global[NAMESPACE] = new Object();
 
-/**
- * Функция, которая добавляет новую библиотеку
- *
- * @memberof Poonya.Import
- * @function ImportDir
- *
- * @param {String} lib_dir Путь к папке, библиотеки из которой будем ипортировать
- *
- * @protected
- */
-let ImportDir = () => {};
+    global[NAMESPACE][modules] = new Map();
+}
 
 /**
  * @lends PoonyaStaticLibrary
@@ -266,57 +235,163 @@ class PoonyaStaticLibrary {
     }
 }
 
-(() => {
-    const modules = Symbol.for('Modules');
+/**
+ * Функция, которая добавляет новую библиотеку
+ *
+ * @memberof Poonya.Import
+ * @function AddLibrary
+ *
+ * @param {String} lib_id Идентификатор библиотеки
+ * @param {PoonyaStaticLibrary} lib_object Объект библиотеки
+ * @param {Boolean} override если true, то если такая бибилотека уже была ранее создана, она будет переопределена
+ *
+ * @protected
+ */
+let AddLibrary = (lib_id, lib_object, override = false) => {
+    if (override || global[NAMESPACE][modules][(lib_id = Symbol.for(lib_id))] == null) {
+        global[NAMESPACE][modules][lib_id] = lib_object;
+    } else {
+        throw new TypeError('Library, with this id already imported. For ' + lib_id.toString());
+    }
+};
 
-    if (global[NAMESPACE] == null) {
-        global[NAMESPACE] = new Object();
+/**
+ * Функция, которая возвращает библиотеку при импорте
+ *
+ * @memberof Poonya.Import
+ * @function Import
+ *
+ * @param {string[]} import_statements Массив с идентификаторами библиотек
+ * @param {
+ *      {
+ *          log: Function,
+ *          error: Function,
+ *          warn: Function
+ *      }
+ * } logger Логгер, в случае ошибок ипорта
+ *
+ * @protected
+ */
+let Import = (import_statements, logger) => {
+    if (!(import_statements instanceof Array))
+        throw new TypeError('import_statements must be Array');
 
-        global[NAMESPACE][modules] = new Map();
+    const statements = new Array();
+
+    for (let i = 0, leng = import_statements.length; i < leng; i++) {
+        statements.push(global[NAMESPACE][modules][Symbol.for(import_statements[i])]);
     }
 
-    AddLibrary = (lib_id, lib_object, override = false) => {
-        if (override || global[NAMESPACE][modules][(lib_id = Symbol.for(lib_id))] == null) {
-            global[NAMESPACE][modules][lib_id] = lib_object;
+    return statements;
+};
+
+/**
+ * Функция импорта файла библиотеки
+ *
+ * @memberof Poonya.Import
+ * @function ImportFile
+ *
+ * @param {String} lib_dir путь, по которому можно найти файл библиотеки
+ * @param {String} file файл с бибилиотекой
+ *
+ * @protected
+ */
+let ImportFile = async (lib_dir, file) => {};
+
+// #!if platform === 'node'
+class PoonyaModule extends Module {
+    constructor(id) {
+        super(id);
+    }
+
+    require(id){
+        if(id === 'poonya') {
+            return require('./preset');
         } else {
-            throw new TypeError('Library, with this id already imported. For ' + lib_id.toString());
+            return super.require(id);
         }
-    };
+    }
+}
 
-    Import = (import_statements, logger) => {
-        if (!(import_statements instanceof Array))
-            throw new TypeError('import_statements must be Array');
+/**
+ * Функция, которая добавляет новую библиотеку
+ *
+ * @memberof Poonya.Import
+ * @function ImportDir
+ *
+ * @param {String} lib_dir Путь к папке, библиотеки из которой будем ипортировать
+ *
+ * @protected
+ */
+let ImportDir = async (parent_path, lib_dir) => {
+    lib_dir = resolve(lib_dir) !== normalize(lib_dir) ? join(parent_path, lib_dir) : lib_dir;
 
-        const statements = new Array();
+    const default_libs = readdirSync(lib_dir);
 
-        for (let i = 0, leng = import_statements.length; i < leng; i++) {
-            statements.push(global[NAMESPACE][modules][Symbol.for(import_statements[i])]);
-        }
+    for (let i = 0, leng = default_libs.length; i < leng; i++) {
+        await ImportFile(default_libs[i])
+    }
+};
 
-        return statements;
-    };
+ImportFile = async (origin, file) => {
+    const cur = new PoonyaModule(file);
 
-    ImportDir = (parent_path, lib_dir) => {
-        lib_dir = resolve(lib_dir) !== normalize(lib_dir) ? join(parent_path, lib_dir) : lib_dir;
+    const path = join(lib_dir, file);
 
-        const default_libs = readdirSync(lib_dir);
+    cur.paths = [];
 
-        for (let i = 0, leng = default_libs.length, cur, path; i < leng; i++) {
-            cur = new module.constructor();
+    cur.loaded = true;
 
-            path = join(lib_dir, default_libs[i]);
+    cur.file = path;
 
-            cur.paths = [__dirname + '\\data'];
+    return new Promise((res, rej) => {
+        readFile(path, 'utf-8', (err, data) => {
+            if(err)
+                throw new IOError(path);
 
-            cur.loaded = true;
+            cur._compile(`"use strict";${data};`, path);
 
-            cur.file = default_libs[i];
-
-            cur._compile(`"use strict";${readFileSync(path, 'utf-8')};`, path);
-        }
-    };
-})();
-
-module.exports.PoonyaStaticLibrary = PoonyaStaticLibrary;
+            res();
+        })
+    })
+}
+// Для node есть специальная функция для импорта каталога
 module.exports.ImportDir = ImportDir;
+// #!endif
+
+// #!if platform === 'browser'
+// ~ function crequire(id){
+// ~     if(id === 'poonya') {
+// ~         const exports = new Object();
+// ~ 
+// ~         exports.FIELDFLAGS = FIELDFLAGS;
+// ~         exports.Exceptions = require('./classes/exceptions');
+// ~         exports.PoonyaStaticLibrary = PoonyaStaticLibrary;
+// ~         exports.PoonyaPrototype = PoonyaPrototype;
+// ~ 
+// ~         return exports;
+// ~     } else {
+// ~         throw new Error('Unknown module ' + id);
+// ~     }
+// ~ }
+// ~ 
+// ~ ImportFile = (lib_dir, file) => {
+// ~     const path = lib_dir + '/' + file;
+// ~ 
+// ~     return new Promise(async (res, rej) => {
+// ~         try {
+// ~            let wait = await fetch(path, { method: "GET" });
+// ~ 
+// ~            wait = await wait.text();
+// ~ 
+// ~            res(new Function('require', `"use strict";${wait}`)(crequire));
+// ~         } catch (e) {
+// ~            rej(new IOError(path));
+// ~         }
+// ~     })
+// ~ }
+// #!endif
+
 module.exports.Import = Import;
+module.exports.ImportFile = ImportFile;
+module.exports.PoonyaStaticLibrary = PoonyaStaticLibrary;

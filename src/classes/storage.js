@@ -37,7 +37,8 @@ class Heap extends Map {
     constructor(context, data) {
         super();
 
-        if (data != null) this.append(context, data);
+        if (data != null)
+            this.append(context, data);
     }
 
     /**

@@ -11,13 +11,13 @@ const { CHARTYPE } = require('../classes/static')
 /**
  * Лексер, который производит лексический разбор подаваемого текста в буффере
  *
- * @param {Buffer} buffer Буффер с `сырыми` данными
+ * @param {Buffer|UInt8Array|Array} input Вход с `сырыми` данными
  * @param {Boolean} allow_spaces разрешены ли пробелы, если `false`, то лексер вернет ответ без пробелов
  *
  * @memberof Poonya.Lexer
  * @protected
  */
-function lexer(buffer, allow_spaces = true) {
+function lexer(input, allow_spaces = true) {
     const Export = new Array();
 
     let buff = new Array(),
@@ -28,8 +28,15 @@ function lexer(buffer, allow_spaces = true) {
         cur = null,
         last = null;
 
-    for (let i = 0, leng = buffer.byteLength; i < leng; i++) {
-        switch (buffer[i]) {
+    if(Array.isArray(input)) {
+        // Преобразуем входные данные в обычный массив, если на вход были поданы массив подобные данные
+        input = Array.from(input);
+    } else {
+        throw TypeError('Only array-like data can be input to the lexer');
+    }
+
+    for (let i = 0, leng = input.length; i < leng; i++) {
+        switch (input[i]) {
             case 32:
             case 9:
                 cur = CHARTYPE.SPACE;
@@ -90,7 +97,7 @@ function lexer(buffer, allow_spaces = true) {
             (cur === CHARTYPE.POINT && last === CHARTYPE.NUMBER) ||
             (cur === CHARTYPE.NUMBER && last === CHARTYPE.WORD)
         ) {
-            buff.push(buffer[i]);
+            buff.push(input[i]);
 
             continue;
         }
@@ -102,12 +109,12 @@ function lexer(buffer, allow_spaces = true) {
                 (buff[0] === 33 || // пердыдущий символ был '!'
                     buff[0] === 60 || // пердыдущий символ был '<'
                     buff[0] === 62) && // пердыдущий символ был '>'
-                buffer[i] === 61 // текущий символ '='
+                input[i] === 61 // текущий символ '='
             ) {
-                buff.push(buffer[i]);
+                buff.push(input[i]);
 
                 if (allow_spaces || last !== CHARTYPE.SPACE)
-                    Export.push(new LexerEntry(last, Buffer.from(buff), i, string_entry));
+                    Export.push(new LexerEntry(last, buff, i, string_entry));
 
                 string_entry = null;
 
@@ -125,14 +132,14 @@ function lexer(buffer, allow_spaces = true) {
                 buff[0] === 47 // Предыдущий символ это /
             ) {
                 if (
-                    buffer[i] === 47 // Текущий символ это /
+                    input[i] === 47 // Текущий символ это /
                 ) {
                     is_comment = true;
                     is_multiline = false;
 
                     continue;
                 } else if (
-                    buffer[i] === 62 // Текущий символ это >
+                    input[i] === 62 // Текущий символ это >
                 ) {
                     is_comment = true;
                     is_multiline = true;
@@ -148,7 +155,7 @@ function lexer(buffer, allow_spaces = true) {
                 last != null
             ) {
                 if (allow_spaces || last !== CHARTYPE.SPACE)
-                    Export.push(new LexerEntry(last, Buffer.from(buff), i, string_entry));
+                    Export.push(new LexerEntry(last, buff, i, string_entry));
 
                 string_entry = null;
 
@@ -158,20 +165,20 @@ function lexer(buffer, allow_spaces = true) {
             if (cur === CHARTYPE.STRING) {
                 is_string = true;
 
-                string_entry = buffer[i];
+                string_entry = input[i];
 
                 last = cur;
 
                 continue;
             }
 
-            buff.push(buffer[i]);
+            buff.push(input[i]);
 
             last = cur;
         } else if (is_comment) {
             if (is_multiline) {
                 if (
-                    buffer[i] === 47 && // Текущий символ это /
+                    input[i] === 47 && // Текущий символ это /
                     buff[buff.length - 1] === 60 // Предыдущий символ это <
                 ) {
                     is_comment = false;
@@ -194,9 +201,9 @@ function lexer(buffer, allow_spaces = true) {
                 }
             }
 
-            buff.push(buffer[i]);
+            buff.push(input[i]);
         } else {
-            if (cur === CHARTYPE.STRING && buffer[i] === string_entry) {
+            if (cur === CHARTYPE.STRING && input[i] === string_entry) {
                 is_string = false;
 
                 last = cur;
@@ -204,7 +211,7 @@ function lexer(buffer, allow_spaces = true) {
                 continue;
             }
 
-            buff.push(buffer[i]);
+            buff.push(input[i]);
 
             last = cur;
         }
@@ -214,8 +221,8 @@ function lexer(buffer, allow_spaces = true) {
         Export.push(
             new LexerEntry(
                 cur,
-                Buffer.from(buff),
-                buffer.byteLength - buff.length - 1,
+                buff,
+                input.byteLength - buff.length - 1,
                 string_entry
             )
         );

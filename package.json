@@ -2,14 +2,14 @@
   "name": "poonya.js",
   "version": "0.4.6",
   "description": "Simple preprocessor for text",
-  "main": "poonya.js",
+  "main": "./src/poonya.js",
   "directories": {
     "doc": "docs",
     "test": "tests"
   },
   "scripts": {
     "build": "node build/build-default.js",
-    "sandbox": "node --trace-warnings ./sandbox/sandbox.js",
+    "sandbox": "node --trace-warnings ./sandbox/node/sandbox.js",
     "test": "mocha ./tests"
   },
   "repository": {

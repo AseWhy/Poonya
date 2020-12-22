@@ -47,7 +47,7 @@ class GetOperator extends Operand {
     result(context, out, throw_error) {
         const data = context.getByPath(this.query_stack, this.position, null, throw_error, true);
 
-        if (data != null)
+        if (data.instance != null)
             if(data.instance instanceof NativeFunction)
                 if((data.flags & FIELDFLAGS.PROPERTY) != 0)
                     return data.instance.result(data.parent, [], context, out, this.position, throw_error);

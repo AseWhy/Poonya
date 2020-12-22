@@ -1122,11 +1122,12 @@ function codeBlockParser(start, entries, throw_error) {
  *
  * @memberof Poonya.Parser
  * @protected
+ * @async
  */
-function parser(entries, throw_error, parent_path) {
+async function parser(entries, throw_error, parent_path) {
     return new SequenceMainGroup(codeBlockParser(
         0,
-        linker(
+        await linker(
             entries,
             parent_path,
             throw_error
@@ -1147,8 +1148,9 @@ function parser(entries, throw_error, parent_path) {
  *
  * @memberof Poonya.Parser
  * @protected
+ * @async
  */
-function parserMP(entries, block_prefix, throw_error, parent_path) {
+async function parserMP(entries, block_prefix, throw_error, parent_path) {
     let   hook_index = 0
         , buffer = new Array()
         , out = new SequenceMainGroup();
@@ -1190,7 +1192,7 @@ function parserMP(entries, block_prefix, throw_error, parent_path) {
             out.push(
                 codeBlockParser(
                     0,
-                    linker(
+                    await linker(
                         buffer.filter((e) => e.type !== CHARTYPE.SPACE),
                         parent_path,
                         throw_error
@@ -1227,7 +1229,7 @@ function parserMP(entries, block_prefix, throw_error, parent_path) {
             out.push(
                 codeBlockParser(
                     0,
-                    linker(
+                    await linker(
                         buffer.filter((e) => e.type !== CHARTYPE.SPACE),
                         parent_path,
                         throw_error

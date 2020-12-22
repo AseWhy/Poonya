@@ -125,6 +125,20 @@ class LinkerPathNotGiveExceptrion extends PoonyaException {
 }
 
 /**
+ * Ошибка открытия файла
+ *
+ * @memberof Poonya.Exceptions
+ * @name LinkerIOError
+ * @class
+ * @protected
+ */
+class IOError extends PoonyaException {
+    constructor(path) {
+        super("An error occured while opening file: '" + path + "'");
+    }
+}
+
+/**
  * Ошибка использования стороннего шаблона
  *
  * @memberof Poonya.Exceptions
@@ -132,9 +146,9 @@ class LinkerPathNotGiveExceptrion extends PoonyaException {
  * @class
  * @protected
  */
-class LinkerIOError extends PoonyaException {
+class LinkerIOError extends IOError {
     constructor(path) {
-        super("An error occured while opening file: '" + path + "'");
+        super(path);
     }
 }
 
@@ -147,14 +161,14 @@ class LinkerIOError extends PoonyaException {
  * @protected
  */
 class NativeFunctionExcecutionError extends PoonyaException {
-    static StackTraceRGExp = /^\s*at\s(?:new\s)?([aA-zZ.аА-яЯё]+)\s\((.*)\)$/;
-
     constructor(name, stack) {
+        const exp = /^\s*at\s(?:new\s)?([aA-zZ.аА-яЯё]+)\s\((.*)\)$/;
+
         stack = stack.split('\n');
 
         for (let i = 0, leng = stack.length, cur; i < leng; i++) {
-            if (NativeFunctionExcecutionError.StackTraceRGExp.test(stack[i])) {
-                cur = stack[i].match(NativeFunctionExcecutionError.StackTraceRGExp);
+            if (exp.test(stack[i])) {
+                cur = stack[i].match(exp);
 
                 if (
                     cur[1] === 'NativeFunction.result' &&
@@ -488,6 +502,7 @@ class IsNotAConstructorException extends PoonyaException {
     }
 }
 
+module.exports.IOError = IOError;
 module.exports.LinkerIOError = LinkerIOError;
 module.exports.PoonyaException = PoonyaException;
 module.exports.ParserException = ParserException;

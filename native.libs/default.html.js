@@ -1,4 +1,7 @@
-const { PoonyaStaticLibrary, FIELDFLAGS }= require('library');
+const { PoonyaStaticLibrary, FIELDFLAGS }= require('poonya');
+
+const QUOTE_EXP = /"/g;
+const TAG_EXP = /\<([aA-zZ0-9]+)/;
 
 function format(val){
     if(val === null){
@@ -126,9 +129,6 @@ new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
 }
 
 new class DefaultNumbersStaticLibrary extends PoonyaStaticLibrary {
-    static QUOTE_EXP = /"/g
-    static TAG_EXP = /\<([aA-zZ0-9]+)/
-
     constructor(){
         super('default.html', false, false, 'html');
 
@@ -145,7 +145,7 @@ new class DefaultNumbersStaticLibrary extends PoonyaStaticLibrary {
             let form_attrs = new Array();
 
             for(let key in attrs)
-                form_attrs.push(`${key}="${format(attrs[key]).replace(DefaultNumbersStaticLibrary.QUOTE_EXP, '\\"')}"`);
+                form_attrs.push(`${key}="${format(attrs[key]).replace(QUOTE_EXP, '\\"')}"`);
 
             return `<${tag} ${form_attrs.join(' ')}>${content}</${tag}>`;
         } else {
@@ -155,14 +155,14 @@ new class DefaultNumbersStaticLibrary extends PoonyaStaticLibrary {
 
     getElementName(service, element) {
         if(typeof element == 'string')
-            return element.match(DefaultNumbersStaticLibrary.TAG_EXP)[1];
+            return element.match(TAG_EXP)[1];
         else
             return null;
     }
 
     isElement(service, element, is) {
         if(typeof element == 'string')
-            return element.match(DefaultNumbersStaticLibrary.TAG_EXP)[1] == is;
+            return element.match(TAG_EXP)[1] == is;
         else
             return false;
     }
@@ -172,7 +172,7 @@ new class DefaultNumbersStaticLibrary extends PoonyaStaticLibrary {
             let form_attrs = new Array();
 
             for(let key in attrs)
-                form_attrs.push(`${key}="${format(attrs[key]).replace(DefaultNumbersStaticLibrary.QUOTE_EXP, '\\"')}"`);
+                form_attrs.push(`${key}="${format(attrs[key]).replace(QUOTE_EXP, '\\"')}"`);
 
             return `<${tag}${form_attrs.length > 0 ? ' ' + form_attrs.join(' ') : ''}>`;
         } else {

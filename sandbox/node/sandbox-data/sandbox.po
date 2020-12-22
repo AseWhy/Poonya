@@ -2,6 +2,6 @@
     Multilevel object notation
 </
 
-set test1 = Array.from();
+set test1 = Array.from(0, 1, 2, 3, 4, 5);
 
 > test1;

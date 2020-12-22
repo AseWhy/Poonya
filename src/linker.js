@@ -5,11 +5,15 @@
  * @author Astecom
  */
 
-const { readFileSync } = require('fs')
-    , { join, dirname } = require('path')
-    , { maybeEquals } = require('./utils')
-    , { CHARTYPE } = require('./classes/static')
-    ,   lexer = require('./lexer/lexer');
+const 
+    // #!if platform === 'node'
+    { readFile } = require('fs'),
+    { join, dirname } = require('path'),
+    // #!endif
+    { maybeEquals } = require('./utils'),
+    { CHARTYPE } = require('./classes/static'),
+    { IOError } = require('./classes/exceptions'),
+    lexer = require('./lexer/lexer');
 
 /**
  * Препроцессораня функция, линкует файлы.
@@ -20,21 +24,41 @@ const { readFileSync } = require('fs')
  *
  * @memberof Poonya.Linker
  * @protected
+ * @async
  */
-function linker(data, parent_path, throw_error) {
+async function linker(data, parent_path, throw_error) {
     for (let i = 0; true; i++) {
         if (data[i] == null) return data;
 
         if (data[i].equals(CHARTYPE.WORD, 'include')) {
             if (maybeEquals(data, i + 1, CHARTYPE.NEWLINE) && data[i + 1].equals(CHARTYPE.STRING)) {
-                const path = join(dirname(parent_path), data[i + 1].data.toString());
+                let path, data;
+                
+                // #!if platform === 'node'
+                    path = join(dirname(parent_path), data[i + 1].data.toString());
+
+                    data = new Promise((res, rej) => {
+                        readFile(path, (err, data) => {
+                            if(err)
+                                throw new IOError(path);
+
+                            res(data);
+                        })
+                    });
+                // #!endif
+
+                // #!if platform === 'browser'
+                // ~ path = window.location.origin + '/' + parent_path.split('/').pop().join('/') + data[i + 1].data.toString();
+                // ~
+                // ~ data = fetch(path, { method: 'GET' }).then(e => e.blob);
+                // #!endif
 
                 if (parent_path != null) {
                     try {
                         data.splice(
                             i,
                             data[i + 2].equals(CHARTYPE.OPERATOR, ';') ? 3 : 2,
-                            ...lexer(readFileSync(path), false)
+                            ...lexer(await data, false)
                         );
                     } catch (e) {
                         throw_error(data[i].position, new Exceptions.LinkerIOError(path));

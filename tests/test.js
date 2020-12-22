@@ -1,4 +1,4 @@
-const poonya = require("../poonya")
+const poonya = require("../src/poonya")
     , assert = require("assert");
 
 describe("poonya-common-test", () => {

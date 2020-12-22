@@ -1,11 +1,13 @@
-const { dirname } = require('path');
-
 /**
  * @file src/static.js
  * @description Содержит в себе набор статических полей
  * @license MIT
  * @author Astecom
  */
+
+// #!if platform === 'node'
+const { dirname } = require('path');
+// #!endif
 
 // Защищенные поля для PoonyaPrototype
 const GET = Symbol('GET')
@@ -117,7 +119,9 @@ const SERVICE = {
         NULL: ['Null'],
     },
 
+    // #!if platform === 'node'
     ROOTPATH: dirname(__dirname),
+    // #!endif
 
     CONFIG: {
         DEBUG: false,
@@ -132,7 +136,12 @@ const SERVICE = {
  * @protected
  * @static
  */
+// #!if platform === 'node'
 const NAMESPACE = Symbol.for('POONYA-' + process.pid + '-' + process.platform);
+// #!endif
+// #!if platform === 'browser'
+// ~ const NAMESPACE = Symbol.for('POONYA-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) + '-win32');
+// #!endif
 
 module.exports.FIELDFLAGS = FIELDFLAGS;
 module.exports.SUPER_CALL = SUPER_CALL;

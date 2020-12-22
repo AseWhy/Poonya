@@ -1,4 +1,4 @@
-const { PoonyaStaticLibrary, PoonyaPrototype, FIELDFLAGS, Exceptions } = require('library')
+const { PoonyaStaticLibrary, PoonyaPrototype, FIELDFLAGS, Exceptions } = require('poonya')
     ,   date = new Date();
 
 new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
@@ -215,6 +215,7 @@ class PoonyaArrayPrototype extends PoonyaPrototype {
     constructor(context){
         super([], 'Array');
 
+        this.addField('from', this.from, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC, context);
         this.addField('includes', this.includes, FIELDFLAGS.CONSTANT, context);
         this.addField('indexOf', this.indexOf, FIELDFLAGS.CONSTANT, context);
         this.addField('concat', this.concat, FIELDFLAGS.CONSTANT, context);
