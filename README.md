@@ -1,6 +1,6 @@
 ![poo](./data/header_document_image.png)
 
-# Poonya &middot; [![Build Status](https://img.shields.io/github/commit-activity/w/AseWhy/Poonya)](https://github.com/AseWhy/Poonya) [![npm](https://img.shields.io/badge/version-0.4.7-green)](https://github.com/AseWhy/Poonya) [![PRs Welcome](https://img.shields.io/github/size/AseWhy/Poonya/dist/poonya.browser.var.bundle.min.js)](https://github.com/AseWhy/Poonya/blob/master/dist/poonya.browser.var.bundle.min.js) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AseWhy/Poonya/blob/master/LICENSE)
+# Poonya &middot; [![Commit activity](https://img.shields.io/github/commit-activity/w/AseWhy/Poonya)](https://github.com/AseWhy/Poonya) [![Version](https://img.shields.io/badge/version-0.4.7-green)](https://github.com/AseWhy/Poonya) [![Bundle size](https://img.shields.io/github/size/AseWhy/Poonya/dist/poonya.browser.var.bundle.min.js)](https://github.com/AseWhy/Poonya/blob/master/dist/poonya.browser.var.bundle.min.js) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AseWhy/Poonya/blob/master/LICENSE)
 
 Poonya (пунья) - это текстовый препроцессор, **не ставящий перед собой четкого предназначения**. Вы можете использовать *poonya* для вашего чат-бота проекта, или как систему генерации веб страниц.
 
@@ -14,7 +14,7 @@ npm install --save github:AseWhy/Poonya
 после чего poonya будет добавлена к пакетам, которые вы можете использовать в вашем проекте.
 
 ### NodeJS
-Для использования в NodeJS, poonya нужно сначала ипортировать. Тут я испортирую конкретно класс ExcecutionPattern, который позволяет создать только исполняемый блоки ponya.
+Для использования в NodeJS, пунью нужно сначала импортировать. Тут я испортирую конкретно класс ExcecutionPattern, который позволяет создать только исполняемый блоки poonya.
 ```js
 const { ExcecutionPattern, MessagePattern, ExpressionPattern } = require('poonya');
 ```
