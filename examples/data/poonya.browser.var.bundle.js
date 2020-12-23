@@ -5035,15 +5035,16 @@ async function linker(data, parent_path, throw_error) {
 
     if (data[i].equals(CHARTYPE.WORD, 'include')) {
       if (maybeEquals(data, i + 1, CHARTYPE.NEWLINE) && data[i + 1].equals(CHARTYPE.STRING)) {
-        let path, data;
-        path = window.location.origin + '/' + parent_path.split('/').pop().join('/') + data[i + 1].data.toString();
-        data = fetch(path, {
+        let path, content;
+        const buffer = parent_path.split('/');
+        path = window.location.origin + '/' + buffer.slice(0, buffer.length - 1).join('/') + '/' + data[i + 1].data.toString();
+        content = fetch(path, {
           method: 'GET'
         }).then(e => e.blob);
 
         if (parent_path != null) {
           try {
-            data.splice(i, data[i + 2].equals(CHARTYPE.OPERATOR, ';') ? 3 : 2, ...lexer(await data, false));
+            data.splice(i, data[i + 2].equals(CHARTYPE.OPERATOR, ';') ? 3 : 2, ...lexer(content, false));
           } catch (e) {
             throw_error(data[i].position, new Exceptions.LinkerIOError(path));
           }
@@ -6037,6 +6038,15 @@ class PoonyaOutputStream extends EventEmitter {
     this._data = new Array();
     this._ended = false;
   }
+  /**
+   * Перенаправляет поток данных в `stream` переданный первым аргументом
+   * 
+   * @param {PoonyaOutputStream} stream поток которому необходимо передавать данные помимо этого
+   * @returns PoonyaOutputStream Поток который был передан.
+   * @method
+   * @public
+   */
+
 
   pipe(stream) {
     if (typeof stream.write === 'function') {
@@ -6046,17 +6056,38 @@ class PoonyaOutputStream extends EventEmitter {
       throw new TypeError('Is not a WriteStream');
     }
   }
+  /**
+   * Выводит данные
+   * 
+   * @param {Any} data данные которые необходимо вывести
+   * @method
+   * @public
+   */
+
 
   write(data) {
     this._data.push(data);
 
     this.emit('data', data);
   }
+  /**
+   * Завершает поток, посылает событие, после готоро
+   */
+
 
   end() {
     this._ended = true;
     this.emit('end');
   }
+  /**
+   * Ожидает завершения записи потока, после чего возвращает массив с буффером данных
+   * 
+   * @async
+   * @public
+   * @method
+   * @returns {Array<Any>} массив с переданными данными
+   */
+
 
   complete() {
     if (!this._ended) return new Promise(res => this.on('end', () => res(this._data)));else return this._data;
@@ -6100,6 +6131,8 @@ class CodeEmitter extends EventEmitter {
 
     if (typeof input === "string") {
       _.input = input;
+      _.charset = 'utf-8';
+      _.path = window.location.href;
 
       if (SERVICE.LOADED) {
         _[INIT](import_s, logger);
@@ -6470,6 +6503,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 /***/ 802:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+/**
+ * @file src/preset.js
+ * @description Содержит в себе прессеть данных для создания нативных бибилотек
+ * @license MIT
+ * @author Astecom
+ */
 module.exports.FIELDFLAGS = __webpack_require__(718).FIELDFLAGS;
 module.exports.Exceptions = __webpack_require__(880);
 module.exports.PoonyaStaticLibrary = __webpack_require__(701).PoonyaStaticLibrary;

@@ -102,6 +102,17 @@ function lexer(input, allow_spaces = true) {
             continue;
         }
 
+        // Префиксы чисел
+        if(cur === CHARTYPE.NUMBER && last === CHARTYPE.OPERATOR) {
+            if (buff[0] === 43 || buff[0] === 45) {
+                last = cur;
+
+                buff.push(input[i]);
+
+                continue;
+            }
+        }
+
         // Если предыдущий и текущий тип символов это операторы
         if (cur === CHARTYPE.OPERATOR && last === CHARTYPE.OPERATOR) {
             if (

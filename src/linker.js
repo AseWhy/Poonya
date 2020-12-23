@@ -32,12 +32,12 @@ async function linker(data, parent_path, throw_error) {
 
         if (data[i].equals(CHARTYPE.WORD, 'include')) {
             if (maybeEquals(data, i + 1, CHARTYPE.NEWLINE) && data[i + 1].equals(CHARTYPE.STRING)) {
-                let path, data;
+                let path, content;
                 
                 // #!if platform === 'node'
                     path = join(dirname(parent_path), data[i + 1].data.toString());
 
-                    data = new Promise((res, rej) => {
+                    content = new Promise((res, rej) => {
                         readFile(path, (err, data) => {
                             if(err)
                                 throw new IOError(path);
@@ -48,9 +48,11 @@ async function linker(data, parent_path, throw_error) {
                 // #!endif
 
                 // #!if platform === 'browser'
-                // ~ path = window.location.origin + '/' + parent_path.split('/').pop().join('/') + data[i + 1].data.toString();
+                // ~ const buffer = parent_path.split('/');
                 // ~
-                // ~ data = fetch(path, { method: 'GET' }).then(e => e.blob);
+                // ~ path = window.location.origin + '/' + buffer.slice(0, buffer.length - 1).join('/') + '/' + data[i + 1].data.toString();
+                // ~
+                // ~ content = fetch(path, { method: 'GET' }).then(e => e.blob);
                 // #!endif
 
                 if (parent_path != null) {
@@ -58,7 +60,7 @@ async function linker(data, parent_path, throw_error) {
                         data.splice(
                             i,
                             data[i + 2].equals(CHARTYPE.OPERATOR, ';') ? 3 : 2,
-                            ...lexer(await data, false)
+                            ...lexer(content, false)
                         );
                     } catch (e) {
                         throw_error(data[i].position, new Exceptions.LinkerIOError(path));

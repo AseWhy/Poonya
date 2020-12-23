@@ -2025,7 +2025,12 @@ class ExpressionGroup extends Operand {
         break;
     }
 
-    if (this.data.length !== 0 && (current instanceof Operator && this.data[this.data.length - 1] instanceof Operator || current instanceof Operand && this.data[this.data.length - 1] instanceof Operand)) throw_error(entry.position, new TheSequenceException(current, this.data[this.data.length - 1]));
+    if (this.data.length !== 0) {
+      if (current instanceof Operator && this.data[this.data.length - 1] instanceof Operator || current instanceof Operand && this.data[this.data.length - 1] instanceof Operand) throw_error(entry.position, new TheSequenceException(current, this.data[this.data.length - 1]));
+    } else {
+      if (current instanceof Operator) throw_error(entry.position, new TheSequenceException(current, '[ExpressionStart]'));
+    }
+
     this.data.push(current);
   }
   /**
@@ -3641,6 +3646,22 @@ class CriticalParserErrorException extends PoonyaException {
 
 }
 /**
+ * Критическая ошибка парсера
+ *
+ * @memberof Poonya.Exceptions
+ * @name CriticalParserErrorUnexpectedEndOfExpression
+ * @class
+ * @protected
+ */
+
+
+class CriticalParserErrorUnexpectedEndOfExpression extends PoonyaException {
+  constructor() {
+    super(`Critical parser error: unexprected end of expression`);
+  }
+
+}
+/**
  * Критическая ошибка парсера, неожиданный конец ввода
  *
  * @memberof Poonya.Exceptions
@@ -3815,6 +3836,7 @@ module.exports.TheFieldMustBeAnArrayInstanceExceprion = TheFieldMustBeAnArrayIns
 module.exports.TheFieldAlreadyHasBeenDeclaredException = TheFieldAlreadyHasBeenDeclaredException;
 module.exports.SegmentationFaultEmptyArgumentException = SegmentationFaultEmptyArgumentException;
 module.exports.InvalidSequenceForLetiableAccessException = InvalidSequenceForLetiableAccessException;
+module.exports.CriticalParserErrorUnexpectedEndOfExpression = CriticalParserErrorUnexpectedEndOfExpression;
 module.exports.CriticalParserErrorUnexpectedEndOfInputException = CriticalParserErrorUnexpectedEndOfInputException;
 module.exports.CriticalParserErrorNoRawDataTransmittedException = CriticalParserErrorNoRawDataTransmittedException;
 module.exports.SegmentationFaultMaximumSegmentsForBlockException = SegmentationFaultMaximumSegmentsForBlockException;
@@ -4905,6 +4927,15 @@ function lexer(input, allow_spaces = true) {
     if (cur === CHARTYPE.NEWLINE && last === CHARTYPE.NEWLINE || cur === CHARTYPE.POINT && last === CHARTYPE.NUMBER || cur === CHARTYPE.NUMBER && last === CHARTYPE.WORD) {
       buff.push(input[i]);
       continue;
+    } // Префиксы чисел
+
+
+    if (cur === CHARTYPE.NUMBER && last === CHARTYPE.OPERATOR) {
+      if (buff[0] === 43 || buff[0] === 45) {
+        last = cur;
+        buff.push(input[i]);
+        continue;
+      }
     } // Если предыдущий и текущий тип символов это операторы
 
 
@@ -5035,15 +5066,16 @@ async function linker(data, parent_path, throw_error) {
 
     if (data[i].equals(CHARTYPE.WORD, 'include')) {
       if (maybeEquals(data, i + 1, CHARTYPE.NEWLINE) && data[i + 1].equals(CHARTYPE.STRING)) {
-        let path, data;
-        path = window.location.origin + '/' + parent_path.split('/').pop().join('/') + data[i + 1].data.toString();
-        data = fetch(path, {
+        let path, content;
+        const buffer = parent_path.split('/');
+        path = window.location.origin + '/' + buffer.slice(0, buffer.length - 1).join('/') + '/' + data[i + 1].data.toString();
+        content = fetch(path, {
           method: 'GET'
         }).then(e => e.blob);
 
         if (parent_path != null) {
           try {
-            data.splice(i, data[i + 2].equals(CHARTYPE.OPERATOR, ';') ? 3 : 2, ...lexer(await data, false));
+            data.splice(i, data[i + 2].equals(CHARTYPE.OPERATOR, ';') ? 3 : 2, ...lexer(content, false));
           } catch (e) {
             throw_error(data[i].position, new Exceptions.LinkerIOError(path));
           }
@@ -5083,7 +5115,8 @@ const {
   UnexpectedTokenStatement,
   UnexpectedWordTypeAndGetException,
   CriticalParserErrorException,
-  CriticalParserErrorNoRawDataTransmittedException
+  CriticalParserErrorNoRawDataTransmittedException,
+  CriticalParserErrorUnexpectedEndOfExpression
 } = __webpack_require__(880),
       {
   maybeEquals,
@@ -5159,9 +5192,15 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
       expected = 0; // Ожидаемое следующие значение
 
   for (let i = start; true; i++) {
-    maybeEquals(data, i, CHARTYPE.NEWLINE);
-
     switch (true) {
+      case data[i] === undefined || expected === 3 && !data[i].equals(CHARTYPE.OPERATOR, ',') || data[i].equals(CHARTYPE.OPERATOR, [';', ')']):
+        if (entries[entries.length - 1].length !== 2) throw_error(data[i].position, new ParserEmtyArgumentException());
+        console.log(data[i], i, data[i - 1]);
+        return {
+          data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
+          jump: i - start
+        };
+
       case data[i].equals(CHARTYPE.OPERATOR, '*') && expected === 0:
         if (entries.length !== 1) throw_error(data[i].position, new BadEmptyObjectException());
         return {
@@ -5169,12 +5208,8 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
           jump: i - start
         };
 
-      case data[i] === undefined || expected === 3 && !data[i].equals(CHARTYPE.OPERATOR, ',') || data[i].equals(CHARTYPE.OPERATOR, ';'):
-        if (entries[entries.length - 1].length !== 2) throw_error(data[i].position, new ParserEmtyArgumentException());
-        return {
-          data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
-          jump: i - start
-        };
+      case data[i].equals(CHARTYPE.NEWLINE):
+        continue;
 
       default:
         switch (expected) {
@@ -5184,7 +5219,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
             } else if (data[i].equals(CHARTYPE.NUMBER)) {
               entries[entries.length - 1][0] = parseInt(data[i].toRawString());
             } else {
-              throw_error(data[i].position, new UnexpectedTokenException(data[i], 'any word'));
+              throw_error(data[i].position, new UnexpectedTokenException(data[i], '[Word]'));
             }
 
             expected = 1;
@@ -5412,14 +5447,16 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
         result = new Array();
 
   for (let i = start; true; i++) {
-    if (data[i] == undefined || data[i].equals(CHARTYPE.OPERATOR, ")") || data[i].contentEquals(end_marker) || data[i].equals(CHARTYPE.NEWLINE)) {
-      if (data[i] == undefined && buffer.isNotDone()) throw_error(data[i - 1].position, new CriticalParserErrorUnexpectedEndOfInputException());
+    if (data[i] == undefined || data[i].equals(CHARTYPE.OPERATOR, ")") || data[i].contentEquals(end_marker)) {
+      if (buffer.isNotDone()) throw_error(data[i - 1].position, data[i] == undefined ? new CriticalParserErrorUnexpectedEndOfInputException() : new CriticalParserErrorUnexpectedEndOfExpression());
       buffer.complete(throw_error);
       return {
         data: buffer,
         jump: i - start
       };
     }
+
+    if (data[i].equals(CHARTYPE.NEWLINE)) continue;
 
     switch (true) {
       // Какое-то слово
@@ -5443,7 +5480,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
         } else if (data[i + result[0].jump + 1] != null && data[i + result[0].jump].equals(CHARTYPE.OPERATOR, "-") && data[i + result[0].jump + 1].equals(CHARTYPE.OPERATOR, ">")) {
           // Конструктор объекта
           result[1] = parseObject(result[0].data, i + result[0].jump + 2, data, throw_error, 0);
-          i += result[0].jump + result[1].jump + 2;
+          i += result[0].jump + result[1].jump + 1;
           buffer.append(result[1].data, throw_error);
         } else {
           // Получение значения переменной
@@ -5481,10 +5518,14 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
       case data[i].equals(CHARTYPE.STRING) || data[i].equals(CHARTYPE.NUMBER) || data[i].equals(CHARTYPE.OPERATOR, ["/", "*", "+", "-", "!=", ">", "<", ">=", "<=", "=", "|", "&"]):
         buffer.append(data[i], throw_error);
         continue;
-      // Неизвестно что это
+      // Неизвестно что это, завершаем парсинг выражения на этом
 
       default:
-        throw_error(data[i].position, new UnexpectedTokenException(data[i].toString(), "*"));
+        if (buffer.isNotDone()) throw_error(data[i - 1].position, new CriticalParserErrorUnexpectedEndOfExpression());
+        buffer.complete(throw_error);
+        return {
+          data: buffer
+        };
     }
   }
 }
@@ -5510,7 +5551,7 @@ function segmentationParser(start, entries, throw_error, segment_separator = ","
       buffer = [new Array()];
 
   for (let i = start; true; i++) {
-    maybeEquals(entries, i, CHARTYPE.NEWLINE);
+    if (entries[i].equals(CHARTYPE.NEWLINE)) continue;
 
     switch (true) {
       case entries[i] === undefined || entries[i].equals(CHARTYPE.OPERATOR, ")") && hook_index <= 0:
@@ -6037,6 +6078,15 @@ class PoonyaOutputStream extends EventEmitter {
     this._data = new Array();
     this._ended = false;
   }
+  /**
+   * Перенаправляет поток данных в `stream` переданный первым аргументом
+   * 
+   * @param {PoonyaOutputStream} stream поток которому необходимо передавать данные помимо этого
+   * @returns PoonyaOutputStream Поток который был передан.
+   * @method
+   * @public
+   */
+
 
   pipe(stream) {
     if (typeof stream.write === 'function') {
@@ -6046,17 +6096,38 @@ class PoonyaOutputStream extends EventEmitter {
       throw new TypeError('Is not a WriteStream');
     }
   }
+  /**
+   * Выводит данные
+   * 
+   * @param {Any} data данные которые необходимо вывести
+   * @method
+   * @public
+   */
+
 
   write(data) {
     this._data.push(data);
 
     this.emit('data', data);
   }
+  /**
+   * Завершает поток, посылает событие, после готоро
+   */
+
 
   end() {
     this._ended = true;
     this.emit('end');
   }
+  /**
+   * Ожидает завершения записи потока, после чего возвращает массив с буффером данных
+   * 
+   * @async
+   * @public
+   * @method
+   * @returns {Array<Any>} массив с переданными данными
+   */
+
 
   complete() {
     if (!this._ended) return new Promise(res => this.on('end', () => res(this._data)));else return this._data;
@@ -6100,6 +6171,8 @@ class CodeEmitter extends EventEmitter {
 
     if (typeof input === "string") {
       _.input = input;
+      _.charset = 'utf-8';
+      _.path = window.location.href;
 
       if (SERVICE.LOADED) {
         _[INIT](import_s, logger);
@@ -6470,6 +6543,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 /***/ 802:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+/**
+ * @file src/preset.js
+ * @description Содержит в себе прессеть данных для создания нативных бибилотек
+ * @license MIT
+ * @author Astecom
+ */
 module.exports.FIELDFLAGS = __webpack_require__(718).FIELDFLAGS;
 module.exports.Exceptions = __webpack_require__(880);
 module.exports.PoonyaStaticLibrary = __webpack_require__(701).PoonyaStaticLibrary;

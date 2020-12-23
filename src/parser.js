@@ -20,7 +20,8 @@ const {
     ,   UnexpectedTokenStatement
     ,   UnexpectedWordTypeAndGetException
     ,   CriticalParserErrorException
-    ,   CriticalParserErrorNoRawDataTransmittedException
+    ,   CriticalParserErrorNoRawDataTransmittedException,
+    CriticalParserErrorUnexpectedEndOfExpression
     } = require('./classes/exceptions'),
     { 
         maybeEquals
@@ -101,9 +102,20 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
         expected = 0; // Ожидаемое следующие значение
 
     for (let i = start; true; i++) {
-        maybeEquals(data, i, CHARTYPE.NEWLINE);
-
         switch (true) {
+            case 
+                data[i] === undefined || 
+                expected === 3 && !data[i].equals(CHARTYPE.OPERATOR, ',') ||
+                data[i].equals(CHARTYPE.OPERATOR, [';', ')']):
+                if (entries[entries.length - 1].length !== 2)
+                    throw_error(data[i].position, new ParserEmtyArgumentException());
+
+                console.log(data[i], i, data[i - 1])
+
+                return {
+                    data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
+                    jump: i - start
+                };
             case data[i].equals(CHARTYPE.OPERATOR, '*') && expected === 0:
                 if (entries.length !== 1)
                     throw_error(data[i].position, new BadEmptyObjectException());
@@ -112,14 +124,8 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                     data: new ObjectContructorCall(query_stack, new Map(), data[start].position),
                     jump: i - start
                 };
-            case data[i] === undefined || expected === 3 && !data[i].equals(CHARTYPE.OPERATOR, ',') || data[i].equals(CHARTYPE.OPERATOR, ';'):
-                if (entries[entries.length - 1].length !== 2)
-                    throw_error(data[i].position, new ParserEmtyArgumentException());
-
-                return {
-                    data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
-                    jump: i - start
-                };
+            case data[i].equals(CHARTYPE.NEWLINE):
+                continue;
             default:
                 switch (expected) {
                     case 0:
@@ -128,7 +134,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                         } else if (data[i].equals(CHARTYPE.NUMBER)) {
                             entries[entries.length - 1][0] = parseInt(data[i].toRawString());
                         } else {
-                            throw_error(data[i].position, new UnexpectedTokenException(data[i], 'any word'));
+                            throw_error(data[i].position, new UnexpectedTokenException(data[i], '[Word]'));
                         }
 
                         expected = 1;
@@ -414,12 +420,13 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
         , result = new Array();
 
     for (let i = start; true; i++) {
-        if (data[i] == undefined ||
+        if (
+            data[i] == undefined ||
             data[i].equals(CHARTYPE.OPERATOR, ")") ||
-            data[i].contentEquals(end_marker) ||
-            data[i].equals(CHARTYPE.NEWLINE)) {
-            if (data[i] == undefined && buffer.isNotDone())
-                throw_error(data[i - 1].position, new CriticalParserErrorUnexpectedEndOfInputException());
+            data[i].contentEquals(end_marker)
+        ) {
+            if (buffer.isNotDone())
+                throw_error(data[i - 1].position, data[i] == undefined ? new CriticalParserErrorUnexpectedEndOfInputException() : new CriticalParserErrorUnexpectedEndOfExpression());
 
             buffer.complete(throw_error);
 
@@ -428,6 +435,9 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                 jump: i - start,
             };
         }
+
+        if(data[i].equals(CHARTYPE.NEWLINE))
+            continue;
 
         switch (true) {
             // Какое-то слово
@@ -454,9 +464,12 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                     i += result[0].jump + result[1].jump + 1;
 
                     buffer.append(result[1].data, throw_error);
-                } else if (data[i + result[0].jump + 1] != null &&
+                } else if (
+                    data[i + result[0].jump + 1] != null &&
                     data[i + result[0].jump].equals(CHARTYPE.OPERATOR, "-") &&
-                    data[i + result[0].jump + 1].equals(CHARTYPE.OPERATOR, ">")) {
+                    data[i + result[0].jump + 1].equals(CHARTYPE.OPERATOR, ">")
+                ) {
+
                     // Конструктор объекта
                     result[1] = parseObject(
                         result[0].data,
@@ -466,7 +479,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                         0
                     );
 
-                    i += result[0].jump + result[1].jump + 2;
+                    i += result[0].jump + result[1].jump + 1;
 
                     buffer.append(result[1].data, throw_error);
                 } else {
@@ -475,7 +488,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
 
                     i += result[0].jump - 1;
                 }
-                continue;
+            continue;
             // Конструктор объекта
             case data[i + 1] != null &&
                 data[i].equals(CHARTYPE.OPERATOR, "-") &&
@@ -493,7 +506,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
 
                 buffer.append(result[0].data, throw_error);
 
-                continue;
+            continue;
             // Другая группа выражений
             case data[i].equals(CHARTYPE.OPERATOR, "("):
                 result[0] = parseExpression(i + 1, data, throw_error);
@@ -501,7 +514,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                 i += result[0].jump + 1;
 
                 buffer.append(result[0].data, throw_error);
-                continue;
+            continue;
             // Тернарное выражение
             case data[i].equals(CHARTYPE.OPERATOR, "?"):
                 buffer.complete(throw_error);
@@ -535,16 +548,17 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                     "&",
                 ]):
                 buffer.append(data[i], throw_error);
-                continue;
-            // Неизвестно что это
+            continue;
+            // Неизвестно что это, завершаем парсинг выражения на этом
             default:
-                throw_error(
-                    data[i].position,
-                    new UnexpectedTokenException(
-                        data[i].toString(),
-                        "*"
-                    )
-                );
+                if (buffer.isNotDone())
+                    throw_error(data[i - 1].position, new CriticalParserErrorUnexpectedEndOfExpression());
+
+                buffer.complete(throw_error);
+
+                return {
+                    data: buffer,
+                }
         }
     }
 }
@@ -576,7 +590,8 @@ function segmentationParser(
         buffer = [new Array()];
 
     for (let i = start; true; i++) {
-        maybeEquals(entries, i, CHARTYPE.NEWLINE);
+        if(entries[i].equals(CHARTYPE.NEWLINE))
+            continue;
 
         switch (true) {
             case entries[i] === undefined ||
@@ -621,26 +636,26 @@ function segmentationParser(
                 continue;
             case entries[i].contentEquals(segment_separator) &&
                 hook_index === 0:
-                if (buffer[buffer.length - 1].length > 0) {
-                    buffer[buffer.length - 1] = parseExpression(
-                        0,
-                        buffer[buffer.length - 1],
-                        throw_error
-                    ).data;
+                    if (buffer[buffer.length - 1].length > 0) {
+                        buffer[buffer.length - 1] = parseExpression(
+                            0,
+                            buffer[buffer.length - 1],
+                            throw_error
+                        ).data;
 
-                    buffer.push(new Array());
+                        buffer.push(new Array());
 
-                    if (buffer.length > max_segments)
+                        if (buffer.length > max_segments)
+                            throw_error(
+                                entries[i].position,
+                                new SegmentationFaultMaximumSegmentsForBlockException(blockname)
+                            );
+                    } else {
                         throw_error(
                             entries[i].position,
-                            new SegmentationFaultMaximumSegmentsForBlockException(blockname)
+                            new SegmentationFaultEmptyArgumentException(blockname)
                         );
-                } else {
-                    throw_error(
-                        entries[i].position,
-                        new SegmentationFaultEmptyArgumentException(blockname)
-                    );
-                }
+                    }
                 break;
             default:
                 buffer[buffer.length - 1].push(entries[i]);

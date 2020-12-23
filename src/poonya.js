@@ -117,6 +117,14 @@ class PoonyaOutputStream extends EventEmitter {
         this._ended = false;
     }
 
+    /**
+     * Перенаправляет поток данных в `stream` переданный первым аргументом
+     * 
+     * @param {PoonyaOutputStream} stream поток которому необходимо передавать данные помимо этого
+     * @returns PoonyaOutputStream Поток который был передан.
+     * @method
+     * @public
+     */
     pipe(stream){
         if(typeof stream.write === 'function'){
             this.on('data', stream.write);
@@ -127,18 +135,36 @@ class PoonyaOutputStream extends EventEmitter {
         }
     }
 
+    /**
+     * Выводит данные
+     * 
+     * @param {Any} data данные которые необходимо вывести
+     * @method
+     * @public
+     */
     write(data){
         this._data.push(data);
 
         this.emit('data', data);
     }
 
+    /**
+     * Завершает поток, посылает событие, после готоро
+     */
     end(){
         this._ended = true;
 
         this.emit('end');
     }
 
+    /**
+     * Ожидает завершения записи потока, после чего возвращает массив с буффером данных
+     * 
+     * @async
+     * @public
+     * @method
+     * @returns {Array<Any>} массив с переданными данными
+     */
     complete(){
         if(!this._ended)
             return new Promise(res => this.on('end', () => res(this._data)));
@@ -185,6 +211,15 @@ class CodeEmitter extends EventEmitter {
         if (typeof input === "string") {
             _.input = input;
 
+            _.charset = 'utf-8';
+
+            // #!if platform === 'node'
+            _.path = module.parent ? module.parent.filename : module.filename
+            // #!endif
+            // #!if platform === 'browser'
+            // ~ _.path = window.location.href
+            // #!endif
+            
             if(SERVICE.LOADED) {
                 _[INIT](import_s, logger);
 

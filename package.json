@@ -2,7 +2,7 @@
   "name": "poonya.js",
   "version": "0.4.6",
   "description": "Simple preprocessor for text",
-  "main": "./src/poonya.js",
+  "main": "./dist/poonya.node.bundle.js",
   "directories": {
     "doc": "docs",
     "test": "tests"

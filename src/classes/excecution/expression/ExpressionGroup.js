@@ -118,14 +118,16 @@ class ExpressionGroup extends Operand {
                 break;
         }
 
-        if (
-            this.data.length !== 0 &&
-            (
+        if(this.data.length !== 0) {
+            if (
                 (current instanceof Operator && this.data[this.data.length - 1] instanceof Operator) ||
                 (current instanceof Operand && this.data[this.data.length - 1] instanceof Operand)
             )
-        )
-            throw_error(entry.position, new TheSequenceException(current, this.data[this.data.length - 1]));
+                throw_error(entry.position, new TheSequenceException(current, this.data[this.data.length - 1]));
+        } else {
+            if(current instanceof Operator)
+                throw_error(entry.position, new TheSequenceException(current, '[ExpressionStart]'));
+        }
 
         this.data.push(current);
     }

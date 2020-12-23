@@ -2,6 +2,14 @@
     Multilevel object notation
 </
 
-set test1 = Array.from(0, 1, 2, 3, 4, 5);
-
-> test1;
+> Object ->
+    Field1 -> 'value1',
+    Field2 ->
+        (
+            Array ->
+                0 -> 1,
+                1 -> 2,
+                2 -> 3,
+                3 -> 4
+        ),
+    Field3 -> 0;

@@ -15,7 +15,8 @@ module.paths.push('C:/Users/alecs/AppData/Roaming/npm/node_modules');
 module.exports = (env, b) => {
     env.platform = env && env.platform || 'node';
     env.type = env && env.type || 'var';
-    env.path = env && env.platform != 'node' ? 'poonya.browser.' + env.type + '.bundle.js' : 'poonya.node.bundle.js';
+    env.minimize = env && env.minimize == 'true' ? true : false;
+    env.path = (env && env.platform != 'node' ? 'poonya.browser.' + env.type + '.bundle' : 'poonya.node.bundle') + (env.minimize ? '.min' : '') + '.js';
 
     l(
         '\n',
@@ -54,7 +55,7 @@ module.exports = (env, b) => {
         },
 
         optimization: {
-            minimize: false
+            minimize: env.minimize
         },
 
         module: {

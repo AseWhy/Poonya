@@ -88,7 +88,7 @@
         .content-unit {
             width: 100%;
             padding: 1em;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'JetBrains Mono' ;
             font-size: large;
         }
 
@@ -105,6 +105,35 @@
             opacity: 0;
             animation: blink 0.75s infinite;
         }
+
+        button {
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple {
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4);
+            transform: scale(0);
+            position: absolute;
+            animation: ripple 0.5s linear;
+            pointer-events: none;
+            opacity: 1;
+        }
+
+        .poonya-logo {
+            filter: drop-shadow(5px 5px 10px black);
+        }
+
+        @keyframes ripple {
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -118,23 +147,25 @@
                 html.createElement(TAGS.IMG, 
                     '', ( -> 
                         src -> './data/2.png',
-                        loading -> 'lazy'
+                        loading -> 'lazy',
+                        class -> 'poonya-logo'
                     )
                 ) + html.createElement(TAGS.DIV, 
                         html.createElement(
-                            TAGS.BUTTON, 'main',
+                            TAGS.BUTTON, 'Main',
                             ( -> class -> 'h-button')
                         ) + html.createElement(
                             TAGS.BUTTON, 'Features',
                             ( -> class -> 'h-button')
                         ) + html.createElement(
-                            TAGS.BUTTON, 'about',
+                            TAGS.BUTTON, 'About',
                             ( -> class -> 'h-button')
                         ),
                     ( -> class -> 'header-buttons')),
                 ( -> class -> 'left-hand')
             ) + html.createElement(TAGS.DIV,
-                'Poonya! ' + html.createElement(TAGS.B, '_', ( -> 
+                    'Poonya! ' + html.createElement(TAGS.B, 
+                    '_', ( -> 
                         class -> 'blink'
                     )
                 ),
@@ -220,7 +251,7 @@
 
             for(let i = 0, leng = buttons.length; i < leng; i++)
                 ((target, index) => {
-                    target.addEventListener('click', () => {
+                    target.addEventListener('click', event => {
                         for(let i = 0, leng = buttons.length; i < leng; i++)
                             buttons[i].classList.remove('selected');
                         
@@ -231,6 +262,51 @@
                 })(buttons[i], i)
 
             if(buttons[0]) buttons[0].click();
+
+            window.addEventListener('click', (e) => {
+                if(e.target.tagName != 'BUTTON')
+                    return;
+
+                e.preventDefault();
+
+                // Remove any old one
+                const ripple = document.querySelectorAll('.ripple');
+
+                if (ripple) {
+                    for(let i = 0, leng = ripple.length; i < leng; i++)
+                        ripple[i].remove();
+                }
+            
+                // Setup
+                let buttonWidth = e.target.offsetWidth, 
+                    buttonHeight = e.target.offsetHeight;
+            
+                // Make it round!
+                if(buttonWidth >= buttonHeight) {
+                    buttonHeight = buttonWidth;
+                } else {
+                    buttonWidth = buttonHeight;
+                }
+            
+                // Get the center of the element
+                const x = e.offsetX == undefined ? e.layerX : e.offsetX - buttonWidth / 2
+                    , y = e.offsetY == undefined ? e.layerY : e.offsetY - buttonHeight / 2;
+            
+                // Add the element
+                const span = document.createElement('span');
+
+                span.className = 'ripple';
+
+                const s = span.style;
+
+                s.width = buttonWidth + 'px';
+                s.height = buttonHeight + 'px';
+
+                s.top = y + 'px';
+                s.left = x + 'px';
+
+                e.target.appendChild(span);
+            })
         })
     </script>
 </body>

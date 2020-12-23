@@ -371,6 +371,20 @@ class CriticalParserErrorException extends PoonyaException {
 }
 
 /**
+ * Критическая ошибка парсера
+ *
+ * @memberof Poonya.Exceptions
+ * @name CriticalParserErrorUnexpectedEndOfExpression
+ * @class
+ * @protected
+ */
+class CriticalParserErrorUnexpectedEndOfExpression extends PoonyaException {
+    constructor() {
+        super(`Critical parser error: unexprected end of expression`);
+    }
+}
+
+/**
  * Критическая ошибка парсера, неожиданный конец ввода
  *
  * @memberof Poonya.Exceptions
@@ -532,6 +546,7 @@ module.exports.TheFieldMustBeAnArrayInstanceExceprion = TheFieldMustBeAnArrayIns
 module.exports.TheFieldAlreadyHasBeenDeclaredException = TheFieldAlreadyHasBeenDeclaredException;
 module.exports.SegmentationFaultEmptyArgumentException = SegmentationFaultEmptyArgumentException;
 module.exports.InvalidSequenceForLetiableAccessException = InvalidSequenceForLetiableAccessException;
+module.exports.CriticalParserErrorUnexpectedEndOfExpression = CriticalParserErrorUnexpectedEndOfExpression;
 module.exports.CriticalParserErrorUnexpectedEndOfInputException = CriticalParserErrorUnexpectedEndOfInputException;
 module.exports.CriticalParserErrorNoRawDataTransmittedException = CriticalParserErrorNoRawDataTransmittedException;
 module.exports.SegmentationFaultMaximumSegmentsForBlockException = SegmentationFaultMaximumSegmentsForBlockException;

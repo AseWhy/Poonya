@@ -20,6 +20,8 @@ let question, allow = ["y", "yes", "н", "нуы"];
 }
 
 async function main(){
+    let confirm;
+
     console.log("building jsdoc");
 
     rmdirSync('docs', { recursive: true, force: true });
@@ -44,9 +46,34 @@ async function main(){
         console.log('Apparently you deleted the package.json file')
     }
 
-    const commit = await question("Commit changes? (Y/N) ");
+    confirm = await question("Rebuild bundles? (Y/N) ");
 
-    if(allow.includes(commit.toLowerCase())){
+    if(allow.includes(confirm.toLowerCase())){
+        console.log('Building for node platform commonjs2');
+        execSync('webpack --env platform=node');
+
+        console.log('Building for browser minimized platform var');
+        execSync('webpack --env platform=browser --env minimize=true --env type=var');
+
+        console.log('Building for browser platform var');
+        execSync('webpack --env platform=browser --env minimize=false --env type=var');
+
+        console.log('Building for browser minimized platform system');
+        execSync('webpack --env platform=browser --env minimize=true --env type=system');
+
+        console.log('Building for browser platform system');
+        execSync('webpack --env platform=browser --env minimize=false --env type=system');
+
+        console.log('Building for browser minimized platform amd');
+        execSync('webpack --env platform=browser --env minimize=true --env type=amd');
+        
+        console.log('Building for browser platform amd');
+        execSync('webpack --env platform=browser --env minimize=false --env type=amd');
+    }
+
+    confirm = await question("Commit changes? (Y/N) ");
+
+    if(allow.includes(confirm.toLowerCase())){
         const message = await question('Commit message: ');
 
         execSync('git add -A --');

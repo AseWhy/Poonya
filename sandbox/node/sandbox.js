@@ -1,8 +1,6 @@
 const poonya = require("../../src/poonya");
 
-const test_pattern = new poonya.ExcecutionPattern('> 1;');
-
-//{ path: __dirname + "/sandbox-data/sandbox" }
+const test_pattern = new poonya.ExcecutionPattern({ path: __dirname + "/sandbox-data/sandbox" });
 
 async function main() {
     test_pattern.on('load', async e => {
