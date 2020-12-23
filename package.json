@@ -26,5 +26,9 @@
   "bugs": {
     "url": "https://github.com/AseWhy/Poonya/issues"
   },
-  "homepage": "https://github.com/AseWhy/Poonya#readme"
+  "homepage": "https://github.com/AseWhy/Poonya#readme",
+  "devDependencies": {
+    "mocha": "^8.2.1",
+    "webpack": "^5.11.0"
+  }
 }
