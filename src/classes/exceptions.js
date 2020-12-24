@@ -156,11 +156,11 @@ class LinkerIOError extends IOError {
  * Ошибка выполнения нативной функции
  *
  * @memberof Poonya.Exceptions
- * @name NativeFunctionExcecutionError
+ * @name NativeFunctionExecutionError
  * @class
  * @protected
  */
-class NativeFunctionExcecutionError extends PoonyaException {
+class NativeFunctionExecutionError extends PoonyaException {
     constructor(name, stack) {
         const exp = /^\s*at\s(?:new\s)?([aA-zZ.аА-яЯё]+)\s\((.*)\)$/;
 
@@ -532,7 +532,7 @@ module.exports.IsNotAConstructorException = IsNotAConstructorException;
 module.exports.ParserEmtyArgumentException = ParserEmtyArgumentException;
 module.exports.LinkerPathNotGiveExceptrion = LinkerPathNotGiveExceptrion;
 module.exports.CriticalParserErrorException = CriticalParserErrorException;
-module.exports.NativeFunctionExcecutionError = NativeFunctionExcecutionError;
+module.exports.NativeFunctionExecutionError = NativeFunctionExecutionError;
 module.exports.BadKeyProtectedFieldException = BadKeyProtectedFieldException;
 module.exports.TheFieldMustBeNumberException = TheFieldMustBeNumberException;
 module.exports.NativeFunctionReturnValueError = NativeFunctionReturnValueError;

@@ -4,7 +4,7 @@ const poonya = require("../src/poonya")
 describe("poonya-common-test", () => {
     describe("#scope", () => {
         it("Should return SomeValue-1 and SomeValue", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-scope-1",
             });
 
@@ -15,7 +15,7 @@ describe("poonya-common-test", () => {
         });
 
         it("Should return SomeValue and null", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-scope-2",
             });
 
@@ -23,7 +23,7 @@ describe("poonya-common-test", () => {
         });
 
         it("Should return an array with numbers", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-scope-3",
             });
 
@@ -45,7 +45,7 @@ describe("poonya-common-test", () => {
 
     describe("#object-notation", () => {
         it("Should return two empty objects", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-object-literal-0",
             });
 
@@ -53,7 +53,7 @@ describe("poonya-common-test", () => {
         });
 
         it("Should return one filled object", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-object-literal-1",
             });
 
@@ -75,7 +75,7 @@ describe("poonya-common-test", () => {
         });
 
         it("Should return indexed object", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-object-literal-2",
             });
 
@@ -96,7 +96,7 @@ describe("poonya-common-test", () => {
 
     describe("#object-field-edit", () => {
         it("Should return one field with string which equals 'NOT 1'", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-object-edit-field-0",
             });
 
@@ -106,7 +106,7 @@ describe("poonya-common-test", () => {
         });
 
         it("Should return filed, with 2 subfield which equals 'NOT 1' and 'NOT 2'", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-object-edit-field-1",
             });
 
@@ -119,7 +119,7 @@ describe("poonya-common-test", () => {
         });
 
         it("Should return 'NOT OBJECT' contains string field", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-object-edit-field-2",
             });
 
@@ -131,7 +131,7 @@ describe("poonya-common-test", () => {
 
     describe("#object-inheritance", () => {
         it("Checking the inheritance of fields from an object", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-object-inheritance-0",
             });
 
@@ -145,7 +145,7 @@ describe("poonya-common-test", () => {
         });
 
         it("Should return an array with numbers from 0 to 5", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-object-inheritance-1",
             });
 
@@ -155,7 +155,7 @@ describe("poonya-common-test", () => {
         });
 
         it("Should return empty array", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-object-inheritance-2",
             });
 
@@ -165,7 +165,7 @@ describe("poonya-common-test", () => {
 
     describe("#object-static-methods", () => {
         it("Should return an array with values ​​from 0 to 5", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-object-static-0",
             });
 
@@ -175,7 +175,7 @@ describe("poonya-common-test", () => {
         });
 
         it("Should return an empty array", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-object-static-1",
             });
 
@@ -183,7 +183,7 @@ describe("poonya-common-test", () => {
         });
 
         it("Should return an empty object", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-object-static-2",
             });
 
@@ -202,7 +202,7 @@ describe("poonya-common-test", () => {
         });
 
         it("Test for markdown generation", async () => {
-            const test_pattern = new poonya.ExcecutionPattern({
+            const test_pattern = new poonya.ExecutionPattern({
                 path: __dirname + "/src/unit-message-pattern-2",
             }, [ 'default.html' ]);
 

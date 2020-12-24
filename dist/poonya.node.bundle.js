@@ -2,7 +2,7 @@ module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 18:
+/***/ 62:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -13,7 +13,7 @@ module.exports =
  */
 const {
   OPERATOR
-} = __webpack_require__(718);
+} = __webpack_require__(635);
 /**
  * @lends ParserData
  * @class
@@ -156,7 +156,7 @@ module.exports.ParserData = ParserData;
 
 /***/ }),
 
-/***/ 240:
+/***/ 492:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -167,17 +167,17 @@ module.exports.ParserData = ParserData;
  */
 const {
   Operand
-} = __webpack_require__(18),
+} = __webpack_require__(62),
       {
   SERVICE
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
-  NativeFunctionExcecutionError
-} = __webpack_require__(880),
+  NativeFunctionExecutionError
+} = __webpack_require__(707),
       {
   iPoonyaObject,
   iPoonyaPrototype
-} = __webpack_require__(540);
+} = __webpack_require__(779);
 /**
  * @lends NativeFunction
  * @class
@@ -228,7 +228,7 @@ class NativeFunction {
         position: call_pos
       }, ...args_f);
     } catch (e) {
-      throw_error(call_pos, new NativeFunctionExcecutionError(this.target.name, e.stack));
+      throw_error(call_pos, new NativeFunctionExecutionError(this.target.name, e.stack));
     }
 
     switch (typeof data) {
@@ -275,7 +275,7 @@ module.exports = NativeFunction;
 
 /***/ }),
 
-/***/ 609:
+/***/ 358:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -286,9 +286,9 @@ module.exports = NativeFunction;
  */
 const {
   FIELDFLAGS
-} = __webpack_require__(718),
-      PoonyaObject = __webpack_require__(741),
-      NativeFunction = __webpack_require__(240);
+} = __webpack_require__(635),
+      PoonyaObject = __webpack_require__(940),
+      NativeFunction = __webpack_require__(492);
 /**
  * @lends PoonyaArray
  * @class
@@ -397,7 +397,7 @@ module.exports = PoonyaArray;
 
 /***/ }),
 
-/***/ 481:
+/***/ 221:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -406,7 +406,7 @@ module.exports = PoonyaArray;
  * @author Astecom
  * @license MIT
  */
-const PoonyaObject = __webpack_require__(741);
+const PoonyaObject = __webpack_require__(940);
 /**
  * @lends PoonyaBoolean
  * @class
@@ -502,7 +502,7 @@ module.exports = PoonyaBoolean;
 
 /***/ }),
 
-/***/ 526:
+/***/ 159:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -511,7 +511,7 @@ module.exports = PoonyaBoolean;
  * @author Astecom
  * @license MIT
  */
-const PoonyaObject = __webpack_require__(741);
+const PoonyaObject = __webpack_require__(940);
 /**
  * @lends PoonyaInteger
  * @class
@@ -607,7 +607,7 @@ module.exports = PoonyaInteger;
 
 /***/ }),
 
-/***/ 711:
+/***/ 486:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -616,7 +616,7 @@ module.exports = PoonyaInteger;
  * @author Astecom
  * @license MIT
  */
-const PoonyaObject = __webpack_require__(741);
+const PoonyaObject = __webpack_require__(940);
 /**
  * @lends PoonyaNull
  * @class
@@ -708,7 +708,7 @@ module.exports = PoonyaNull;
 
 /***/ }),
 
-/***/ 418:
+/***/ 773:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -717,7 +717,7 @@ module.exports = PoonyaNull;
  * @author Astecom
  * @license MIT
  */
-const PoonyaObject = __webpack_require__(741);
+const PoonyaObject = __webpack_require__(940);
 /**
  * @lends PoonyaNumber
  * @class
@@ -813,7 +813,7 @@ module.exports = PoonyaNumber;
 
 /***/ }),
 
-/***/ 741:
+/***/ 940:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -825,24 +825,24 @@ module.exports = PoonyaNumber;
 const {
   BadKeyInvalidTypeException,
   BadKeyProtectedFieldException
-} = __webpack_require__(880),
+} = __webpack_require__(707),
       {
   iContext
-} = __webpack_require__(540),
+} = __webpack_require__(779),
       {
   SUPER_CALL,
   GET,
   FIELDFLAGS,
   CONFIG
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   Cast
-} = __webpack_require__(0),
+} = __webpack_require__(270),
       {
   iPoonyaObject,
   iPoonyaPrototype
-} = __webpack_require__(540),
-      NativeFunction = __webpack_require__(240);
+} = __webpack_require__(779),
+      NativeFunction = __webpack_require__(492);
 /**
  * @lends PoonyaObject
  * @class
@@ -1079,7 +1079,7 @@ module.exports = PoonyaObject;
 
 /***/ }),
 
-/***/ 494:
+/***/ 406:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -1093,13 +1093,13 @@ const {
   GET,
   FIELDFLAGS,
   SUPER_CALL
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   iPoonyaPrototype
-} = __webpack_require__(540),
+} = __webpack_require__(779),
       {
   Cast
-} = __webpack_require__(0);
+} = __webpack_require__(270);
 /**
  * @lends PoonyaPrototype
  * @class
@@ -1257,7 +1257,7 @@ module.exports = PoonyaPrototype;
 
 /***/ }),
 
-/***/ 419:
+/***/ 718:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -1266,7 +1266,7 @@ module.exports = PoonyaPrototype;
  * @author Astecom
  * @license MIT
  */
-const PoonyaObject = __webpack_require__(741);
+const PoonyaObject = __webpack_require__(940);
 /**
  * @lends PoonyaString
  * @class
@@ -1382,7 +1382,7 @@ module.exports = PoonyaString;
 
 /***/ }),
 
-/***/ 888:
+/***/ 606:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -1394,20 +1394,20 @@ module.exports = PoonyaString;
 const {
   Operand,
   Operator
-} = __webpack_require__(18),
+} = __webpack_require__(62),
       {
   CHARTYPE,
   OPERATOR,
   SERVICE
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   UnableToRecognizeTypeException,
   TheSequenceException
-} = __webpack_require__(880),
+} = __webpack_require__(707),
       {
   Cast
-} = __webpack_require__(0),
-      ObjectContructorCall = __webpack_require__(202);
+} = __webpack_require__(270),
+      ObjectContructorCall = __webpack_require__(552);
 /**
  * @lends MessagePattern;
  */
@@ -1699,7 +1699,7 @@ module.exports = ExpressionGroup;
 
 /***/ }),
 
-/***/ 408:
+/***/ 584:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -1710,16 +1710,16 @@ module.exports = ExpressionGroup;
  */
 const {
   Operand
-} = __webpack_require__(18),
+} = __webpack_require__(62),
       {
   UnableToCreateAnObjectException,
   FieldNotAFunctionException
-} = __webpack_require__(880),
+} = __webpack_require__(707),
       {
   iPoonyaPrototype
-} = __webpack_require__(540);
+} = __webpack_require__(779);
 
-NativeFunction = __webpack_require__(240);
+NativeFunction = __webpack_require__(492);
 /**
  * @lends FunctionCall
  * @protected
@@ -1782,7 +1782,7 @@ module.exports = FunctionCall;
 
 /***/ }),
 
-/***/ 338:
+/***/ 46:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -1793,12 +1793,12 @@ module.exports = FunctionCall;
  */
 const {
   Operand
-} = __webpack_require__(18),
+} = __webpack_require__(62),
       {
   SERVICE,
   FIELDFLAGS
-} = __webpack_require__(718),
-      NativeFunction = __webpack_require__(240);
+} = __webpack_require__(635),
+      NativeFunction = __webpack_require__(492);
 /**
  * @lends GetOperator
  * @protected
@@ -1863,7 +1863,7 @@ module.exports = GetOperator;
 
 /***/ }),
 
-/***/ 202:
+/***/ 552:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -1876,7 +1876,7 @@ module.exports = GetOperator;
  */
 const {
   Operand
-} = __webpack_require__(18);
+} = __webpack_require__(62);
 /**
  * @lends ObjectContructorCall
  * @protected
@@ -1946,7 +1946,7 @@ module.exports = ObjectContructorCall;
 
 /***/ }),
 
-/***/ 335:
+/***/ 51:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -1957,7 +1957,7 @@ module.exports = ObjectContructorCall;
  */
 const {
   Operand
-} = __webpack_require__(18);
+} = __webpack_require__(62);
 /**
  * @lends TernarOperator
  * @protected
@@ -2020,7 +2020,7 @@ module.exports = TernarOperator;
 
 /***/ }),
 
-/***/ 342:
+/***/ 350:
 /***/ ((module) => {
 
 /**
@@ -2088,7 +2088,7 @@ module.exports = IfStatement;
 
 /***/ }),
 
-/***/ 625:
+/***/ 862:
 /***/ ((module) => {
 
 /**
@@ -2154,7 +2154,7 @@ module.exports = OutOperator;
 
 /***/ }),
 
-/***/ 902:
+/***/ 355:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -2163,13 +2163,13 @@ module.exports = OutOperator;
  * @author Astecom
  * @license MIT
  */
-const ExpressionGroup = __webpack_require__(888),
+const ExpressionGroup = __webpack_require__(606),
       {
   TheFieldMustBeAnArrayInstanceExceprion,
   GetFieldOfNullException
-} = __webpack_require__(880),
-      PoonyaArray = __webpack_require__(609),
-      PoonyaObject = __webpack_require__(741);
+} = __webpack_require__(707),
+      PoonyaArray = __webpack_require__(358),
+      PoonyaObject = __webpack_require__(940);
 /**
  * @lends PushOperator
  * @protected
@@ -2242,7 +2242,7 @@ module.exports = PushOperator;
 
 /***/ }),
 
-/***/ 567:
+/***/ 511:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -2253,8 +2253,8 @@ module.exports = PushOperator;
  */
 const {
   TheFieldMustBeNumberException
-} = __webpack_require__(880),
-      PoonyaNumber = __webpack_require__(418);
+} = __webpack_require__(707),
+      PoonyaNumber = __webpack_require__(773);
 /**
  * @lends RepeatStatement;
  * @protected
@@ -2328,7 +2328,7 @@ module.exports = RepeatStatement;
 
 /***/ }),
 
-/***/ 447:
+/***/ 956:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -2337,14 +2337,14 @@ module.exports = RepeatStatement;
  * @author Astecom
  * @license MIT
  */
-const ExpressionGroup = __webpack_require__(888),
+const ExpressionGroup = __webpack_require__(606),
       {
   iPoonyaObject
-} = __webpack_require__(540),
+} = __webpack_require__(779),
       {
   TheFieldNotHasDeclaredExceprion,
   GetFieldOfNullException
-} = __webpack_require__(880);
+} = __webpack_require__(707);
 /**
  * @lends ResetOperator
  * @protected
@@ -2422,7 +2422,7 @@ module.exports = ResetOperator;
 
 /***/ }),
 
-/***/ 967:
+/***/ 113:
 /***/ ((module) => {
 
 /**
@@ -2499,7 +2499,7 @@ module.exports = SequenceGroup;
 
 /***/ }),
 
-/***/ 946:
+/***/ 998:
 /***/ ((module) => {
 
 /**
@@ -2572,7 +2572,7 @@ module.exports = SequenceMainGroup;
 
 /***/ }),
 
-/***/ 782:
+/***/ 375:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -2583,7 +2583,7 @@ module.exports = SequenceMainGroup;
  */
 const {
   TheFieldAlreadyHasBeenDeclaredException
-} = __webpack_require__(880);
+} = __webpack_require__(707);
 /**
  * @lends SetOperator
  * @protected
@@ -2646,7 +2646,7 @@ module.exports = SetOperator;
 
 /***/ }),
 
-/***/ 627:
+/***/ 114:
 /***/ ((module) => {
 
 /**
@@ -2712,7 +2712,7 @@ module.exports = WhileStatement;
 
 /***/ }),
 
-/***/ 880:
+/***/ 707:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -2723,7 +2723,7 @@ module.exports = WhileStatement;
  */
 const {
   SERVICE
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   dirname
 } = __webpack_require__(622);
@@ -2891,13 +2891,13 @@ class LinkerIOError extends IOError {
  * Ошибка выполнения нативной функции
  *
  * @memberof Poonya.Exceptions
- * @name NativeFunctionExcecutionError
+ * @name NativeFunctionExecutionError
  * @class
  * @protected
  */
 
 
-class NativeFunctionExcecutionError extends PoonyaException {
+class NativeFunctionExecutionError extends PoonyaException {
   constructor(name, stack) {
     const exp = /^\s*at\s(?:new\s)?([aA-zZ.аА-яЯё]+)\s\((.*)\)$/;
     stack = stack.split('\n');
@@ -3302,7 +3302,7 @@ module.exports.IsNotAConstructorException = IsNotAConstructorException;
 module.exports.ParserEmtyArgumentException = ParserEmtyArgumentException;
 module.exports.LinkerPathNotGiveExceptrion = LinkerPathNotGiveExceptrion;
 module.exports.CriticalParserErrorException = CriticalParserErrorException;
-module.exports.NativeFunctionExcecutionError = NativeFunctionExcecutionError;
+module.exports.NativeFunctionExecutionError = NativeFunctionExecutionError;
 module.exports.BadKeyProtectedFieldException = BadKeyProtectedFieldException;
 module.exports.TheFieldMustBeNumberException = TheFieldMustBeNumberException;
 module.exports.NativeFunctionReturnValueError = NativeFunctionReturnValueError;
@@ -3323,7 +3323,7 @@ module.exports.SegmentationFaultMaximumSegmentsForBlockException = SegmentationF
 
 /***/ }),
 
-/***/ 540:
+/***/ 779:
 /***/ ((module) => {
 
 /**
@@ -3346,7 +3346,7 @@ module.exports.iPoonyaPrototype = iPoonyaPrototype;
 
 /***/ }),
 
-/***/ 718:
+/***/ 635:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -3506,7 +3506,7 @@ module.exports.IS = IS;
 
 /***/ }),
 
-/***/ 643:
+/***/ 392:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -3518,30 +3518,30 @@ module.exports.IS = IS;
 const {
   GetFieldOfNullException,
   IsNotAConstructorException
-} = __webpack_require__(880),
+} = __webpack_require__(707),
       {
   GET,
   SERVICE,
   IS
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   Cast
-} = __webpack_require__(0),
+} = __webpack_require__(270),
       {
   iContext,
   iPoonyaPrototype
-} = __webpack_require__(540),
+} = __webpack_require__(779),
       {
   PoonyaStaticLibrary
-} = __webpack_require__(701),
-      ExpressionGroup = __webpack_require__(888),
-      PoonyaObject = __webpack_require__(741),
-      PoonyaArray = __webpack_require__(609),
-      PoonyaInteger = __webpack_require__(526),
-      PoonyaNumber = __webpack_require__(418),
-      PoonyaString = __webpack_require__(419),
-      PoonyaBoolean = __webpack_require__(481),
-      PoonyaNull = __webpack_require__(711);
+} = __webpack_require__(239),
+      ExpressionGroup = __webpack_require__(606),
+      PoonyaObject = __webpack_require__(940),
+      PoonyaArray = __webpack_require__(358),
+      PoonyaInteger = __webpack_require__(159),
+      PoonyaNumber = __webpack_require__(773),
+      PoonyaString = __webpack_require__(718),
+      PoonyaBoolean = __webpack_require__(221),
+      PoonyaNull = __webpack_require__(486);
 /**
  * @lends Heap
  * @class
@@ -3968,7 +3968,7 @@ module.exports.Heap = Heap;
 
 /***/ }),
 
-/***/ 701:
+/***/ 239:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -3990,13 +3990,13 @@ const Module = __webpack_require__(282),
       {
   NAMESPACE,
   SERVICE
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   IOError
-} = __webpack_require__(880),
-      PoonyaObject = __webpack_require__(741),
-      NativeFunction = __webpack_require__(240),
-      PoonyaPrototype = __webpack_require__(494); // Пространство модулей в глобальном контексте
+} = __webpack_require__(707),
+      PoonyaObject = __webpack_require__(940),
+      NativeFunction = __webpack_require__(492),
+      PoonyaPrototype = __webpack_require__(406); // Пространство модулей в глобальном контексте
 
 
 const modules = Symbol.for('Modules');
@@ -4203,7 +4203,7 @@ class PoonyaModule extends Module {
 
   require(id) {
     if (id === 'poonya') {
-      return __webpack_require__(802);
+      return __webpack_require__(294);
     } else {
       return super.require(id);
     }
@@ -4256,7 +4256,7 @@ module.exports.PoonyaStaticLibrary = PoonyaStaticLibrary;
 
 /***/ }),
 
-/***/ 173:
+/***/ 60:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -4267,7 +4267,10 @@ module.exports.PoonyaStaticLibrary = PoonyaStaticLibrary;
  */
 const {
   CHARTYPE
-} = __webpack_require__(718);
+} = __webpack_require__(635),
+      {
+  fromBytes
+} = __webpack_require__(270);
 /**
  * @lends LexerEntry
  * @class
@@ -4288,7 +4291,7 @@ class LexerEntry {
    */
   constructor(type, data, position, s_separator) {
     this.type = type;
-    this.data = String.fromCharCode.apply(null, data);
+    this.data = fromBytes(data);
     this.position = position - data.length > 0 ? position - data.length + 1 : 0;
     this.leng = data.length;
     this.string_separator = s_separator != null ? String.fromCharCode(s_separator) : null;
@@ -4345,7 +4348,7 @@ module.exports = LexerEntry;
 
 /***/ }),
 
-/***/ 324:
+/***/ 513:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -4356,8 +4359,8 @@ module.exports = LexerEntry;
  */
 const {
   CHARTYPE
-} = __webpack_require__(718),
-      LexerEntry = __webpack_require__(173);
+} = __webpack_require__(635),
+      LexerEntry = __webpack_require__(60);
 /**
  * Лексер, который производит лексический разбор подаваемого текста в буффере
  *
@@ -4370,7 +4373,10 @@ const {
 
 
 function lexer(input, allow_spaces = true) {
-  const Export = new Array();
+  if (!Array.isArray(input)) {
+    throw TypeError('Only array-like data can be input to the lexer');
+  }
+
   let buff = new Array(),
       is_string = false,
       is_comment = false,
@@ -4378,15 +4384,25 @@ function lexer(input, allow_spaces = true) {
       string_entry = null,
       cur = null,
       last = null;
+  const Export = new Array();
 
-  if (Array.isArray(input)) {
-    // Преобразуем входные данные в обычный массив, если на вход были поданы массив подобные данные
-    input = Array.from(input);
-  } else {
-    throw TypeError('Only array-like data can be input to the lexer');
-  }
+  const clear = () => {
+    buff.splice(0, buff.length);
+  };
 
-  for (let i = 0, leng = input.length; i < leng; i++) {
+  const append = index => {
+    buff.push(input[index - 1], input[index]);
+  };
+
+  const firstIs = (...is) => {
+    return is.includes(buff[1]);
+  };
+
+  const lastIs = (...is) => {
+    return is.includes(buff[buff.length - 1]);
+  };
+
+  for (let i = 1, leng = input.length; i < leng; i += 2) {
     switch (input[i]) {
       case 32:
       case 9:
@@ -4450,38 +4466,35 @@ function lexer(input, allow_spaces = true) {
     }
 
     if (cur === CHARTYPE.NEWLINE && last === CHARTYPE.NEWLINE || cur === CHARTYPE.POINT && last === CHARTYPE.NUMBER || cur === CHARTYPE.NUMBER && last === CHARTYPE.WORD) {
-      buff.push(input[i]);
+      append(i);
       continue;
     } // Префиксы чисел
 
 
     if (cur === CHARTYPE.NUMBER && last === CHARTYPE.OPERATOR) {
-      if (buff[0] === 43 || buff[0] === 45) {
+      if (firstIs(43, 45)) {
         last = cur;
-        buff.push(input[i]);
+        append(i);
         continue;
       }
     } // Если предыдущий и текущий тип символов это операторы
 
 
     if (cur === CHARTYPE.OPERATOR && last === CHARTYPE.OPERATOR) {
-      if (buff.length === 1 && ( // В буффере не больше одного символа
-      buff[0] === 33 || // пердыдущий символ был '!'
-      buff[0] === 60 || // пердыдущий символ был '<'
-      buff[0] === 62) && // пердыдущий символ был '>'
-      input[i] === 61 // текущий символ '='
+      if (buff.length === 1 && // В буффере не больше одного символа
+      firstIs(33, 60, 62) && input[i] === 61 // текущий символ '='
       ) {
-          buff.push(input[i]);
+          append(i);
           if (allow_spaces || last !== CHARTYPE.SPACE) Export.push(new LexerEntry(last, buff, i, string_entry));
           string_entry = null;
-          buff.splice(0, buff.length);
+          clear(i);
           last = undefined;
           if (i + 1 === leng) return Export;
           continue;
         }
 
       if (buff.length === 1 && // В буффере не больше одного символа
-      buff[0] === 47 // Предыдущий символ это /
+      firstIs(47) // Предыдущий символ это /
       ) {
           if (input[i] === 47 // Текущий символ это /
           ) {
@@ -4501,7 +4514,7 @@ function lexer(input, allow_spaces = true) {
       if ((cur !== last || last === CHARTYPE.STRING || last === CHARTYPE.OPERATOR) && last != null) {
         if (allow_spaces || last !== CHARTYPE.SPACE) Export.push(new LexerEntry(last, buff, i, string_entry));
         string_entry = null;
-        buff.splice(0, buff.length);
+        clear(i);
       }
 
       if (cur === CHARTYPE.STRING) {
@@ -4511,28 +4524,28 @@ function lexer(input, allow_spaces = true) {
         continue;
       }
 
-      buff.push(input[i]);
+      append(i);
       last = cur;
     } else if (is_comment) {
       if (is_multiline) {
         if (input[i] === 47 && // Текущий символ это /
-        buff[buff.length - 1] === 60 // Предыдущий символ это <
+        lastIs(60) // Предыдущий символ это <
         ) {
             is_comment = false;
             last = undefined;
-            buff.splice(0, buff.length);
+            clear(i);
             continue;
           }
       } else {
         if (cur === CHARTYPE.NEWLINE) {
           is_comment = false;
           last = CHARTYPE.NEWLINE;
-          buff.splice(0, buff.length);
+          clear(i);
           continue;
         }
       }
 
-      buff.push(input[i]);
+      append(i);
     } else {
       if (cur === CHARTYPE.STRING && input[i] === string_entry) {
         is_string = false;
@@ -4540,7 +4553,7 @@ function lexer(input, allow_spaces = true) {
         continue;
       }
 
-      buff.push(input[i]);
+      append(i);
       last = cur;
     }
   }
@@ -4553,7 +4566,7 @@ module.exports = lexer;
 
 /***/ }),
 
-/***/ 805:
+/***/ 144:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -4571,14 +4584,14 @@ const {
 } = __webpack_require__(622),
       {
   maybeEquals
-} = __webpack_require__(0),
+} = __webpack_require__(270),
       {
   CHARTYPE
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   IOError
-} = __webpack_require__(880),
-      lexer = __webpack_require__(324);
+} = __webpack_require__(707),
+      lexer = __webpack_require__(513);
 /**
  * Препроцессораня функция, линкует файлы.
  *
@@ -4625,7 +4638,7 @@ module.exports = linker;
 
 /***/ }),
 
-/***/ 585:
+/***/ 909:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -4651,30 +4664,30 @@ const {
   CriticalParserErrorException,
   CriticalParserErrorNoRawDataTransmittedException,
   CriticalParserErrorUnexpectedEndOfExpression
-} = __webpack_require__(880),
+} = __webpack_require__(707),
       {
   maybeEquals,
   countKeys
-} = __webpack_require__(0),
+} = __webpack_require__(270),
       {
   CHARTYPE,
   SERVICE
-} = __webpack_require__(718),
-      FunctionCall = __webpack_require__(408),
-      ObjectContructorCall = __webpack_require__(202),
-      TernarOperator = __webpack_require__(335),
-      ExpressionGroup = __webpack_require__(888),
-      GetOperator = __webpack_require__(338),
-      IfStatement = __webpack_require__(342),
-      SequenceGroup = __webpack_require__(967),
-      OutOperator = __webpack_require__(625),
-      WhileStatement = __webpack_require__(627),
-      RepeatStatement = __webpack_require__(567),
-      SetOperator = __webpack_require__(782),
-      ResetOperator = __webpack_require__(447),
-      PushOperator = __webpack_require__(902),
-      SequenceMainGroup = __webpack_require__(946),
-      linker = __webpack_require__(805);
+} = __webpack_require__(635),
+      FunctionCall = __webpack_require__(584),
+      ObjectContructorCall = __webpack_require__(552),
+      TernarOperator = __webpack_require__(51),
+      ExpressionGroup = __webpack_require__(606),
+      GetOperator = __webpack_require__(46),
+      IfStatement = __webpack_require__(350),
+      SequenceGroup = __webpack_require__(113),
+      OutOperator = __webpack_require__(862),
+      WhileStatement = __webpack_require__(114),
+      RepeatStatement = __webpack_require__(511),
+      SetOperator = __webpack_require__(375),
+      ResetOperator = __webpack_require__(956),
+      PushOperator = __webpack_require__(355),
+      SequenceMainGroup = __webpack_require__(998),
+      linker = __webpack_require__(144);
 /**
  * Парсит вызов функции, возвращает объект вызова функции, и позицию с которой можно продолжить прасинг
  *
@@ -4729,7 +4742,6 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
     switch (true) {
       case data[i] === undefined || expected === 3 && !data[i].equals(CHARTYPE.OPERATOR, ',') || data[i].equals(CHARTYPE.OPERATOR, [';', ')']):
         if (entries[entries.length - 1].length !== 2) throw_error(data[i].position, new ParserEmtyArgumentException());
-        console.log(data[i], i, data[i - 1]);
         return {
           data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
           jump: i - start
@@ -5484,7 +5496,7 @@ module.exports.parseExpression = parseExpression;
 
 /***/ }),
 
-/***/ 358:
+/***/ 174:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
@@ -5557,6 +5569,35 @@ module.exports.parseExpression = parseExpression;
  */
 // This file is compiled specifically for the node runtime, if you need a browser version use poonya.browser.bundle.js
 
+/*LIQUID*/
+
+if (!window.setImmediate) window.setImmediate = function () {
+  var head = {},
+      tail = head;
+  var ID = Math.random();
+
+  function onmessage(e) {
+    if (e.data != ID) return;
+    head = head.next;
+    var func = head.func;
+    delete head.func;
+    func();
+  }
+
+  if (window.addEventListener) {
+    window.addEventListener('message', onmessage);
+  } else {
+    window.attachEvent('onmessage', onmessage);
+  }
+
+  return function (func) {
+    tail = tail.next = {
+      func: func
+    };
+    window.postMessage(ID, "*");
+  };
+}();
+/*LIQUID-END*/
 
 const {
   EventEmitter
@@ -5570,32 +5611,32 @@ const {
 } = __webpack_require__(622),
       {
   PoonyaException
-} = __webpack_require__(880),
+} = __webpack_require__(707),
       {
   Import,
   ImportDir,
   ImportFile
-} = __webpack_require__(701),
+} = __webpack_require__(239),
       {
   Context,
   Heap
-} = __webpack_require__(643),
+} = __webpack_require__(392),
       {
   parser,
   parseExpression,
   parserMP
-} = __webpack_require__(585),
+} = __webpack_require__(909),
       {
   SERVICE
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   toFixed,
   toBytes
-} = __webpack_require__(0),
-      lexer = __webpack_require__(324);
+} = __webpack_require__(270),
+      lexer = __webpack_require__(513);
 
 const RESULT = Symbol('RESULT'),
-      INIT = Symbol('Init');
+      INIT = Symbol('INIT');
 /**
  * @lends PoonyaOutputStream
  * @class
@@ -5915,11 +5956,11 @@ class MessagePattern extends CodeEmitter {
 
 }
 /**
- * @lends ExcecutionPattern;
+ * @lends ExecutionPattern;
  */
 
 
-class ExcecutionPattern extends CodeEmitter {
+class ExecutionPattern extends CodeEmitter {
   /**
    * Шаблон кода, все что подается сюда, будет распознаваться как код шаблонизатора: <br> <br>
    * <code>
@@ -5947,7 +5988,7 @@ class ExcecutionPattern extends CodeEmitter {
    * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
    *
    * @memberof Poonya
-   * @constructs ExcecutionPattern
+   * @constructs ExecutionPattern
    * @protected
    */
   constructor(input, import_s, logger = console) {
@@ -6047,13 +6088,13 @@ class ExpressionPattern extends CodeEmitter {
 module.exports.CodeEmitter = CodeEmitter;
 module.exports.MessagePattern = MessagePattern;
 module.exports.ExpressionPattern = ExpressionPattern;
-module.exports.ExcecutionPattern = ExcecutionPattern;
+module.exports.ExecutionPattern = ExecutionPattern;
 module.exports.ImportFile = ImportFile.bind(null, module.parent != null ? module.parent.path : module.path);
-module.exports.ImportDir = ImportDir.bind(null, module.parent != null ? module.parent.path : module.path);
+module.exports.ImportDir = ImportDir.bind(null, module.parent != null ? module.parent.path : module.path); // #!endif
 
 /***/ }),
 
-/***/ 802:
+/***/ 294:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -6062,14 +6103,14 @@ module.exports.ImportDir = ImportDir.bind(null, module.parent != null ? module.p
  * @license MIT
  * @author Astecom
  */
-module.exports.FIELDFLAGS = __webpack_require__(718).FIELDFLAGS;
-module.exports.Exceptions = __webpack_require__(880);
-module.exports.PoonyaStaticLibrary = __webpack_require__(701).PoonyaStaticLibrary;
-module.exports.PoonyaPrototype = __webpack_require__(494);
+module.exports.FIELDFLAGS = __webpack_require__(635).FIELDFLAGS;
+module.exports.Exceptions = __webpack_require__(707);
+module.exports.PoonyaStaticLibrary = __webpack_require__(239).PoonyaStaticLibrary;
+module.exports.PoonyaPrototype = __webpack_require__(406);
 
 /***/ }),
 
-/***/ 0:
+/***/ 270:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -6080,15 +6121,15 @@ module.exports.PoonyaPrototype = __webpack_require__(494);
  */
 const {
   SERVICE
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   Operand
-} = __webpack_require__(18),
+} = __webpack_require__(62),
       {
   iPoonyaObject,
   iPoonyaPrototype
-} = __webpack_require__(540),
-      NativeFunction = __webpack_require__(240);
+} = __webpack_require__(779),
+      NativeFunction = __webpack_require__(492);
 /**
  * Фукция которая преобразует нативное значение в значение Poonya
  *
@@ -6216,7 +6257,8 @@ function toFixed(d, l) {
 /**
  * Преобразует строку в массив байтов
  *
- * @param {String} s Строка для преобразования
+ * @param {String} input Строка для преобразования
+ * @returns {Array<Number>} массив с байтами
  * @memberof Poonya.Utils
  * @function toBytes
  * @protected
@@ -6224,12 +6266,37 @@ function toFixed(d, l) {
  */
 
 
-function toBytes(s) {
-  return s.split('').map(e => e.charCodeAt());
+function toBytes(input) {
+  let bytes = new Array();
+
+  for (let i = 0, char, leng = input.length; i < leng; i++) bytes.push((char = input.charCodeAt(i)) >>> 8, char & 0xFF);
+
+  console.log(bytes);
+  return bytes;
+}
+/**
+ * Преобразует массив байтов в строку
+ *
+ * @param {Array<Number>} input байты для преобразования
+ * @returns {String} преобразованная строка
+ * @memberof Poonya.Utils
+ * @function toBytes
+ * @protected
+ * @static
+ */
+
+
+function fromBytes(input) {
+  let string = '';
+
+  for (let i = 0, leng = input.length; i < leng; i += 2) string += String.fromCharCode(input[i] << 8 | input[i + 1]);
+
+  return string;
 }
 
 module.exports.maybeEquals = maybeEquals;
 module.exports.countKeys = countKeys;
+module.exports.fromBytes = fromBytes;
 module.exports.toFixed = toFixed;
 module.exports.toBytes = toBytes;
 module.exports.Cast = Cast;
@@ -6310,6 +6377,6 @@ module.exports = require("path");;
 /******/ 	// module exports must be returned from runtime so entry inlining is disabled
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(358);
+/******/ 	return __webpack_require__(174);
 /******/ })()
 ;

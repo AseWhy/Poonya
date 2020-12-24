@@ -2,13 +2,13 @@ var poonya;poonya =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 363:
+/***/ 449:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
 const {
   PoonyaStaticLibrary,
   FIELDFLAGS
-} = __webpack_require__(802);
+} = __webpack_require__(294);
 
 const QUOTE_EXP = /"/g;
 const TAG_EXP = /\<([aA-zZ0-9]+)/;
@@ -197,7 +197,7 @@ new class DefaultHtmlStaticLibrary extends PoonyaStaticLibrary {
 
 /***/ }),
 
-/***/ 49:
+/***/ 548:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
 const {
@@ -205,7 +205,7 @@ const {
   PoonyaPrototype,
   FIELDFLAGS,
   Exceptions
-} = __webpack_require__(802),
+} = __webpack_require__(294),
       date = new Date();
 
 new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
@@ -522,7 +522,453 @@ new class DefaultStaticLibrary extends PoonyaStaticLibrary {
 
 /***/ }),
 
-/***/ 18:
+/***/ 245:
+/***/ ((module) => {
+
+"use strict";
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+var R = typeof Reflect === 'object' ? Reflect : null;
+var ReflectApply = R && typeof R.apply === 'function' ? R.apply : function ReflectApply(target, receiver, args) {
+  return Function.prototype.apply.call(target, receiver, args);
+};
+var ReflectOwnKeys;
+
+if (R && typeof R.ownKeys === 'function') {
+  ReflectOwnKeys = R.ownKeys;
+} else if (Object.getOwnPropertySymbols) {
+  ReflectOwnKeys = function ReflectOwnKeys(target) {
+    return Object.getOwnPropertyNames(target).concat(Object.getOwnPropertySymbols(target));
+  };
+} else {
+  ReflectOwnKeys = function ReflectOwnKeys(target) {
+    return Object.getOwnPropertyNames(target);
+  };
+}
+
+function ProcessEmitWarning(warning) {
+  if (console && console.warn) console.warn(warning);
+}
+
+var NumberIsNaN = Number.isNaN || function NumberIsNaN(value) {
+  return value !== value;
+};
+
+function EventEmitter() {
+  EventEmitter.init.call(this);
+}
+
+module.exports = EventEmitter;
+module.exports.once = once; // Backwards-compat with node 0.10.x
+
+EventEmitter.EventEmitter = EventEmitter;
+EventEmitter.prototype._events = undefined;
+EventEmitter.prototype._eventsCount = 0;
+EventEmitter.prototype._maxListeners = undefined; // By default EventEmitters will print a warning if more than 10 listeners are
+// added to it. This is a useful default which helps finding memory leaks.
+
+var defaultMaxListeners = 10;
+
+function checkListener(listener) {
+  if (typeof listener !== 'function') {
+    throw new TypeError('The "listener" argument must be of type Function. Received type ' + typeof listener);
+  }
+}
+
+Object.defineProperty(EventEmitter, 'defaultMaxListeners', {
+  enumerable: true,
+  get: function () {
+    return defaultMaxListeners;
+  },
+  set: function (arg) {
+    if (typeof arg !== 'number' || arg < 0 || NumberIsNaN(arg)) {
+      throw new RangeError('The value of "defaultMaxListeners" is out of range. It must be a non-negative number. Received ' + arg + '.');
+    }
+
+    defaultMaxListeners = arg;
+  }
+});
+
+EventEmitter.init = function () {
+  if (this._events === undefined || this._events === Object.getPrototypeOf(this)._events) {
+    this._events = Object.create(null);
+    this._eventsCount = 0;
+  }
+
+  this._maxListeners = this._maxListeners || undefined;
+}; // Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+
+
+EventEmitter.prototype.setMaxListeners = function setMaxListeners(n) {
+  if (typeof n !== 'number' || n < 0 || NumberIsNaN(n)) {
+    throw new RangeError('The value of "n" is out of range. It must be a non-negative number. Received ' + n + '.');
+  }
+
+  this._maxListeners = n;
+  return this;
+};
+
+function _getMaxListeners(that) {
+  if (that._maxListeners === undefined) return EventEmitter.defaultMaxListeners;
+  return that._maxListeners;
+}
+
+EventEmitter.prototype.getMaxListeners = function getMaxListeners() {
+  return _getMaxListeners(this);
+};
+
+EventEmitter.prototype.emit = function emit(type) {
+  var args = [];
+
+  for (var i = 1; i < arguments.length; i++) args.push(arguments[i]);
+
+  var doError = type === 'error';
+  var events = this._events;
+  if (events !== undefined) doError = doError && events.error === undefined;else if (!doError) return false; // If there is no 'error' event listener then throw.
+
+  if (doError) {
+    var er;
+    if (args.length > 0) er = args[0];
+
+    if (er instanceof Error) {
+      // Note: The comments on the `throw` lines are intentional, they show
+      // up in Node's output if this results in an unhandled exception.
+      throw er; // Unhandled 'error' event
+    } // At least give some kind of context to the user
+
+
+    var err = new Error('Unhandled error.' + (er ? ' (' + er.message + ')' : ''));
+    err.context = er;
+    throw err; // Unhandled 'error' event
+  }
+
+  var handler = events[type];
+  if (handler === undefined) return false;
+
+  if (typeof handler === 'function') {
+    ReflectApply(handler, this, args);
+  } else {
+    var len = handler.length;
+    var listeners = arrayClone(handler, len);
+
+    for (var i = 0; i < len; ++i) ReflectApply(listeners[i], this, args);
+  }
+
+  return true;
+};
+
+function _addListener(target, type, listener, prepend) {
+  var m;
+  var events;
+  var existing;
+  checkListener(listener);
+  events = target._events;
+
+  if (events === undefined) {
+    events = target._events = Object.create(null);
+    target._eventsCount = 0;
+  } else {
+    // To avoid recursion in the case that type === "newListener"! Before
+    // adding it to the listeners, first emit "newListener".
+    if (events.newListener !== undefined) {
+      target.emit('newListener', type, listener.listener ? listener.listener : listener); // Re-assign `events` because a newListener handler could have caused the
+      // this._events to be assigned to a new object
+
+      events = target._events;
+    }
+
+    existing = events[type];
+  }
+
+  if (existing === undefined) {
+    // Optimize the case of one listener. Don't need the extra array object.
+    existing = events[type] = listener;
+    ++target._eventsCount;
+  } else {
+    if (typeof existing === 'function') {
+      // Adding the second element, need to change to array.
+      existing = events[type] = prepend ? [listener, existing] : [existing, listener]; // If we've already got an array, just append.
+    } else if (prepend) {
+      existing.unshift(listener);
+    } else {
+      existing.push(listener);
+    } // Check for listener leak
+
+
+    m = _getMaxListeners(target);
+
+    if (m > 0 && existing.length > m && !existing.warned) {
+      existing.warned = true; // No error code for this since it is a Warning
+      // eslint-disable-next-line no-restricted-syntax
+
+      var w = new Error('Possible EventEmitter memory leak detected. ' + existing.length + ' ' + String(type) + ' listeners ' + 'added. Use emitter.setMaxListeners() to ' + 'increase limit');
+      w.name = 'MaxListenersExceededWarning';
+      w.emitter = target;
+      w.type = type;
+      w.count = existing.length;
+      ProcessEmitWarning(w);
+    }
+  }
+
+  return target;
+}
+
+EventEmitter.prototype.addListener = function addListener(type, listener) {
+  return _addListener(this, type, listener, false);
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.prependListener = function prependListener(type, listener) {
+  return _addListener(this, type, listener, true);
+};
+
+function onceWrapper() {
+  if (!this.fired) {
+    this.target.removeListener(this.type, this.wrapFn);
+    this.fired = true;
+    if (arguments.length === 0) return this.listener.call(this.target);
+    return this.listener.apply(this.target, arguments);
+  }
+}
+
+function _onceWrap(target, type, listener) {
+  var state = {
+    fired: false,
+    wrapFn: undefined,
+    target: target,
+    type: type,
+    listener: listener
+  };
+  var wrapped = onceWrapper.bind(state);
+  wrapped.listener = listener;
+  state.wrapFn = wrapped;
+  return wrapped;
+}
+
+EventEmitter.prototype.once = function once(type, listener) {
+  checkListener(listener);
+  this.on(type, _onceWrap(this, type, listener));
+  return this;
+};
+
+EventEmitter.prototype.prependOnceListener = function prependOnceListener(type, listener) {
+  checkListener(listener);
+  this.prependListener(type, _onceWrap(this, type, listener));
+  return this;
+}; // Emits a 'removeListener' event if and only if the listener was removed.
+
+
+EventEmitter.prototype.removeListener = function removeListener(type, listener) {
+  var list, events, position, i, originalListener;
+  checkListener(listener);
+  events = this._events;
+  if (events === undefined) return this;
+  list = events[type];
+  if (list === undefined) return this;
+
+  if (list === listener || list.listener === listener) {
+    if (--this._eventsCount === 0) this._events = Object.create(null);else {
+      delete events[type];
+      if (events.removeListener) this.emit('removeListener', type, list.listener || listener);
+    }
+  } else if (typeof list !== 'function') {
+    position = -1;
+
+    for (i = list.length - 1; i >= 0; i--) {
+      if (list[i] === listener || list[i].listener === listener) {
+        originalListener = list[i].listener;
+        position = i;
+        break;
+      }
+    }
+
+    if (position < 0) return this;
+    if (position === 0) list.shift();else {
+      spliceOne(list, position);
+    }
+    if (list.length === 1) events[type] = list[0];
+    if (events.removeListener !== undefined) this.emit('removeListener', type, originalListener || listener);
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+
+EventEmitter.prototype.removeAllListeners = function removeAllListeners(type) {
+  var listeners, events, i;
+  events = this._events;
+  if (events === undefined) return this; // not listening for removeListener, no need to emit
+
+  if (events.removeListener === undefined) {
+    if (arguments.length === 0) {
+      this._events = Object.create(null);
+      this._eventsCount = 0;
+    } else if (events[type] !== undefined) {
+      if (--this._eventsCount === 0) this._events = Object.create(null);else delete events[type];
+    }
+
+    return this;
+  } // emit removeListener for all listeners on all events
+
+
+  if (arguments.length === 0) {
+    var keys = Object.keys(events);
+    var key;
+
+    for (i = 0; i < keys.length; ++i) {
+      key = keys[i];
+      if (key === 'removeListener') continue;
+      this.removeAllListeners(key);
+    }
+
+    this.removeAllListeners('removeListener');
+    this._events = Object.create(null);
+    this._eventsCount = 0;
+    return this;
+  }
+
+  listeners = events[type];
+
+  if (typeof listeners === 'function') {
+    this.removeListener(type, listeners);
+  } else if (listeners !== undefined) {
+    // LIFO order
+    for (i = listeners.length - 1; i >= 0; i--) {
+      this.removeListener(type, listeners[i]);
+    }
+  }
+
+  return this;
+};
+
+function _listeners(target, type, unwrap) {
+  var events = target._events;
+  if (events === undefined) return [];
+  var evlistener = events[type];
+  if (evlistener === undefined) return [];
+  if (typeof evlistener === 'function') return unwrap ? [evlistener.listener || evlistener] : [evlistener];
+  return unwrap ? unwrapListeners(evlistener) : arrayClone(evlistener, evlistener.length);
+}
+
+EventEmitter.prototype.listeners = function listeners(type) {
+  return _listeners(this, type, true);
+};
+
+EventEmitter.prototype.rawListeners = function rawListeners(type) {
+  return _listeners(this, type, false);
+};
+
+EventEmitter.listenerCount = function (emitter, type) {
+  if (typeof emitter.listenerCount === 'function') {
+    return emitter.listenerCount(type);
+  } else {
+    return listenerCount.call(emitter, type);
+  }
+};
+
+EventEmitter.prototype.listenerCount = listenerCount;
+
+function listenerCount(type) {
+  var events = this._events;
+
+  if (events !== undefined) {
+    var evlistener = events[type];
+
+    if (typeof evlistener === 'function') {
+      return 1;
+    } else if (evlistener !== undefined) {
+      return evlistener.length;
+    }
+  }
+
+  return 0;
+}
+
+EventEmitter.prototype.eventNames = function eventNames() {
+  return this._eventsCount > 0 ? ReflectOwnKeys(this._events) : [];
+};
+
+function arrayClone(arr, n) {
+  var copy = new Array(n);
+
+  for (var i = 0; i < n; ++i) copy[i] = arr[i];
+
+  return copy;
+}
+
+function spliceOne(list, index) {
+  for (; index + 1 < list.length; index++) list[index] = list[index + 1];
+
+  list.pop();
+}
+
+function unwrapListeners(arr) {
+  var ret = new Array(arr.length);
+
+  for (var i = 0; i < ret.length; ++i) {
+    ret[i] = arr[i].listener || arr[i];
+  }
+
+  return ret;
+}
+
+function once(emitter, name) {
+  return new Promise(function (resolve, reject) {
+    function eventListener() {
+      if (errorListener !== undefined) {
+        emitter.removeListener('error', errorListener);
+      }
+
+      resolve([].slice.call(arguments));
+    }
+
+    ;
+    var errorListener; // Adding an error listener is not optional because
+    // if an error is thrown on an event emitter we cannot
+    // guarantee that the actual event we are waiting will
+    // be fired. The result could be a silent way to create
+    // memory or file descriptor leaks, which is something
+    // we should avoid.
+
+    if (name !== 'error') {
+      errorListener = function errorListener(err) {
+        emitter.removeListener(name, eventListener);
+        reject(err);
+      };
+
+      emitter.once('error', errorListener);
+    }
+
+    emitter.once(name, eventListener);
+  });
+}
+
+/***/ }),
+
+/***/ 62:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -533,7 +979,7 @@ new class DefaultStaticLibrary extends PoonyaStaticLibrary {
  */
 const {
   OPERATOR
-} = __webpack_require__(718);
+} = __webpack_require__(635);
 /**
  * @lends ParserData
  * @class
@@ -676,7 +1122,7 @@ module.exports.ParserData = ParserData;
 
 /***/ }),
 
-/***/ 240:
+/***/ 492:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -687,17 +1133,17 @@ module.exports.ParserData = ParserData;
  */
 const {
   Operand
-} = __webpack_require__(18),
+} = __webpack_require__(62),
       {
   SERVICE
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
-  NativeFunctionExcecutionError
-} = __webpack_require__(880),
+  NativeFunctionExecutionError
+} = __webpack_require__(707),
       {
   iPoonyaObject,
   iPoonyaPrototype
-} = __webpack_require__(540);
+} = __webpack_require__(779);
 /**
  * @lends NativeFunction
  * @class
@@ -748,7 +1194,7 @@ class NativeFunction {
         position: call_pos
       }, ...args_f);
     } catch (e) {
-      throw_error(call_pos, new NativeFunctionExcecutionError(this.target.name, e.stack));
+      throw_error(call_pos, new NativeFunctionExecutionError(this.target.name, e.stack));
     }
 
     switch (typeof data) {
@@ -795,7 +1241,7 @@ module.exports = NativeFunction;
 
 /***/ }),
 
-/***/ 609:
+/***/ 358:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -806,9 +1252,9 @@ module.exports = NativeFunction;
  */
 const {
   FIELDFLAGS
-} = __webpack_require__(718),
-      PoonyaObject = __webpack_require__(741),
-      NativeFunction = __webpack_require__(240);
+} = __webpack_require__(635),
+      PoonyaObject = __webpack_require__(940),
+      NativeFunction = __webpack_require__(492);
 /**
  * @lends PoonyaArray
  * @class
@@ -917,7 +1363,7 @@ module.exports = PoonyaArray;
 
 /***/ }),
 
-/***/ 481:
+/***/ 221:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -926,7 +1372,7 @@ module.exports = PoonyaArray;
  * @author Astecom
  * @license MIT
  */
-const PoonyaObject = __webpack_require__(741);
+const PoonyaObject = __webpack_require__(940);
 /**
  * @lends PoonyaBoolean
  * @class
@@ -1022,7 +1468,7 @@ module.exports = PoonyaBoolean;
 
 /***/ }),
 
-/***/ 526:
+/***/ 159:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -1031,7 +1477,7 @@ module.exports = PoonyaBoolean;
  * @author Astecom
  * @license MIT
  */
-const PoonyaObject = __webpack_require__(741);
+const PoonyaObject = __webpack_require__(940);
 /**
  * @lends PoonyaInteger
  * @class
@@ -1127,7 +1573,7 @@ module.exports = PoonyaInteger;
 
 /***/ }),
 
-/***/ 711:
+/***/ 486:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -1136,7 +1582,7 @@ module.exports = PoonyaInteger;
  * @author Astecom
  * @license MIT
  */
-const PoonyaObject = __webpack_require__(741);
+const PoonyaObject = __webpack_require__(940);
 /**
  * @lends PoonyaNull
  * @class
@@ -1228,7 +1674,7 @@ module.exports = PoonyaNull;
 
 /***/ }),
 
-/***/ 418:
+/***/ 773:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -1237,7 +1683,7 @@ module.exports = PoonyaNull;
  * @author Astecom
  * @license MIT
  */
-const PoonyaObject = __webpack_require__(741);
+const PoonyaObject = __webpack_require__(940);
 /**
  * @lends PoonyaNumber
  * @class
@@ -1333,7 +1779,7 @@ module.exports = PoonyaNumber;
 
 /***/ }),
 
-/***/ 741:
+/***/ 940:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -1345,24 +1791,24 @@ module.exports = PoonyaNumber;
 const {
   BadKeyInvalidTypeException,
   BadKeyProtectedFieldException
-} = __webpack_require__(880),
+} = __webpack_require__(707),
       {
   iContext
-} = __webpack_require__(540),
+} = __webpack_require__(779),
       {
   SUPER_CALL,
   GET,
   FIELDFLAGS,
   CONFIG
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   Cast
-} = __webpack_require__(0),
+} = __webpack_require__(270),
       {
   iPoonyaObject,
   iPoonyaPrototype
-} = __webpack_require__(540),
-      NativeFunction = __webpack_require__(240);
+} = __webpack_require__(779),
+      NativeFunction = __webpack_require__(492);
 /**
  * @lends PoonyaObject
  * @class
@@ -1599,7 +2045,7 @@ module.exports = PoonyaObject;
 
 /***/ }),
 
-/***/ 494:
+/***/ 406:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -1613,13 +2059,13 @@ const {
   GET,
   FIELDFLAGS,
   SUPER_CALL
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   iPoonyaPrototype
-} = __webpack_require__(540),
+} = __webpack_require__(779),
       {
   Cast
-} = __webpack_require__(0);
+} = __webpack_require__(270);
 /**
  * @lends PoonyaPrototype
  * @class
@@ -1777,7 +2223,7 @@ module.exports = PoonyaPrototype;
 
 /***/ }),
 
-/***/ 419:
+/***/ 718:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -1786,7 +2232,7 @@ module.exports = PoonyaPrototype;
  * @author Astecom
  * @license MIT
  */
-const PoonyaObject = __webpack_require__(741);
+const PoonyaObject = __webpack_require__(940);
 /**
  * @lends PoonyaString
  * @class
@@ -1902,7 +2348,7 @@ module.exports = PoonyaString;
 
 /***/ }),
 
-/***/ 888:
+/***/ 606:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -1914,20 +2360,20 @@ module.exports = PoonyaString;
 const {
   Operand,
   Operator
-} = __webpack_require__(18),
+} = __webpack_require__(62),
       {
   CHARTYPE,
   OPERATOR,
   SERVICE
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   UnableToRecognizeTypeException,
   TheSequenceException
-} = __webpack_require__(880),
+} = __webpack_require__(707),
       {
   Cast
-} = __webpack_require__(0),
-      ObjectContructorCall = __webpack_require__(202);
+} = __webpack_require__(270),
+      ObjectContructorCall = __webpack_require__(552);
 /**
  * @lends MessagePattern;
  */
@@ -2219,7 +2665,7 @@ module.exports = ExpressionGroup;
 
 /***/ }),
 
-/***/ 408:
+/***/ 584:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -2230,16 +2676,16 @@ module.exports = ExpressionGroup;
  */
 const {
   Operand
-} = __webpack_require__(18),
+} = __webpack_require__(62),
       {
   UnableToCreateAnObjectException,
   FieldNotAFunctionException
-} = __webpack_require__(880),
+} = __webpack_require__(707),
       {
   iPoonyaPrototype
-} = __webpack_require__(540);
+} = __webpack_require__(779);
 
-NativeFunction = __webpack_require__(240);
+NativeFunction = __webpack_require__(492);
 /**
  * @lends FunctionCall
  * @protected
@@ -2302,7 +2748,7 @@ module.exports = FunctionCall;
 
 /***/ }),
 
-/***/ 338:
+/***/ 46:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -2313,12 +2759,12 @@ module.exports = FunctionCall;
  */
 const {
   Operand
-} = __webpack_require__(18),
+} = __webpack_require__(62),
       {
   SERVICE,
   FIELDFLAGS
-} = __webpack_require__(718),
-      NativeFunction = __webpack_require__(240);
+} = __webpack_require__(635),
+      NativeFunction = __webpack_require__(492);
 /**
  * @lends GetOperator
  * @protected
@@ -2383,7 +2829,7 @@ module.exports = GetOperator;
 
 /***/ }),
 
-/***/ 202:
+/***/ 552:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -2396,7 +2842,7 @@ module.exports = GetOperator;
  */
 const {
   Operand
-} = __webpack_require__(18);
+} = __webpack_require__(62);
 /**
  * @lends ObjectContructorCall
  * @protected
@@ -2466,7 +2912,7 @@ module.exports = ObjectContructorCall;
 
 /***/ }),
 
-/***/ 335:
+/***/ 51:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -2477,7 +2923,7 @@ module.exports = ObjectContructorCall;
  */
 const {
   Operand
-} = __webpack_require__(18);
+} = __webpack_require__(62);
 /**
  * @lends TernarOperator
  * @protected
@@ -2540,7 +2986,7 @@ module.exports = TernarOperator;
 
 /***/ }),
 
-/***/ 342:
+/***/ 350:
 /***/ ((module) => {
 
 /**
@@ -2608,7 +3054,7 @@ module.exports = IfStatement;
 
 /***/ }),
 
-/***/ 625:
+/***/ 862:
 /***/ ((module) => {
 
 /**
@@ -2674,7 +3120,7 @@ module.exports = OutOperator;
 
 /***/ }),
 
-/***/ 902:
+/***/ 355:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -2683,13 +3129,13 @@ module.exports = OutOperator;
  * @author Astecom
  * @license MIT
  */
-const ExpressionGroup = __webpack_require__(888),
+const ExpressionGroup = __webpack_require__(606),
       {
   TheFieldMustBeAnArrayInstanceExceprion,
   GetFieldOfNullException
-} = __webpack_require__(880),
-      PoonyaArray = __webpack_require__(609),
-      PoonyaObject = __webpack_require__(741);
+} = __webpack_require__(707),
+      PoonyaArray = __webpack_require__(358),
+      PoonyaObject = __webpack_require__(940);
 /**
  * @lends PushOperator
  * @protected
@@ -2762,7 +3208,7 @@ module.exports = PushOperator;
 
 /***/ }),
 
-/***/ 567:
+/***/ 511:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -2773,8 +3219,8 @@ module.exports = PushOperator;
  */
 const {
   TheFieldMustBeNumberException
-} = __webpack_require__(880),
-      PoonyaNumber = __webpack_require__(418);
+} = __webpack_require__(707),
+      PoonyaNumber = __webpack_require__(773);
 /**
  * @lends RepeatStatement;
  * @protected
@@ -2848,7 +3294,7 @@ module.exports = RepeatStatement;
 
 /***/ }),
 
-/***/ 447:
+/***/ 956:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -2857,14 +3303,14 @@ module.exports = RepeatStatement;
  * @author Astecom
  * @license MIT
  */
-const ExpressionGroup = __webpack_require__(888),
+const ExpressionGroup = __webpack_require__(606),
       {
   iPoonyaObject
-} = __webpack_require__(540),
+} = __webpack_require__(779),
       {
   TheFieldNotHasDeclaredExceprion,
   GetFieldOfNullException
-} = __webpack_require__(880);
+} = __webpack_require__(707);
 /**
  * @lends ResetOperator
  * @protected
@@ -2942,7 +3388,7 @@ module.exports = ResetOperator;
 
 /***/ }),
 
-/***/ 967:
+/***/ 113:
 /***/ ((module) => {
 
 /**
@@ -3019,7 +3465,7 @@ module.exports = SequenceGroup;
 
 /***/ }),
 
-/***/ 946:
+/***/ 998:
 /***/ ((module) => {
 
 /**
@@ -3092,7 +3538,7 @@ module.exports = SequenceMainGroup;
 
 /***/ }),
 
-/***/ 782:
+/***/ 375:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -3103,7 +3549,7 @@ module.exports = SequenceMainGroup;
  */
 const {
   TheFieldAlreadyHasBeenDeclaredException
-} = __webpack_require__(880);
+} = __webpack_require__(707);
 /**
  * @lends SetOperator
  * @protected
@@ -3166,7 +3612,7 @@ module.exports = SetOperator;
 
 /***/ }),
 
-/***/ 627:
+/***/ 114:
 /***/ ((module) => {
 
 /**
@@ -3232,7 +3678,7 @@ module.exports = WhileStatement;
 
 /***/ }),
 
-/***/ 880:
+/***/ 707:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -3243,7 +3689,7 @@ module.exports = WhileStatement;
  */
 const {
   SERVICE
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   dirname
 } = __webpack_require__(386);
@@ -3411,13 +3857,13 @@ class LinkerIOError extends IOError {
  * Ошибка выполнения нативной функции
  *
  * @memberof Poonya.Exceptions
- * @name NativeFunctionExcecutionError
+ * @name NativeFunctionExecutionError
  * @class
  * @protected
  */
 
 
-class NativeFunctionExcecutionError extends PoonyaException {
+class NativeFunctionExecutionError extends PoonyaException {
   constructor(name, stack) {
     const exp = /^\s*at\s(?:new\s)?([aA-zZ.аА-яЯё]+)\s\((.*)\)$/;
     stack = stack.split('\n');
@@ -3822,7 +4268,7 @@ module.exports.IsNotAConstructorException = IsNotAConstructorException;
 module.exports.ParserEmtyArgumentException = ParserEmtyArgumentException;
 module.exports.LinkerPathNotGiveExceptrion = LinkerPathNotGiveExceptrion;
 module.exports.CriticalParserErrorException = CriticalParserErrorException;
-module.exports.NativeFunctionExcecutionError = NativeFunctionExcecutionError;
+module.exports.NativeFunctionExecutionError = NativeFunctionExecutionError;
 module.exports.BadKeyProtectedFieldException = BadKeyProtectedFieldException;
 module.exports.TheFieldMustBeNumberException = TheFieldMustBeNumberException;
 module.exports.NativeFunctionReturnValueError = NativeFunctionReturnValueError;
@@ -3843,7 +4289,7 @@ module.exports.SegmentationFaultMaximumSegmentsForBlockException = SegmentationF
 
 /***/ }),
 
-/***/ 540:
+/***/ 779:
 /***/ ((module) => {
 
 /**
@@ -3866,7 +4312,7 @@ module.exports.iPoonyaPrototype = iPoonyaPrototype;
 
 /***/ }),
 
-/***/ 718:
+/***/ 635:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -3877,7 +4323,7 @@ module.exports.iPoonyaPrototype = iPoonyaPrototype;
  */
 const {
   EventEmitter
-} = __webpack_require__(246); // Защищенные поля для PoonyaPrototype
+} = __webpack_require__(245); // Защищенные поля для PoonyaPrototype
 
 
 const GET = Symbol('GET'),
@@ -3976,7 +4422,11 @@ const FIELDFLAGS = {
  * @static
  */
 
+/*LIQUID*/
+
 const NAMESPACE = Symbol.for('POONYA-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) + '-win32');
+/*LIQUID-END*/
+
 /**
  * Сервисная константа, для служебной информации
  *
@@ -4022,7 +4472,7 @@ module.exports.IS = IS;
 
 /***/ }),
 
-/***/ 643:
+/***/ 392:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -4034,30 +4484,30 @@ module.exports.IS = IS;
 const {
   GetFieldOfNullException,
   IsNotAConstructorException
-} = __webpack_require__(880),
+} = __webpack_require__(707),
       {
   GET,
   SERVICE,
   IS
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   Cast
-} = __webpack_require__(0),
+} = __webpack_require__(270),
       {
   iContext,
   iPoonyaPrototype
-} = __webpack_require__(540),
+} = __webpack_require__(779),
       {
   PoonyaStaticLibrary
-} = __webpack_require__(701),
-      ExpressionGroup = __webpack_require__(888),
-      PoonyaObject = __webpack_require__(741),
-      PoonyaArray = __webpack_require__(609),
-      PoonyaInteger = __webpack_require__(526),
-      PoonyaNumber = __webpack_require__(418),
-      PoonyaString = __webpack_require__(419),
-      PoonyaBoolean = __webpack_require__(481),
-      PoonyaNull = __webpack_require__(711);
+} = __webpack_require__(239),
+      ExpressionGroup = __webpack_require__(606),
+      PoonyaObject = __webpack_require__(940),
+      PoonyaArray = __webpack_require__(358),
+      PoonyaInteger = __webpack_require__(159),
+      PoonyaNumber = __webpack_require__(773),
+      PoonyaString = __webpack_require__(718),
+      PoonyaBoolean = __webpack_require__(221),
+      PoonyaNull = __webpack_require__(486);
 /**
  * @lends Heap
  * @class
@@ -4484,7 +4934,7 @@ module.exports.Heap = Heap;
 
 /***/ }),
 
-/***/ 701:
+/***/ 239:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -4496,13 +4946,13 @@ module.exports.Heap = Heap;
 const {
   NAMESPACE,
   SERVICE
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   IOError
-} = __webpack_require__(880),
-      PoonyaObject = __webpack_require__(741),
-      NativeFunction = __webpack_require__(240),
-      PoonyaPrototype = __webpack_require__(494); // Пространство модулей в глобальном контексте
+} = __webpack_require__(707),
+      PoonyaObject = __webpack_require__(940),
+      NativeFunction = __webpack_require__(492),
+      PoonyaPrototype = __webpack_require__(406); // Пространство модулей в глобальном контексте
 
 
 const modules = Symbol.for('Modules');
@@ -4701,10 +5151,12 @@ let Import = (import_statements, logger) => {
 
 
 let ImportFile = async (lib_dir, file) => {};
+/*LIQUID*/
+
 
 function crequire(id) {
   if (id === 'poonya') {
-    return __webpack_require__(802);
+    return __webpack_require__(294);
   } else {
     throw new Error('Unknown module ' + id);
   }
@@ -4724,6 +5176,8 @@ ImportFile = (lib_dir, file) => {
     }
   });
 };
+/*LIQUID-END*/
+
 
 module.exports.Import = Import;
 module.exports.ImportFile = ImportFile;
@@ -4731,7 +5185,7 @@ module.exports.PoonyaStaticLibrary = PoonyaStaticLibrary;
 
 /***/ }),
 
-/***/ 173:
+/***/ 60:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -4742,7 +5196,10 @@ module.exports.PoonyaStaticLibrary = PoonyaStaticLibrary;
  */
 const {
   CHARTYPE
-} = __webpack_require__(718);
+} = __webpack_require__(635),
+      {
+  fromBytes
+} = __webpack_require__(270);
 /**
  * @lends LexerEntry
  * @class
@@ -4763,7 +5220,7 @@ class LexerEntry {
    */
   constructor(type, data, position, s_separator) {
     this.type = type;
-    this.data = String.fromCharCode.apply(null, data);
+    this.data = fromBytes(data);
     this.position = position - data.length > 0 ? position - data.length + 1 : 0;
     this.leng = data.length;
     this.string_separator = s_separator != null ? String.fromCharCode(s_separator) : null;
@@ -4820,7 +5277,7 @@ module.exports = LexerEntry;
 
 /***/ }),
 
-/***/ 324:
+/***/ 513:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -4831,8 +5288,8 @@ module.exports = LexerEntry;
  */
 const {
   CHARTYPE
-} = __webpack_require__(718),
-      LexerEntry = __webpack_require__(173);
+} = __webpack_require__(635),
+      LexerEntry = __webpack_require__(60);
 /**
  * Лексер, который производит лексический разбор подаваемого текста в буффере
  *
@@ -4845,7 +5302,10 @@ const {
 
 
 function lexer(input, allow_spaces = true) {
-  const Export = new Array();
+  if (!Array.isArray(input)) {
+    throw TypeError('Only array-like data can be input to the lexer');
+  }
+
   let buff = new Array(),
       is_string = false,
       is_comment = false,
@@ -4853,15 +5313,25 @@ function lexer(input, allow_spaces = true) {
       string_entry = null,
       cur = null,
       last = null;
+  const Export = new Array();
 
-  if (Array.isArray(input)) {
-    // Преобразуем входные данные в обычный массив, если на вход были поданы массив подобные данные
-    input = Array.from(input);
-  } else {
-    throw TypeError('Only array-like data can be input to the lexer');
-  }
+  const clear = () => {
+    buff.splice(0, buff.length);
+  };
 
-  for (let i = 0, leng = input.length; i < leng; i++) {
+  const append = index => {
+    buff.push(input[index - 1], input[index]);
+  };
+
+  const firstIs = (...is) => {
+    return is.includes(buff[1]);
+  };
+
+  const lastIs = (...is) => {
+    return is.includes(buff[buff.length - 1]);
+  };
+
+  for (let i = 1, leng = input.length; i < leng; i += 2) {
     switch (input[i]) {
       case 32:
       case 9:
@@ -4925,38 +5395,35 @@ function lexer(input, allow_spaces = true) {
     }
 
     if (cur === CHARTYPE.NEWLINE && last === CHARTYPE.NEWLINE || cur === CHARTYPE.POINT && last === CHARTYPE.NUMBER || cur === CHARTYPE.NUMBER && last === CHARTYPE.WORD) {
-      buff.push(input[i]);
+      append(i);
       continue;
     } // Префиксы чисел
 
 
     if (cur === CHARTYPE.NUMBER && last === CHARTYPE.OPERATOR) {
-      if (buff[0] === 43 || buff[0] === 45) {
+      if (firstIs(43, 45)) {
         last = cur;
-        buff.push(input[i]);
+        append(i);
         continue;
       }
     } // Если предыдущий и текущий тип символов это операторы
 
 
     if (cur === CHARTYPE.OPERATOR && last === CHARTYPE.OPERATOR) {
-      if (buff.length === 1 && ( // В буффере не больше одного символа
-      buff[0] === 33 || // пердыдущий символ был '!'
-      buff[0] === 60 || // пердыдущий символ был '<'
-      buff[0] === 62) && // пердыдущий символ был '>'
-      input[i] === 61 // текущий символ '='
+      if (buff.length === 1 && // В буффере не больше одного символа
+      firstIs(33, 60, 62) && input[i] === 61 // текущий символ '='
       ) {
-          buff.push(input[i]);
+          append(i);
           if (allow_spaces || last !== CHARTYPE.SPACE) Export.push(new LexerEntry(last, buff, i, string_entry));
           string_entry = null;
-          buff.splice(0, buff.length);
+          clear(i);
           last = undefined;
           if (i + 1 === leng) return Export;
           continue;
         }
 
       if (buff.length === 1 && // В буффере не больше одного символа
-      buff[0] === 47 // Предыдущий символ это /
+      firstIs(47) // Предыдущий символ это /
       ) {
           if (input[i] === 47 // Текущий символ это /
           ) {
@@ -4976,7 +5443,7 @@ function lexer(input, allow_spaces = true) {
       if ((cur !== last || last === CHARTYPE.STRING || last === CHARTYPE.OPERATOR) && last != null) {
         if (allow_spaces || last !== CHARTYPE.SPACE) Export.push(new LexerEntry(last, buff, i, string_entry));
         string_entry = null;
-        buff.splice(0, buff.length);
+        clear(i);
       }
 
       if (cur === CHARTYPE.STRING) {
@@ -4986,28 +5453,28 @@ function lexer(input, allow_spaces = true) {
         continue;
       }
 
-      buff.push(input[i]);
+      append(i);
       last = cur;
     } else if (is_comment) {
       if (is_multiline) {
         if (input[i] === 47 && // Текущий символ это /
-        buff[buff.length - 1] === 60 // Предыдущий символ это <
+        lastIs(60) // Предыдущий символ это <
         ) {
             is_comment = false;
             last = undefined;
-            buff.splice(0, buff.length);
+            clear(i);
             continue;
           }
       } else {
         if (cur === CHARTYPE.NEWLINE) {
           is_comment = false;
           last = CHARTYPE.NEWLINE;
-          buff.splice(0, buff.length);
+          clear(i);
           continue;
         }
       }
 
-      buff.push(input[i]);
+      append(i);
     } else {
       if (cur === CHARTYPE.STRING && input[i] === string_entry) {
         is_string = false;
@@ -5015,7 +5482,7 @@ function lexer(input, allow_spaces = true) {
         continue;
       }
 
-      buff.push(input[i]);
+      append(i);
       last = cur;
     }
   }
@@ -5028,7 +5495,7 @@ module.exports = lexer;
 
 /***/ }),
 
-/***/ 805:
+/***/ 144:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -5039,14 +5506,14 @@ module.exports = lexer;
  */
 const {
   maybeEquals
-} = __webpack_require__(0),
+} = __webpack_require__(270),
       {
   CHARTYPE
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   IOError
-} = __webpack_require__(880),
-      lexer = __webpack_require__(324);
+} = __webpack_require__(707),
+      lexer = __webpack_require__(513);
 /**
  * Препроцессораня функция, линкует файлы.
  *
@@ -5067,11 +5534,14 @@ async function linker(data, parent_path, throw_error) {
     if (data[i].equals(CHARTYPE.WORD, 'include')) {
       if (maybeEquals(data, i + 1, CHARTYPE.NEWLINE) && data[i + 1].equals(CHARTYPE.STRING)) {
         let path, content;
+        /*LIQUID*/
+
         const buffer = parent_path.split('/');
         path = window.location.origin + '/' + buffer.slice(0, buffer.length - 1).join('/') + '/' + data[i + 1].data.toString();
         content = fetch(path, {
           method: 'GET'
         }).then(e => e.blob);
+        /*LIQUID-END*/
 
         if (parent_path != null) {
           try {
@@ -5091,7 +5561,7 @@ module.exports = linker;
 
 /***/ }),
 
-/***/ 585:
+/***/ 909:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -5117,30 +5587,30 @@ const {
   CriticalParserErrorException,
   CriticalParserErrorNoRawDataTransmittedException,
   CriticalParserErrorUnexpectedEndOfExpression
-} = __webpack_require__(880),
+} = __webpack_require__(707),
       {
   maybeEquals,
   countKeys
-} = __webpack_require__(0),
+} = __webpack_require__(270),
       {
   CHARTYPE,
   SERVICE
-} = __webpack_require__(718),
-      FunctionCall = __webpack_require__(408),
-      ObjectContructorCall = __webpack_require__(202),
-      TernarOperator = __webpack_require__(335),
-      ExpressionGroup = __webpack_require__(888),
-      GetOperator = __webpack_require__(338),
-      IfStatement = __webpack_require__(342),
-      SequenceGroup = __webpack_require__(967),
-      OutOperator = __webpack_require__(625),
-      WhileStatement = __webpack_require__(627),
-      RepeatStatement = __webpack_require__(567),
-      SetOperator = __webpack_require__(782),
-      ResetOperator = __webpack_require__(447),
-      PushOperator = __webpack_require__(902),
-      SequenceMainGroup = __webpack_require__(946),
-      linker = __webpack_require__(805);
+} = __webpack_require__(635),
+      FunctionCall = __webpack_require__(584),
+      ObjectContructorCall = __webpack_require__(552),
+      TernarOperator = __webpack_require__(51),
+      ExpressionGroup = __webpack_require__(606),
+      GetOperator = __webpack_require__(46),
+      IfStatement = __webpack_require__(350),
+      SequenceGroup = __webpack_require__(113),
+      OutOperator = __webpack_require__(862),
+      WhileStatement = __webpack_require__(114),
+      RepeatStatement = __webpack_require__(511),
+      SetOperator = __webpack_require__(375),
+      ResetOperator = __webpack_require__(956),
+      PushOperator = __webpack_require__(355),
+      SequenceMainGroup = __webpack_require__(998),
+      linker = __webpack_require__(144);
 /**
  * Парсит вызов функции, возвращает объект вызова функции, и позицию с которой можно продолжить прасинг
  *
@@ -5195,7 +5665,6 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
     switch (true) {
       case data[i] === undefined || expected === 3 && !data[i].equals(CHARTYPE.OPERATOR, ',') || data[i].equals(CHARTYPE.OPERATOR, [';', ')']):
         if (entries[entries.length - 1].length !== 2) throw_error(data[i].position, new ParserEmtyArgumentException());
-        console.log(data[i], i, data[i - 1]);
         return {
           data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
           jump: i - start
@@ -5950,7 +6419,7 @@ module.exports.parseExpression = parseExpression;
 
 /***/ }),
 
-/***/ 358:
+/***/ 174:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
@@ -6023,38 +6492,67 @@ module.exports.parseExpression = parseExpression;
  */
 // This file is compiled specifically for the browser, if you need a node.js version use poonya.node.bundle.js
 
+/*LIQUID*/
+
+if (!window.setImmediate) window.setImmediate = function () {
+  var head = {},
+      tail = head;
+  var ID = Math.random();
+
+  function onmessage(e) {
+    if (e.data != ID) return;
+    head = head.next;
+    var func = head.func;
+    delete head.func;
+    func();
+  }
+
+  if (window.addEventListener) {
+    window.addEventListener('message', onmessage);
+  } else {
+    window.attachEvent('onmessage', onmessage);
+  }
+
+  return function (func) {
+    tail = tail.next = {
+      func: func
+    };
+    window.postMessage(ID, "*");
+  };
+}();
+/*LIQUID-END*/
 
 const {
   EventEmitter
-} = __webpack_require__(246),
+} = __webpack_require__(245),
       {
   PoonyaException
-} = __webpack_require__(880),
+} = __webpack_require__(707),
       {
   Import,
   ImportDir,
   ImportFile
-} = __webpack_require__(701),
+} = __webpack_require__(239),
       {
   Context,
   Heap
-} = __webpack_require__(643),
+} = __webpack_require__(392),
       {
   parser,
   parseExpression,
   parserMP
-} = __webpack_require__(585),
+} = __webpack_require__(909),
       {
   SERVICE
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   toFixed,
   toBytes
-} = __webpack_require__(0),
-      lexer = __webpack_require__(324);
+} = __webpack_require__(270),
+      lexer = __webpack_require__(513);
 
 const RESULT = Symbol('RESULT'),
-      INIT = Symbol('Init');
+      INIT = Symbol('INIT');
 /**
  * @lends PoonyaOutputStream
  * @class
@@ -6172,12 +6670,15 @@ class CodeEmitter extends EventEmitter {
     if (typeof input === "string") {
       _.input = input;
       _.charset = 'utf-8';
+      /*LIQUID*/
+
       _.path = window.location.href;
+      /*LIQUID-END*/
 
       if (SERVICE.LOADED) {
         _[INIT](import_s, logger);
 
-        setTimeout(() => onload.call(_), 0);
+        setImmediate(() => onload.call(_));
       } else {
         SERVICE.ACTIONS.on('load', () => {
           _[INIT](import_s, logger);
@@ -6188,29 +6689,96 @@ class CodeEmitter extends EventEmitter {
     } else if (typeof input === "object") {
       _.charset = typeof input.charset === "string" ? input.charset : "utf-8"; // Защищаю от выполнения браузерного кода в nodejs
 
+      /*LIQUID*/
+
       _.path = typeof input.path === 'string' ? input.path.split('/').pop().split('.').length > 0 ? input.path : input.path + '.po' : 'anonymous.po';
+      /*LIQUID-END*/
+
       if (typeof input.raw === "string") _.input = input.raw;else if (typeof input.path === "string") {
         try {
           // Защищаю от выполнения браузерного кода в nodejs
+
+          /*LIQUID*/
           fetch(input.path, {
             method: "GET"
-          }).catch(e => {
+          })
+          /*LIQUID-END*/
+
+          /*LIQUID*/
+          .catch(e => {
             throw e;
-          }).then(e => e.text()).then(e => {
+          })
+          /*LIQUID-END*/
+
+          /*LIQUID*/
+          .then(e => e.text())
+          /*LIQUID-END*/
+
+          /*LIQUID*/
+          .then(e => {
+            /*LIQUID-END*/
+
+            /*LIQUID*/
             _.input = e;
+            /*LIQUID-END*/
+
+            /*LIQUID*/
+
+            /*LIQUID-END*/
+
+            /*LIQUID*/
 
             if (SERVICE.LOADED) {
+              /*LIQUID-END*/
+
+              /*LIQUID*/
               _[INIT](import_s, logger);
+              /*LIQUID-END*/
+
+              /*LIQUID*/
+
+              /*LIQUID-END*/
+
+              /*LIQUID*/
+
 
               onload.call(_);
+              /*LIQUID-END*/
+
+              /*LIQUID*/
             } else {
+              /*LIQUID-END*/
+
+              /*LIQUID*/
               SERVICE.ACTIONS.on('load', () => {
+                /*LIQUID-END*/
+
+                /*LIQUID*/
                 _[INIT](import_s, logger);
+                /*LIQUID-END*/
+
+                /*LIQUID*/
+
+                /*LIQUID-END*/
+
+                /*LIQUID*/
+
 
                 onload.call(_);
+                /*LIQUID-END*/
+
+                /*LIQUID*/
               });
+              /*LIQUID-END*/
+
+              /*LIQUID*/
             }
+            /*LIQUID-END*/
+
+            /*LIQUID*/
+
           });
+          /*LIQUID-END*/
         } catch (e) {
           throw new IOError(input.path);
         }
@@ -6326,7 +6894,7 @@ class CodeEmitter extends EventEmitter {
     const out = new PoonyaOutputStream(); // Если вхождения уже загружены, выполняем последовательность
 
     if (this.loaded) {
-      setTimeout(() => this[RESULT](data, error, out), 0);
+      setImmediate(() => this[RESULT](data, error, out));
     } else // Иначе, ждем окончания загрузки и выполняем последовательность
       this.on('load', () => this[RESULT](data, error, out));
 
@@ -6379,11 +6947,11 @@ class MessagePattern extends CodeEmitter {
 
 }
 /**
- * @lends ExcecutionPattern;
+ * @lends ExecutionPattern;
  */
 
 
-class ExcecutionPattern extends CodeEmitter {
+class ExecutionPattern extends CodeEmitter {
   /**
    * Шаблон кода, все что подается сюда, будет распознаваться как код шаблонизатора: <br> <br>
    * <code>
@@ -6411,7 +6979,7 @@ class ExcecutionPattern extends CodeEmitter {
    * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
    *
    * @memberof Poonya
-   * @constructs ExcecutionPattern
+   * @constructs ExecutionPattern
    * @protected
    */
   constructor(input, import_s, logger = console) {
@@ -6503,44 +7071,65 @@ class ExpressionPattern extends CodeEmitter {
 }
 
 (async () => {
-  __webpack_require__(49);
+  /*LIQUID*/
+  __webpack_require__(548);
+  /*LIQUID-END*/
 
-  __webpack_require__(363);
+  /*LIQUID*/
+
+
+  __webpack_require__(449);
+  /*LIQUID-END*/
+
 
   SERVICE.ACTIONS.emit('load');
+})(); // POONYA POLYFILL
+
+/*LIQUID*/
+
+
+(() => {
+  const load = new Event('poonya:load');
+
+  function parseHTML(html) {
+    var t = document.createElement('template');
+    t.innerHTML = html;
+    return t.content.cloneNode(true);
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const entries = document.querySelectorAll('script[type="text/poonya"], script[lang="text/poonya"]');
+
+    for (let i = 0, leng = entries.length, name, handler, imports, block_load, pattern; i < leng; i++) {
+      name = entries[i].getAttribute('name') ?? 'block-' + i;
+      handler = entries[i].getAttribute('handler') ?? 'exec';
+      imports = (entries[i].getAttribute('import') ?? '').split('|');
+      block_load = new Event('poonya:load:' + name);
+      if (handler == 'exec') pattern = new ExecutionPattern(entries[i].innerHTML, imports);else if (handler == 'message') pattern = new MessagePattern(entries[i].innerHTML, imports);else throw new Error('Unknown pattern handler in block "' + name + '" type "' + handler + '"');
+      await new Promise((res, rej) => {
+        pattern.on('load', async () => {
+          entries[i].replaceWith(...(await pattern.result().complete()).map(e => parseHTML(e)));
+          res();
+        });
+      });
+      window.dispatchEvent(block_load);
+    }
+
+    window.dispatchEvent(load);
+  });
 })();
+/*LIQUID-END*/
+
 
 module.exports.CodeEmitter = CodeEmitter;
 module.exports.MessagePattern = MessagePattern;
 module.exports.ExpressionPattern = ExpressionPattern;
-module.exports.ExcecutionPattern = ExcecutionPattern;
+module.exports.ExecutionPattern = ExecutionPattern;
 module.exports.ImportFile = ImportFile.bind(null, module.parent != null ? module.parent.path : module.path);
-const load = new Event('poonya:load');
-
-function parseHTML(html) {
-  var t = document.createElement('template');
-  t.innerHTML = html;
-  return t.content.cloneNode(true);
-}
-
-document.addEventListener('DOMContentLoaded', async () => {
-  const entries = document.querySelectorAll('script[type="text/poonya"], script[lang="text/poonya"]');
-
-  for (let i = 0, leng = entries.length; i < leng; i++) {
-    const pattern = new ExcecutionPattern(entries[i].innerHTML, ['default.html']);
-    await new Promise((res, rej) => {
-      pattern.on('load', async () => {
-        entries[i].replaceWith(...(await pattern.result().complete()).map(e => parseHTML(e)));
-        res();
-      });
-    });
-    window.dispatchEvent(load);
-  }
-}); // #!endif
 
 /***/ }),
 
-/***/ 802:
+/***/ 294:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -6549,14 +7138,14 @@ document.addEventListener('DOMContentLoaded', async () => {
  * @license MIT
  * @author Astecom
  */
-module.exports.FIELDFLAGS = __webpack_require__(718).FIELDFLAGS;
-module.exports.Exceptions = __webpack_require__(880);
-module.exports.PoonyaStaticLibrary = __webpack_require__(701).PoonyaStaticLibrary;
-module.exports.PoonyaPrototype = __webpack_require__(494);
+module.exports.FIELDFLAGS = __webpack_require__(635).FIELDFLAGS;
+module.exports.Exceptions = __webpack_require__(707);
+module.exports.PoonyaStaticLibrary = __webpack_require__(239).PoonyaStaticLibrary;
+module.exports.PoonyaPrototype = __webpack_require__(406);
 
 /***/ }),
 
-/***/ 0:
+/***/ 270:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
@@ -6567,15 +7156,15 @@ module.exports.PoonyaPrototype = __webpack_require__(494);
  */
 const {
   SERVICE
-} = __webpack_require__(718),
+} = __webpack_require__(635),
       {
   Operand
-} = __webpack_require__(18),
+} = __webpack_require__(62),
       {
   iPoonyaObject,
   iPoonyaPrototype
-} = __webpack_require__(540),
-      NativeFunction = __webpack_require__(240);
+} = __webpack_require__(779),
+      NativeFunction = __webpack_require__(492);
 /**
  * Фукция которая преобразует нативное значение в значение Poonya
  *
@@ -6703,7 +7292,8 @@ function toFixed(d, l) {
 /**
  * Преобразует строку в массив байтов
  *
- * @param {String} s Строка для преобразования
+ * @param {String} input Строка для преобразования
+ * @returns {Array<Number>} массив с байтами
  * @memberof Poonya.Utils
  * @function toBytes
  * @protected
@@ -6711,461 +7301,40 @@ function toFixed(d, l) {
  */
 
 
-function toBytes(s) {
-  return s.split('').map(e => e.charCodeAt());
+function toBytes(input) {
+  let bytes = new Array();
+
+  for (let i = 0, char, leng = input.length; i < leng; i++) bytes.push((char = input.charCodeAt(i)) >>> 8, char & 0xFF);
+
+  console.log(bytes);
+  return bytes;
+}
+/**
+ * Преобразует массив байтов в строку
+ *
+ * @param {Array<Number>} input байты для преобразования
+ * @returns {String} преобразованная строка
+ * @memberof Poonya.Utils
+ * @function toBytes
+ * @protected
+ * @static
+ */
+
+
+function fromBytes(input) {
+  let string = '';
+
+  for (let i = 0, leng = input.length; i < leng; i += 2) string += String.fromCharCode(input[i] << 8 | input[i + 1]);
+
+  return string;
 }
 
 module.exports.maybeEquals = maybeEquals;
 module.exports.countKeys = countKeys;
+module.exports.fromBytes = fromBytes;
 module.exports.toFixed = toFixed;
 module.exports.toBytes = toBytes;
 module.exports.Cast = Cast;
-
-/***/ }),
-
-/***/ 246:
-/***/ ((module) => {
-
-"use strict";
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-var R = typeof Reflect === 'object' ? Reflect : null;
-var ReflectApply = R && typeof R.apply === 'function' ? R.apply : function ReflectApply(target, receiver, args) {
-  return Function.prototype.apply.call(target, receiver, args);
-};
-var ReflectOwnKeys;
-
-if (R && typeof R.ownKeys === 'function') {
-  ReflectOwnKeys = R.ownKeys;
-} else if (Object.getOwnPropertySymbols) {
-  ReflectOwnKeys = function ReflectOwnKeys(target) {
-    return Object.getOwnPropertyNames(target).concat(Object.getOwnPropertySymbols(target));
-  };
-} else {
-  ReflectOwnKeys = function ReflectOwnKeys(target) {
-    return Object.getOwnPropertyNames(target);
-  };
-}
-
-function ProcessEmitWarning(warning) {
-  if (console && console.warn) console.warn(warning);
-}
-
-var NumberIsNaN = Number.isNaN || function NumberIsNaN(value) {
-  return value !== value;
-};
-
-function EventEmitter() {
-  EventEmitter.init.call(this);
-}
-
-module.exports = EventEmitter;
-module.exports.once = once; // Backwards-compat with node 0.10.x
-
-EventEmitter.EventEmitter = EventEmitter;
-EventEmitter.prototype._events = undefined;
-EventEmitter.prototype._eventsCount = 0;
-EventEmitter.prototype._maxListeners = undefined; // By default EventEmitters will print a warning if more than 10 listeners are
-// added to it. This is a useful default which helps finding memory leaks.
-
-var defaultMaxListeners = 10;
-
-function checkListener(listener) {
-  if (typeof listener !== 'function') {
-    throw new TypeError('The "listener" argument must be of type Function. Received type ' + typeof listener);
-  }
-}
-
-Object.defineProperty(EventEmitter, 'defaultMaxListeners', {
-  enumerable: true,
-  get: function () {
-    return defaultMaxListeners;
-  },
-  set: function (arg) {
-    if (typeof arg !== 'number' || arg < 0 || NumberIsNaN(arg)) {
-      throw new RangeError('The value of "defaultMaxListeners" is out of range. It must be a non-negative number. Received ' + arg + '.');
-    }
-
-    defaultMaxListeners = arg;
-  }
-});
-
-EventEmitter.init = function () {
-  if (this._events === undefined || this._events === Object.getPrototypeOf(this)._events) {
-    this._events = Object.create(null);
-    this._eventsCount = 0;
-  }
-
-  this._maxListeners = this._maxListeners || undefined;
-}; // Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-
-
-EventEmitter.prototype.setMaxListeners = function setMaxListeners(n) {
-  if (typeof n !== 'number' || n < 0 || NumberIsNaN(n)) {
-    throw new RangeError('The value of "n" is out of range. It must be a non-negative number. Received ' + n + '.');
-  }
-
-  this._maxListeners = n;
-  return this;
-};
-
-function _getMaxListeners(that) {
-  if (that._maxListeners === undefined) return EventEmitter.defaultMaxListeners;
-  return that._maxListeners;
-}
-
-EventEmitter.prototype.getMaxListeners = function getMaxListeners() {
-  return _getMaxListeners(this);
-};
-
-EventEmitter.prototype.emit = function emit(type) {
-  var args = [];
-
-  for (var i = 1; i < arguments.length; i++) args.push(arguments[i]);
-
-  var doError = type === 'error';
-  var events = this._events;
-  if (events !== undefined) doError = doError && events.error === undefined;else if (!doError) return false; // If there is no 'error' event listener then throw.
-
-  if (doError) {
-    var er;
-    if (args.length > 0) er = args[0];
-
-    if (er instanceof Error) {
-      // Note: The comments on the `throw` lines are intentional, they show
-      // up in Node's output if this results in an unhandled exception.
-      throw er; // Unhandled 'error' event
-    } // At least give some kind of context to the user
-
-
-    var err = new Error('Unhandled error.' + (er ? ' (' + er.message + ')' : ''));
-    err.context = er;
-    throw err; // Unhandled 'error' event
-  }
-
-  var handler = events[type];
-  if (handler === undefined) return false;
-
-  if (typeof handler === 'function') {
-    ReflectApply(handler, this, args);
-  } else {
-    var len = handler.length;
-    var listeners = arrayClone(handler, len);
-
-    for (var i = 0; i < len; ++i) ReflectApply(listeners[i], this, args);
-  }
-
-  return true;
-};
-
-function _addListener(target, type, listener, prepend) {
-  var m;
-  var events;
-  var existing;
-  checkListener(listener);
-  events = target._events;
-
-  if (events === undefined) {
-    events = target._events = Object.create(null);
-    target._eventsCount = 0;
-  } else {
-    // To avoid recursion in the case that type === "newListener"! Before
-    // adding it to the listeners, first emit "newListener".
-    if (events.newListener !== undefined) {
-      target.emit('newListener', type, listener.listener ? listener.listener : listener); // Re-assign `events` because a newListener handler could have caused the
-      // this._events to be assigned to a new object
-
-      events = target._events;
-    }
-
-    existing = events[type];
-  }
-
-  if (existing === undefined) {
-    // Optimize the case of one listener. Don't need the extra array object.
-    existing = events[type] = listener;
-    ++target._eventsCount;
-  } else {
-    if (typeof existing === 'function') {
-      // Adding the second element, need to change to array.
-      existing = events[type] = prepend ? [listener, existing] : [existing, listener]; // If we've already got an array, just append.
-    } else if (prepend) {
-      existing.unshift(listener);
-    } else {
-      existing.push(listener);
-    } // Check for listener leak
-
-
-    m = _getMaxListeners(target);
-
-    if (m > 0 && existing.length > m && !existing.warned) {
-      existing.warned = true; // No error code for this since it is a Warning
-      // eslint-disable-next-line no-restricted-syntax
-
-      var w = new Error('Possible EventEmitter memory leak detected. ' + existing.length + ' ' + String(type) + ' listeners ' + 'added. Use emitter.setMaxListeners() to ' + 'increase limit');
-      w.name = 'MaxListenersExceededWarning';
-      w.emitter = target;
-      w.type = type;
-      w.count = existing.length;
-      ProcessEmitWarning(w);
-    }
-  }
-
-  return target;
-}
-
-EventEmitter.prototype.addListener = function addListener(type, listener) {
-  return _addListener(this, type, listener, false);
-};
-
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-EventEmitter.prototype.prependListener = function prependListener(type, listener) {
-  return _addListener(this, type, listener, true);
-};
-
-function onceWrapper() {
-  if (!this.fired) {
-    this.target.removeListener(this.type, this.wrapFn);
-    this.fired = true;
-    if (arguments.length === 0) return this.listener.call(this.target);
-    return this.listener.apply(this.target, arguments);
-  }
-}
-
-function _onceWrap(target, type, listener) {
-  var state = {
-    fired: false,
-    wrapFn: undefined,
-    target: target,
-    type: type,
-    listener: listener
-  };
-  var wrapped = onceWrapper.bind(state);
-  wrapped.listener = listener;
-  state.wrapFn = wrapped;
-  return wrapped;
-}
-
-EventEmitter.prototype.once = function once(type, listener) {
-  checkListener(listener);
-  this.on(type, _onceWrap(this, type, listener));
-  return this;
-};
-
-EventEmitter.prototype.prependOnceListener = function prependOnceListener(type, listener) {
-  checkListener(listener);
-  this.prependListener(type, _onceWrap(this, type, listener));
-  return this;
-}; // Emits a 'removeListener' event if and only if the listener was removed.
-
-
-EventEmitter.prototype.removeListener = function removeListener(type, listener) {
-  var list, events, position, i, originalListener;
-  checkListener(listener);
-  events = this._events;
-  if (events === undefined) return this;
-  list = events[type];
-  if (list === undefined) return this;
-
-  if (list === listener || list.listener === listener) {
-    if (--this._eventsCount === 0) this._events = Object.create(null);else {
-      delete events[type];
-      if (events.removeListener) this.emit('removeListener', type, list.listener || listener);
-    }
-  } else if (typeof list !== 'function') {
-    position = -1;
-
-    for (i = list.length - 1; i >= 0; i--) {
-      if (list[i] === listener || list[i].listener === listener) {
-        originalListener = list[i].listener;
-        position = i;
-        break;
-      }
-    }
-
-    if (position < 0) return this;
-    if (position === 0) list.shift();else {
-      spliceOne(list, position);
-    }
-    if (list.length === 1) events[type] = list[0];
-    if (events.removeListener !== undefined) this.emit('removeListener', type, originalListener || listener);
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
-
-EventEmitter.prototype.removeAllListeners = function removeAllListeners(type) {
-  var listeners, events, i;
-  events = this._events;
-  if (events === undefined) return this; // not listening for removeListener, no need to emit
-
-  if (events.removeListener === undefined) {
-    if (arguments.length === 0) {
-      this._events = Object.create(null);
-      this._eventsCount = 0;
-    } else if (events[type] !== undefined) {
-      if (--this._eventsCount === 0) this._events = Object.create(null);else delete events[type];
-    }
-
-    return this;
-  } // emit removeListener for all listeners on all events
-
-
-  if (arguments.length === 0) {
-    var keys = Object.keys(events);
-    var key;
-
-    for (i = 0; i < keys.length; ++i) {
-      key = keys[i];
-      if (key === 'removeListener') continue;
-      this.removeAllListeners(key);
-    }
-
-    this.removeAllListeners('removeListener');
-    this._events = Object.create(null);
-    this._eventsCount = 0;
-    return this;
-  }
-
-  listeners = events[type];
-
-  if (typeof listeners === 'function') {
-    this.removeListener(type, listeners);
-  } else if (listeners !== undefined) {
-    // LIFO order
-    for (i = listeners.length - 1; i >= 0; i--) {
-      this.removeListener(type, listeners[i]);
-    }
-  }
-
-  return this;
-};
-
-function _listeners(target, type, unwrap) {
-  var events = target._events;
-  if (events === undefined) return [];
-  var evlistener = events[type];
-  if (evlistener === undefined) return [];
-  if (typeof evlistener === 'function') return unwrap ? [evlistener.listener || evlistener] : [evlistener];
-  return unwrap ? unwrapListeners(evlistener) : arrayClone(evlistener, evlistener.length);
-}
-
-EventEmitter.prototype.listeners = function listeners(type) {
-  return _listeners(this, type, true);
-};
-
-EventEmitter.prototype.rawListeners = function rawListeners(type) {
-  return _listeners(this, type, false);
-};
-
-EventEmitter.listenerCount = function (emitter, type) {
-  if (typeof emitter.listenerCount === 'function') {
-    return emitter.listenerCount(type);
-  } else {
-    return listenerCount.call(emitter, type);
-  }
-};
-
-EventEmitter.prototype.listenerCount = listenerCount;
-
-function listenerCount(type) {
-  var events = this._events;
-
-  if (events !== undefined) {
-    var evlistener = events[type];
-
-    if (typeof evlistener === 'function') {
-      return 1;
-    } else if (evlistener !== undefined) {
-      return evlistener.length;
-    }
-  }
-
-  return 0;
-}
-
-EventEmitter.prototype.eventNames = function eventNames() {
-  return this._eventsCount > 0 ? ReflectOwnKeys(this._events) : [];
-};
-
-function arrayClone(arr, n) {
-  var copy = new Array(n);
-
-  for (var i = 0; i < n; ++i) copy[i] = arr[i];
-
-  return copy;
-}
-
-function spliceOne(list, index) {
-  for (; index + 1 < list.length; index++) list[index] = list[index + 1];
-
-  list.pop();
-}
-
-function unwrapListeners(arr) {
-  var ret = new Array(arr.length);
-
-  for (var i = 0; i < ret.length; ++i) {
-    ret[i] = arr[i].listener || arr[i];
-  }
-
-  return ret;
-}
-
-function once(emitter, name) {
-  return new Promise(function (resolve, reject) {
-    function eventListener() {
-      if (errorListener !== undefined) {
-        emitter.removeListener('error', errorListener);
-      }
-
-      resolve([].slice.call(arguments));
-    }
-
-    ;
-    var errorListener; // Adding an error listener is not optional because
-    // if an error is thrown on an event emitter we cannot
-    // guarantee that the actual event we are waiting will
-    // be fired. The result could be a silent way to create
-    // memory or file descriptor leaks, which is something
-    // we should avoid.
-
-    if (name !== 'error') {
-      errorListener = function errorListener(err) {
-        emitter.removeListener(name, eventListener);
-        reject(err);
-      };
-
-      emitter.once('error', errorListener);
-    }
-
-    emitter.once(name, eventListener);
-  });
-}
 
 /***/ }),
 
@@ -7230,6 +7399,6 @@ function once(emitter, name) {
 /******/ 	// module exports must be returned from runtime so entry inlining is disabled
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(358);
+/******/ 	return __webpack_require__(174);
 /******/ })()
 ;

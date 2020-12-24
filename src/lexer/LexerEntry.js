@@ -5,7 +5,8 @@
  * @author Astecom
  */
 
-const { CHARTYPE } = require('../classes/static');
+const { CHARTYPE } = require('../classes/static')
+    , { fromBytes } = require('../utils');
 
 /**
  * @lends LexerEntry
@@ -25,7 +26,7 @@ class LexerEntry {
      */
     constructor(type, data, position, s_separator) {
         this.type = type;
-        this.data = String.fromCharCode.apply(null, data);
+        this.data = fromBytes(data);
         this.position = position - data.length > 0 ? position - data.length + 1 : 0;
         this.leng = data.length;
         this.string_separator = s_separator != null ? String.fromCharCode(s_separator) : null;

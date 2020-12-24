@@ -73,6 +73,35 @@
 
 "use strict";
 
+/*~
+if (!window.setImmediate)
+    window.setImmediate = (function() {
+        var head = { }, tail = head;
+
+        var ID = Math.random();
+
+        function onmessage(e) {
+            if(e.data != ID) return;
+            head = head.next;
+            var func = head.func;
+            delete head.func;
+            func();
+        }
+
+        if(window.addEventListener) {
+            window.addEventListener('message', onmessage);
+        } else {
+            window.attachEvent( 'onmessage', onmessage );
+        }
+
+        return function(func) {
+            tail = tail.next = { func: func };
+
+            window.postMessage(ID, "*");
+        };
+    }());
+*/
+
 // #!secret
 console.warn('Attention! You use raw version of poonya! Please, use poonya.browser.bundle.js or poonya.node.bundle.js for correct work it.');
 
@@ -91,7 +120,7 @@ const
     lexer = require("./lexer/lexer.js");
 
 const RESULT = Symbol('RESULT')
-    , INIT = Symbol('Init');
+    , INIT = Symbol('INIT');
 
 /**
  * @lends PoonyaOutputStream
@@ -222,14 +251,7 @@ class CodeEmitter extends EventEmitter {
             
             if(SERVICE.LOADED) {
                 _[INIT](import_s, logger);
-
-                // #!if platform === 'node'
                 setImmediate(() => onload.call(_));
-                // #!endif
-
-                // #!if platform === 'browser'
-                // ~ setTimeout(() => onload.call(_), 0);
-                // #!endif
             } else {
                 SERVICE.ACTIONS.on('load', () => {
                     _[INIT](import_s, logger);
@@ -451,13 +473,7 @@ class CodeEmitter extends EventEmitter {
 
         // Если вхождения уже загружены, выполняем последовательность
         if(this.loaded) {
-            // #!if platform === 'node'
             setImmediate(() => this[RESULT](data, error, out));
-            // #!endif
-
-            // #!if platform === 'browser'
-            // ~ setTimeout(() => this[RESULT](data, error, out), 0);
-            // #!endif
         } else
             // Иначе, ждем окончания загрузки и выполняем последовательность
             this.on('load', () => this[RESULT](data, error, out));
@@ -511,9 +527,9 @@ class MessagePattern extends CodeEmitter {
 }
 
 /**
- * @lends ExcecutionPattern;
+ * @lends ExecutionPattern;
  */
-class ExcecutionPattern extends CodeEmitter {
+class ExecutionPattern extends CodeEmitter {
     /**
      * Шаблон кода, все что подается сюда, будет распознаваться как код шаблонизатора: <br> <br>
      * <code>
@@ -541,7 +557,7 @@ class ExcecutionPattern extends CodeEmitter {
      * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
      *
      * @memberof Poonya
-     * @constructs ExcecutionPattern
+     * @constructs ExecutionPattern
      * @protected
      */
     constructor(input, import_s, logger = console) {
@@ -659,43 +675,60 @@ class ExpressionPattern extends CodeEmitter {
     SERVICE.ACTIONS.emit('load');
 })();
 
+// #!if platform === 'browser'
+// POONYA POLYFILL
+/*~
+(() => {
+    const load = new Event('poonya:load');
+
+    function parseHTML(html) {
+        var t = document.createElement('template');
+
+        t.innerHTML = html;
+
+        return t.content.cloneNode(true);
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const entries = document.querySelectorAll('script[type="text/poonya"], script[lang="text/poonya"]');
+
+        for(let i = 0, leng = entries.length, name, handler, imports, block_load, pattern; i < leng; i++){
+            name = entries[i].getAttribute('name') ?? 'block-' + i;
+            handler = entries[i].getAttribute('handler') ?? 'exec';
+            imports = (entries[i].getAttribute('import') ?? '').split('|');
+
+            block_load = new Event('poonya:load:' + name);
+
+            if(handler == 'exec')
+                pattern = new ExecutionPattern(entries[i].innerHTML, imports);
+            else if(handler == 'message')
+                pattern = new MessagePattern(entries[i].innerHTML, imports);
+            else
+                throw new Error('Unknown pattern handler in block "' + name + '" type "' + handler + '"');
+            
+            await new Promise((res, rej) => {
+                pattern.on('load', async () => {
+                    entries[i].replaceWith(...(await (pattern.result()).complete()).map(e => parseHTML(e)));
+
+                    res();
+                });
+            });
+
+            window.dispatchEvent(block_load);
+        }
+
+        window.dispatchEvent(load);
+    });
+})();
+*/
+// #!endif
 
 module.exports.CodeEmitter = CodeEmitter;
 module.exports.MessagePattern = MessagePattern;
 module.exports.ExpressionPattern = ExpressionPattern;
-module.exports.ExcecutionPattern = ExcecutionPattern;
+module.exports.ExecutionPattern = ExecutionPattern;
 module.exports.ImportFile = ImportFile.bind(null, module.parent != null ? module.parent.path : module.path);
 
 // #!if platform === 'node'
 module.exports.ImportDir = ImportDir.bind(null, module.parent != null ? module.parent.path : module.path);
-// #!endif
-
-// #!if platform === 'browser'
-// ~ const load = new Event('poonya:load');
-// ~
-// ~ function parseHTML(html) {
-// ~     var t = document.createElement('template');
-// ~ 
-// ~     t.innerHTML = html;
-// ~ 
-// ~     return t.content.cloneNode(true);
-// ~ }
-// ~ 
-// ~ document.addEventListener('DOMContentLoaded', async () => {
-// ~     const entries = document.querySelectorAll('script[type="text/poonya"], script[lang="text/poonya"]');
-// ~ 
-// ~     for(let i = 0, leng = entries.length; i < leng; i++){
-// ~         const pattern = new ExcecutionPattern(entries[i].innerHTML, ['default.html']);
-// ~         
-// ~         await new Promise((res, rej) => {
-// ~            pattern.on('load', async () => {
-// ~                entries[i].replaceWith(...(await (pattern.result()).complete()).map(e => parseHTML(e)));
-// ~
-// ~                res();
-// ~            })
-// ~         })
-// ~
-// ~         window.dispatchEvent(load);
-// ~     }
-// ~ });
 // #!endif

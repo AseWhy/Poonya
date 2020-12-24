@@ -7,7 +7,7 @@
 
 const { Operand } = require('../common/ParserData')
     , { SERVICE } = require('../static')
-    , { NativeFunctionExcecutionError } = require('../exceptions')
+    , { NativeFunctionExecutionError } = require('../exceptions')
     , { iPoonyaObject, iPoonyaPrototype } = require('../interfaces');
 
 /**
@@ -62,7 +62,7 @@ class NativeFunction {
                 ...args_f
             );
         } catch (e) {
-            throw_error(call_pos, new NativeFunctionExcecutionError(this.target.name, e.stack));
+            throw_error(call_pos, new NativeFunctionExecutionError(this.target.name, e.stack));
         }
 
         switch (typeof data) {

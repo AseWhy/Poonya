@@ -1,6 +1,6 @@
 {
   "name": "poonya.js",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "Simple preprocessor for text",
   "main": "./dist/poonya.node.bundle.js",
   "directories": {
@@ -26,5 +26,10 @@
   "bugs": {
     "url": "https://github.com/AseWhy/Poonya/issues"
   },
-  "homepage": "https://github.com/AseWhy/Poonya#readme"
+  "homepage": "https://github.com/AseWhy/Poonya#readme",
+  "devDependencies": {
+    "mocha": "^8.2.1",
+    "webpack": "^5.11.0",
+    "webpack-preprocessor-loader": "^1.1.3"
+  }
 }

@@ -360,29 +360,31 @@ module.exports.ImportDir = ImportDir;
 // #!endif
 
 // #!if platform === 'browser'
-// ~ function crequire(id){
-// ~     if(id === 'poonya') {
-// ~         return require('./preset');
-// ~     } else {
-// ~         throw new Error('Unknown module ' + id);
-// ~     }
-// ~ }
-// ~ 
-// ~ ImportFile = (lib_dir, file) => {
-// ~     const path = lib_dir + '/' + file;
-// ~ 
-// ~     return new Promise(async (res, rej) => {
-// ~         try {
-// ~            let wait = await fetch(path, { method: "GET" });
-// ~ 
-// ~            wait = await wait.text();
-// ~ 
-// ~            res(new Function('require', `"use strict";${wait}`)(crequire));
-// ~         } catch (e) {
-// ~            rej(new IOError(path));
-// ~         }
-// ~     })
-// ~ }
+/*~
+function crequire(id){
+    if(id === 'poonya') {
+        return require('./preset');
+    } else {
+        throw new Error('Unknown module ' + id);
+    }
+}
+
+ImportFile = (lib_dir, file) => {
+    const path = lib_dir + '/' + file;
+
+    return new Promise(async (res, rej) => {
+        try {
+            let wait = await fetch(path, { method: "GET" });
+
+            wait = await wait.text();
+
+            res(new Function('require', `"use strict";${wait}`)(crequire));
+        } catch (e) {
+            rej(new IOError(path));
+        }
+    })
+}
+*/
 // #!endif
 
 module.exports.Import = Import;

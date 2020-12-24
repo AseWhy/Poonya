@@ -133,18 +133,46 @@ function toFixed(d, l) {
 /**
  * Преобразует строку в массив байтов
  *
- * @param {String} s Строка для преобразования
+ * @param {String} input Строка для преобразования
+ * @returns {Array<Number>} массив с байтами
  * @memberof Poonya.Utils
  * @function toBytes
  * @protected
  * @static
  */
-function toBytes(s) {
-    return s.split('').map(e => e.charCodeAt());
+function toBytes(input) {
+    let bytes = new Array();
+
+    for(let i = 0, char, leng = input.length; i < leng; i++)
+        bytes.push((char = input.charCodeAt(i)) >>> 8, char & 0xFF);
+    
+    console.log(bytes)
+
+    return bytes;
+}
+
+/**
+ * Преобразует массив байтов в строку
+ *
+ * @param {Array<Number>} input байты для преобразования
+ * @returns {String} преобразованная строка
+ * @memberof Poonya.Utils
+ * @function toBytes
+ * @protected
+ * @static
+ */
+function fromBytes(input) {
+    let string = '';
+
+    for(let i = 0, leng = input.length; i < leng; i += 2)
+        string += String.fromCharCode((input[i] << 8) | input[i + 1])
+    
+    return string;
 }
 
 module.exports.maybeEquals = maybeEquals;
 module.exports.countKeys = countKeys;
+module.exports.fromBytes = fromBytes;
 module.exports.toFixed = toFixed;
 module.exports.toBytes = toBytes;
 module.exports.Cast = Cast;

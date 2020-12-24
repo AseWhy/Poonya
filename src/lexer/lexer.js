@@ -18,7 +18,9 @@ const { CHARTYPE } = require('../classes/static')
  * @protected
  */
 function lexer(input, allow_spaces = true) {
-    const Export = new Array();
+    if(!Array.isArray(input)) {
+        throw TypeError('Only array-like data can be input to the lexer');
+    }
 
     let buff = new Array(),
         is_string = false,
@@ -28,14 +30,25 @@ function lexer(input, allow_spaces = true) {
         cur = null,
         last = null;
 
-    if(Array.isArray(input)) {
-        // Преобразуем входные данные в обычный массив, если на вход были поданы массив подобные данные
-        input = Array.from(input);
-    } else {
-        throw TypeError('Only array-like data can be input to the lexer');
+    const Export = new Array();
+
+    const clear = () => {
+        buff.splice(0, buff.length);
     }
 
-    for (let i = 0, leng = input.length; i < leng; i++) {
+    const append = (index) => {
+        buff.push(input[index - 1], input[index]);
+    }
+
+    const firstIs = (...is) => {
+        return is.includes(buff[1]);
+    }
+
+    const lastIs = (...is) => {
+        return is.includes(buff[buff.length - 1]);
+    }
+
+    for (let i = 1, leng = input.length; i < leng; i += 2) {
         switch (input[i]) {
             case 32:
             case 9:
@@ -97,17 +110,17 @@ function lexer(input, allow_spaces = true) {
             (cur === CHARTYPE.POINT && last === CHARTYPE.NUMBER) ||
             (cur === CHARTYPE.NUMBER && last === CHARTYPE.WORD)
         ) {
-            buff.push(input[i]);
+            append(i);
 
             continue;
         }
 
         // Префиксы чисел
         if(cur === CHARTYPE.NUMBER && last === CHARTYPE.OPERATOR) {
-            if (buff[0] === 43 || buff[0] === 45) {
+            if (firstIs(43, 45)) {
                 last = cur;
 
-                buff.push(input[i]);
+                append(i);
 
                 continue;
             }
@@ -116,20 +129,18 @@ function lexer(input, allow_spaces = true) {
         // Если предыдущий и текущий тип символов это операторы
         if (cur === CHARTYPE.OPERATOR && last === CHARTYPE.OPERATOR) {
             if (
-                buff.length === 1 && // В буффере не больше одного символа
-                (buff[0] === 33 || // пердыдущий символ был '!'
-                    buff[0] === 60 || // пердыдущий символ был '<'
-                    buff[0] === 62) && // пердыдущий символ был '>'
-                input[i] === 61 // текущий символ '='
+                buff.length === 1 &&    // В буффере не больше одного символа
+                firstIs(33, 60, 62) &&
+                input[i] === 61         // текущий символ '='
             ) {
-                buff.push(input[i]);
+                append(i);
 
                 if (allow_spaces || last !== CHARTYPE.SPACE)
                     Export.push(new LexerEntry(last, buff, i, string_entry));
 
                 string_entry = null;
 
-                buff.splice(0, buff.length);
+                clear(i);
 
                 last = undefined;
 
@@ -139,18 +150,18 @@ function lexer(input, allow_spaces = true) {
             }
 
             if (
-                buff.length === 1 && // В буффере не больше одного символа
-                buff[0] === 47 // Предыдущий символ это /
+                buff.length === 1 &&    // В буффере не больше одного символа
+                firstIs(47)             // Предыдущий символ это /
             ) {
                 if (
-                    input[i] === 47 // Текущий символ это /
+                    input[i] === 47     // Текущий символ это /
                 ) {
                     is_comment = true;
                     is_multiline = false;
 
                     continue;
                 } else if (
-                    input[i] === 62 // Текущий символ это >
+                    input[i] === 62     // Текущий символ это >
                 ) {
                     is_comment = true;
                     is_multiline = true;
@@ -162,15 +173,14 @@ function lexer(input, allow_spaces = true) {
 
         if (!is_string && !is_comment) {
             if (
-                (cur !== last || last === CHARTYPE.STRING || last === CHARTYPE.OPERATOR) &&
-                last != null
+                (cur !== last || last === CHARTYPE.STRING || last === CHARTYPE.OPERATOR) && last != null
             ) {
                 if (allow_spaces || last !== CHARTYPE.SPACE)
                     Export.push(new LexerEntry(last, buff, i, string_entry));
 
                 string_entry = null;
 
-                buff.splice(0, buff.length);
+                clear(i);
             }
 
             if (cur === CHARTYPE.STRING) {
@@ -183,20 +193,20 @@ function lexer(input, allow_spaces = true) {
                 continue;
             }
 
-            buff.push(input[i]);
+            append(i);
 
             last = cur;
         } else if (is_comment) {
             if (is_multiline) {
                 if (
                     input[i] === 47 && // Текущий символ это /
-                    buff[buff.length - 1] === 60 // Предыдущий символ это <
+                    lastIs(60) // Предыдущий символ это <
                 ) {
                     is_comment = false;
 
                     last = undefined;
 
-                    buff.splice(0, buff.length);
+                    clear(i);
 
                     continue;
                 }
@@ -206,13 +216,13 @@ function lexer(input, allow_spaces = true) {
 
                     last = CHARTYPE.NEWLINE;
 
-                    buff.splice(0, buff.length);
+                    clear(i);
 
                     continue;
                 }
             }
 
-            buff.push(input[i]);
+            append(i);
         } else {
             if (cur === CHARTYPE.STRING && input[i] === string_entry) {
                 is_string = false;
@@ -222,7 +232,7 @@ function lexer(input, allow_spaces = true) {
                 continue;
             }
 
-            buff.push(input[i]);
+            append(i);
 
             last = cur;
         }

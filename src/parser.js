@@ -110,8 +110,6 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                 if (entries[entries.length - 1].length !== 2)
                     throw_error(data[i].position, new ParserEmtyArgumentException());
 
-                console.log(data[i], i, data[i - 1])
-
                 return {
                     data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
                     jump: i - start
