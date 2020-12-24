@@ -19,7 +19,7 @@ System.register(
                                 } = __webpack_require__(294);
 
                                 const QUOTE_EXP = /"/g;
-                                const TAG_EXP = /\<([aA-zZ0-9]+)/;
+                                const TAG_EXP = /<([aA-zZ0-9]+)/;
 
                                 function format(val) {
                                     if (val === null) {
@@ -1084,7 +1084,7 @@ System.register(
                                         } else return null;
                                     }
 
-                                    length(service) {
+                                    length() {
                                         return this.data.length;
                                     }
                                 }
@@ -1154,9 +1154,9 @@ System.register(
                                     }
 
                                     includes(service, target) {
-                                        for (let [key, value] of this.fields) {
+                                        for (let field of this.fields) {
                                             if (
-                                                value.result(
+                                                field.value.result(
                                                     service.context,
                                                     null,
                                                     service.throw_error
@@ -1263,7 +1263,7 @@ System.register(
                                         return out;
                                     }
 
-                                    pop(service) {
+                                    pop() {
                                         const buffer = this.fields.get(
                                             this.fields.size - 1
                                         );
@@ -4463,7 +4463,8 @@ System.register(
                                  * @license MIT
                                  */
 
-                                const { Operand } = __webpack_require__(62);
+                                const { Operand } = __webpack_require__(62),
+                                    { SERVICE } = __webpack_require__(635);
                                 /**
                                  * @lends ObjectContructorCall
                                  * @protected

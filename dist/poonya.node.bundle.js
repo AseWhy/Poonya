@@ -2081,7 +2081,8 @@ module.exports = /******/ (() => {
              * @license MIT
              */
 
-            const { Operand } = __webpack_require__(62);
+            const { Operand } = __webpack_require__(62),
+                { SERVICE } = __webpack_require__(635);
             /**
              * @lends ObjectContructorCall
              * @protected

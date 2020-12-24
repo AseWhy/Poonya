@@ -34,7 +34,7 @@ new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
             return Math.abs(n);
         return null;
     }
-}
+};
 
 new class DefaultRegExpStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
@@ -51,7 +51,7 @@ new class DefaultRegExpStaticLibrary extends PoonyaStaticLibrary {
     replace (service, expression, flags, string, to) {
         return string.replace(new RegExp(expression, flags ? flags : undefined), to);
     }
-}
+};
 
 new class DefaultDatesStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
@@ -91,9 +91,9 @@ new class DefaultDatesStaticLibrary extends PoonyaStaticLibrary {
     }
 
     now(){
-        return Date.now()
+        return Date.now();
     }
-}
+};
 
 new class DefaultNumbersStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
@@ -106,7 +106,7 @@ new class DefaultNumbersStaticLibrary extends PoonyaStaticLibrary {
 
     random(service, f, t){
         if(typeof f == 'number' && typeof t == 'number' && !isNaN(f) && !isNaN(t))
-            return Math.random()
+            return Math.random();
         else
             return Math.round(f + Math.random() * (t - f));
     }
@@ -118,7 +118,7 @@ new class DefaultNumbersStaticLibrary extends PoonyaStaticLibrary {
     parseInt(service, numb){
         return isNaN(numb = parseInt(numb)) ? null : numb;
     }
-}
+};
 
 class PoonyaObjectPrototype extends PoonyaPrototype {
     constructor(){
@@ -206,7 +206,7 @@ class PoonyaStringPrototype extends PoonyaPrototype {
         } else return null;
     }
 
-    length(service) {
+    length() {
         return this.data.length;
     }
 }
@@ -231,8 +231,8 @@ class PoonyaArrayPrototype extends PoonyaPrototype {
     }
 
     includes(service, target){
-        for(let [key, value] of this.fields){
-            if(value.result(service.context, null, service.throw_error) == target)
+        for(let field of this.fields){
+            if(field.value.result(service.context, null, service.throw_error) == target)
                 return true;
         }
 
@@ -244,7 +244,7 @@ class PoonyaArrayPrototype extends PoonyaPrototype {
             service.throw_error(service.position, new Exceptions.PoonyaException('From must have a number type'));
 
         if(typeof to != 'number' || isNaN(to))
-            service.throw_error(service.position, new Exceptions.PoonyaException('To must have a number type'))
+            service.throw_error(service.position, new Exceptions.PoonyaException('To must have a number type'));
 
         const delta = to - from;
 
@@ -269,7 +269,7 @@ class PoonyaArrayPrototype extends PoonyaPrototype {
     }
 
     append(service, value){
-        this.push(value)
+        this.push(value);
     }
 
     concat(service, ...args){
@@ -299,7 +299,7 @@ class PoonyaArrayPrototype extends PoonyaPrototype {
         return out;
     }
 
-    pop(service){
+    pop(){
         const buffer = this.fields.get(this.fields.size - 1);
 
         this.fields.remove(this.fields.size - 1);
@@ -333,6 +333,6 @@ new class DefaultStaticLibrary extends PoonyaStaticLibrary {
     }
 
     log(service, ...args){
-        console.log(...args)
+        console.log(...args);
     }
-}
+};

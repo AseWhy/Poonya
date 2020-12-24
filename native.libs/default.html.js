@@ -1,7 +1,7 @@
 const { PoonyaStaticLibrary, FIELDFLAGS }= require('poonya');
 
 const QUOTE_EXP = /"/g;
-const TAG_EXP = /\<([aA-zZ0-9]+)/;
+const TAG_EXP = /<([aA-zZ0-9]+)/;
 
 function format(val){
     if(val === null){
@@ -131,7 +131,7 @@ new class DefaultTagsStaticLibrary extends PoonyaStaticLibrary {
 		this.addField('VIDEO', 'video', FIELDFLAGS.CONSTANT);
 		this.addField('WBR', 'wbr', FIELDFLAGS.CONSTANT);
     }
-}
+};
 
 new class DefaultHtmlStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
@@ -192,4 +192,4 @@ new class DefaultHtmlStaticLibrary extends PoonyaStaticLibrary {
             return null;
         }
     }
-}
+};

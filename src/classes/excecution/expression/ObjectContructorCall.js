@@ -9,7 +9,8 @@
 
 "use strict";
 
-const { Operand } = require('../../common/ParserData');
+const { Operand } = require('../../common/ParserData')
+    , { SERVICE } = require('../../static');
 
 /**
  * @lends ObjectContructorCall
