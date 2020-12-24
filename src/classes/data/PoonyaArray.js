@@ -5,6 +5,8 @@
  * @license MIT
  */
 
+"use strict";
+
 const { FIELDFLAGS } = require("../static")
     ,   PoonyaObject = require("./PoonyaObject")
     ,   NativeFunction = require('./NativeFunction');

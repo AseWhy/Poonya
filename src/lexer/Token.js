@@ -1,18 +1,20 @@
 /**
- * @file src/LexerEntry.js
+ * @file src/Token.js
  * @description Содержит в себе класс вхождение лексера, массив которых получается на выходе из лексера
  * @license MIT
  * @author Astecom
  */
 
+"use strict";
+
 const { CHARTYPE } = require('../classes/static')
     , { fromBytes } = require('../utils');
 
 /**
- * @lends LexerEntry
+ * @lends Token
  * @class
  */
-class LexerEntry {
+class Token {
     /**
      * Вхождение лексера
      *
@@ -20,7 +22,7 @@ class LexerEntry {
      * @param {Array} data Данные вхождения
      * @param {Number} position Позиция вхождения
      * @param {String} s_separator Дополнительное окружение вхождения, допустим для строки это ''
-     * @constructs LexerEntry
+     * @constructs Token
      * @memberof Poonya.Lexer
      * @protected
      */
@@ -82,4 +84,4 @@ class LexerEntry {
     }
 }
 
-module.exports = LexerEntry;
+module.exports = Token;

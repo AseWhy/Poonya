@@ -22,6 +22,10 @@ let question, allow = ["y", "yes", "н", "нуы"];
 async function main(){
     let confirm;
 
+    console.log("running tests");
+
+    console.log(execSync('mocha ./tests').toString('utf-8'));
+
     console.log("building jsdoc");
 
     rmdirSync('docs', { recursive: true, force: true });

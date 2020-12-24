@@ -5,6 +5,8 @@
  * @author Astecom
  */
 
+"use strict";
+
 const 
     // #!if platform === 'node'
     Module = require('module'),

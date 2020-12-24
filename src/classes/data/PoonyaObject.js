@@ -5,6 +5,8 @@
  * @license MIT
  */
 
+"use strict";
+
 const { 
             BadKeyInvalidTypeException
         ,   BadKeyProtectedFieldException 

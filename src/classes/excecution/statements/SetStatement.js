@@ -1,24 +1,26 @@
 /**
- * @file src/classes/excecution/statements/SetOperator.js
+ * @file src/classes/excecution/statements/SetStatement.js
  * @description Содержит в себе оператор set, который используется для устновки значения в области памяти
  * @author Astecom
  * @license MIT
  */
 
+"use strict";
+
 const { TheFieldAlreadyHasBeenDeclaredException } = require('../../exceptions');
 
 /**
- * @lends SetOperator
+ * @lends SetStatement
  * @protected
  */
-class SetOperator {
+class SetStatement {
     /**
      * Объект который Сериализуется как set = (expression...)
      *
      * @param {String} name поле, которое нужно установить в текущем контексте
      * @param {ExpressionGroup} value Значение, которое поле получит после выполнения этого вхождения
      *
-     * @constructs SetOperator
+     * @constructs SetStatement
      * @memberof Poonya.Statements
      * @protected
      */
@@ -60,4 +62,4 @@ class SetOperator {
     }
 }
 
-module.exports = SetOperator;
+module.exports = SetStatement;

@@ -5,8 +5,10 @@
  * @author Astecom
  */
 
+"use strict";
+
 const { CHARTYPE } = require('../classes/static')
-    ,   LexerEntry = require('./LexerEntry');
+    ,   Token = require('./Token');
 
 /**
  * Лексер, который производит лексический разбор подаваемого текста в буффере
@@ -129,14 +131,14 @@ function lexer(input, allow_spaces = true) {
         // Если предыдущий и текущий тип символов это операторы
         if (cur === CHARTYPE.OPERATOR && last === CHARTYPE.OPERATOR) {
             if (
-                buff.length === 1 &&    // В буффере не больше одного символа
+                buff.length === 2 &&    // В буффере не больше одного символа
                 firstIs(33, 60, 62) &&
                 input[i] === 61         // текущий символ '='
             ) {
                 append(i);
 
                 if (allow_spaces || last !== CHARTYPE.SPACE)
-                    Export.push(new LexerEntry(last, buff, i, string_entry));
+                    Export.push(new Token(last, buff, i, string_entry));
 
                 string_entry = null;
 
@@ -150,7 +152,7 @@ function lexer(input, allow_spaces = true) {
             }
 
             if (
-                buff.length === 1 &&    // В буффере не больше одного символа
+                buff.length === 2 &&    // В буффере не больше одного символа
                 firstIs(47)             // Предыдущий символ это /
             ) {
                 if (
@@ -176,7 +178,7 @@ function lexer(input, allow_spaces = true) {
                 (cur !== last || last === CHARTYPE.STRING || last === CHARTYPE.OPERATOR) && last != null
             ) {
                 if (allow_spaces || last !== CHARTYPE.SPACE)
-                    Export.push(new LexerEntry(last, buff, i, string_entry));
+                    Export.push(new Token(last, buff, i, string_entry));
 
                 string_entry = null;
 
@@ -240,10 +242,10 @@ function lexer(input, allow_spaces = true) {
 
     if (allow_spaces || cur !== CHARTYPE.SPACE)
         Export.push(
-            new LexerEntry(
+            new Token(
                 cur,
                 buff,
-                input.byteLength - buff.length - 1,
+                input.length - buff.length - 1,
                 string_entry
             )
         );

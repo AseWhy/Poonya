@@ -5,6 +5,7 @@
  * @license MIT
  */
 
+"use strict";
 
 /**
  * @lends IfStatement

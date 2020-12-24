@@ -1,20 +1,22 @@
 /**
- * @file src/classes/excecution/statements/OutOperator.js
+ * @file src/classes/excecution/statements/OutStatement.js
  * @description Содержит в себе оператор вывода, который используется для вывода информации из шаблона
  * @author Astecom
  * @license MIT
  */
 
+"use strict";
+
 /**
- * @lends OutOperator
+ * @lends OutStatement
  * @protected
  */
-class OutOperator {
+class OutStatement {
     /**
      * Оператор вывода который Сериализуется как > (...expression)
      * Выводит данные из шаблона
      *
-     * @constructs OutOperator
+     * @constructs OutStatement
      *
      * @param {ExpressionGroup} expression выражение, результаты выполнения которого будем выводить
      *
@@ -56,4 +58,4 @@ class OutOperator {
     }
 }
 
-module.exports = OutOperator;
+module.exports = OutStatement;

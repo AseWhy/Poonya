@@ -5,6 +5,8 @@
  * @license MIT
  */
 
+"use strict";
+
 const { OPERATOR } = require('../static');
 
 /**
@@ -49,7 +51,7 @@ class Operand extends ParserData {
  */
 class Operator extends ParserData {
     /**
-     * @param {LexerEntry} data вхождение лексера описывающее текущий оператор
+     * @param {Token} data вхождение лексера описывающее текущий оператор
      * @constructs Operator
      * @memberof Poonya
      * @extends ParserData

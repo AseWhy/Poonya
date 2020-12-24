@@ -116,7 +116,7 @@ const
     { Context, Heap } = require("./classes/storage"),
     { parser, parseExpression, parserMP } = require("./parser.js"),
     { SERVICE } = require('./classes/static'),
-    { toFixed, toBytes } = require('./utils'),
+    { toFixed, toBytes, fromBytes } = require('./utils'),
     lexer = require("./lexer/lexer.js");
 
 const RESULT = Symbol('RESULT')
@@ -288,6 +288,9 @@ class CodeEmitter extends EventEmitter {
                         _.path,
                         _.charset,
                         (error, data) => {
+                            if(error)
+                                throw error;
+
                             _.input = data;
 
                             if(SERVICE.LOADED) {
@@ -347,14 +350,13 @@ class CodeEmitter extends EventEmitter {
     throwError(pos, message, rad_of = 5) {
         rad_of = parseInt(rad_of);
 
-        let buffer = [message instanceof PoonyaException ? message.message : message],
+        let buffer = [],
 
             data = this.input.split("\n"),
 
-            line_dump = toBytes(this.input)
-                .slice(0, pos)
-                .map(e => String.fromCharCode(e))
-                .join('')
+            line_dump = fromBytes(
+                    toBytes(this.input).slice(0, pos)
+                )
                 .split("\n"),
 
             line = line_dump.length - 1,
@@ -372,25 +374,23 @@ class CodeEmitter extends EventEmitter {
             ll = line_end.toString(16).length + 2;
 
         buffer.push(
-            ", at ",
+            "  at ",
             this.path,
-            ", at ",
-            line,
-            ":", line_dump[line].length,
-            " symbol",
+            ':',
+            line + 1,
+            ":", line_dump[line].length + 1,
         );
 
         if(pos != -1) {
             buffer.push(' :>\n');
 
             for (let i = line_start; i < line_end; i++) {
-                buffer.push(" ", toFixed(i, ll), " |> ", data[i]);
+                buffer.push("     ", toFixed(i + 1, ll), " |> ", data[i]);
 
                 if (i === line) {
                     buffer.push(
-                        "\n ",
-                        new Array(ll + 1).join(" "),
-                        " |> " + new Array(line_dump[line].length).join(" "),
+                        "\n     ".padEnd(ll + 6, ' '),
+                        " |> ".padEnd(line_dump[line].length + 4, ' '),
                         "^",
                     );
                 }
@@ -399,7 +399,7 @@ class CodeEmitter extends EventEmitter {
             }
         }
         
-        throw new Error(message.message + '\n' + buffer.join(""));
+        throw new Error(message.message + ': \n' + buffer.join(""));
     }
 
     /**
@@ -476,7 +476,7 @@ class CodeEmitter extends EventEmitter {
             setImmediate(() => this[RESULT](data, error, out));
         } else
             // Иначе, ждем окончания загрузки и выполняем последовательность
-            this.on('load', () => this[RESULT](data, error, out));
+            this.addListener('load', () => this[RESULT](data, error, out));
 
         return out;
     }
@@ -517,7 +517,13 @@ class MessagePattern extends CodeEmitter {
      */
     constructor(input, block_prefix = 'poonya', import_s, logger = console) {
         super(input, import_s, logger, async () => {
-            this.data = await parserMP(lexer(toBytes(this.input)), block_prefix, this.throwError.bind(this), this.path);
+            try {
+                this.data = await parserMP(lexer(toBytes(this.input)), block_prefix, this.throwError.bind(this), this.path);
+            } catch (e) {
+                this.emit('error', e);
+
+                throw e;
+            }
 
             this.loaded = true;
 
@@ -562,7 +568,13 @@ class ExecutionPattern extends CodeEmitter {
      */
     constructor(input, import_s, logger = console) {
         super(input, import_s, logger, async () => {
-            this.data = await parser(lexer(toBytes(this.input), false), this.throwError.bind(this), this.path);
+            try {
+                this.data = await parser(lexer(toBytes(this.input), false), this.throwError.bind(this), this.path);
+            } catch (e) {
+                this.emit('error', e);
+
+                throw e;
+            }
 
             this.loaded = true;
 
@@ -594,7 +606,13 @@ class ExpressionPattern extends CodeEmitter {
      */
     constructor(input, import_s, logger = console) {
         super(input, import_s, logger, () => {
-            this.data = parseExpression(0, lexer(toBytes(this.input), false), this.throwError.bind(this)).data;
+            try {
+                this.data = parseExpression(0, lexer(toBytes(this.input), false), this.throwError.bind(this)).data;
+            } catch (e) {
+                this.emit('error', e);
+
+                throw e;
+            }
             
             this.loaded = true;
 

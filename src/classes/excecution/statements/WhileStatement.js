@@ -1,9 +1,11 @@
 /**
  * @file src/classes/excecution/statements/WhileStatement.js
- * @description Содержит в себе оператор while, который используется для создания цикличных условных операций
+ * @description Содержит в себе инструкцию while, который используется для создания цикличных условных операций
  * @author Astecom
  * @license MIT
  */
+
+"use strict";
 
 /**
  * @lends WhileStatement
@@ -11,7 +13,7 @@
  */
 class WhileStatement {
     /**
-     * Дескриптор оператора while
+     * Дескриптор инструкции while
      *
      * @param {ExpressionGroup} condition Выражение - условие
      * @param {SequenceGroup} body Основная исполняемая последовательность

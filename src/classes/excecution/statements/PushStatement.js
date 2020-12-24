@@ -1,9 +1,11 @@
 /**
- * @file src/classes/excecution/statements/PushOperator.js
+ * @file src/classes/excecution/statements/PushStatement.js
  * @description Содержит в себе оператор вставки, который используется для обновления массива, путем вставки в его конец значения
  * @author Astecom
  * @license MIT
  */
+
+"use strict";
 
 const ExpressionGroup = require('../expression/ExpressionGroup'),
     {
@@ -14,10 +16,10 @@ const ExpressionGroup = require('../expression/ExpressionGroup'),
     ,   PoonyaObject = require('../../data/PoonyaObject');
 
 /**
- * @lends PushOperator
+ * @lends PushStatement
  * @protected
  */
-class PushOperator {
+class PushStatement {
     /**
      * Объект который Сериализуется как var_name <- (expression...)
      * Это опреатор для работы с массивами, и он заменяет свойство push
@@ -26,7 +28,7 @@ class PushOperator {
      * @param {String[]} query_stack Путь к полю которое поле получит
      * @param {ExpressionGroup} value Данные которые нужно устновить
      *
-     * @constructs PushOperator
+     * @constructs PushStatement
      * @memberof Poonya.Statements
      * @protected
      */
@@ -91,4 +93,4 @@ class PushOperator {
     }
 }
 
-module.exports = PushOperator;
+module.exports = PushStatement;

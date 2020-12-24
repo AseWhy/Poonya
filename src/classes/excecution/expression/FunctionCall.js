@@ -5,10 +5,12 @@
  * @license MIT
  */
 
+"use strict";
+
 const { Operand } = require('../../common/ParserData')
     , { UnableToCreateAnObjectException, FieldNotAFunctionException } = require('../../exceptions')
     , { iPoonyaPrototype } = require('../../interfaces')
-        NativeFunction = require('../../data/NativeFunction');
+    ,   NativeFunction = require('../../data/NativeFunction');
 
 /**
  * @lends FunctionCall

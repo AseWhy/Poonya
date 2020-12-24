@@ -5,6 +5,8 @@
  * @license MIT
  */
 
+"use strict";
+
 const { Operand } = require('../common/ParserData')
     , { SERVICE } = require('../static')
     , { NativeFunctionExecutionError } = require('../exceptions')

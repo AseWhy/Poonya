@@ -5,6 +5,8 @@
  * @author Astecom
  */
 
+"use strict";
+
 const { GetFieldOfNullException, IsNotAConstructorException } = require('./exceptions')
     , { GET, SERVICE, IS } = require('./static')
     , { Cast } = require('../utils.js')

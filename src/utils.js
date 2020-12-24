@@ -5,6 +5,8 @@
  * @author Astecom
  */
 
+"use strict";
+
 const {
         SERVICE
     } = require('./classes/static'), {
@@ -83,7 +85,7 @@ function Cast(data, context, parents_three = new Array()) {
  * <br>
  * И это все будет if, эта функцию убирает возможные 'линие символы'
  *
- * @param {Array<LexerEntry>} entries Выхождение, на вход
+ * @param {Array<Token>} entries Выхождение, на вход
  * @param {Number} index Проверяемый индекс
  * @param {String} equalts_t Тип с которым сравниваем
  * @param {String|Array<String>} equalts_v Значение(я) с которым(и) сравниваем
@@ -92,9 +94,8 @@ function Cast(data, context, parents_three = new Array()) {
  * @private
  */
 function maybeEquals(entries, index, equalts_t, equalts_v) {
-    while (entries[index].equals(equalts_t, equalts_v)) {
+    while (entries[index].equals(equalts_t, equalts_v))
         entries.splice(index, 1);
-    }
 
     return true;
 }
@@ -102,7 +103,7 @@ function maybeEquals(entries, index, equalts_t, equalts_v) {
 /**
  * Подсчитывает количиство неприрывных одинаковых вхождений
  *
- * @param {Array<LexerEntry>} entries вхождения для парсинга
+ * @param {Array<Token>} entries вхождения для парсинга
  * @param {Number} start начальная позиция парсинга
  * @param {String} equalts_t Тип с которым сравниваем
  * @param {String|Array<String>} equalts_v Значение(я) с которым(и) сравниваем
@@ -111,9 +112,8 @@ function maybeEquals(entries, index, equalts_t, equalts_v) {
  * @private
  */
 function countKeys(entries, start, equalts_t, equalts_v) {
-    for (let i = start, to = entries.length; i < to; i++) {
+    for (let i = start, to = entries.length; i < to; i++)
         if (entries[i] == null || !entries[i].equals(equalts_t, equalts_v)) return i - start;
-    }
 }
 
 /**
@@ -133,10 +133,10 @@ function toFixed(d, l) {
 /**
  * Преобразует строку в массив байтов
  *
- * @param {String} input Строка для преобразования
- * @returns {Array<Number>} массив с байтами
- * @memberof Poonya.Utils
  * @function toBytes
+ * @param {String} input Строка для преобразования
+ * @memberof Poonya.Utils
+ * @returns {Array<Number>} массив с байтами
  * @protected
  * @static
  */
@@ -145,8 +145,6 @@ function toBytes(input) {
 
     for(let i = 0, char, leng = input.length; i < leng; i++)
         bytes.push((char = input.charCodeAt(i)) >>> 8, char & 0xFF);
-    
-    console.log(bytes)
 
     return bytes;
 }
@@ -154,10 +152,10 @@ function toBytes(input) {
 /**
  * Преобразует массив байтов в строку
  *
- * @param {Array<Number>} input байты для преобразования
- * @returns {String} преобразованная строка
- * @memberof Poonya.Utils
  * @function toBytes
+ * @param {Array<Number>} input байты для преобразования
+ * @memberof Poonya.Utils
+ * @returns {String} преобразованная строка
  * @protected
  * @static
  */

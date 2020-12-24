@@ -5,6 +5,8 @@
  * @license MIT
  */
 
+"use strict";
+
 const { TheFieldMustBeNumberException } = require('../../exceptions')
     ,   PoonyaNumber = require('../../data/PoonyaNumber');
 

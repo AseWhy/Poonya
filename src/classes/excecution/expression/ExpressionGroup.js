@@ -5,6 +5,8 @@
  * @license MIT
  */
 
+"use strict";
+
 const { Operand, Operator } = require('../../common/ParserData')
     , { CHARTYPE, OPERATOR, SERVICE } = require('../../static')
     , { UnableToRecognizeTypeException, TheSequenceException } = require('../../exceptions')
@@ -19,7 +21,7 @@ class ExpressionGroup extends Operand {
      * Группа выражения, водержит последовательность, кторая выполняется как выражение.
      *
      * @param {Number} position начало выражения
-     * @param {?Array<LexerEntry>} initial иницированное значение выражения
+     * @param {?Array<Token>} initial иницированное значение выражения
      *
      * @constructs MessagePattern
      * @memberof Poonya.Expression
@@ -58,7 +60,7 @@ class ExpressionGroup extends Operand {
     /**
      * Добавляет вхождение в выражение
      *
-     * @param {LexerEntry} entry Выхождение, которое нужно добавить
+     * @param {Token} entry Выхождение, которое нужно добавить
      * @param {Function} throw_error Функция выбрасывания ошибок
      *
      * @throws {Exceptions.TheSequenceException}

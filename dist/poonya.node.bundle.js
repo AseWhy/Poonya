@@ -1,5 +1,6 @@
 module.exports =
 /******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 62:
@@ -11,6 +12,8 @@ module.exports =
  * @author Astecom
  * @license MIT
  */
+
+
 const {
   OPERATOR
 } = __webpack_require__(635);
@@ -61,7 +64,7 @@ class Operand extends ParserData {
 
 class Operator extends ParserData {
   /**
-   * @param {LexerEntry} data вхождение лексера описывающее текущий оператор
+   * @param {Token} data вхождение лексера описывающее текущий оператор
    * @constructs Operator
    * @memberof Poonya
    * @extends ParserData
@@ -165,6 +168,8 @@ module.exports.ParserData = ParserData;
  * @author Astecom
  * @license MIT
  */
+
+
 const {
   Operand
 } = __webpack_require__(62),
@@ -284,6 +289,8 @@ module.exports = NativeFunction;
  * @author Astecom
  * @license MIT
  */
+
+
 const {
   FIELDFLAGS
 } = __webpack_require__(635),
@@ -406,6 +413,8 @@ module.exports = PoonyaArray;
  * @author Astecom
  * @license MIT
  */
+
+
 const PoonyaObject = __webpack_require__(940);
 /**
  * @lends PoonyaBoolean
@@ -511,6 +520,8 @@ module.exports = PoonyaBoolean;
  * @author Astecom
  * @license MIT
  */
+
+
 const PoonyaObject = __webpack_require__(940);
 /**
  * @lends PoonyaInteger
@@ -616,6 +627,8 @@ module.exports = PoonyaInteger;
  * @author Astecom
  * @license MIT
  */
+
+
 const PoonyaObject = __webpack_require__(940);
 /**
  * @lends PoonyaNull
@@ -717,6 +730,8 @@ module.exports = PoonyaNull;
  * @author Astecom
  * @license MIT
  */
+
+
 const PoonyaObject = __webpack_require__(940);
 /**
  * @lends PoonyaNumber
@@ -822,6 +837,8 @@ module.exports = PoonyaNumber;
  * @author Astecom
  * @license MIT
  */
+
+
 const {
   BadKeyInvalidTypeException,
   BadKeyProtectedFieldException
@@ -1088,6 +1105,8 @@ module.exports = PoonyaObject;
  * @author Astecom
  * @license MIT
  */
+
+
 const {
   IS,
   GET,
@@ -1266,6 +1285,8 @@ module.exports = PoonyaPrototype;
  * @author Astecom
  * @license MIT
  */
+
+
 const PoonyaObject = __webpack_require__(940);
 /**
  * @lends PoonyaString
@@ -1391,6 +1412,8 @@ module.exports = PoonyaString;
  * @author Astecom
  * @license MIT
  */
+
+
 const {
   Operand,
   Operator
@@ -1418,7 +1441,7 @@ class ExpressionGroup extends Operand {
    * Группа выражения, водержит последовательность, кторая выполняется как выражение.
    *
    * @param {Number} position начало выражения
-   * @param {?Array<LexerEntry>} initial иницированное значение выражения
+   * @param {?Array<Token>} initial иницированное значение выражения
    *
    * @constructs MessagePattern
    * @memberof Poonya.Expression
@@ -1457,7 +1480,7 @@ class ExpressionGroup extends Operand {
   /**
    * Добавляет вхождение в выражение
    *
-   * @param {LexerEntry} entry Выхождение, которое нужно добавить
+   * @param {Token} entry Выхождение, которое нужно добавить
    * @param {Function} throw_error Функция выбрасывания ошибок
    *
    * @throws {Exceptions.TheSequenceException}
@@ -1708,6 +1731,8 @@ module.exports = ExpressionGroup;
  * @author Astecom
  * @license MIT
  */
+
+
 const {
   Operand
 } = __webpack_require__(62),
@@ -1717,13 +1742,13 @@ const {
 } = __webpack_require__(707),
       {
   iPoonyaPrototype
-} = __webpack_require__(779);
-
-NativeFunction = __webpack_require__(492);
+} = __webpack_require__(779),
+      NativeFunction = __webpack_require__(492);
 /**
  * @lends FunctionCall
  * @protected
  */
+
 
 class FunctionCall extends Operand {
   /**
@@ -1791,6 +1816,8 @@ module.exports = FunctionCall;
  * @author Astecom
  * @license MIT
  */
+
+
 const {
   Operand
 } = __webpack_require__(62),
@@ -1874,6 +1901,8 @@ module.exports = GetOperator;
  * @author Astecom
  * @license MIT
  */
+
+
 const {
   Operand
 } = __webpack_require__(62);
@@ -1955,6 +1984,8 @@ module.exports = ObjectContructorCall;
  * @author Astecom
  * @license MIT
  */
+
+
 const {
   Operand
 } = __webpack_require__(62);
@@ -2034,6 +2065,7 @@ module.exports = TernarOperator;
  * @lends IfStatement
  * @protected
  */
+
 class IfStatement {
   /**
    * Дескриптор оператора if
@@ -2088,26 +2120,27 @@ module.exports = IfStatement;
 
 /***/ }),
 
-/***/ 862:
+/***/ 674:
 /***/ ((module) => {
 
 /**
- * @file src/classes/excecution/statements/OutOperator.js
+ * @file src/classes/excecution/statements/OutStatement.js
  * @description Содержит в себе оператор вывода, который используется для вывода информации из шаблона
  * @author Astecom
  * @license MIT
  */
 
 /**
- * @lends OutOperator
+ * @lends OutStatement
  * @protected
  */
-class OutOperator {
+
+class OutStatement {
   /**
    * Оператор вывода который Сериализуется как > (...expression)
    * Выводит данные из шаблона
    *
-   * @constructs OutOperator
+   * @constructs OutStatement
    *
    * @param {ExpressionGroup} expression выражение, результаты выполнения которого будем выводить
    *
@@ -2150,19 +2183,21 @@ class OutOperator {
 
 }
 
-module.exports = OutOperator;
+module.exports = OutStatement;
 
 /***/ }),
 
-/***/ 355:
+/***/ 834:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
- * @file src/classes/excecution/statements/PushOperator.js
+ * @file src/classes/excecution/statements/PushStatement.js
  * @description Содержит в себе оператор вставки, который используется для обновления массива, путем вставки в его конец значения
  * @author Astecom
  * @license MIT
  */
+
+
 const ExpressionGroup = __webpack_require__(606),
       {
   TheFieldMustBeAnArrayInstanceExceprion,
@@ -2171,12 +2206,12 @@ const ExpressionGroup = __webpack_require__(606),
       PoonyaArray = __webpack_require__(358),
       PoonyaObject = __webpack_require__(940);
 /**
- * @lends PushOperator
+ * @lends PushStatement
  * @protected
  */
 
 
-class PushOperator {
+class PushStatement {
   /**
    * Объект который Сериализуется как var_name <- (expression...)
    * Это опреатор для работы с массивами, и он заменяет свойство push
@@ -2185,7 +2220,7 @@ class PushOperator {
    * @param {String[]} query_stack Путь к полю которое поле получит
    * @param {ExpressionGroup} value Данные которые нужно устновить
    *
-   * @constructs PushOperator
+   * @constructs PushStatement
    * @memberof Poonya.Statements
    * @protected
    */
@@ -2238,7 +2273,7 @@ class PushOperator {
 
 }
 
-module.exports = PushOperator;
+module.exports = PushStatement;
 
 /***/ }),
 
@@ -2251,6 +2286,8 @@ module.exports = PushOperator;
  * @author Astecom
  * @license MIT
  */
+
+
 const {
   TheFieldMustBeNumberException
 } = __webpack_require__(707),
@@ -2328,15 +2365,17 @@ module.exports = RepeatStatement;
 
 /***/ }),
 
-/***/ 956:
+/***/ 436:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
- * @file src/classes/excecution/statements/ResetOperator.js
+ * @file src/classes/excecution/statements/ResetStatement.js
  * @description Содержит в себе оператор обновления значения переменной
  * @author Astecom
  * @license MIT
  */
+
+
 const ExpressionGroup = __webpack_require__(606),
       {
   iPoonyaObject
@@ -2346,12 +2385,12 @@ const ExpressionGroup = __webpack_require__(606),
   GetFieldOfNullException
 } = __webpack_require__(707);
 /**
- * @lends ResetOperator
+ * @lends ResetStatement
  * @protected
  */
 
 
-class ResetOperator {
+class ResetStatement {
   /**
    * Производит переустновку значения переменной переданной как левой операнд на выражение, которое передано как правый операнд.
    * Объект который сериализуется как name = (...expression)
@@ -2360,7 +2399,7 @@ class ResetOperator {
    * @param {String[]} query_stack Путь поля в памяти
    * @param {ExpressionGroup} value Данные которые нужно устновить
    *
-   * @constructs PushOperator
+   * @constructs PushStatement
    * @memberof Poonya.Statements
    * @protected
    */
@@ -2418,7 +2457,7 @@ class ResetOperator {
 
 }
 
-module.exports = ResetOperator;
+module.exports = ResetStatement;
 
 /***/ }),
 
@@ -2436,6 +2475,7 @@ module.exports = ResetOperator;
  * @lends SequenceGroup;
  * @protected
  */
+
 class SequenceGroup {
   /**
    * Исполняемая последовательность
@@ -2513,6 +2553,7 @@ module.exports = SequenceGroup;
  * @lends SequenceMainGroup;
  * @protected
  */
+
 class SequenceMainGroup {
   /**
    * Главная исполняемая последовательность
@@ -2572,32 +2613,34 @@ module.exports = SequenceMainGroup;
 
 /***/ }),
 
-/***/ 375:
+/***/ 259:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
- * @file src/classes/excecution/statements/SetOperator.js
+ * @file src/classes/excecution/statements/SetStatement.js
  * @description Содержит в себе оператор set, который используется для устновки значения в области памяти
  * @author Astecom
  * @license MIT
  */
+
+
 const {
   TheFieldAlreadyHasBeenDeclaredException
 } = __webpack_require__(707);
 /**
- * @lends SetOperator
+ * @lends SetStatement
  * @protected
  */
 
 
-class SetOperator {
+class SetStatement {
   /**
    * Объект который Сериализуется как set = (expression...)
    *
    * @param {String} name поле, которое нужно установить в текущем контексте
    * @param {ExpressionGroup} value Значение, которое поле получит после выполнения этого вхождения
    *
-   * @constructs SetOperator
+   * @constructs SetStatement
    * @memberof Poonya.Statements
    * @protected
    */
@@ -2642,7 +2685,7 @@ class SetOperator {
 
 }
 
-module.exports = SetOperator;
+module.exports = SetStatement;
 
 /***/ }),
 
@@ -2651,7 +2694,7 @@ module.exports = SetOperator;
 
 /**
  * @file src/classes/excecution/statements/WhileStatement.js
- * @description Содержит в себе оператор while, который используется для создания цикличных условных операций
+ * @description Содержит в себе инструкцию while, который используется для создания цикличных условных операций
  * @author Astecom
  * @license MIT
  */
@@ -2660,9 +2703,10 @@ module.exports = SetOperator;
  * @lends WhileStatement
  * @protected
  */
+
 class WhileStatement {
   /**
-   * Дескриптор оператора while
+   * Дескриптор инструкции while
    *
    * @param {ExpressionGroup} condition Выражение - условие
    * @param {SequenceGroup} body Основная исполняемая последовательность
@@ -2721,6 +2765,8 @@ module.exports = WhileStatement;
  * @author Astecom
  * @license MIT
  */
+
+
 const {
   SERVICE
 } = __webpack_require__(635),
@@ -3062,6 +3108,22 @@ class SegmentationFaultEmptyArgumentException extends PoonyaException {
 
 }
 /**
+ * Незавршенное объявление объекта
+ *
+ * @memberof Poonya.Exceptions
+ * @name SegmentationFaultEmptyArgumentException
+ * @class
+ * @protected
+ */
+
+
+class ParserUnfinishedNotationException extends PoonyaException {
+  constructor() {
+    super(`Parser fault: unfinished notation`);
+  }
+
+}
+/**
  * Ошибка сегментации сегментов вызова (...exp, ...exp, ) <-
  *
  * @memberof Poonya.Exceptions
@@ -3177,13 +3239,13 @@ class CriticalParserErrorNoRawDataTransmittedException extends PoonyaException {
  * Прыжок через два уровня
  *
  * @memberof Poonya.Exceptions
- * @name BadArrowNotationJumpingTwoLevels
+ * @name BadArrowNotationJTException
  * @class
  * @protected
  */
 
 
-class BadArrowNotationJumpingTwoLevels extends PoonyaException {
+class BadArrowNotationJTException extends PoonyaException {
   constructor() {
     super(`Bad array notation: jumping two levels is not possible`);
   }
@@ -3193,13 +3255,13 @@ class BadArrowNotationJumpingTwoLevels extends PoonyaException {
  * Неожиданный переход на более высокий уровень
  *
  * @memberof Poonya.Exceptions
- * @name BadArrowNotationJumpingToUpperLevel
+ * @name BadArrowNotationJTULException
  * @class
  * @protected
  */
 
 
-class BadArrowNotationJumpingToUpperLevel extends PoonyaException {
+class BadArrowNotationJTULException extends PoonyaException {
   constructor() {
     super(`Bad array notation: unexpected transition to a upper level`);
   }
@@ -3309,9 +3371,10 @@ module.exports.NativeFunctionReturnValueError = NativeFunctionReturnValueError;
 module.exports.UnableToRecognizeTypeException = UnableToRecognizeTypeException;
 module.exports.TheFieldNotHasDeclaredExceprion = TheFieldNotHasDeclaredExceprion;
 module.exports.UnableToCreateAnObjectException = UnableToCreateAnObjectException;
-module.exports.BadArrowNotationJumpingTwoLevels = BadArrowNotationJumpingTwoLevels;
+module.exports.BadArrowNotationJumpingTwoLevels = BadArrowNotationJTException;
 module.exports.UnexpectedWordTypeAndGetException = UnexpectedWordTypeAndGetException;
-module.exports.BadArrowNotationJumpingToUpperLevel = BadArrowNotationJumpingToUpperLevel;
+module.exports.ParserUnfinishedNotationException = ParserUnfinishedNotationException;
+module.exports.BadArrowNotationJumpingToUpperLevel = BadArrowNotationJTULException;
 module.exports.TheFieldMustBeAnArrayInstanceExceprion = TheFieldMustBeAnArrayInstanceExceprion;
 module.exports.TheFieldAlreadyHasBeenDeclaredException = TheFieldAlreadyHasBeenDeclaredException;
 module.exports.SegmentationFaultEmptyArgumentException = SegmentationFaultEmptyArgumentException;
@@ -3332,7 +3395,8 @@ module.exports.SegmentationFaultMaximumSegmentsForBlockException = SegmentationF
  * @license MIT
  * @author Astecom
  */
-// Storage
+ // Storage
+
 class iContext {} // Datas
 
 
@@ -3355,6 +3419,8 @@ module.exports.iPoonyaPrototype = iPoonyaPrototype;
  * @license MIT
  * @author Astecom
  */
+
+
 const {
   dirname
 } = __webpack_require__(622),
@@ -3515,6 +3581,8 @@ module.exports.IS = IS;
  * @license MIT
  * @author Astecom
  */
+
+
 const {
   GetFieldOfNullException,
   IsNotAConstructorException
@@ -3977,6 +4045,8 @@ module.exports.Heap = Heap;
  * @license MIT
  * @author Astecom
  */
+
+
 const Module = __webpack_require__(282),
       {
   readdirSync,
@@ -4256,15 +4326,17 @@ module.exports.PoonyaStaticLibrary = PoonyaStaticLibrary;
 
 /***/ }),
 
-/***/ 60:
+/***/ 176:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 /**
- * @file src/LexerEntry.js
+ * @file src/Token.js
  * @description Содержит в себе класс вхождение лексера, массив которых получается на выходе из лексера
  * @license MIT
  * @author Astecom
  */
+
+
 const {
   CHARTYPE
 } = __webpack_require__(635),
@@ -4272,12 +4344,12 @@ const {
   fromBytes
 } = __webpack_require__(270);
 /**
- * @lends LexerEntry
+ * @lends Token
  * @class
  */
 
 
-class LexerEntry {
+class Token {
   /**
    * Вхождение лексера
    *
@@ -4285,7 +4357,7 @@ class LexerEntry {
    * @param {Array} data Данные вхождения
    * @param {Number} position Позиция вхождения
    * @param {String} s_separator Дополнительное окружение вхождения, допустим для строки это ''
-   * @constructs LexerEntry
+   * @constructs Token
    * @memberof Poonya.Lexer
    * @protected
    */
@@ -4344,7 +4416,7 @@ class LexerEntry {
 
 }
 
-module.exports = LexerEntry;
+module.exports = Token;
 
 /***/ }),
 
@@ -4357,10 +4429,12 @@ module.exports = LexerEntry;
  * @license MIT
  * @author Astecom
  */
+
+
 const {
   CHARTYPE
 } = __webpack_require__(635),
-      LexerEntry = __webpack_require__(60);
+      Token = __webpack_require__(176);
 /**
  * Лексер, который производит лексический разбор подаваемого текста в буффере
  *
@@ -4481,11 +4555,11 @@ function lexer(input, allow_spaces = true) {
 
 
     if (cur === CHARTYPE.OPERATOR && last === CHARTYPE.OPERATOR) {
-      if (buff.length === 1 && // В буффере не больше одного символа
+      if (buff.length === 2 && // В буффере не больше одного символа
       firstIs(33, 60, 62) && input[i] === 61 // текущий символ '='
       ) {
           append(i);
-          if (allow_spaces || last !== CHARTYPE.SPACE) Export.push(new LexerEntry(last, buff, i, string_entry));
+          if (allow_spaces || last !== CHARTYPE.SPACE) Export.push(new Token(last, buff, i, string_entry));
           string_entry = null;
           clear(i);
           last = undefined;
@@ -4493,7 +4567,7 @@ function lexer(input, allow_spaces = true) {
           continue;
         }
 
-      if (buff.length === 1 && // В буффере не больше одного символа
+      if (buff.length === 2 && // В буффере не больше одного символа
       firstIs(47) // Предыдущий символ это /
       ) {
           if (input[i] === 47 // Текущий символ это /
@@ -4512,7 +4586,7 @@ function lexer(input, allow_spaces = true) {
 
     if (!is_string && !is_comment) {
       if ((cur !== last || last === CHARTYPE.STRING || last === CHARTYPE.OPERATOR) && last != null) {
-        if (allow_spaces || last !== CHARTYPE.SPACE) Export.push(new LexerEntry(last, buff, i, string_entry));
+        if (allow_spaces || last !== CHARTYPE.SPACE) Export.push(new Token(last, buff, i, string_entry));
         string_entry = null;
         clear(i);
       }
@@ -4558,7 +4632,7 @@ function lexer(input, allow_spaces = true) {
     }
   }
 
-  if (allow_spaces || cur !== CHARTYPE.SPACE) Export.push(new LexerEntry(cur, buff, input.byteLength - buff.length - 1, string_entry));
+  if (allow_spaces || cur !== CHARTYPE.SPACE) Export.push(new Token(cur, buff, input.length - buff.length - 1, string_entry));
   return Export;
 }
 
@@ -4575,6 +4649,8 @@ module.exports = lexer;
  * @license MIT
  * @author Astecom
  */
+
+
 const {
   readFile
 } = __webpack_require__(747),
@@ -4595,7 +4671,7 @@ const {
 /**
  * Препроцессораня функция, линкует файлы.
  *
- * @param {Array<LexerEntry>} data данные для парсинга
+ * @param {Array<Token>} data данные для парсинга
  * @param {String} parent_path Путь к файлу, который сейчас обрабатываем
  * @param {Function} throw_error Фукцния выбрасывания ошибок
  *
@@ -4622,7 +4698,7 @@ async function linker(data, parent_path, throw_error) {
 
         if (parent_path != null) {
           try {
-            data.splice(i, data[i + 2].equals(CHARTYPE.OPERATOR, ';') ? 3 : 2, ...lexer(content, false));
+            data.splice(i, data[i + 2].equals(CHARTYPE.OPERATOR, ';') ? 3 : 2, ...lexer(await content, false));
           } catch (e) {
             throw_error(data[i].position, new Exceptions.LinkerIOError(path));
           }
@@ -4647,6 +4723,8 @@ module.exports = linker;
  * @license MIT
  * @author Astecom
  */
+
+
 const {
   ParserException,
   BadEmptyObjectException,
@@ -4663,7 +4741,8 @@ const {
   UnexpectedWordTypeAndGetException,
   CriticalParserErrorException,
   CriticalParserErrorNoRawDataTransmittedException,
-  CriticalParserErrorUnexpectedEndOfExpression
+  CriticalParserErrorUnexpectedEndOfExpression,
+  ParserUnfinishedNotationException
 } = __webpack_require__(707),
       {
   maybeEquals,
@@ -4680,12 +4759,12 @@ const {
       GetOperator = __webpack_require__(46),
       IfStatement = __webpack_require__(350),
       SequenceGroup = __webpack_require__(113),
-      OutOperator = __webpack_require__(862),
+      OutStatement = __webpack_require__(674),
       WhileStatement = __webpack_require__(114),
       RepeatStatement = __webpack_require__(511),
-      SetOperator = __webpack_require__(375),
-      ResetOperator = __webpack_require__(956),
-      PushOperator = __webpack_require__(355),
+      SetStatement = __webpack_require__(259),
+      ResetStatement = __webpack_require__(436),
+      PushStatement = __webpack_require__(834),
       SequenceMainGroup = __webpack_require__(998),
       linker = __webpack_require__(144);
 /**
@@ -4693,7 +4772,7 @@ const {
  *
  * @param {Array<String|Number>} query_stack стек доступа к имени переменной
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} data Вхождения которые будут обработаны парсером
  * @param {Number} block_start Начальная позиция вызова
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
@@ -4721,7 +4800,7 @@ function parseFunctionCall(query_stack, start, data, throw_error, block_start) {
  *
  * @param {Number[]|String[]|Operand[]} query_stack путь к конструктору объекта
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: ObjectContructorCall, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
@@ -4741,7 +4820,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
   for (let i = start; true; i++) {
     switch (true) {
       case data[i] === undefined || expected === 3 && !data[i].equals(CHARTYPE.OPERATOR, ',') || data[i].equals(CHARTYPE.OPERATOR, [';', ')']):
-        if (entries[entries.length - 1].length !== 2) throw_error(data[i].position, new ParserEmtyArgumentException());
+        if (entries[entries.length - 1].length !== 2) throw_error(data[i].position, new ParserUnfinishedNotationException());
         return {
           data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
           jump: i - start
@@ -4848,7 +4927,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
  *
  * @param {ExpressionGroup} condition Условие, при котором тернарное выражение будет верным
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: TernarOperator, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
@@ -4908,7 +4987,7 @@ function parseTernar(condition, start, data, throw_error) {
  * Парсит название, позвращает массив со стэком запроса, по которому можно получит доступ к переменной, и позицию с которой можно продолжить парсинг
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: Array<Number|String>, jump: Number}} массив со стэком запроса, по которому можно получит доступ к переменной, и позиция с которой можно продолжить парсинг
@@ -4973,7 +5052,7 @@ function parseVarName(start, data, throw_error) {
  * Парсит выражение, позвращает выражение и позицию, с которой можно продолжить парсинг
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  * @param {String} end_marker Маркер конца выражения
  *
@@ -5027,6 +5106,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
           // Конструктор объекта
           result[1] = parseObject(result[0].data, i + result[0].jump + 2, data, throw_error, 0);
           i += result[0].jump + result[1].jump + 1;
+          if (data[i + 1].equals(CHARTYPE.OPERATOR, ['*'])) i += 1;
           buffer.append(result[1].data, throw_error);
         } else {
           // Получение значения переменной
@@ -5079,7 +5159,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
  * Парсит исполняемый сегмент, после чего возвращает величину прыжка и данные исполнения
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызывается при ошибке функция, котора первым ��ргументм принимает позицию вхождения на котором произошла ошибка
  * @param {String} segment_separator Разделитель для сегментов
  * @param {Number} max_segments Максимальное число сегментов, если это число сегментов будет превышено, будет выбражено исключение
@@ -5150,7 +5230,7 @@ function segmentationParser(start, entries, throw_error, segment_separator = ","
  * Используется для того, чтобы вырезать исполняемые сегменты из исполняемых блоков `{}`
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: Array<SequenceGroup>, jump: Number}} массив с выражениями, и позиция с которой можно продолжить парсинг
@@ -5197,7 +5277,7 @@ function segmentCutter(start, entries, throw_error) {
  * Парсит блок if, возвращзает серриализованый блок if.
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: IfStatement, jump: Number}} Объякт дескриптор блока if, и позиция с которой можно продолжить парсинг
@@ -5256,7 +5336,7 @@ function ifStatementParser(start, entries, throw_error) {
  * Парсит тело (главное тело или секции исполняемых блоков) преобразуя вхождения в исполняемую последовательность.
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {
@@ -5290,7 +5370,7 @@ function codeBlockParser(start, entries, throw_error) {
         case entries[i].equals(CHARTYPE.OPERATOR, ">"):
           result[0] = parseExpression(i + 1, entries, throw_error);
           i += result[0].jump + 1;
-          buffer.push(new OutOperator(result[0].data));
+          buffer.push(new OutStatement(result[0].data));
           continue;
 
         case entries[i].equals(CHARTYPE.WORD, "if"):
@@ -5341,7 +5421,7 @@ function codeBlockParser(start, entries, throw_error) {
           if (i + 1 < leng && maybeEquals(entries, i + 1, CHARTYPE.NEWLINE) && entries[i + 1].equals(CHARTYPE.WORD)) {
             if (i + 2 < leng && maybeEquals(entries, i + 2, CHARTYPE.NEWLINE) && entries[i + 2].equals(CHARTYPE.OPERATOR, "=")) {
               result[0] = parseExpression(i + 3, entries, throw_error);
-              buffer.push(new SetOperator(entries[i + 1], result[0].data));
+              buffer.push(new SetStatement(entries[i + 1], result[0].data));
               i += result[0].jump + 3;
               continue;
             } else {
@@ -5358,12 +5438,12 @@ function codeBlockParser(start, entries, throw_error) {
             // Переопределение
             if (entries[i + result[0].jump].equals(CHARTYPE.OPERATOR, "=")) {
               result[1] = parseExpression(result[0].jump + i + 1, entries, throw_error);
-              buffer.push(new ResetOperator(entries[i + result[0].jump].position, result[0].data, result[1].data));
+              buffer.push(new ResetStatement(entries[i + result[0].jump].position, result[0].data, result[1].data));
               i += result[0].jump + result[1].jump + 1; // Добавление
             } else if (entries[i + result[0].jump].equals(CHARTYPE.OPERATOR, "<")) {
               if (entries[i + result[0].jump + 1].equals(CHARTYPE.OPERATOR, "-")) {
                 result[1] = parseExpression(result[0].jump + i + 2, entries, throw_error);
-                buffer.push(new PushOperator(entries[i + result[0].jump].position, result[0].data, result[1].data));
+                buffer.push(new PushStatement(entries[i + result[0].jump].position, result[0].data, result[1].data));
                 i += result[0].jump + result[1].jump + 2;
               } else {
                 throw_error(entries[i + result[0].jump + 1].position, new UnexpectedTokenException(entries[i + result[0].jump + 1].toString(), "-"));
@@ -5407,7 +5487,7 @@ function codeBlockParser(start, entries, throw_error) {
 /**
  * Парсит вхождения, которые можно получить вызовом функции @see {@link lexer}
  *
- * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  * @param {?String} parent_path Путь к шаблону
  *
@@ -5425,7 +5505,7 @@ async function parser(entries, throw_error, parent_path) {
 /**
  * Парсит шаблон сообщения, которое помимо кода Poonya может содержать и любые другие символы вне префикса
  * 
- * @param {Array<LexerEntry>} entries Вхождения для парсинга
+ * @param {Array<Token>} entries Вхождения для парсинга
  * @param {String} block_prefix Префикс для обозначения начала блока кода poonya
  * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождени
  * @param {String} parent_path Путь к шаблону
@@ -5450,7 +5530,7 @@ async function parserMP(entries, block_prefix, throw_error, parent_path) {
       if (block_prefix != null) i += entries[i + 1].equals(CHARTYPE.SPACE) ? 2 : 1;
 
       if (buffer.length > 0) {
-        out.push(new OutOperator(new ObjectContructorCall(SERVICE.CONSTRUCTORS.STRING, buffer.join(""), entries[i].position)));
+        out.push(new OutStatement(new ObjectContructorCall(SERVICE.CONSTRUCTORS.STRING, buffer.join(""), entries[i].position)));
         buffer.splice(0, buffer.length);
       }
 
@@ -5481,7 +5561,7 @@ async function parserMP(entries, block_prefix, throw_error, parent_path) {
     buffer.splice(0, buffer.length);
   } else if (hook_index === 0) {
     if (buffer.length != 0) {
-      out.push(new OutOperator(new ObjectContructorCall(SERVICE.CONSTRUCTORS.STRING, buffer.join(""), entries[entries.length - 1].position)));
+      out.push(new OutStatement(new ObjectContructorCall(SERVICE.CONSTRUCTORS.STRING, buffer.join(""), entries[entries.length - 1].position)));
       buffer.splice(0, buffer.length);
     }
   } else {
@@ -5499,7 +5579,6 @@ module.exports.parseExpression = parseExpression;
 /***/ 174:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 /* module decorator */ module = __webpack_require__.nmd(module);
 /**
  * @author Astecom
@@ -5631,7 +5710,8 @@ const {
 } = __webpack_require__(635),
       {
   toFixed,
-  toBytes
+  toBytes,
+  fromBytes
 } = __webpack_require__(270),
       lexer = __webpack_require__(513);
 
@@ -5774,6 +5854,7 @@ class CodeEmitter extends EventEmitter {
       if (typeof input.raw === "string") _.input = input.raw;else if (typeof input.path === "string") {
         try {
           readFile(_.path, _.charset, (error, data) => {
+            if (error) throw error;
             _.input = data;
 
             if (SERVICE.LOADED) {
@@ -5809,30 +5890,30 @@ class CodeEmitter extends EventEmitter {
 
   throwError(pos, message, rad_of = 5) {
     rad_of = parseInt(rad_of);
-    let buffer = [message instanceof PoonyaException ? message.message : message],
+    let buffer = [],
         data = this.input.split("\n"),
-        line_dump = toBytes(this.input).slice(0, pos).map(e => String.fromCharCode(e)).join('').split("\n"),
+        line_dump = fromBytes(toBytes(this.input).slice(0, pos)).split("\n"),
         line = line_dump.length - 1,
         line_start = line - parseInt(rad_of / 2) < 0 ? 0 : line - parseInt(rad_of / 2),
         line_end = line_start + rad_of < data.length ? line_start + rad_of : data.length,
         ll = line_end.toString(16).length + 2;
-    buffer.push(", at ", this.path, ", at ", line, ":", line_dump[line].length, " symbol");
+    buffer.push("  at ", this.path, ':', line + 1, ":", line_dump[line].length + 1);
 
     if (pos != -1) {
       buffer.push(' :>\n');
 
       for (let i = line_start; i < line_end; i++) {
-        buffer.push(" ", toFixed(i, ll), " |> ", data[i]);
+        buffer.push("     ", toFixed(i + 1, ll), " |> ", data[i]);
 
         if (i === line) {
-          buffer.push("\n ", new Array(ll + 1).join(" "), " |> " + new Array(line_dump[line].length).join(" "), "^");
+          buffer.push("\n     ".padEnd(ll + 6, ' '), " |> ".padEnd(line_dump[line].length + 4, ' '), "^");
         }
 
         if (i + 1 !== line_end) buffer.push("\n");
       }
     }
 
-    throw new Error(message.message + '\n' + buffer.join(""));
+    throw new Error(message.message + ': \n' + buffer.join(""));
   }
   /**
    * Инициалзирует блок инструкций/
@@ -5905,7 +5986,7 @@ class CodeEmitter extends EventEmitter {
     if (this.loaded) {
       setImmediate(() => this[RESULT](data, error, out));
     } else // Иначе, ждем окончания загрузки и выполняем последовательность
-      this.on('load', () => this[RESULT](data, error, out));
+      this.addListener('load', () => this[RESULT](data, error, out));
 
     return out;
   }
@@ -5948,7 +6029,13 @@ class MessagePattern extends CodeEmitter {
    */
   constructor(input, block_prefix = 'poonya', import_s, logger = console) {
     super(input, import_s, logger, async () => {
-      this.data = await parserMP(lexer(toBytes(this.input)), block_prefix, this.throwError.bind(this), this.path);
+      try {
+        this.data = await parserMP(lexer(toBytes(this.input)), block_prefix, this.throwError.bind(this), this.path);
+      } catch (e) {
+        this.emit('error', e);
+        throw e;
+      }
+
       this.loaded = true;
       this.emit('load');
     });
@@ -5993,7 +6080,13 @@ class ExecutionPattern extends CodeEmitter {
    */
   constructor(input, import_s, logger = console) {
     super(input, import_s, logger, async () => {
-      this.data = await parser(lexer(toBytes(this.input), false), this.throwError.bind(this), this.path);
+      try {
+        this.data = await parser(lexer(toBytes(this.input), false), this.throwError.bind(this), this.path);
+      } catch (e) {
+        this.emit('error', e);
+        throw e;
+      }
+
       this.loaded = true;
       this.emit('load');
     });
@@ -6025,7 +6118,13 @@ class ExpressionPattern extends CodeEmitter {
    */
   constructor(input, import_s, logger = console) {
     super(input, import_s, logger, () => {
-      this.data = parseExpression(0, lexer(toBytes(this.input), false), this.throwError.bind(this)).data;
+      try {
+        this.data = parseExpression(0, lexer(toBytes(this.input), false), this.throwError.bind(this)).data;
+      } catch (e) {
+        this.emit('error', e);
+        throw e;
+      }
+
       this.loaded = true;
       this.emit('load');
     });
@@ -6103,6 +6202,8 @@ module.exports.ImportDir = ImportDir.bind(null, module.parent != null ? module.p
  * @license MIT
  * @author Astecom
  */
+
+
 module.exports.FIELDFLAGS = __webpack_require__(635).FIELDFLAGS;
 module.exports.Exceptions = __webpack_require__(707);
 module.exports.PoonyaStaticLibrary = __webpack_require__(239).PoonyaStaticLibrary;
@@ -6119,6 +6220,8 @@ module.exports.PoonyaPrototype = __webpack_require__(406);
  * @license MIT
  * @author Astecom
  */
+
+
 const {
   SERVICE
 } = __webpack_require__(635),
@@ -6204,7 +6307,7 @@ function Cast(data, context, parents_three = new Array()) {
  * <br>
  * И это все будет if, эта функцию убирает возможные 'линие символы'
  *
- * @param {Array<LexerEntry>} entries Выхождение, на вход
+ * @param {Array<Token>} entries Выхождение, на вход
  * @param {Number} index Проверяемый индекс
  * @param {String} equalts_t Тип с которым сравниваем
  * @param {String|Array<String>} equalts_v Значение(я) с которым(и) сравниваем
@@ -6215,16 +6318,14 @@ function Cast(data, context, parents_three = new Array()) {
 
 
 function maybeEquals(entries, index, equalts_t, equalts_v) {
-  while (entries[index].equals(equalts_t, equalts_v)) {
-    entries.splice(index, 1);
-  }
+  while (entries[index].equals(equalts_t, equalts_v)) entries.splice(index, 1);
 
   return true;
 }
 /**
  * Подсчитывает количиство неприрывных одинаковых вхождений
  *
- * @param {Array<LexerEntry>} entries вхождения для парсинга
+ * @param {Array<Token>} entries вхождения для парсинга
  * @param {Number} start начальная позиция парсинга
  * @param {String} equalts_t Тип с которым сравниваем
  * @param {String|Array<String>} equalts_v Значение(я) с которым(и) сравниваем
@@ -6235,9 +6336,7 @@ function maybeEquals(entries, index, equalts_t, equalts_v) {
 
 
 function countKeys(entries, start, equalts_t, equalts_v) {
-  for (let i = start, to = entries.length; i < to; i++) {
-    if (entries[i] == null || !entries[i].equals(equalts_t, equalts_v)) return i - start;
-  }
+  for (let i = start, to = entries.length; i < to; i++) if (entries[i] == null || !entries[i].equals(equalts_t, equalts_v)) return i - start;
 }
 /**
  * Форматирует число подгоняя его под общую длинну
@@ -6257,10 +6356,10 @@ function toFixed(d, l) {
 /**
  * Преобразует строку в массив байтов
  *
- * @param {String} input Строка для преобразования
- * @returns {Array<Number>} массив с байтами
- * @memberof Poonya.Utils
  * @function toBytes
+ * @param {String} input Строка для преобразования
+ * @memberof Poonya.Utils
+ * @returns {Array<Number>} массив с байтами
  * @protected
  * @static
  */
@@ -6271,16 +6370,15 @@ function toBytes(input) {
 
   for (let i = 0, char, leng = input.length; i < leng; i++) bytes.push((char = input.charCodeAt(i)) >>> 8, char & 0xFF);
 
-  console.log(bytes);
   return bytes;
 }
 /**
  * Преобразует массив байтов в строку
  *
- * @param {Array<Number>} input байты для преобразования
- * @returns {String} преобразованная строка
- * @memberof Poonya.Utils
  * @function toBytes
+ * @param {Array<Number>} input байты для преобразования
+ * @memberof Poonya.Utils
+ * @returns {String} преобразованная строка
  * @protected
  * @static
  */
@@ -6306,7 +6404,6 @@ module.exports.Cast = Cast;
 /***/ 614:
 /***/ ((module) => {
 
-"use strict";
 module.exports = require("events");;
 
 /***/ }),
@@ -6314,7 +6411,6 @@ module.exports = require("events");;
 /***/ 747:
 /***/ ((module) => {
 
-"use strict";
 module.exports = require("fs");;
 
 /***/ }),
@@ -6322,7 +6418,6 @@ module.exports = require("fs");;
 /***/ 282:
 /***/ ((module) => {
 
-"use strict";
 module.exports = require("module");;
 
 /***/ }),
@@ -6330,7 +6425,6 @@ module.exports = require("module");;
 /***/ 622:
 /***/ ((module) => {
 
-"use strict";
 module.exports = require("path");;
 
 /***/ })

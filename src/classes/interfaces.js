@@ -5,6 +5,8 @@
  * @author Astecom
  */
 
+"use strict";
+
 // Storage
 class iContext {}
 

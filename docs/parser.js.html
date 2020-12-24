@@ -33,6 +33,8 @@
  * @author Astecom
  */
 
+"use strict";
+
 const { 
         ParserException
     ,   BadEmptyObjectException
@@ -49,7 +51,8 @@ const {
     ,   UnexpectedWordTypeAndGetException
     ,   CriticalParserErrorException
     ,   CriticalParserErrorNoRawDataTransmittedException,
-    CriticalParserErrorUnexpectedEndOfExpression
+    CriticalParserErrorUnexpectedEndOfExpression,
+    ParserUnfinishedNotationException
     } = require('./classes/exceptions'),
     { 
         maybeEquals
@@ -66,12 +69,12 @@ const {
     ,   GetOperator = require('./classes/excecution/expression/GetOperator')
     ,   IfStatement = require('./classes/excecution/statements/IfStatement')
     ,   SequenceGroup = require('./classes/excecution/statements/SequenceGroup')
-    ,   OutOperator = require('./classes/excecution/statements/OutOperator')
+    ,   OutStatement = require('./classes/excecution/statements/OutStatement')
     ,   WhileStatement = require('./classes/excecution/statements/WhileStatement')
     ,   RepeatStatement = require('./classes/excecution/statements/RepeatStatement')
-    ,   SetOperator = require('./classes/excecution/statements/SetOperator')
-    ,   ResetOperator = require('./classes/excecution/statements/ResetOperator')
-    ,   PushOperator = require('./classes/excecution/statements/PushOperator')
+    ,   SetStatement = require('./classes/excecution/statements/SetStatement')
+    ,   ResetStatement = require('./classes/excecution/statements/ResetStatement')
+    ,   PushStatement = require('./classes/excecution/statements/PushStatement')
     ,   SequenceMainGroup = require('./classes/excecution/statements/SequenceMainGroup')
     ,   linker = require('./linker');
 
@@ -80,7 +83,7 @@ const {
  *
  * @param {Array&lt;String|Number>} query_stack стек доступа к имени переменной
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array&lt;LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Array&lt;Token>} data Вхождения которые будут обработаны парсером
  * @param {Number} block_start Начальная позиция вызова
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
@@ -114,7 +117,7 @@ function parseFunctionCall(query_stack, start, data, throw_error, block_start) {
  *
  * @param {Number[]|String[]|Operand[]} query_stack путь к конструктору объекта
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array&lt;LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Array&lt;Token>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: ObjectContructorCall, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
@@ -136,7 +139,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                 expected === 3 &amp;&amp; !data[i].equals(CHARTYPE.OPERATOR, ',') ||
                 data[i].equals(CHARTYPE.OPERATOR, [';', ')']):
                 if (entries[entries.length - 1].length !== 2)
-                    throw_error(data[i].position, new ParserEmtyArgumentException());
+                    throw_error(data[i].position, new ParserUnfinishedNotationException());
 
                 return {
                     data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
@@ -256,7 +259,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
  *
  * @param {ExpressionGroup} condition Условие, при котором тернарное выражение будет верным
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array&lt;LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Array&lt;Token>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: TernarOperator, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
@@ -340,7 +343,7 @@ function parseTernar(condition, start, data, throw_error) {
  * Парсит название, позвращает массив со стэком запроса, по которому можно получит доступ к переменной, и позицию с которой можно продолжить парсинг
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array&lt;LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Array&lt;Token>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: Array&lt;Number|String>, jump: Number}} массив со стэком запроса, по которому можно получит доступ к переменной, и позиция с которой можно продолжить парсинг
@@ -426,7 +429,7 @@ function parseVarName(start, data, throw_error) {
  * Парсит выражение, позвращает выражение и позицию, с которой можно продолжить парсинг
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array&lt;LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Array&lt;Token>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  * @param {String} end_marker Маркер конца выражения
  *
@@ -506,6 +509,9 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                     );
 
                     i += result[0].jump + result[1].jump + 1;
+
+                    if(data[i + 1].equals(CHARTYPE.OPERATOR, [ '*' ]))
+                        i += 1;
 
                     buffer.append(result[1].data, throw_error);
                 } else {
@@ -593,7 +599,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
  * Парсит исполняемый сегмент, после чего возвращает величину прыжка и данные исполнения
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array&lt;LexerEntry>} entries Вхождения которые будут обработаны парсером
+ * @param {Array&lt;Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызывается при ошибке функция, котора первым ��ргументм принимает позицию вхождения на котором произошла ошибка
  * @param {String} segment_separator Разделитель для сегментов
  * @param {Number} max_segments Максимальное число сегментов, если это число сегментов будет превышено, будет выбражено исключение
@@ -693,7 +699,7 @@ function segmentationParser(
  * Используется для того, чтобы вырезать исполняемые сегменты из исполняемых блоков `{}`
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array&lt;LexerEntry>} entries Вхождения которые будут обработаны парсером
+ * @param {Array&lt;Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: Array&lt;SequenceGroup>, jump: Number}} массив с выражениями, и позиция с которой можно продолжить парсинг
@@ -742,7 +748,7 @@ function segmentCutter(start, entries, throw_error) {
  * Парсит блок if, возвращзает серриализованый блок if.
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array&lt;LexerEntry>} entries Вхождения которые будут обработаны парсером
+ * @param {Array&lt;Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: IfStatement, jump: Number}} Объякт дескриптор блока if, и позиция с которой можно продолжить парсинг
@@ -852,7 +858,7 @@ function ifStatementParser(start, entries, throw_error) {
  * Парсит тело (главное тело или секции исполняемых блоков) преобразуя вхождения в исполняемую последовательность.
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array&lt;LexerEntry>} entries Вхождения которые будут обработаны парсером
+ * @param {Array&lt;Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {
@@ -885,7 +891,7 @@ function codeBlockParser(start, entries, throw_error) {
 
                     i += result[0].jump + 1;
 
-                    buffer.push(new OutOperator(result[0].data));
+                    buffer.push(new OutStatement(result[0].data));
                     continue;
                 case entries[i].equals(CHARTYPE.WORD, "if"):
                     result[0] = ifStatementParser(i, entries, throw_error);
@@ -1017,7 +1023,7 @@ function codeBlockParser(start, entries, throw_error) {
                             );
 
                             buffer.push(
-                                new SetOperator(entries[i + 1], result[0].data)
+                                new SetStatement(entries[i + 1], result[0].data)
                             );
 
                             i += result[0].jump + 3;
@@ -1052,7 +1058,7 @@ function codeBlockParser(start, entries, throw_error) {
                             );
 
                             buffer.push(
-                                new ResetOperator(
+                                new ResetStatement(
                                     entries[i + result[0].jump].position,
                                     result[0].data,
                                     result[1].data
@@ -1077,7 +1083,7 @@ function codeBlockParser(start, entries, throw_error) {
                                 );
 
                                 buffer.push(
-                                    new PushOperator(
+                                    new PushStatement(
                                         entries[i + result[0].jump].position,
                                         result[0].data,
                                         result[1].data
@@ -1164,7 +1170,7 @@ function codeBlockParser(start, entries, throw_error) {
 /**
  * Парсит вхождения, которые можно получить вызовом функции @see {@link lexer}
  *
- * @param {Array&lt;LexerEntry>} entries Вхождения которые будут обработаны парсером
+ * @param {Array&lt;Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  * @param {?String} parent_path Путь к шаблону
  *
@@ -1189,7 +1195,7 @@ async function parser(entries, throw_error, parent_path) {
 /**
  * Парсит шаблон сообщения, которое помимо кода Poonya может содержать и любые другие символы вне префикса
  * 
- * @param {Array&lt;LexerEntry>} entries Вхождения для парсинга
+ * @param {Array&lt;Token>} entries Вхождения для парсинга
  * @param {String} block_prefix Префикс для обозначения начала блока кода poonya
  * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождени
  * @param {String} parent_path Путь к шаблону
@@ -1227,7 +1233,7 @@ async function parserMP(entries, block_prefix, throw_error, parent_path) {
                 i += entries[i + 1].equals(CHARTYPE.SPACE) ? 2 : 1;
 
             if (buffer.length > 0) {
-                out.push(new OutOperator(new ObjectContructorCall(SERVICE.CONSTRUCTORS.STRING, buffer.join(""), entries[i].position)));
+                out.push(new OutStatement(new ObjectContructorCall(SERVICE.CONSTRUCTORS.STRING, buffer.join(""), entries[i].position)));
 
                 buffer.splice(0, buffer.length);
             }
@@ -1292,7 +1298,7 @@ async function parserMP(entries, block_prefix, throw_error, parent_path) {
         } else if (hook_index === 0) {
             if(buffer.length != 0) {
                 out.push(
-                    new OutOperator(new ObjectContructorCall(SERVICE.CONSTRUCTORS.STRING, buffer.join(""), entries[entries.length - 1].position))
+                    new OutStatement(new ObjectContructorCall(SERVICE.CONSTRUCTORS.STRING, buffer.join(""), entries[entries.length - 1].position))
                 );
 
                 buffer.splice(0, buffer.length);
@@ -1320,13 +1326,13 @@ module.exports.parseExpression = parseExpression;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="Poonya.html">Poonya</a></li><li><a href="Poonya.Data.html">Data</a></li><li><a href="Poonya.Exceptions.html">Exceptions</a></li><li><a href="Poonya.Expression.html">Expression</a></li><li><a href="Poonya.Lexer.html">Lexer</a></li><li><a href="Poonya.Linker.html">Linker</a></li><li><a href="Poonya.Parser.html">Parser</a></li><li><a href="Poonya.Statements.html">Statements</a></li><li><a href="Poonya.Static.html">Static</a></li><li><a href="Poonya.Storage.html">Storage</a></li><li><a href="Poonya.Utils.html">Utils</a></li></ul><h3>Classes</h3><ul><li><a href="CodeEmitter.html">CodeEmitter</a></li><li><a href="Context.html">Context</a></li><li><a href="ExecutionPattern.html">ExecutionPattern</a></li><li><a href="ExpressionPattern.html">ExpressionPattern</a></li><li><a href="FunctionCall.html">FunctionCall</a></li><li><a href="GetOperator.html">GetOperator</a></li><li><a href="Heap.html">Heap</a></li><li><a href="IfStatement.html">IfStatement</a></li><li><a href="LexerEntry.html">LexerEntry</a></li><li><a href="MessagePattern.html">MessagePattern</a></li><li><a href="NativeFunction.html">NativeFunction</a></li><li><a href="ObjectContructorCall.html">ObjectContructorCall</a></li><li><a href="Operand.html">Operand</a></li><li><a href="Operator.html">Operator</a></li><li><a href="OutOperator.html">OutOperator</a></li><li><a href="ParserData.html">ParserData</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingToUpperLevel.html">BadArrowNotationJumpingToUpperLevel</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJumpingTwoLevels.html">BadArrowNotationJumpingTwoLevels</a></li><li><a href="Poonya.Exceptions.BadEmptyObjectException.html">BadEmptyObjectException</a></li><li><a href="Poonya.Exceptions.BadKeyInvalidTypeException.html">BadKeyInvalidTypeException</a></li><li><a href="Poonya.Exceptions.BadKeyProtectedFieldException.html">BadKeyProtectedFieldException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorException.html">CriticalParserErrorException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorNoRawDataTransmittedException.html">CriticalParserErrorNoRawDataTransmittedException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfExpression.html">CriticalParserErrorUnexpectedEndOfExpression</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfInputException.html">CriticalParserErrorUnexpectedEndOfInputException</a></li><li><a href="Poonya.Exceptions.FieldNotAFunctionException.html">FieldNotAFunctionException</a></li><li><a href="Poonya.Exceptions.GetFieldOfNullException.html">GetFieldOfNullException</a></li><li><a href="Poonya.Exceptions.InvalidSequenceForLetiableAccessException.html">InvalidSequenceForLetiableAccessException</a></li><li><a href="Poonya.Exceptions.IsNotAConstructorException.html">IsNotAConstructorException</a></li><li><a href="Poonya.Exceptions.LinkerIOError.html">LinkerIOError</a></li><li><a href="Poonya.Exceptions.LinkerPathNotGiveExceptrion.html">LinkerPathNotGiveExceptrion</a></li><li><a href="Poonya.Exceptions.NativeFunctionExecutionError.html">NativeFunctionExecutionError</a></li><li><a href="Poonya.Exceptions.NativeFunctionReturnValueError.html">NativeFunctionReturnValueError</a></li><li><a href="Poonya.Exceptions.ParserEmtyArgumentException.html">ParserEmtyArgumentException</a></li><li><a href="Poonya.Exceptions.ParserException.html">ParserException</a></li><li><a href="Poonya.Exceptions.ParserLogicException.html">ParserLogicException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultEmptyArgumentException.html">SegmentationFaultEmptyArgumentException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultMaximumSegmentsForBlockException.html">SegmentationFaultMaximumSegmentsForBlockException</a></li><li><a href="Poonya.Exceptions.TheFieldAlreadyHasBeenDeclaredException.html">TheFieldAlreadyHasBeenDeclaredException</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeAnArrayInstanceExceprion.html">TheFieldMustBeAnArrayInstanceExceprion</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeNumberException.html">TheFieldMustBeNumberException</a></li><li><a href="Poonya.Exceptions.TheFieldNotHasDeclaredExceprion.html">TheFieldNotHasDeclaredExceprion</a></li><li><a href="Poonya.Exceptions.TheSequenceException.html">TheSequenceException</a></li><li><a href="Poonya.Exceptions.UnableToCreateAnObjectException.html">UnableToCreateAnObjectException</a></li><li><a href="Poonya.Exceptions.UnableToRecognizeTypeException.html">UnableToRecognizeTypeException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenException.html">UnexpectedTokenException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenStatement.html">UnexpectedTokenStatement</a></li><li><a href="Poonya.Exceptions.UnexpectedWordTypeAndGetException.html">UnexpectedWordTypeAndGetException</a></li><li><a href="PoonyaArray.html">PoonyaArray</a></li><li><a href="PoonyaBoolean.html">PoonyaBoolean</a></li><li><a href="PoonyaInteger.html">PoonyaInteger</a></li><li><a href="PoonyaNull.html">PoonyaNull</a></li><li><a href="PoonyaNumber.html">PoonyaNumber</a></li><li><a href="PoonyaObject.html">PoonyaObject</a></li><li><a href="PoonyaPrototype.html">PoonyaPrototype</a></li><li><a href="PoonyaStaticLibrary.html">PoonyaStaticLibrary</a></li><li><a href="PoonyaString.html">PoonyaString</a></li><li><a href="PushOperator.html">PushOperator</a></li><li><a href="RepeatStatement.html">RepeatStatement</a></li><li><a href="SequenceGroup.html">SequenceGroup</a></li><li><a href="SequenceMainGroup.html">SequenceMainGroup</a></li><li><a href="SetOperator.html">SetOperator</a></li><li><a href="TernarOperator.html">TernarOperator</a></li><li><a href="WhileStatement.html">WhileStatement</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="Poonya.html">Poonya</a></li><li><a href="Poonya.Data.html">Data</a></li><li><a href="Poonya.Exceptions.html">Exceptions</a></li><li><a href="Poonya.Expression.html">Expression</a></li><li><a href="Poonya.Lexer.html">Lexer</a></li><li><a href="Poonya.Linker.html">Linker</a></li><li><a href="Poonya.Parser.html">Parser</a></li><li><a href="Poonya.Statements.html">Statements</a></li><li><a href="Poonya.Static.html">Static</a></li><li><a href="Poonya.Storage.html">Storage</a></li><li><a href="Poonya.Utils.html">Utils</a></li></ul><h3>Classes</h3><ul><li><a href="CodeEmitter.html">CodeEmitter</a></li><li><a href="Context.html">Context</a></li><li><a href="ExecutionPattern.html">ExecutionPattern</a></li><li><a href="ExpressionPattern.html">ExpressionPattern</a></li><li><a href="FunctionCall.html">FunctionCall</a></li><li><a href="GetOperator.html">GetOperator</a></li><li><a href="Heap.html">Heap</a></li><li><a href="IfStatement.html">IfStatement</a></li><li><a href="MessagePattern.html">MessagePattern</a></li><li><a href="NativeFunction.html">NativeFunction</a></li><li><a href="ObjectContructorCall.html">ObjectContructorCall</a></li><li><a href="Operand.html">Operand</a></li><li><a href="Operator.html">Operator</a></li><li><a href="OutStatement.html">OutStatement</a></li><li><a href="ParserData.html">ParserData</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJTException.html">BadArrowNotationJTException</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJTULException.html">BadArrowNotationJTULException</a></li><li><a href="Poonya.Exceptions.BadEmptyObjectException.html">BadEmptyObjectException</a></li><li><a href="Poonya.Exceptions.BadKeyInvalidTypeException.html">BadKeyInvalidTypeException</a></li><li><a href="Poonya.Exceptions.BadKeyProtectedFieldException.html">BadKeyProtectedFieldException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorException.html">CriticalParserErrorException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorNoRawDataTransmittedException.html">CriticalParserErrorNoRawDataTransmittedException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfExpression.html">CriticalParserErrorUnexpectedEndOfExpression</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfInputException.html">CriticalParserErrorUnexpectedEndOfInputException</a></li><li><a href="Poonya.Exceptions.FieldNotAFunctionException.html">FieldNotAFunctionException</a></li><li><a href="Poonya.Exceptions.GetFieldOfNullException.html">GetFieldOfNullException</a></li><li><a href="Poonya.Exceptions.InvalidSequenceForLetiableAccessException.html">InvalidSequenceForLetiableAccessException</a></li><li><a href="Poonya.Exceptions.IsNotAConstructorException.html">IsNotAConstructorException</a></li><li><a href="Poonya.Exceptions.LinkerIOError.html">LinkerIOError</a></li><li><a href="Poonya.Exceptions.LinkerPathNotGiveExceptrion.html">LinkerPathNotGiveExceptrion</a></li><li><a href="Poonya.Exceptions.NativeFunctionExecutionError.html">NativeFunctionExecutionError</a></li><li><a href="Poonya.Exceptions.NativeFunctionReturnValueError.html">NativeFunctionReturnValueError</a></li><li><a href="Poonya.Exceptions.ParserEmtyArgumentException.html">ParserEmtyArgumentException</a></li><li><a href="Poonya.Exceptions.ParserException.html">ParserException</a></li><li><a href="Poonya.Exceptions.ParserLogicException.html">ParserLogicException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultEmptyArgumentException.html">SegmentationFaultEmptyArgumentException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultMaximumSegmentsForBlockException.html">SegmentationFaultMaximumSegmentsForBlockException</a></li><li><a href="Poonya.Exceptions.TheFieldAlreadyHasBeenDeclaredException.html">TheFieldAlreadyHasBeenDeclaredException</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeAnArrayInstanceExceprion.html">TheFieldMustBeAnArrayInstanceExceprion</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeNumberException.html">TheFieldMustBeNumberException</a></li><li><a href="Poonya.Exceptions.TheFieldNotHasDeclaredExceprion.html">TheFieldNotHasDeclaredExceprion</a></li><li><a href="Poonya.Exceptions.TheSequenceException.html">TheSequenceException</a></li><li><a href="Poonya.Exceptions.UnableToCreateAnObjectException.html">UnableToCreateAnObjectException</a></li><li><a href="Poonya.Exceptions.UnableToRecognizeTypeException.html">UnableToRecognizeTypeException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenException.html">UnexpectedTokenException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenStatement.html">UnexpectedTokenStatement</a></li><li><a href="Poonya.Exceptions.UnexpectedWordTypeAndGetException.html">UnexpectedWordTypeAndGetException</a></li><li><a href="PoonyaArray.html">PoonyaArray</a></li><li><a href="PoonyaBoolean.html">PoonyaBoolean</a></li><li><a href="PoonyaInteger.html">PoonyaInteger</a></li><li><a href="PoonyaNull.html">PoonyaNull</a></li><li><a href="PoonyaNumber.html">PoonyaNumber</a></li><li><a href="PoonyaObject.html">PoonyaObject</a></li><li><a href="PoonyaPrototype.html">PoonyaPrototype</a></li><li><a href="PoonyaStaticLibrary.html">PoonyaStaticLibrary</a></li><li><a href="PoonyaString.html">PoonyaString</a></li><li><a href="PushStatement.html">PushStatement</a></li><li><a href="RepeatStatement.html">RepeatStatement</a></li><li><a href="SequenceGroup.html">SequenceGroup</a></li><li><a href="SequenceMainGroup.html">SequenceMainGroup</a></li><li><a href="SetStatement.html">SetStatement</a></li><li><a href="TernarOperator.html">TernarOperator</a></li><li><a href="Token.html">Token</a></li><li><a href="WhileStatement.html">WhileStatement</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Thu Dec 24 2020 14:28:30 GMT+0400 (Самарское стандартное время)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Thu Dec 24 2020 18:01:35 GMT+0400 (Самарское стандартное время)
 </footer>
 
 <script> prettyPrint(); </script>

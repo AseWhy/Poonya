@@ -1,13 +1,11 @@
 const poonya = require("../../src/poonya");
 
-const test_pattern = new poonya.ExecutionPattern({ path: __dirname + "/sandbox-data/sandbox" });
-
 async function main() {
-    test_pattern.on('load', async e => {
-        console.log(test_pattern.data.toString())
+    const pattern = new poonya.ExecutionPattern({
+        path: __dirname + "/sandbox-data/sandbox",
+    });
 
-        console.log(await test_pattern.result().complete());
-    })
+    console.log(await pattern.result().complete(), [{}, {}]);
 }
 
 main();

@@ -5,6 +5,8 @@
  * @author Astecom
  */
 
+"use strict";
+
 const { 
         ParserException
     ,   BadEmptyObjectException
@@ -21,7 +23,8 @@ const {
     ,   UnexpectedWordTypeAndGetException
     ,   CriticalParserErrorException
     ,   CriticalParserErrorNoRawDataTransmittedException,
-    CriticalParserErrorUnexpectedEndOfExpression
+    CriticalParserErrorUnexpectedEndOfExpression,
+    ParserUnfinishedNotationException
     } = require('./classes/exceptions'),
     { 
         maybeEquals
@@ -38,12 +41,12 @@ const {
     ,   GetOperator = require('./classes/excecution/expression/GetOperator')
     ,   IfStatement = require('./classes/excecution/statements/IfStatement')
     ,   SequenceGroup = require('./classes/excecution/statements/SequenceGroup')
-    ,   OutOperator = require('./classes/excecution/statements/OutOperator')
+    ,   OutStatement = require('./classes/excecution/statements/OutStatement')
     ,   WhileStatement = require('./classes/excecution/statements/WhileStatement')
     ,   RepeatStatement = require('./classes/excecution/statements/RepeatStatement')
-    ,   SetOperator = require('./classes/excecution/statements/SetOperator')
-    ,   ResetOperator = require('./classes/excecution/statements/ResetOperator')
-    ,   PushOperator = require('./classes/excecution/statements/PushOperator')
+    ,   SetStatement = require('./classes/excecution/statements/SetStatement')
+    ,   ResetStatement = require('./classes/excecution/statements/ResetStatement')
+    ,   PushStatement = require('./classes/excecution/statements/PushStatement')
     ,   SequenceMainGroup = require('./classes/excecution/statements/SequenceMainGroup')
     ,   linker = require('./linker');
 
@@ -52,7 +55,7 @@ const {
  *
  * @param {Array<String|Number>} query_stack стек доступа к имени переменной
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} data Вхождения которые будут обработаны парсером
  * @param {Number} block_start Начальная позиция вызова
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
@@ -86,7 +89,7 @@ function parseFunctionCall(query_stack, start, data, throw_error, block_start) {
  *
  * @param {Number[]|String[]|Operand[]} query_stack путь к конструктору объекта
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: ObjectContructorCall, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
@@ -108,7 +111,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                 expected === 3 && !data[i].equals(CHARTYPE.OPERATOR, ',') ||
                 data[i].equals(CHARTYPE.OPERATOR, [';', ')']):
                 if (entries[entries.length - 1].length !== 2)
-                    throw_error(data[i].position, new ParserEmtyArgumentException());
+                    throw_error(data[i].position, new ParserUnfinishedNotationException());
 
                 return {
                     data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
@@ -228,7 +231,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
  *
  * @param {ExpressionGroup} condition Условие, при котором тернарное выражение будет верным
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: TernarOperator, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
@@ -312,7 +315,7 @@ function parseTernar(condition, start, data, throw_error) {
  * Парсит название, позвращает массив со стэком запроса, по которому можно получит доступ к переменной, и позицию с которой можно продолжить парсинг
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: Array<Number|String>, jump: Number}} массив со стэком запроса, по которому можно получит доступ к переменной, и позиция с которой можно продолжить парсинг
@@ -398,7 +401,7 @@ function parseVarName(start, data, throw_error) {
  * Парсит выражение, позвращает выражение и позицию, с которой можно продолжить парсинг
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} data Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} data Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  * @param {String} end_marker Маркер конца выражения
  *
@@ -478,6 +481,9 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                     );
 
                     i += result[0].jump + result[1].jump + 1;
+
+                    if(data[i + 1].equals(CHARTYPE.OPERATOR, [ '*' ]))
+                        i += 1;
 
                     buffer.append(result[1].data, throw_error);
                 } else {
@@ -565,7 +571,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
  * Парсит исполняемый сегмент, после чего возвращает величину прыжка и данные исполнения
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызывается при ошибке функция, котора первым ��ргументм принимает позицию вхождения на котором произошла ошибка
  * @param {String} segment_separator Разделитель для сегментов
  * @param {Number} max_segments Максимальное число сегментов, если это число сегментов будет превышено, будет выбражено исключение
@@ -665,7 +671,7 @@ function segmentationParser(
  * Используется для того, чтобы вырезать исполняемые сегменты из исполняемых блоков `{}`
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: Array<SequenceGroup>, jump: Number}} массив с выражениями, и позиция с которой можно продолжить парсинг
@@ -714,7 +720,7 @@ function segmentCutter(start, entries, throw_error) {
  * Парсит блок if, возвращзает серриализованый блок if.
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: IfStatement, jump: Number}} Объякт дескриптор блока if, и позиция с которой можно продолжить парсинг
@@ -824,7 +830,7 @@ function ifStatementParser(start, entries, throw_error) {
  * Парсит тело (главное тело или секции исполняемых блоков) преобразуя вхождения в исполняемую последовательность.
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {
@@ -857,7 +863,7 @@ function codeBlockParser(start, entries, throw_error) {
 
                     i += result[0].jump + 1;
 
-                    buffer.push(new OutOperator(result[0].data));
+                    buffer.push(new OutStatement(result[0].data));
                     continue;
                 case entries[i].equals(CHARTYPE.WORD, "if"):
                     result[0] = ifStatementParser(i, entries, throw_error);
@@ -989,7 +995,7 @@ function codeBlockParser(start, entries, throw_error) {
                             );
 
                             buffer.push(
-                                new SetOperator(entries[i + 1], result[0].data)
+                                new SetStatement(entries[i + 1], result[0].data)
                             );
 
                             i += result[0].jump + 3;
@@ -1024,7 +1030,7 @@ function codeBlockParser(start, entries, throw_error) {
                             );
 
                             buffer.push(
-                                new ResetOperator(
+                                new ResetStatement(
                                     entries[i + result[0].jump].position,
                                     result[0].data,
                                     result[1].data
@@ -1049,7 +1055,7 @@ function codeBlockParser(start, entries, throw_error) {
                                 );
 
                                 buffer.push(
-                                    new PushOperator(
+                                    new PushStatement(
                                         entries[i + result[0].jump].position,
                                         result[0].data,
                                         result[1].data
@@ -1136,7 +1142,7 @@ function codeBlockParser(start, entries, throw_error) {
 /**
  * Парсит вхождения, которые можно получить вызовом функции @see {@link lexer}
  *
- * @param {Array<LexerEntry>} entries Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  * @param {?String} parent_path Путь к шаблону
  *
@@ -1161,7 +1167,7 @@ async function parser(entries, throw_error, parent_path) {
 /**
  * Парсит шаблон сообщения, которое помимо кода Poonya может содержать и любые другие символы вне префикса
  * 
- * @param {Array<LexerEntry>} entries Вхождения для парсинга
+ * @param {Array<Token>} entries Вхождения для парсинга
  * @param {String} block_prefix Префикс для обозначения начала блока кода poonya
  * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождени
  * @param {String} parent_path Путь к шаблону
@@ -1199,7 +1205,7 @@ async function parserMP(entries, block_prefix, throw_error, parent_path) {
                 i += entries[i + 1].equals(CHARTYPE.SPACE) ? 2 : 1;
 
             if (buffer.length > 0) {
-                out.push(new OutOperator(new ObjectContructorCall(SERVICE.CONSTRUCTORS.STRING, buffer.join(""), entries[i].position)));
+                out.push(new OutStatement(new ObjectContructorCall(SERVICE.CONSTRUCTORS.STRING, buffer.join(""), entries[i].position)));
 
                 buffer.splice(0, buffer.length);
             }
@@ -1264,7 +1270,7 @@ async function parserMP(entries, block_prefix, throw_error, parent_path) {
         } else if (hook_index === 0) {
             if(buffer.length != 0) {
                 out.push(
-                    new OutOperator(new ObjectContructorCall(SERVICE.CONSTRUCTORS.STRING, buffer.join(""), entries[entries.length - 1].position))
+                    new OutStatement(new ObjectContructorCall(SERVICE.CONSTRUCTORS.STRING, buffer.join(""), entries[entries.length - 1].position))
                 );
 
                 buffer.splice(0, buffer.length);

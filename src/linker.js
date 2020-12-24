@@ -5,6 +5,8 @@
  * @author Astecom
  */
 
+"use strict";
+
 const 
     // #!if platform === 'node'
     { readFile } = require('fs'),
@@ -18,7 +20,7 @@ const
 /**
  * Препроцессораня функция, линкует файлы.
  *
- * @param {Array<LexerEntry>} data данные для парсинга
+ * @param {Array<Token>} data данные для парсинга
  * @param {String} parent_path Путь к файлу, который сейчас обрабатываем
  * @param {Function} throw_error Фукцния выбрасывания ошибок
  *
@@ -28,7 +30,8 @@ const
  */
 async function linker(data, parent_path, throw_error) {
     for (let i = 0; true; i++) {
-        if (data[i] == null) return data;
+        if (data[i] == null)
+            return data;
 
         if (data[i].equals(CHARTYPE.WORD, 'include')) {
             if (maybeEquals(data, i + 1, CHARTYPE.NEWLINE) && data[i + 1].equals(CHARTYPE.STRING)) {
@@ -62,7 +65,7 @@ async function linker(data, parent_path, throw_error) {
                         data.splice(
                             i,
                             data[i + 2].equals(CHARTYPE.OPERATOR, ';') ? 3 : 2,
-                            ...lexer(content, false)
+                            ...lexer(await content, false)
                         );
                     } catch (e) {
                         throw_error(data[i].position, new Exceptions.LinkerIOError(path));

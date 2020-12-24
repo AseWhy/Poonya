@@ -5,6 +5,8 @@
  * @license MIT
  */
 
+"use strict";
+
 const { SERVICE } = require('./static')
     , { dirname } = require('path');
 
@@ -315,6 +317,20 @@ class SegmentationFaultEmptyArgumentException extends PoonyaException {
 }
 
 /**
+ * Незавршенное объявление объекта
+ *
+ * @memberof Poonya.Exceptions
+ * @name SegmentationFaultEmptyArgumentException
+ * @class
+ * @protected
+ */
+class ParserUnfinishedNotationException extends PoonyaException {
+    constructor() {
+        super(`Parser fault: unfinished notation`);
+    }
+}
+
+/**
  * Ошибка сегментации сегментов вызова (...exp, ...exp, ) <-
  *
  * @memberof Poonya.Exceptions
@@ -416,11 +432,11 @@ class CriticalParserErrorNoRawDataTransmittedException extends PoonyaException {
  * Прыжок через два уровня
  *
  * @memberof Poonya.Exceptions
- * @name BadArrowNotationJumpingTwoLevels
+ * @name BadArrowNotationJTException
  * @class
  * @protected
  */
-class BadArrowNotationJumpingTwoLevels extends PoonyaException {
+class BadArrowNotationJTException extends PoonyaException {
     constructor() {
         super(`Bad array notation: jumping two levels is not possible`);
     }
@@ -430,11 +446,11 @@ class BadArrowNotationJumpingTwoLevels extends PoonyaException {
  * Неожиданный переход на более высокий уровень
  *
  * @memberof Poonya.Exceptions
- * @name BadArrowNotationJumpingToUpperLevel
+ * @name BadArrowNotationJTULException
  * @class
  * @protected
  */
-class BadArrowNotationJumpingToUpperLevel extends PoonyaException {
+class BadArrowNotationJTULException extends PoonyaException {
     constructor() {
         super(`Bad array notation: unexpected transition to a upper level`);
     }
@@ -539,9 +555,10 @@ module.exports.NativeFunctionReturnValueError = NativeFunctionReturnValueError;
 module.exports.UnableToRecognizeTypeException = UnableToRecognizeTypeException;
 module.exports.TheFieldNotHasDeclaredExceprion = TheFieldNotHasDeclaredExceprion;
 module.exports.UnableToCreateAnObjectException = UnableToCreateAnObjectException;
-module.exports.BadArrowNotationJumpingTwoLevels = BadArrowNotationJumpingTwoLevels;
+module.exports.BadArrowNotationJumpingTwoLevels = BadArrowNotationJTException;
 module.exports.UnexpectedWordTypeAndGetException = UnexpectedWordTypeAndGetException;
-module.exports.BadArrowNotationJumpingToUpperLevel = BadArrowNotationJumpingToUpperLevel;
+module.exports.ParserUnfinishedNotationException = ParserUnfinishedNotationException;
+module.exports.BadArrowNotationJumpingToUpperLevel = BadArrowNotationJTULException;
 module.exports.TheFieldMustBeAnArrayInstanceExceprion = TheFieldMustBeAnArrayInstanceExceprion;
 module.exports.TheFieldAlreadyHasBeenDeclaredException = TheFieldAlreadyHasBeenDeclaredException;
 module.exports.SegmentationFaultEmptyArgumentException = SegmentationFaultEmptyArgumentException;

@@ -7,6 +7,8 @@
  * @license MIT
  */
 
+"use strict";
+
 const { Operand } = require('../../common/ParserData');
 
 /**

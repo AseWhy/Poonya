@@ -1,19 +1,21 @@
 /**
- * @file src/classes/excecution/statements/ResetOperator.js
+ * @file src/classes/excecution/statements/ResetStatement.js
  * @description Содержит в себе оператор обновления значения переменной
  * @author Astecom
  * @license MIT
  */
+
+"use strict";
 
 const ExpressionGroup = require('../expression/ExpressionGroup')
     , { iPoonyaObject } = require('../../interfaces')
     , { TheFieldNotHasDeclaredExceprion, GetFieldOfNullException } = require('../../exceptions');
 
 /**
- * @lends ResetOperator
+ * @lends ResetStatement
  * @protected
  */
-class ResetOperator {
+class ResetStatement {
     /**
      * Производит переустновку значения переменной переданной как левой операнд на выражение, которое передано как правый операнд.
      * Объект который сериализуется как name = (...expression)
@@ -22,7 +24,7 @@ class ResetOperator {
      * @param {String[]} query_stack Путь поля в памяти
      * @param {ExpressionGroup} value Данные которые нужно устновить
      *
-     * @constructs PushOperator
+     * @constructs PushStatement
      * @memberof Poonya.Statements
      * @protected
      */
@@ -95,4 +97,4 @@ class ResetOperator {
     }
 }
 
-module.exports = ResetOperator;
+module.exports = ResetStatement;
