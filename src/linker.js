@@ -52,9 +52,7 @@ async function linker(data, parent_path, throw_error) {
 
                 // #!if platform === 'browser'
                 /*~
-                    const buffer = parent_path.split('/');
-                    
-                    path = window.location.origin + '/' + buffer.slice(0, buffer.length - 1).join('/') + '/' + data[i + 1].data.toString();
+                    path = window.location.origin + '/' + parent_path.split('/').slice(0, -1).join('/') + '/' + data[i + 1].data.toString();
                     
                     content = fetch(path, { method: 'GET' }).then(e => e.blob);
                 */

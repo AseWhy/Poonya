@@ -1,6 +1,7 @@
 const { execSync } = require("child_process")
-    , { copyFileSync, rmdirSync } = require('fs')
-    , readline = require("readline");
+    , { copyFileSync, rmdirSync, readdirSync, unlinkSync } = require('fs')
+    , { extname, join } = require("path")
+    , readline = require("readline")
 
 let question, allow = ["y", "yes", "н", "нуы"];
 
@@ -73,6 +74,14 @@ async function main(){
         
         console.log('Building for browser platform amd');
         execSync('webpack --env platform=browser --env minimize=false --env type=amd');
+
+        console.log('Removing license ciles');
+        const files = readdirSync('dist');
+
+        for(let i = 0, leng = files.length; i < leng; i++){
+            if(extname(files[i]) != '.js')
+                unlinkSync(join('dist', files[i]));
+        }
     }
 
     confirm = await question("Commit changes? (Y/N) ");
