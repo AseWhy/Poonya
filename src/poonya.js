@@ -710,12 +710,13 @@ class ExpressionPattern extends CodeEmitter {
     document.addEventListener('DOMContentLoaded', async () => {
         const entries = document.querySelectorAll('script[type="text/poonya"], script[lang="text/poonya"]');
 
-        for(let i = 0, leng = entries.length, name, handler, imports, block_load, pattern; i < leng; i++){
+        for(let i = 0, leng = entries.length, name, handler, imports, block_load, block_error, pattern; i < leng; i++){
             name = entries[i].getAttribute('name') ?? 'block-' + i;
             handler = entries[i].getAttribute('handler') ?? 'exec';
             imports = (entries[i].getAttribute('import') ?? '').split('|');
 
             block_load = new Event('poonya:load:' + name);
+            block_error = new Event('poonya:error:' + name);
 
             if(handler == 'exec')
                 pattern = new ExecutionPattern(entries[i].innerHTML, imports);
@@ -728,11 +729,17 @@ class ExpressionPattern extends CodeEmitter {
                 pattern.on('load', async () => {
                     entries[i].replaceWith(...(await (pattern.result()).complete()).map(e => parseHTML(e)));
 
+                    window.dispatchEvent(block_load);
+
                     res();
                 });
-            });
 
-            window.dispatchEvent(block_load);
+                pattern.on('error', e => {
+                    window.dispatchEvent(block_error);
+
+                    res();
+                })
+            });
         }
 
         window.dispatchEvent(load);
