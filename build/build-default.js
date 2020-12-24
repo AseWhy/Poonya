@@ -1,7 +1,7 @@
 const { execSync } = require("child_process")
     , { copyFileSync, rmdirSync, readdirSync, unlinkSync } = require('fs')
     , { extname, join } = require("path")
-    , readline = require("readline")
+    , readline = require("readline");
 
 let question, allow = ["y", "yes", "н", "нуы"];
 
@@ -12,12 +12,12 @@ let question, allow = ["y", "yes", "н", "нуы"];
     });
 
     question = (message) => {
-        return new Promise((res, rej) => {
+        return new Promise(res => {
             rl.question(message, (responce) => {
-                res(responce)
+                res(responce);
             });
-        })
-    }
+        });
+    };
 }
 
 async function main(){
@@ -42,13 +42,13 @@ async function main(){
                 process.exit(0);
         }
     } catch (e) {
-        console.log('Old or new config file not found, no changes')
+        console.log('Old or new config file not found, no changes');
     }
 
     try {
         copyFileSync('package.json', 'build/build-data/package.json');
     } catch (e) {
-        console.log('Apparently you deleted the package.json file')
+        console.log('Apparently you deleted the package.json file');
     }
 
     confirm = await question("Rebuild bundles? (Y/N) ");
@@ -75,13 +75,16 @@ async function main(){
         console.log('Building for browser platform amd');
         execSync('webpack --env platform=browser --env minimize=false --env type=amd');
 
-        console.log('Removing license ciles');
+        console.log('Removing license files...');
         const files = readdirSync('dist');
 
         for(let i = 0, leng = files.length; i < leng; i++){
             if(extname(files[i]) != '.js')
                 unlinkSync(join('dist', files[i]));
         }
+
+        console.log('Formating code...');
+        execSync('npx prettier ./dist/poonya.*.bundle.js --write --config prettier.config.json');
     }
 
     confirm = await question("Commit changes? (Y/N) ");

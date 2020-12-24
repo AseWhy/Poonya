@@ -80,7 +80,7 @@ class PoonyaNumber extends PoonyaObject {
      * @method
      * @public
      */
-    result(context, out, throw_error) {
+    result() {
         return this.data;
     }
 

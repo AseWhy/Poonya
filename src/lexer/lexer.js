@@ -36,19 +36,19 @@ function lexer(input, allow_spaces = true) {
 
     const clear = () => {
         buff.splice(0, buff.length);
-    }
+    };
 
     const append = (index) => {
         buff.push(input[index - 1], input[index]);
-    }
+    };
 
     const firstIs = (...is) => {
         return is.includes(buff[1]);
-    }
+    };
 
     const lastIs = (...is) => {
         return is.includes(buff[buff.length - 1]);
-    }
+    };
 
     for (let i = 1, leng = input.length; i < leng; i += 2) {
         switch (input[i]) {

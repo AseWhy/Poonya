@@ -48,7 +48,7 @@ class PoonyaBoolean extends PoonyaObject {
      * @returns {PoonyaBoolean} клонированый объект
      */
     clone(){
-        return new PoonyaBoolean(this.prototype, this.data)
+        return new PoonyaBoolean(this.prototype, this.data);
     }
 
     /**
@@ -80,7 +80,7 @@ class PoonyaBoolean extends PoonyaObject {
      * @method
      * @public
      */
-    result(context, out, throw_error) {
+    result() {
         return this.data;
     }
 

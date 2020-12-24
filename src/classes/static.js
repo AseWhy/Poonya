@@ -151,7 +151,7 @@ const SERVICE = {
     ACTIONS: new EventEmitter(),
 
     get SPACE(){
-        return global[NAMESPACE]
+        return global[NAMESPACE];
     }
 };
 

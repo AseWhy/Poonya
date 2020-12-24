@@ -10,7 +10,6 @@
   "scripts": {
     "build": "node build/build-default.js",
     "sandbox": "node --trace-warnings ./sandbox/node/sandbox.js",
-    "pack": "webpack --env platform=node && webpack --env platform=browser",
     "test": "mocha ./tests"
   },
   "repository": {
@@ -28,6 +27,7 @@
   },
   "homepage": "https://github.com/AseWhy/Poonya#readme",
   "devDependencies": {
+    "eslint": "^7.16.0",
     "mocha": "^8.2.1",
     "webpack": "^5.11.0",
     "webpack-preprocessor-loader": "^1.1.3"

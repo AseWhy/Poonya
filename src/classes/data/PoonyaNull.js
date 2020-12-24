@@ -34,7 +34,7 @@ class PoonyaNull extends PoonyaObject {
      * @returns {PoonyaNull} клонированый объект
      */
     clone(){
-        return new PoonyaNull(this.prototype)
+        return new PoonyaNull(this.prototype);
     }
 
     /**
@@ -44,7 +44,7 @@ class PoonyaNull extends PoonyaObject {
      * @method
      * @override
      */
-    append(value){ }
+    append(){ }
 
     /**
      * Устанавливать значения для null нельзя
@@ -75,7 +75,7 @@ class PoonyaNull extends PoonyaObject {
      * @method
      * @public
      */
-    result(context, out, throw_error) {
+    result() {
         return null;
     }
 

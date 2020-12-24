@@ -10,10 +10,7 @@
 const { 
             BadKeyInvalidTypeException
         ,   BadKeyProtectedFieldException 
-    } = require('../exceptions'), 
-    { 
-            iContext
-    } = require('../interfaces'), 
+    } = require('../exceptions'),
     { 
             SUPER_CALL
         ,   GET

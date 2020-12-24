@@ -37,7 +37,7 @@ class PoonyaInteger extends PoonyaObject {
      * @returns {PoonyaInteger} клонированый объект
      */
     clone(){
-        return new PoonyaInteger(this.prototype, this.data)
+        return new PoonyaInteger(this.prototype, this.data);
     }
 
     /**
@@ -80,7 +80,7 @@ class PoonyaInteger extends PoonyaObject {
      * @method
      * @public
      */
-    result(context, out, throw_error) {
+    result() {
         return this.data;
     }
 

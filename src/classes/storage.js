@@ -7,6 +7,7 @@
 
 "use strict";
 
+const NativeFunction = require('./data/NativeFunction');
 const { GetFieldOfNullException, IsNotAConstructorException } = require('./exceptions')
     , { GET, SERVICE, IS } = require('./static')
     , { Cast } = require('../utils.js')
@@ -269,9 +270,11 @@ class Context extends iContext {
      *  `root` - поиск по самой нижней области памяти
      */
     set(val, data, params = 'tree') {
+        let p;
+
         switch (params) {
             case 'tree':
-                let p = this.levels.length;
+                p = this.levels.length;
 
                 while (--p >= 0) {
                     if (this.levels[p].get(val) != null) {

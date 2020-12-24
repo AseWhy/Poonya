@@ -15,6 +15,7 @@ const
     { maybeEquals } = require('./utils'),
     { CHARTYPE } = require('./classes/static'),
     { IOError } = require('./classes/exceptions'),
+    Exceptions = require('./classes/exceptions'),
     lexer = require('./lexer/lexer');
 
 /**
@@ -29,7 +30,7 @@ const
  * @async
  */
 async function linker(data, parent_path, throw_error) {
-    for (let i = 0; true; i++) {
+    for (let i = 0;; i++) {
         if (data[i] == null)
             return data;
 
@@ -40,13 +41,13 @@ async function linker(data, parent_path, throw_error) {
                 // #!if platform === 'node'
                     path = join(dirname(parent_path), data[i + 1].data.toString());
 
-                    content = new Promise((res, rej) => {
+                    content = new Promise(res => {
                         readFile(path, (err, data) => {
                             if(err)
                                 throw new IOError(path);
 
                             res(data);
-                        })
+                        });
                     });
                 // #!endif
 

@@ -43,7 +43,7 @@ class PoonyaPrototype extends iPoonyaPrototype {
     constructor(parents = [], name) {
         super();
 
-        if (parents.find(e => !e instanceof iPoonyaPrototype) != null)
+        if (parents.find(e => !(e instanceof iPoonyaPrototype)) != null)
             throw new Error('Only descendants of iPoonyaPrototype should be specified as parents of the target class');
 
         if (typeof name === 'string' || name == null) {
@@ -136,12 +136,12 @@ class PoonyaPrototype extends iPoonyaPrototype {
 
         if ((data = this._fields.get(key)) != null) {
             if (!static_assces || (this._fields_data.get(key) & FIELDFLAGS.STATIC) !== 0)
-                return data
+                return data;
             else
                 return null;
         } else {
             for (let i = 0, leng = this._parents.length; i < leng; i++) {
-                if (data = this._parents[i].get(key, context, static_assces) != null) {
+                if ((data = this._parents[i].get(key, context, static_assces)) != null) {
                     return data;
                 }
             }

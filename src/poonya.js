@@ -111,7 +111,7 @@ const
     { readFile } = require("fs"),
     { normalize, extname } = require("path"),
     // #!endif
-    { PoonyaException } = require('./classes/exceptions'),
+    { IOError } = require('./classes/exceptions'),
     { Import, ImportDir, ImportFile } = require("./importer.js"),
     { Context, Heap } = require("./classes/storage"),
     { parser, parseExpression, parserMP } = require("./parser.js"),
@@ -160,7 +160,7 @@ class PoonyaOutputStream extends EventEmitter {
 
             return stream;
         } else {
-            throw new TypeError('Is not a WriteStream')
+            throw new TypeError('Is not a WriteStream');
         }
     }
 
@@ -243,10 +243,10 @@ class CodeEmitter extends EventEmitter {
             _.charset = 'utf-8';
 
             // #!if platform === 'node'
-            _.path = module.parent ? module.parent.filename : module.filename
+            _.path = module.parent ? module.parent.filename : module.filename;
             // #!endif
             // #!if platform === 'browser'
-            // ~ _.path = window.location.href
+            // ~ _.path = window.location.href;
             // #!endif
             
             if(SERVICE.LOADED) {
@@ -256,7 +256,7 @@ class CodeEmitter extends EventEmitter {
                 SERVICE.ACTIONS.on('load', () => {
                     _[INIT](import_s, logger);
 
-                    onload.call(_)
+                    onload.call(_);
                 });
             }
         } else if (typeof input === "object") {
@@ -672,7 +672,7 @@ class ExpressionPattern extends CodeEmitter {
     result(data = new Heap(), error = this.throwError.bind(this)) {
         const _ = this;
 
-        return new Promise((res, rej) => {
+        return new Promise(res => {
             if(_.loaded)
                 res(_[RESULT](data, error));
             else

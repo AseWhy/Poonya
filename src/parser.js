@@ -22,9 +22,9 @@ const {
     ,   UnexpectedTokenStatement
     ,   UnexpectedWordTypeAndGetException
     ,   CriticalParserErrorException
-    ,   CriticalParserErrorNoRawDataTransmittedException,
-    CriticalParserErrorUnexpectedEndOfExpression,
-    ParserUnfinishedNotationException
+    ,   CriticalParserErrorNoRawDataTransmittedException
+    ,   CriticalParserErrorUnexpectedEndOfExpression
+    ,   ParserUnfinishedNotationException
     } = require('./classes/exceptions'),
     { 
         maybeEquals
@@ -71,7 +71,7 @@ function parseFunctionCall(query_stack, start, data, throw_error, block_start) {
         throw_error,
         ",",
         Infinity,
-        `Function (${query_stack.map((e) => (typeof e === "number" ? `[${e}]` : e)).join(" => ")})`
+        `(${query_stack.map((e) => (typeof e === "number" ? `[${e}]` : e)).join(" => ")})()`
     );
 
     return {
@@ -104,7 +104,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
         last_row = start,
         expected = 0; // Ожидаемое следующие значение
 
-    for (let i = start; true; i++) {
+    for (let i = start;; i++) {
         switch (true) {
             case 
                 data[i] === undefined || 
@@ -257,7 +257,7 @@ function parseTernar(condition, start, data, throw_error) {
             );
     }
 
-    for (let i = start; true; i++) {
+    for (let i = start;; i++) {
         switch (true) {
             case data[i] === undefined ||
                 data[i].equals(CHARTYPE.OPERATOR, ";") ||
@@ -335,7 +335,7 @@ function parseVarName(start, data, throw_error) {
             jump: 0,
         };
 
-    for (let i = start; true; i++) {
+    for (let i = start;; i++) {
         switch (true) {
             case data[i] == null ||
                 (data[i].equals(CHARTYPE.OPERATOR) &&
@@ -420,7 +420,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
     const buffer = new ExpressionGroup(data[0].position)
         , result = new Array();
 
-    for (let i = start; true; i++) {
+    for (let i = start;; i++) {
         if (
             data[i] == undefined ||
             data[i].equals(CHARTYPE.OPERATOR, ")") ||
@@ -561,8 +561,8 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                 buffer.complete(throw_error);
 
                 return {
-                    data: buffer,
-                }
+                    data: buffer
+                };
         }
     }
 }
@@ -572,7 +572,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
  *
  * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
- * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызывается при ошибке функция, котора первым ��ргументм принимает позицию вхождения на котором произошла ошибка
+ * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызывается при ошибке функция, котора первым аргументом принимает позицию вхождения на котором произошла ошибка
  * @param {String} segment_separator Разделитель для сегментов
  * @param {Number} max_segments Максимальное число сегментов, если это число сегментов будет превышено, будет выбражено исключение
  * @param {String} blockname Название блока
@@ -593,7 +593,7 @@ function segmentationParser(
     let hook_index = 0,
         buffer = [new Array()];
 
-    for (let i = start; true; i++) {
+    for (let i = start;; i++) {
         if(entries[i].equals(CHARTYPE.NEWLINE))
             continue;
 
@@ -683,7 +683,7 @@ function segmentCutter(start, entries, throw_error) {
     let hook_index = 0,
         body = new Array();
 
-    for (let i = start; true; i++) {
+    for (let i = start;; i++) {
         switch (true) {
             case entries[i] === undefined ||
                 (entries[i].equals(CHARTYPE.OPERATOR, "}") && hook_index <= 0):
@@ -846,7 +846,7 @@ function codeBlockParser(start, entries, throw_error) {
     const buffer = new SequenceGroup(),
         result = new Array();
 
-    for (let i = start, leng = entries.length; true; i++) {
+    for (let i = start, leng = entries.length;; i++) {
         try {
             if (entries[i] == null) {
                 return {
@@ -1013,6 +1013,7 @@ function codeBlockParser(start, entries, throw_error) {
                             new UnexpectedWordTypeAndGetException(entries[i + 1].toString(), entries[i + 1].type)
                         );
                     }
+                break;
                 case entries[i].equals(CHARTYPE.WORD):
                     result[0] = parseVarName(i, entries, throw_error);
 
@@ -1117,7 +1118,7 @@ function codeBlockParser(start, entries, throw_error) {
                     );
             }
         } catch (e) {
-            if (!e instanceof ParserException) {
+            if (!(e instanceof ParserException)) {
                 if (entries.length != 0) {
                     if (entries[i] != null)
                         throw_error(entries[i].position, new CriticalParserErrorException());
@@ -1183,7 +1184,7 @@ async function parserMP(entries, block_prefix, throw_error, parent_path) {
         , buffer = new Array()
         , out = new SequenceMainGroup();
 
-    for (let i = 0; true; i++) {
+    for (let i = 0;; i++) {
         if(entries[i] == null)
             break;
 

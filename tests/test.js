@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const poonya = require("../src/poonya")
     , assert = require("assert");
 
@@ -136,7 +137,7 @@ describe("poonya-common-test", () => {
                 field1: 'NOT OBJECT'
             }]);
         });
-    })
+    });
 
     describe("#object-inheritance", () => {
         it("Checking the inheritance of fields from an object", async () => {
@@ -170,7 +171,7 @@ describe("poonya-common-test", () => {
 
             assert.deepStrictEqual(await pattern.result().complete(), [[]]);
         });
-    })
+    });
 
     describe("#object-static-methods", () => {
         it("Should return an array with values ​​from 0 to 5", async () => {

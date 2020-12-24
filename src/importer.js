@@ -16,6 +16,7 @@ const
     { NAMESPACE, SERVICE } = require('./classes/static'),
     { IOError } = require('./classes/exceptions'),
     PoonyaObject = require('./classes/data/PoonyaObject'),
+    PoonyaArray = require('./classes/data/PoonyaArray'),
     NativeFunction = require('./classes/data/NativeFunction'),
     PoonyaPrototype = require('./classes/data/PoonyaPrototype');
 
@@ -70,7 +71,7 @@ class PoonyaStaticLibrary {
      * @method
      */
     expandPrototype(proto) {
-        if (PoonyaPrototype.isPrototypeOf(proto)) {
+        if (Object.prototype.isPrototypeOf.call(PoonyaPrototype, proto)) {
             this._fields.set(proto.name, proto);
         } else {
             throw new Error(`Only PoonyaPrototype instance can be passed as a prototype.`);
@@ -162,7 +163,7 @@ class PoonyaStaticLibrary {
                     );
                     break;
                 case 'function':
-                    if (PoonyaPrototype.isPrototypeOf(value)) {
+                    if (Object.prototype.isPrototypeOf.call(PoonyaPrototype, value)) {
                         parent.set(context, (value = new value(context)).name, value);
                     } else {
                         parent.set(context, key, new NativeFunction(value));
@@ -264,17 +265,10 @@ let AddLibrary = (lib_id, lib_object, override = false) => {
  * @function Import
  *
  * @param {string[]} import_statements Массив с идентификаторами библиотек
- * @param {
- *      {
- *          log: Function,
- *          error: Function,
- *          warn: Function
- *      }
- * } logger Логгер, в случае ошибок ипорта
  *
  * @protected
  */
-let Import = (import_statements, logger) => {
+let Import = (import_statements) => {
     if (!(import_statements instanceof Array))
         throw new TypeError('import_statements must be Array');
 
@@ -298,7 +292,7 @@ let Import = (import_statements, logger) => {
  *
  * @protected
  */
-let ImportFile = async (lib_dir, file) => {};
+let ImportFile = async () => {};
 
 // #!if platform === 'node'
 class PoonyaModule extends Module {
@@ -330,9 +324,8 @@ let ImportDir = async (parent_path, lib_dir) => {
 
     const default_libs = readdirSync(lib_dir);
 
-    for (let i = 0, leng = default_libs.length; i < leng; i++) {
-        await ImportFile(lib_dir, default_libs[i])
-    }
+    for (let i = 0, leng = default_libs.length; i < leng; i++)
+        await ImportFile(lib_dir, default_libs[i]);
 };
 
 ImportFile = (lib_dir, file) => {
@@ -346,7 +339,7 @@ ImportFile = (lib_dir, file) => {
 
     cur.file = path;
 
-    return new Promise((res, rej) => {
+    return new Promise(res => {
         readFile(path, 'utf-8', (err, data) => {
             if(err)
                 throw new IOError(path);
@@ -354,9 +347,9 @@ ImportFile = (lib_dir, file) => {
             cur._compile(`"use strict";${data};`, path);
 
             res();
-        })
-    })
-}
+        });
+    });
+};
 // Для node есть специальная функция для импорта каталога
 module.exports.ImportDir = ImportDir;
 // #!endif

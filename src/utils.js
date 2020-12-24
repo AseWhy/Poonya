@@ -163,7 +163,7 @@ function fromBytes(input) {
     let string = '';
 
     for(let i = 0, leng = input.length; i < leng; i += 2)
-        string += String.fromCharCode((input[i] << 8) | input[i + 1])
+        string += String.fromCharCode((input[i] << 8) | input[i + 1]);
     
     return string;
 }

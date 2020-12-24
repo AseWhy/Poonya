@@ -12,7 +12,7 @@ function l(...messages) {
 
 module.paths.push('C:/Users/alecs/AppData/Roaming/npm/node_modules');
 
-module.exports = (env, b) => {
+module.exports = (env) => {
     env.platform = env && env.platform || 'node';
     env.type = env && env.type || 'var';
     env.minimize = env && env.minimize == 'true' ? true : false;
@@ -25,10 +25,10 @@ module.exports = (env, b) => {
         '|------------------------------------------------------------------|',
         '| PARAM            | VALUE                                         |',
         '|------------------------------------------------------------------|',
-        '| FOR PLATFORM     | ' + c(33, (b = (env.platform).toUpperCase()).padEnd(46, ' ')) + '|',
+        '| FOR PLATFORM     | ' + c(33, (env.platform).toUpperCase().padEnd(46, ' ')) + '|',
         '| OUT              | ' + c(33, env.path.padEnd(46, ' ')) + '|',
         '|==================================================================|'
-    )
+    );
 
     if(env.platform != 'node' && env.platform != 'browser')
         throw new Error('Unknown platform.');
@@ -88,5 +88,5 @@ module.exports = (env, b) => {
         },
 
         target: env.platform == 'node' ? 'node' : 'web'
-    }
+    };
 };
