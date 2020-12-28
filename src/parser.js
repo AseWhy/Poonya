@@ -8,7 +8,7 @@
 "use strict";
 
 const { 
-        ParserException
+        PoonyaException
     ,   BadEmptyObjectException
     ,   ParserEmtyArgumentException
     ,   UnexpectedTokenException
@@ -1118,7 +1118,9 @@ function codeBlockParser(start, entries, throw_error) {
                     );
             }
         } catch (e) {
-            if (!(e instanceof ParserException)) {
+            if (e instanceof PoonyaException) {
+                throw e;
+            } else {
                 if (entries.length != 0) {
                     if (entries[i] != null)
                         throw_error(entries[i].position, new CriticalParserErrorException());
@@ -1134,8 +1136,6 @@ function codeBlockParser(start, entries, throw_error) {
                         new CriticalParserErrorNoRawDataTransmittedException()
                     );
                 }
-            } else {
-                throw e;
             }
         }
     }

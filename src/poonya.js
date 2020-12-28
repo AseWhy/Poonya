@@ -111,7 +111,7 @@ const
     { readFile } = require("fs"),
     { normalize, extname } = require("path"),
     // #!endif
-    { IOError } = require('./classes/exceptions'),
+    { IOError, PoonyaException } = require('./classes/exceptions'),
     { Import, ImportDir, ImportFile } = require("./importer.js"),
     { Context, Heap } = require("./classes/storage"),
     { parser, parseExpression, parserMP } = require("./parser.js"),
@@ -308,7 +308,6 @@ class CodeEmitter extends EventEmitter {
                     );
                     // #!endif
 
-                    // Защищаю от выполнения браузерного кода в nodejs
                     // #!if platform === 'browser'
                     // ~ fetch(input.path, { method: "GET" })
                     // ~   .catch(e => { throw e })
@@ -342,12 +341,12 @@ class CodeEmitter extends EventEmitter {
      * Выводит сообщение об ошибке, прекращает выполнения текущего шаблона.
      *
      * @param {Number} pos Позиция в которой произшла ошибка
-     * @param {String} message Сообщение с ошибкой
+     * @param {String} error Сообщение с ошибкой
      * @param {Number} rad_of Радиус печати, т.е. количество строк которое будет печатать в вывод по мимо строки на которой произошла ошибка
      * @method
      * @public
      */
-    throwError(pos, message, rad_of = 5) {
+    throwError(pos, error, rad_of = 5) {
         rad_of = parseInt(rad_of);
 
         let buffer = [],
@@ -399,7 +398,12 @@ class CodeEmitter extends EventEmitter {
             }
         }
         
-        throw new Error(message.message + ': \n' + buffer.join(""));
+        if(error instanceof PoonyaException) {
+            error.message += '\n' + buffer.join('');
+
+            throw error;
+        } else
+            throw new PoonyaException(error, buffer.join(''));
     }
 
     /**

@@ -22,10 +22,14 @@ class PoonyaException {
     constructor(header, message) {
         this.message = 'PoonyaException / ' + header + (message != null ? ': \n' + message : '');
     }
+
+    toString(){
+        return this.message;
+    }
 }
 
 /**
- * Основное исключение шаблонизатора
+ * Основное исключение парсера
  *
  * @memberof Poonya.Exceptions
  * @name ParserException
@@ -33,8 +37,22 @@ class PoonyaException {
  * @protected
  */
 class ParserException extends PoonyaException {
-    constructor() {
-        super('Error when processing raw data');
+    constructor(header, message) {
+        super('Parser exception / ' + header, message);
+    }
+}
+
+/**
+ * Основное исключение линкера
+ *
+ * @memberof Poonya.Exceptions
+ * @name LinkerException
+ * @class
+ * @protected
+ */
+class LinkerException extends PoonyaException {
+    constructor(header, message) {
+        super('Linker exception / ' + header, message);
     }
 }
 
@@ -46,7 +64,7 @@ class ParserException extends PoonyaException {
  * @class
  * @protected
  */
-class TheSequenceException extends PoonyaException {
+class TheSequenceException extends ParserException {
     constructor(entry, last) {
         super(`Wrong order: condition operator: '${entry.toString()}' after '${last.toString()}'`);
     }
@@ -60,7 +78,7 @@ class TheSequenceException extends PoonyaException {
  * @class
  * @protected
  */
-class UnexpectedTokenException extends PoonyaException {
+class UnexpectedTokenException extends ParserException {
     constructor(token, expected) {
         super(`Unexpected token '${token.toString()}' when expected '${expected.toString()}'`);
     }
@@ -74,7 +92,7 @@ class UnexpectedTokenException extends PoonyaException {
  * @class
  * @protected
  */
-class UnexpectedTokenStatement extends PoonyaException {
+class UnexpectedTokenStatement extends ParserException {
     constructor(statement, token, expected) {
         super(
             `Error parsing the '${statement.toString()}' statement. Expected '${expected.toString()}', when actually: '${token.toString()}'`
@@ -90,7 +108,7 @@ class UnexpectedTokenStatement extends PoonyaException {
  * @class
  * @protected
  */
-class ParserLogicException extends PoonyaException {
+class ParserLogicException extends ParserException {
     constructor() {
         super('The expression has incorrect logic');
     }
@@ -104,7 +122,7 @@ class ParserLogicException extends PoonyaException {
  * @class
  * @protected
  */
-class ParserEmtyArgumentException extends PoonyaException {
+class ParserEmtyArgumentException extends ParserException {
     constructor() {
         super(
             'It is not possible to pass an empty argument to a function, use null to denote an empty value'
@@ -120,7 +138,7 @@ class ParserEmtyArgumentException extends PoonyaException {
  * @class
  * @protected
  */
-class LinkerPathNotGiveExceptrion extends PoonyaException {
+class LinkerPathNotGiveException extends LinkerException {
     constructor() {
         super('To use include, you must pass the path to the current execution file');
     }
@@ -134,7 +152,7 @@ class LinkerPathNotGiveExceptrion extends PoonyaException {
  * @class
  * @protected
  */
-class IOError extends PoonyaException {
+class IOError extends LinkerException {
     constructor(path) {
         super("An error occured while opening file: '" + path + "'");
     }
@@ -296,7 +314,7 @@ class TheFieldMustBeNumberException extends PoonyaException {
  * @class
  * @protected
  */
-class UnableToRecognizeTypeException extends PoonyaException {
+class UnableToRecognizeTypeException extends ParserException {
     constructor(type) {
         super(`Unable to recognize type '${type}'`);
     }
@@ -310,7 +328,7 @@ class UnableToRecognizeTypeException extends PoonyaException {
  * @class
  * @protected
  */
-class SegmentationFaultEmptyArgumentException extends PoonyaException {
+class SegmentationFaultEmptyArgumentException extends ParserException {
     constructor(blockname) {
         super(`Segmentation fault: empty argument for ` + blockname);
     }
@@ -324,7 +342,7 @@ class SegmentationFaultEmptyArgumentException extends PoonyaException {
  * @class
  * @protected
  */
-class ParserUnfinishedNotationException extends PoonyaException {
+class ParserUnfinishedNotationException extends ParserException {
     constructor() {
         super(`Parser fault: unfinished notation`);
     }
@@ -338,7 +356,7 @@ class ParserUnfinishedNotationException extends PoonyaException {
  * @class
  * @protected
  */
-class SegmentationFaultMaximumSegmentsForBlockException extends PoonyaException {
+class SegmentationFaultMaximumSegmentsForBlockException extends ParserException {
     constructor(blockname) {
         super(`Segmentation fault exceeded the maximum number of segments for block ` + blockname);
     }
@@ -352,7 +370,7 @@ class SegmentationFaultMaximumSegmentsForBlockException extends PoonyaException 
  * @class
  * @protected
  */
-class UnexpectedWordTypeAndGetException extends PoonyaException {
+class UnexpectedWordTypeAndGetException extends ParserException {
     constructor(value, type) {
         super(`Expected word type expression and get ${value}[${type}]`);
     }
@@ -366,7 +384,7 @@ class UnexpectedWordTypeAndGetException extends PoonyaException {
  * @class
  * @protected
  */
-class InvalidSequenceForLetiableAccessException extends PoonyaException {
+class InvalidSequenceForLetiableAccessException extends ParserException {
     constructor() {
         super(`Invalid sequence for letiable access`);
     }
@@ -380,7 +398,7 @@ class InvalidSequenceForLetiableAccessException extends PoonyaException {
  * @class
  * @protected
  */
-class CriticalParserErrorException extends PoonyaException {
+class CriticalParserErrorException extends ParserException {
     constructor() {
         super(`Critical parser error`);
     }
@@ -394,7 +412,7 @@ class CriticalParserErrorException extends PoonyaException {
  * @class
  * @protected
  */
-class CriticalParserErrorUnexpectedEndOfExpression extends PoonyaException {
+class CriticalParserErrorUnexpectedEndOfExpression extends ParserException {
     constructor() {
         super(`Critical parser error: unexprected end of expression`);
     }
@@ -408,7 +426,7 @@ class CriticalParserErrorUnexpectedEndOfExpression extends PoonyaException {
  * @class
  * @protected
  */
-class CriticalParserErrorUnexpectedEndOfInputException extends PoonyaException {
+class CriticalParserErrorUnexpectedEndOfInputException extends ParserException {
     constructor() {
         super(`Critical parser error: unexpected end of input`);
     }
@@ -422,7 +440,7 @@ class CriticalParserErrorUnexpectedEndOfInputException extends PoonyaException {
  * @class
  * @protected
  */
-class CriticalParserErrorNoRawDataTransmittedException extends PoonyaException {
+class CriticalParserErrorNoRawDataTransmittedException extends ParserException {
     constructor() {
         super(`Critical parser error: no raw data transmitted`);
     }
@@ -436,7 +454,7 @@ class CriticalParserErrorNoRawDataTransmittedException extends PoonyaException {
  * @class
  * @protected
  */
-class BadArrowNotationJTException extends PoonyaException {
+class BadArrowNotationJTException extends ParserException {
     constructor() {
         super(`Bad array notation: jumping two levels is not possible`);
     }
@@ -450,7 +468,7 @@ class BadArrowNotationJTException extends PoonyaException {
  * @class
  * @protected
  */
-class BadArrowNotationJTULException extends PoonyaException {
+class BadArrowNotationJTULException extends ParserException {
     constructor() {
         super(`Bad array notation: unexpected transition to a upper level`);
     }
@@ -464,7 +482,7 @@ class BadArrowNotationJTULException extends PoonyaException {
  * @class
  * @protected
  */
-class BadEmptyObjectException extends PoonyaException {
+class BadEmptyObjectException extends ParserException {
     constructor() {
         super(`Cannot create an empty object after declaring its keys`);
     }
@@ -534,6 +552,7 @@ class IsNotAConstructorException extends PoonyaException {
 
 module.exports.IOError = IOError;
 module.exports.LinkerIOError = LinkerIOError;
+module.exports.LinkerException = LinkerException;
 module.exports.PoonyaException = PoonyaException;
 module.exports.ParserException = ParserException;
 module.exports.TheSequenceException = TheSequenceException;
@@ -546,7 +565,7 @@ module.exports.FieldNotAFunctionException = FieldNotAFunctionException;
 module.exports.BadKeyInvalidTypeException = BadKeyInvalidTypeException;
 module.exports.IsNotAConstructorException = IsNotAConstructorException;
 module.exports.ParserEmtyArgumentException = ParserEmtyArgumentException;
-module.exports.LinkerPathNotGiveExceptrion = LinkerPathNotGiveExceptrion;
+module.exports.LinkerPathNotGiveException = LinkerPathNotGiveException;
 module.exports.CriticalParserErrorException = CriticalParserErrorException;
 module.exports.NativeFunctionExecutionError = NativeFunctionExecutionError;
 module.exports.BadKeyProtectedFieldException = BadKeyProtectedFieldException;

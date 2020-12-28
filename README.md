@@ -224,4 +224,4 @@ window.addEventListener('poonya:error:some', () => {
 ```
 
 ## Вики
-Смотрите [wiki](https://github.com/AseWhy/Poonya/wiki) для помощи по синтаксису
+Смотрите [wiki](https://asewhy.github.io/#poonya/main-poonya) для помощи по синтаксису

@@ -230,6 +230,21 @@
                 display: grid;
                 grid-template-areas: '. . .';
             }
+            
+            .footer {
+                grid-template-areas: '. .';
+                grid-template-columns: min-content ;
+            }
+
+            .footer-print {
+                display: none;
+            }
+            
+            .footer-body-memeber {
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
         }
     </style>
 </head>
@@ -437,7 +452,7 @@
                 ),
                 ( -> class -> 'footer-body')
             ) + html.createElement(TAGS.DIV,
-                    '⚖ MIT License' + html.createElement(TAGS.DIV,
+                    '⚖ MIT License' + html.createTag(TAGS.BR) + html.createElement(TAGS.SPAN,
                         'Демонстрационный файл - просто по тому что могу...'
                     ),
                 ( -> class -> 'footer-print')
