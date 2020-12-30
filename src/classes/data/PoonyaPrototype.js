@@ -75,14 +75,12 @@ class PoonyaPrototype extends iPoonyaPrototype {
      * Добавляет родительский прототип целевому
      *
      * @param {iPoonyaPrototype} parent прототип объекта
-     * @memberof Poonya
-     * @constructs PoonyaObject
+     * @method
      * @public
      */
-    addParent(parent) {
+    expand(parent) {
         if (parent instanceof iPoonyaPrototype)
             this._parents.push(parent);
-
         else
             throw new TypeError("Parent must be an iPoonyaPrototype instance.");
     }

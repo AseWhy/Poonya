@@ -25,7 +25,9 @@ const modules = Symbol.for('Modules');
 
 if (global[NAMESPACE] == null) {
     global[NAMESPACE] = new Object();
+}
 
+if(global[NAMESPACE][modules] == null) {
     global[NAMESPACE][modules] = new Map();
 }
 
@@ -42,11 +44,11 @@ class PoonyaStaticLibrary {
      * @constructs PoonyaStaticLibrary
      * @public
      */
-    constructor(id, global = false, override = false, namespace) {
+    constructor(id, l_global = false, override = false, namespace) {
         AddLibrary(id, this, override);
 
-        this.namespace = namespace;
-        this.global = global;
+        this.namespace = namespace != null ? namespace : 'space-' + (global[NAMESPACE][modules].size).toString(16) + (l_global ? '-global' : '');
+        this.global = Boolean(l_global);
 
         this._fields = new Map();
     }
@@ -60,11 +62,16 @@ class PoonyaStaticLibrary {
      * @method
      */
     addField(field, data) {
-        this._fields.set(field, data);
+        field = String(field);
+
+        if(this._fields.has(field))
+            throw new Error('The "' + field + '" field alredy exists');
+        else
+            this._fields.set(field, data);
     }
 
     /**
-     * Расширяет прототип класса переданного как proto
+     * Расширяет прототип класса переданного как proto, или создает новый прототип объекта
      *
      * @param {PoonyaPrototype} proto название поля, которое устанавливаем
      * @public
@@ -72,7 +79,11 @@ class PoonyaStaticLibrary {
      */
     expandPrototype(proto) {
         if (Object.prototype.isPrototypeOf.call(PoonyaPrototype, proto)) {
-            this._fields.set(proto.name, proto);
+            if(this._fields.has(proto.name)) {
+                this._fields.get(proto.name).expand(proto);
+            } else {
+                this._fields.set(proto.name, proto);
+            }
         } else {
             throw new Error(`Only PoonyaPrototype instance can be passed as a prototype.`);
         }

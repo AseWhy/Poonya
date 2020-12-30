@@ -137,16 +137,19 @@ const
     { EventEmitter } = require("events"),
     // #!if platform === 'node'
     { readFile } = require("fs"),
+    { Stream } = require('stream'),
     { normalize, extname } = require("path"),
     // #!endif
-    { IOError } = require('./classes/exceptions'),
+    { IOError, PoonyaException } = require('./classes/exceptions'),
     { Import, ImportDir, ImportFile } = require("./importer.js"),
     { Context, Heap } = require("./classes/storage"),
     { parser, parseExpression, parserMP } = require("./parser.js"),
     { SERVICE } = require('./classes/static'),
     { toFixed, toBytes, fromBytes } = require('./utils'),
+    { iPoonyaConstructsData } = require("./classes/interfaces"),
     lexer = require("./lexer/lexer.js");
 
+// Private fields
 const RESULT = Symbol('RESULT')
     , INIT = Symbol('INIT');
 
@@ -175,16 +178,46 @@ class PoonyaOutputStream extends EventEmitter {
     }
 
     /**
+     * Преобразует поток в ReadableStream или в Stream.Writable для nodejs
+     * 
+     * @returns {ReadableStream|Stream.Writable} поток чтения, если это браузер, или поток записи если это nodejs
+     * @method
+     * @public
+     */
+    toReadable(){
+        const _ = this;
+
+        // #!if platform === 'browser'
+        /*~
+        return new ReadableStream({
+            start(controller){
+                _.on('data', controller.enqueue.bind(controller));
+                _.on('end', controller.close.bind(controller));
+            }
+        });
+        */
+        // #!endif
+        // #!if platform === 'node'
+        const stream = new Stream.Writable();
+
+        _.on('data', stream.write.bind(stream));
+        _.on('end', stream.end.bind(stream));
+
+        return stream;
+        // #!endif
+    }
+
+    /**
      * Перенаправляет поток данных в `stream` переданный первым аргументом
      * 
      * @param {PoonyaOutputStream} stream поток которому необходимо передавать данные помимо этого
-     * @returns PoonyaOutputStream Поток который был передан.
+     * @returns`stream` Поток который был передан.
      * @method
      * @public
      */
     pipe(stream){
         if(typeof stream.write === 'function'){
-            this.on('data', stream.write);
+            this.on('data', stream.write.bind(stream));
 
             return stream;
         } else {
@@ -336,7 +369,6 @@ class CodeEmitter extends EventEmitter {
                     );
                     // #!endif
 
-                    // Защищаю от выполнения браузерного кода в nodejs
                     // #!if platform === 'browser'
                     // ~ fetch(input.path, { method: "GET" })
                     // ~   .catch(e => { throw e })
@@ -370,12 +402,12 @@ class CodeEmitter extends EventEmitter {
      * Выводит сообщение об ошибке, прекращает выполнения текущего шаблона.
      *
      * @param {Number} pos Позиция в которой произшла ошибка
-     * @param {String} message Сообщение с ошибкой
+     * @param {String} error Сообщение с ошибкой
      * @param {Number} rad_of Радиус печати, т.е. количество строк которое будет печатать в вывод по мимо строки на которой произошла ошибка
      * @method
      * @public
      */
-    throwError(pos, message, rad_of = 5) {
+    throwError(pos, error, rad_of = 5) {
         rad_of = parseInt(rad_of);
 
         let buffer = [],
@@ -427,7 +459,12 @@ class CodeEmitter extends EventEmitter {
             }
         }
         
-        throw new Error(message.message + ': \n' + buffer.join(""));
+        if(error instanceof PoonyaException) {
+            error.message += '\n' + buffer.join('');
+
+            throw error;
+        } else
+            throw new PoonyaException(error, buffer.join(''));
     }
 
     /**
@@ -461,7 +498,7 @@ class CodeEmitter extends EventEmitter {
         if (Array.isArray(data)) {
             for (let i = 0, leng = data.length; i &lt; leng; i++)
                 if (typeof data[i] === "object" &amp;&amp; !(data[i] instanceof Heap)) {
-                    data[i] = new Heap(data[i]);
+                    data[i] = new Heap(null, data[i]);
                 }
 
             if (data.find((e) => !(e instanceof Heap)) == null) {
@@ -471,9 +508,17 @@ class CodeEmitter extends EventEmitter {
             } else {
                 throw new TypeError("Data must have a Heap type");
             }
+        } else if(data instanceof Context){
+            const clone = data.clone();
+
+            clone.import(this.libraries, error);
+
+            this.data.result(clone, out, error);
+
+            out.end();
         } else {
             if (typeof data === "object" &amp;&amp; !(data instanceof Heap)) {
-                data = new Heap(data);
+                data = new Heap(null, data);
             }
 
             if (data instanceof Heap) {
@@ -489,7 +534,7 @@ class CodeEmitter extends EventEmitter {
     /**
      * Возвращает результат выполенения блока
      *
-     * @param {String|Heap} data данные преданые в исполнитель
+     * @param {Object|Heap|Context} data данные преданые в исполнитель
      * @param {Function} error функция вывода ошибок, опциаонально
      * 
      * @returns {Array&lt;Any>} результат выполнения блока
@@ -549,8 +594,6 @@ class MessagePattern extends CodeEmitter {
                 this.data = await parserMP(lexer(toBytes(this.input)), block_prefix, this.throwError.bind(this), this.path);
             } catch (e) {
                 this.emit('error', e);
-
-                throw e;
             }
 
             this.loaded = true;
@@ -600,8 +643,6 @@ class ExecutionPattern extends CodeEmitter {
                 this.data = await parser(lexer(toBytes(this.input), false), this.throwError.bind(this), this.path);
             } catch (e) {
                 this.emit('error', e);
-
-                throw e;
             }
 
             this.loaded = true;
@@ -638,8 +679,6 @@ class ExpressionPattern extends CodeEmitter {
                 this.data = parseExpression(0, lexer(toBytes(this.input), false), this.throwError.bind(this)).data;
             } catch (e) {
                 this.emit('error', e);
-
-                throw e;
             }
             
             this.loaded = true;
@@ -649,14 +688,20 @@ class ExpressionPattern extends CodeEmitter {
     }
 
     [RESULT](data, error){
-        if (!(data instanceof Context)) {
+        if (data instanceof Context) {
+            const clone = data.clone();
+
+            clone.import(this.libraries, error);
+
+            return this.data.result(clone, [], error);
+        } else {
             if (Array.isArray(data)) {
                 for (let i = 0, leng = data.length; i &lt; leng; i++)
                     if (
                         typeof data[i] === "object" &amp;&amp;
                         !(data[i] instanceof Heap)
                     ) {
-                        data[i] = new Heap(data[i]);
+                        data[i] = new Heap(null, data[i]);
                     }
 
                 if (data.find((e) => !(e instanceof Heap)) == null) {
@@ -670,7 +715,7 @@ class ExpressionPattern extends CodeEmitter {
                 }
             } else {
                 if (typeof data === "object" &amp;&amp; !(data instanceof Heap)) {
-                    data = new Heap(data);
+                    data = new Heap(null, data);
                 }
 
                 if (data instanceof Heap) {
@@ -683,8 +728,6 @@ class ExpressionPattern extends CodeEmitter {
                     throw new TypeError("Data must have a Heap type");
                 }
             }
-        } else {
-            return this.data.result(data, [], error);
         }
     }
 
@@ -706,6 +749,89 @@ class ExpressionPattern extends CodeEmitter {
             else
                 _.on('load', () => res(_[RESULT](data, error)));
         });
+    }
+}
+
+/**
+ * Создает контекст выполнения, с полями `data`
+ * 
+ * @param {Object} data поля инициализации контекста, вы можете передать сюда объект с глобальными переменными доступными в контексте
+ * @param  {...String|...Array&lt;String>} libs список библиотек для импорта
+ * @returns {Promise&lt;Context>} контекст выполнения
+ * @memberof Poonya
+ * @async
+ */
+function createContext(data, ...libs) {
+    if(typeof data != 'object' || data == null)
+        throw new Error('Param "data" must be an object.');
+
+    libs = libs
+        // Если передан массив с массивами
+        .flat(Infinity)
+        // Фильтурем список библиотек целевых библиотек, если среди них есть не строки отбрасываем их.
+        .filter(e => typeof e != 'string');
+
+    return new Promise(res => {
+        if(SERVICE.LOADED) {        
+            res(new Context(
+                Import(['default', ...libs]),
+        
+                CodeEmitter.prototype.throwError.bind({
+                    input: '',
+                    charset: 'utf-8',
+                    path: 'untitled.po'
+                }),
+
+                data
+            ));
+        } else {
+            SERVICE.ACTIONS.on('load', () => {
+                res(new Context(
+                    Import(['default', ...libs]),
+            
+                    CodeEmitter.prototype.throwError.bind({
+                        input: '',
+                        charset: 'utf-8',
+                        path: 'untitled.po'
+                    }),
+    
+                    data
+                ));
+            });
+        }
+    });
+}
+
+/**
+ * Конструирует шаблон, возвращая обещаение с загрузкой этого шаблона
+ * 
+ * @param {CodeEmitter} Pattern шаблон для создания
+ * @param  {...Any} args аргументы вызов конструктора
+ * @returns {Promise&lt;iPoonyaConstructsData>} ответ конструктора шаблона
+ * @memberof Poonya
+ * @async
+ */
+function patternCreator(Pattern, ...args) {
+    if(Object.prototype.isPrototypeOf.call(CodeEmitter, Pattern)){
+        Pattern = Function.prototype.apply(Object.create(Pattern), args);
+
+        return new Promise((res, rej) => {
+            Pattern.on('load', (...args) => 
+                res(Object.assign(new iPoonyaConstructsData(), {
+                    Pattern,
+                    args
+                }))
+            );
+
+            Pattern.on('error', (...args) => 
+                rej(Object.assign(new iPoonyaConstructsData(), {
+                    Pattern,
+                    args
+                }))
+            );
+        });
+    } else {
+        throw new Error('The "Pattern" must be a "CodeEmitter" heir');
     }
 }
 
@@ -778,8 +904,11 @@ class ExpressionPattern extends CodeEmitter {
 
 module.exports.CodeEmitter = CodeEmitter;
 module.exports.MessagePattern = MessagePattern;
+module.exports.PoonyaOutputStream = PoonyaOutputStream;
 module.exports.ExpressionPattern = ExpressionPattern;
 module.exports.ExecutionPattern = ExecutionPattern;
+module.exports.patternCreator = patternCreator;
+module.exports.createContext = createContext;
 module.exports.ImportFile = ImportFile.bind(null, module.parent != null ? module.parent.path : module.path);
 
 // #!if platform === 'node'
@@ -794,13 +923,13 @@ module.exports.ImportDir = ImportDir.bind(null, module.parent != null ? module.p
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="Poonya.html">Poonya</a></li><li><a href="Poonya.Data.html">Data</a></li><li><a href="Poonya.Exceptions.html">Exceptions</a></li><li><a href="Poonya.Expression.html">Expression</a></li><li><a href="Poonya.Lexer.html">Lexer</a></li><li><a href="Poonya.Linker.html">Linker</a></li><li><a href="Poonya.Parser.html">Parser</a></li><li><a href="Poonya.Statements.html">Statements</a></li><li><a href="Poonya.Static.html">Static</a></li><li><a href="Poonya.Storage.html">Storage</a></li><li><a href="Poonya.Utils.html">Utils</a></li></ul><h3>Classes</h3><ul><li><a href="CodeEmitter.html">CodeEmitter</a></li><li><a href="Context.html">Context</a></li><li><a href="ExecutionPattern.html">ExecutionPattern</a></li><li><a href="ExpressionPattern.html">ExpressionPattern</a></li><li><a href="FunctionCall.html">FunctionCall</a></li><li><a href="GetOperator.html">GetOperator</a></li><li><a href="Heap.html">Heap</a></li><li><a href="IfStatement.html">IfStatement</a></li><li><a href="MessagePattern.html">MessagePattern</a></li><li><a href="NativeFunction.html">NativeFunction</a></li><li><a href="ObjectContructorCall.html">ObjectContructorCall</a></li><li><a href="Operand.html">Operand</a></li><li><a href="Operator.html">Operator</a></li><li><a href="OutStatement.html">OutStatement</a></li><li><a href="ParserData.html">ParserData</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJTException.html">BadArrowNotationJTException</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJTULException.html">BadArrowNotationJTULException</a></li><li><a href="Poonya.Exceptions.BadEmptyObjectException.html">BadEmptyObjectException</a></li><li><a href="Poonya.Exceptions.BadKeyInvalidTypeException.html">BadKeyInvalidTypeException</a></li><li><a href="Poonya.Exceptions.BadKeyProtectedFieldException.html">BadKeyProtectedFieldException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorException.html">CriticalParserErrorException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorNoRawDataTransmittedException.html">CriticalParserErrorNoRawDataTransmittedException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfExpression.html">CriticalParserErrorUnexpectedEndOfExpression</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfInputException.html">CriticalParserErrorUnexpectedEndOfInputException</a></li><li><a href="Poonya.Exceptions.FieldNotAFunctionException.html">FieldNotAFunctionException</a></li><li><a href="Poonya.Exceptions.GetFieldOfNullException.html">GetFieldOfNullException</a></li><li><a href="Poonya.Exceptions.InvalidSequenceForLetiableAccessException.html">InvalidSequenceForLetiableAccessException</a></li><li><a href="Poonya.Exceptions.IsNotAConstructorException.html">IsNotAConstructorException</a></li><li><a href="Poonya.Exceptions.LinkerIOError.html">LinkerIOError</a></li><li><a href="Poonya.Exceptions.LinkerPathNotGiveExceptrion.html">LinkerPathNotGiveExceptrion</a></li><li><a href="Poonya.Exceptions.NativeFunctionExecutionError.html">NativeFunctionExecutionError</a></li><li><a href="Poonya.Exceptions.NativeFunctionReturnValueError.html">NativeFunctionReturnValueError</a></li><li><a href="Poonya.Exceptions.ParserEmtyArgumentException.html">ParserEmtyArgumentException</a></li><li><a href="Poonya.Exceptions.ParserException.html">ParserException</a></li><li><a href="Poonya.Exceptions.ParserLogicException.html">ParserLogicException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultEmptyArgumentException.html">SegmentationFaultEmptyArgumentException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultMaximumSegmentsForBlockException.html">SegmentationFaultMaximumSegmentsForBlockException</a></li><li><a href="Poonya.Exceptions.TheFieldAlreadyHasBeenDeclaredException.html">TheFieldAlreadyHasBeenDeclaredException</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeAnArrayInstanceExceprion.html">TheFieldMustBeAnArrayInstanceExceprion</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeNumberException.html">TheFieldMustBeNumberException</a></li><li><a href="Poonya.Exceptions.TheFieldNotHasDeclaredExceprion.html">TheFieldNotHasDeclaredExceprion</a></li><li><a href="Poonya.Exceptions.TheSequenceException.html">TheSequenceException</a></li><li><a href="Poonya.Exceptions.UnableToCreateAnObjectException.html">UnableToCreateAnObjectException</a></li><li><a href="Poonya.Exceptions.UnableToRecognizeTypeException.html">UnableToRecognizeTypeException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenException.html">UnexpectedTokenException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenStatement.html">UnexpectedTokenStatement</a></li><li><a href="Poonya.Exceptions.UnexpectedWordTypeAndGetException.html">UnexpectedWordTypeAndGetException</a></li><li><a href="PoonyaArray.html">PoonyaArray</a></li><li><a href="PoonyaBoolean.html">PoonyaBoolean</a></li><li><a href="PoonyaInteger.html">PoonyaInteger</a></li><li><a href="PoonyaNull.html">PoonyaNull</a></li><li><a href="PoonyaNumber.html">PoonyaNumber</a></li><li><a href="PoonyaObject.html">PoonyaObject</a></li><li><a href="PoonyaPrototype.html">PoonyaPrototype</a></li><li><a href="PoonyaStaticLibrary.html">PoonyaStaticLibrary</a></li><li><a href="PoonyaString.html">PoonyaString</a></li><li><a href="PushStatement.html">PushStatement</a></li><li><a href="RepeatStatement.html">RepeatStatement</a></li><li><a href="SequenceGroup.html">SequenceGroup</a></li><li><a href="SequenceMainGroup.html">SequenceMainGroup</a></li><li><a href="SetStatement.html">SetStatement</a></li><li><a href="TernarOperator.html">TernarOperator</a></li><li><a href="Token.html">Token</a></li><li><a href="WhileStatement.html">WhileStatement</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="Poonya.html">Poonya</a></li><li><a href="Poonya.Data.html">Data</a></li><li><a href="Poonya.Exceptions.html">Exceptions</a></li><li><a href="Poonya.Expression.html">Expression</a></li><li><a href="Poonya.Lexer.html">Lexer</a></li><li><a href="Poonya.Linker.html">Linker</a></li><li><a href="Poonya.Parser.html">Parser</a></li><li><a href="Poonya.Statements.html">Statements</a></li><li><a href="Poonya.Static.html">Static</a></li><li><a href="Poonya.Storage.html">Storage</a></li><li><a href="Poonya.Utils.html">Utils</a></li></ul><h3>Classes</h3><ul><li><a href="CodeEmitter.html">CodeEmitter</a></li><li><a href="Context.html">Context</a></li><li><a href="ExecutionPattern.html">ExecutionPattern</a></li><li><a href="ExpressionPattern.html">ExpressionPattern</a></li><li><a href="FunctionCall.html">FunctionCall</a></li><li><a href="GetOperator.html">GetOperator</a></li><li><a href="Heap.html">Heap</a></li><li><a href="IfStatement.html">IfStatement</a></li><li><a href="iPoonyaConstructsData.html">iPoonyaConstructsData</a></li><li><a href="MessagePattern.html">MessagePattern</a></li><li><a href="NativeFunction.html">NativeFunction</a></li><li><a href="ObjectContructorCall.html">ObjectContructorCall</a></li><li><a href="Operand.html">Operand</a></li><li><a href="Operator.html">Operator</a></li><li><a href="OutStatement.html">OutStatement</a></li><li><a href="ParserData.html">ParserData</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJTException.html">BadArrowNotationJTException</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJTULException.html">BadArrowNotationJTULException</a></li><li><a href="Poonya.Exceptions.BadEmptyObjectException.html">BadEmptyObjectException</a></li><li><a href="Poonya.Exceptions.BadKeyInvalidTypeException.html">BadKeyInvalidTypeException</a></li><li><a href="Poonya.Exceptions.BadKeyProtectedFieldException.html">BadKeyProtectedFieldException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorException.html">CriticalParserErrorException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorNoRawDataTransmittedException.html">CriticalParserErrorNoRawDataTransmittedException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfExpression.html">CriticalParserErrorUnexpectedEndOfExpression</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfInputException.html">CriticalParserErrorUnexpectedEndOfInputException</a></li><li><a href="Poonya.Exceptions.FieldNotAFunctionException.html">FieldNotAFunctionException</a></li><li><a href="Poonya.Exceptions.GetFieldOfNullException.html">GetFieldOfNullException</a></li><li><a href="Poonya.Exceptions.InvalidSequenceForLetiableAccessException.html">InvalidSequenceForLetiableAccessException</a></li><li><a href="Poonya.Exceptions.IsNotAConstructorException.html">IsNotAConstructorException</a></li><li><a href="Poonya.Exceptions.LinkerException.html">LinkerException</a></li><li><a href="Poonya.Exceptions.LinkerIOError.html">LinkerIOError</a></li><li><a href="Poonya.Exceptions.LinkerPathNotGiveExceptrion.html">LinkerPathNotGiveExceptrion</a></li><li><a href="Poonya.Exceptions.NativeFunctionExecutionError.html">NativeFunctionExecutionError</a></li><li><a href="Poonya.Exceptions.NativeFunctionReturnValueError.html">NativeFunctionReturnValueError</a></li><li><a href="Poonya.Exceptions.ParserEmtyArgumentException.html">ParserEmtyArgumentException</a></li><li><a href="Poonya.Exceptions.ParserException.html">ParserException</a></li><li><a href="Poonya.Exceptions.ParserLogicException.html">ParserLogicException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultEmptyArgumentException.html">SegmentationFaultEmptyArgumentException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultMaximumSegmentsForBlockException.html">SegmentationFaultMaximumSegmentsForBlockException</a></li><li><a href="Poonya.Exceptions.TheFieldAlreadyHasBeenDeclaredException.html">TheFieldAlreadyHasBeenDeclaredException</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeAnArrayInstanceExceprion.html">TheFieldMustBeAnArrayInstanceExceprion</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeNumberException.html">TheFieldMustBeNumberException</a></li><li><a href="Poonya.Exceptions.TheFieldNotHasDeclaredExceprion.html">TheFieldNotHasDeclaredExceprion</a></li><li><a href="Poonya.Exceptions.TheSequenceException.html">TheSequenceException</a></li><li><a href="Poonya.Exceptions.UnableToCreateAnObjectException.html">UnableToCreateAnObjectException</a></li><li><a href="Poonya.Exceptions.UnableToRecognizeTypeException.html">UnableToRecognizeTypeException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenException.html">UnexpectedTokenException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenStatement.html">UnexpectedTokenStatement</a></li><li><a href="Poonya.Exceptions.UnexpectedWordTypeAndGetException.html">UnexpectedWordTypeAndGetException</a></li><li><a href="PoonyaArray.html">PoonyaArray</a></li><li><a href="PoonyaBoolean.html">PoonyaBoolean</a></li><li><a href="PoonyaInteger.html">PoonyaInteger</a></li><li><a href="PoonyaNull.html">PoonyaNull</a></li><li><a href="PoonyaNumber.html">PoonyaNumber</a></li><li><a href="PoonyaObject.html">PoonyaObject</a></li><li><a href="PoonyaPrototype.html">PoonyaPrototype</a></li><li><a href="PoonyaStaticLibrary.html">PoonyaStaticLibrary</a></li><li><a href="PoonyaString.html">PoonyaString</a></li><li><a href="PushStatement.html">PushStatement</a></li><li><a href="RepeatStatement.html">RepeatStatement</a></li><li><a href="SequenceGroup.html">SequenceGroup</a></li><li><a href="SequenceMainGroup.html">SequenceMainGroup</a></li><li><a href="SetStatement.html">SetStatement</a></li><li><a href="TernarOperator.html">TernarOperator</a></li><li><a href="Token.html">Token</a></li><li><a href="WhileStatement.html">WhileStatement</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Thu Dec 24 2020 23:03:37 GMT+0400 (Самарское стандартное время)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Thu Dec 31 2020 02:14:45 GMT+0400 (Самарское стандартное время)
 </footer>
 
 <script> prettyPrint(); </script>

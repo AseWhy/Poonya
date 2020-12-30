@@ -7,12 +7,14 @@
 
 "use strict";
 
-const NativeFunction = require('./data/NativeFunction');
+const lexer = require('../lexer/lexer');
+const { parser } = require('../parser');
 const { GetFieldOfNullException, IsNotAConstructorException } = require('./exceptions')
     , { GET, SERVICE, IS } = require('./static')
-    , { Cast } = require('../utils.js')
+    , { Cast, toBytes } = require('../utils.js')
     , { iContext, iPoonyaPrototype } = require('./interfaces')
     , { PoonyaStaticLibrary } = require('../importer.js')
+    ,   NativeFunction = require('./data/NativeFunction')
     ,   ExpressionGroup = require('./excecution/expression/ExpressionGroup')
     ,   PoonyaObject = require('./data/PoonyaObject')
     ,   PoonyaArray = require('./data/PoonyaArray')
@@ -102,9 +104,9 @@ class Heap extends Map {
         try {
             super.set(key, Cast(data, context, parents_three));
         } catch (e) {
-            console.log(e);
-
             console.error('Error when cast value of ' + key);
+
+            console.log(e);
         }
     }
 
@@ -143,7 +145,7 @@ class Context extends iContext {
      *
      * @memberof Poonya.Storage
      * @constructs Context
-     * @implements iContext
+     * @implements {iContext}
      * @classdesc Определяет набор данных для манипуляции в шаблонизаторе
      * @protected
      */
@@ -152,12 +154,43 @@ class Context extends iContext {
 
         this.levels = new Array();
 
+        this._lib_cache = new Array();
+        
+        // Если переданы дидлиотеки для импорта, то импортируем их в этот контекст
+        if(libraries != null)
+            this.import(libraries, throw_error);
+
+        // Перебераем переданные для инициалзации объекты
+        this.levels.push(...initial
+            .map(
+                // Есл это хип
+                e => e instanceof Heap ?
+                    // То ничего не делаем
+                    e : 
+                    // Иначе, если это объект
+                    typeof e === 'object' ?
+                        // Создаем новый хип с ним
+                        new Heap(this, e)
+                        // Если это не объект вставляем вместо него null
+                        : null
+            // Удаляем все не объекты
+            ).filter(e => e !== null)
+        );
+    }
+
+    /**
+     * Импортирует нативные библиотеки `libraries` в текущий контекст.
+     * 
+     * @param {Array<PoonyaStaticLibrary>} libraries массив с библиотеками, которые нужно импортировать
+     * @param {Function} throw_error фукнция вызова ошибки
+     */
+    import(libraries, throw_error){
         if (libraries != null) {
             // Корневой слой
             this.levels.push(new Heap(this, null));
 
             for (let i = 0, leng = libraries.length, target; i < leng; i++) {
-                if (libraries[i] instanceof PoonyaStaticLibrary) {
+                if (libraries[i] instanceof PoonyaStaticLibrary && !this._lib_cache.includes(libraries[i].namespace)) {
                     if (libraries[i].global) {
                         libraries[i].importTo(this.levels[0], this, throw_error);
                     } else {
@@ -172,11 +205,33 @@ class Context extends iContext {
 
                         this.levels[0].set(this, libraries[i].namespace, target);
                     }
+
+                    this._lib_cache.push(libraries[i].namespace);
                 }
             }
         }
+    }
 
-        this.levels.push(...initial.filter(e => e instanceof Heap));
+    /**
+     * Выполняет код poonya из строки
+     * 
+     * @param {String} input Вход шаблона
+     * @param {PoonyaOutputStream} out Вывод шаблонизатора
+     * @param {Function} throw_error Функция вызова ошибки
+     * @method
+     * @public
+     * @async
+     */
+    async eval(input, out, throw_error) {
+        return (await parser(
+            // Выполняем лексинг переданого текста
+            lexer(
+                // Разбираем текст на байты
+                toBytes(input), false
+            ), throw_error,
+            // Присваеваем рандомный идентификатор исполнителю
+            'eval-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)
+        )).result(this, out, throw_error);
     }
 
     /**
@@ -187,11 +242,17 @@ class Context extends iContext {
      * @public
      */
     clone() {
-        return new Context(null, null, this.levels);
+        const clone = new Context(null, null, ...this.levels);
+
+        clone._lib_cache = Array.from(this._lib_cache);
+
+        return clone;
     }
 
     /**
-     * Добавляет уроень в текущий контекст
+     * Добавляет уровень в текущий контекст
+     * 
+     * @param {Heap} level уровень который необходимо добавить
      * @method
      * @public
      */
@@ -333,7 +394,7 @@ class Context extends iContext {
             } else if (instance instanceof iPoonyaPrototype) {
                 instance = instance[GET](query_stack[index], this);
             } else {
-                throw_error(position, new GetFieldOfNullException(query_stack[index]));
+                (throw_error || console.error)(position, new GetFieldOfNullException(query_stack[index]));
             }
         }
 
@@ -382,12 +443,13 @@ class Context extends iContext {
     }
 
     /**
-     *
-     * @param {*} initial
-     * @param {*} position
-     * @param {*} path
-     * @param {*} throw_error
-     * @param {*} parents_three
+     * Создает объект используя конструктор вызванный по пути `path`
+     * 
+     * @param {Object} initial Значения для инициализации объекта
+     * @param {Number} position Позиция, с который вызывается конструктор
+     * @param {Array<String>} path Путь к конструктору в памяти
+     * @param {Function} throw_error Функция вызова ошибки
+     * @param {Array<String>} parents_three Дерево родителей объекта
      *
      * @returns {PoonyaObject} если по заданому пути существует значение вернет его, если нет то вернет null
      * @method
@@ -431,7 +493,7 @@ class Context extends iContext {
                 default: return new PoonyaObject(prototype, init, this);
             }
         } else {
-            throw_error(position, new IsNotAConstructorException(path));
+            (throw_error || console.error)(position, new IsNotAConstructorException(path));
         }
     }
 }

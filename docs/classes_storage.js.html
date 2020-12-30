@@ -35,12 +35,14 @@
 
 "use strict";
 
-const NativeFunction = require('./data/NativeFunction');
+const lexer = require('../lexer/lexer');
+const { parser } = require('../parser');
 const { GetFieldOfNullException, IsNotAConstructorException } = require('./exceptions')
     , { GET, SERVICE, IS } = require('./static')
-    , { Cast } = require('../utils.js')
+    , { Cast, toBytes } = require('../utils.js')
     , { iContext, iPoonyaPrototype } = require('./interfaces')
     , { PoonyaStaticLibrary } = require('../importer.js')
+    ,   NativeFunction = require('./data/NativeFunction')
     ,   ExpressionGroup = require('./excecution/expression/ExpressionGroup')
     ,   PoonyaObject = require('./data/PoonyaObject')
     ,   PoonyaArray = require('./data/PoonyaArray')
@@ -130,9 +132,9 @@ class Heap extends Map {
         try {
             super.set(key, Cast(data, context, parents_three));
         } catch (e) {
-            console.log(e);
-
             console.error('Error when cast value of ' + key);
+
+            console.log(e);
         }
     }
 
@@ -171,7 +173,7 @@ class Context extends iContext {
      *
      * @memberof Poonya.Storage
      * @constructs Context
-     * @implements iContext
+     * @implements {iContext}
      * @classdesc Определяет набор данных для манипуляции в шаблонизаторе
      * @protected
      */
@@ -180,12 +182,43 @@ class Context extends iContext {
 
         this.levels = new Array();
 
+        this._lib_cache = new Array();
+        
+        // Если переданы дидлиотеки для импорта, то импортируем их в этот контекст
+        if(libraries != null)
+            this.import(libraries, throw_error);
+
+        // Перебераем переданные для инициалзации объекты
+        this.levels.push(...initial
+            .map(
+                // Есл это хип
+                e => e instanceof Heap ?
+                    // То ничего не делаем
+                    e : 
+                    // Иначе, если это объект
+                    typeof e === 'object' ?
+                        // Создаем новый хип с ним
+                        new Heap(this, e)
+                        // Если это не объект вставляем вместо него null
+                        : null
+            // Удаляем все не объекты
+            ).filter(e => e !== null)
+        );
+    }
+
+    /**
+     * Импортирует нативные библиотеки `libraries` в текущий контекст.
+     * 
+     * @param {Array&lt;PoonyaStaticLibrary>} libraries массив с библиотеками, которые нужно импортировать
+     * @param {Function} throw_error фукнция вызова ошибки
+     */
+    import(libraries, throw_error){
         if (libraries != null) {
             // Корневой слой
             this.levels.push(new Heap(this, null));
 
             for (let i = 0, leng = libraries.length, target; i &lt; leng; i++) {
-                if (libraries[i] instanceof PoonyaStaticLibrary) {
+                if (libraries[i] instanceof PoonyaStaticLibrary &amp;&amp; !this._lib_cache.includes(libraries[i].namespace)) {
                     if (libraries[i].global) {
                         libraries[i].importTo(this.levels[0], this, throw_error);
                     } else {
@@ -200,11 +233,33 @@ class Context extends iContext {
 
                         this.levels[0].set(this, libraries[i].namespace, target);
                     }
+
+                    this._lib_cache.push(libraries[i].namespace);
                 }
             }
         }
+    }
 
-        this.levels.push(...initial.filter(e => e instanceof Heap));
+    /**
+     * Выполняет код poonya из строки
+     * 
+     * @param {String} input Вход шаблона
+     * @param {PoonyaOutputStream} out Вывод шаблонизатора
+     * @param {Function} throw_error Функция вызова ошибки
+     * @method
+     * @public
+     * @async
+     */
+    async eval(input, out, throw_error) {
+        return (await parser(
+            // Выполняем лексинг переданого текста
+            lexer(
+                // Разбираем текст на байты
+                toBytes(input), false
+            ), throw_error,
+            // Присваеваем рандомный идентификатор исполнителю
+            'eval-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)
+        )).result(this, out, throw_error);
     }
 
     /**
@@ -215,11 +270,17 @@ class Context extends iContext {
      * @public
      */
     clone() {
-        return new Context(null, null, this.levels);
+        const clone = new Context(null, null, ...this.levels);
+
+        clone._lib_cache = Array.from(this._lib_cache);
+
+        return clone;
     }
 
     /**
-     * Добавляет уроень в текущий контекст
+     * Добавляет уровень в текущий контекст
+     * 
+     * @param {Heap} level уровень который необходимо добавить
      * @method
      * @public
      */
@@ -361,7 +422,7 @@ class Context extends iContext {
             } else if (instance instanceof iPoonyaPrototype) {
                 instance = instance[GET](query_stack[index], this);
             } else {
-                throw_error(position, new GetFieldOfNullException(query_stack[index]));
+                (throw_error || console.error)(position, new GetFieldOfNullException(query_stack[index]));
             }
         }
 
@@ -410,12 +471,13 @@ class Context extends iContext {
     }
 
     /**
-     *
-     * @param {*} initial
-     * @param {*} position
-     * @param {*} path
-     * @param {*} throw_error
-     * @param {*} parents_three
+     * Создает объект используя конструктор вызванный по пути `path`
+     * 
+     * @param {Object} initial Значения для инициализации объекта
+     * @param {Number} position Позиция, с который вызывается конструктор
+     * @param {Array&lt;String>} path Путь к конструктору в памяти
+     * @param {Function} throw_error Функция вызова ошибки
+     * @param {Array&lt;String>} parents_three Дерево родителей объекта
      *
      * @returns {PoonyaObject} если по заданому пути существует значение вернет его, если нет то вернет null
      * @method
@@ -459,7 +521,7 @@ class Context extends iContext {
                 default: return new PoonyaObject(prototype, init, this);
             }
         } else {
-            throw_error(position, new IsNotAConstructorException(path));
+            (throw_error || console.error)(position, new IsNotAConstructorException(path));
         }
     }
 }
@@ -476,13 +538,13 @@ module.exports.Heap = Heap;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="Poonya.html">Poonya</a></li><li><a href="Poonya.Data.html">Data</a></li><li><a href="Poonya.Exceptions.html">Exceptions</a></li><li><a href="Poonya.Expression.html">Expression</a></li><li><a href="Poonya.Lexer.html">Lexer</a></li><li><a href="Poonya.Linker.html">Linker</a></li><li><a href="Poonya.Parser.html">Parser</a></li><li><a href="Poonya.Statements.html">Statements</a></li><li><a href="Poonya.Static.html">Static</a></li><li><a href="Poonya.Storage.html">Storage</a></li><li><a href="Poonya.Utils.html">Utils</a></li></ul><h3>Classes</h3><ul><li><a href="CodeEmitter.html">CodeEmitter</a></li><li><a href="Context.html">Context</a></li><li><a href="ExecutionPattern.html">ExecutionPattern</a></li><li><a href="ExpressionPattern.html">ExpressionPattern</a></li><li><a href="FunctionCall.html">FunctionCall</a></li><li><a href="GetOperator.html">GetOperator</a></li><li><a href="Heap.html">Heap</a></li><li><a href="IfStatement.html">IfStatement</a></li><li><a href="MessagePattern.html">MessagePattern</a></li><li><a href="NativeFunction.html">NativeFunction</a></li><li><a href="ObjectContructorCall.html">ObjectContructorCall</a></li><li><a href="Operand.html">Operand</a></li><li><a href="Operator.html">Operator</a></li><li><a href="OutStatement.html">OutStatement</a></li><li><a href="ParserData.html">ParserData</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJTException.html">BadArrowNotationJTException</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJTULException.html">BadArrowNotationJTULException</a></li><li><a href="Poonya.Exceptions.BadEmptyObjectException.html">BadEmptyObjectException</a></li><li><a href="Poonya.Exceptions.BadKeyInvalidTypeException.html">BadKeyInvalidTypeException</a></li><li><a href="Poonya.Exceptions.BadKeyProtectedFieldException.html">BadKeyProtectedFieldException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorException.html">CriticalParserErrorException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorNoRawDataTransmittedException.html">CriticalParserErrorNoRawDataTransmittedException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfExpression.html">CriticalParserErrorUnexpectedEndOfExpression</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfInputException.html">CriticalParserErrorUnexpectedEndOfInputException</a></li><li><a href="Poonya.Exceptions.FieldNotAFunctionException.html">FieldNotAFunctionException</a></li><li><a href="Poonya.Exceptions.GetFieldOfNullException.html">GetFieldOfNullException</a></li><li><a href="Poonya.Exceptions.InvalidSequenceForLetiableAccessException.html">InvalidSequenceForLetiableAccessException</a></li><li><a href="Poonya.Exceptions.IsNotAConstructorException.html">IsNotAConstructorException</a></li><li><a href="Poonya.Exceptions.LinkerIOError.html">LinkerIOError</a></li><li><a href="Poonya.Exceptions.LinkerPathNotGiveExceptrion.html">LinkerPathNotGiveExceptrion</a></li><li><a href="Poonya.Exceptions.NativeFunctionExecutionError.html">NativeFunctionExecutionError</a></li><li><a href="Poonya.Exceptions.NativeFunctionReturnValueError.html">NativeFunctionReturnValueError</a></li><li><a href="Poonya.Exceptions.ParserEmtyArgumentException.html">ParserEmtyArgumentException</a></li><li><a href="Poonya.Exceptions.ParserException.html">ParserException</a></li><li><a href="Poonya.Exceptions.ParserLogicException.html">ParserLogicException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultEmptyArgumentException.html">SegmentationFaultEmptyArgumentException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultMaximumSegmentsForBlockException.html">SegmentationFaultMaximumSegmentsForBlockException</a></li><li><a href="Poonya.Exceptions.TheFieldAlreadyHasBeenDeclaredException.html">TheFieldAlreadyHasBeenDeclaredException</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeAnArrayInstanceExceprion.html">TheFieldMustBeAnArrayInstanceExceprion</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeNumberException.html">TheFieldMustBeNumberException</a></li><li><a href="Poonya.Exceptions.TheFieldNotHasDeclaredExceprion.html">TheFieldNotHasDeclaredExceprion</a></li><li><a href="Poonya.Exceptions.TheSequenceException.html">TheSequenceException</a></li><li><a href="Poonya.Exceptions.UnableToCreateAnObjectException.html">UnableToCreateAnObjectException</a></li><li><a href="Poonya.Exceptions.UnableToRecognizeTypeException.html">UnableToRecognizeTypeException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenException.html">UnexpectedTokenException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenStatement.html">UnexpectedTokenStatement</a></li><li><a href="Poonya.Exceptions.UnexpectedWordTypeAndGetException.html">UnexpectedWordTypeAndGetException</a></li><li><a href="PoonyaArray.html">PoonyaArray</a></li><li><a href="PoonyaBoolean.html">PoonyaBoolean</a></li><li><a href="PoonyaInteger.html">PoonyaInteger</a></li><li><a href="PoonyaNull.html">PoonyaNull</a></li><li><a href="PoonyaNumber.html">PoonyaNumber</a></li><li><a href="PoonyaObject.html">PoonyaObject</a></li><li><a href="PoonyaPrototype.html">PoonyaPrototype</a></li><li><a href="PoonyaStaticLibrary.html">PoonyaStaticLibrary</a></li><li><a href="PoonyaString.html">PoonyaString</a></li><li><a href="PushStatement.html">PushStatement</a></li><li><a href="RepeatStatement.html">RepeatStatement</a></li><li><a href="SequenceGroup.html">SequenceGroup</a></li><li><a href="SequenceMainGroup.html">SequenceMainGroup</a></li><li><a href="SetStatement.html">SetStatement</a></li><li><a href="TernarOperator.html">TernarOperator</a></li><li><a href="Token.html">Token</a></li><li><a href="WhileStatement.html">WhileStatement</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="Poonya.html">Poonya</a></li><li><a href="Poonya.Data.html">Data</a></li><li><a href="Poonya.Exceptions.html">Exceptions</a></li><li><a href="Poonya.Expression.html">Expression</a></li><li><a href="Poonya.Lexer.html">Lexer</a></li><li><a href="Poonya.Linker.html">Linker</a></li><li><a href="Poonya.Parser.html">Parser</a></li><li><a href="Poonya.Statements.html">Statements</a></li><li><a href="Poonya.Static.html">Static</a></li><li><a href="Poonya.Storage.html">Storage</a></li><li><a href="Poonya.Utils.html">Utils</a></li></ul><h3>Classes</h3><ul><li><a href="CodeEmitter.html">CodeEmitter</a></li><li><a href="Context.html">Context</a></li><li><a href="ExecutionPattern.html">ExecutionPattern</a></li><li><a href="ExpressionPattern.html">ExpressionPattern</a></li><li><a href="FunctionCall.html">FunctionCall</a></li><li><a href="GetOperator.html">GetOperator</a></li><li><a href="Heap.html">Heap</a></li><li><a href="IfStatement.html">IfStatement</a></li><li><a href="iPoonyaConstructsData.html">iPoonyaConstructsData</a></li><li><a href="MessagePattern.html">MessagePattern</a></li><li><a href="NativeFunction.html">NativeFunction</a></li><li><a href="ObjectContructorCall.html">ObjectContructorCall</a></li><li><a href="Operand.html">Operand</a></li><li><a href="Operator.html">Operator</a></li><li><a href="OutStatement.html">OutStatement</a></li><li><a href="ParserData.html">ParserData</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJTException.html">BadArrowNotationJTException</a></li><li><a href="Poonya.Exceptions.BadArrowNotationJTULException.html">BadArrowNotationJTULException</a></li><li><a href="Poonya.Exceptions.BadEmptyObjectException.html">BadEmptyObjectException</a></li><li><a href="Poonya.Exceptions.BadKeyInvalidTypeException.html">BadKeyInvalidTypeException</a></li><li><a href="Poonya.Exceptions.BadKeyProtectedFieldException.html">BadKeyProtectedFieldException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorException.html">CriticalParserErrorException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorNoRawDataTransmittedException.html">CriticalParserErrorNoRawDataTransmittedException</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfExpression.html">CriticalParserErrorUnexpectedEndOfExpression</a></li><li><a href="Poonya.Exceptions.CriticalParserErrorUnexpectedEndOfInputException.html">CriticalParserErrorUnexpectedEndOfInputException</a></li><li><a href="Poonya.Exceptions.FieldNotAFunctionException.html">FieldNotAFunctionException</a></li><li><a href="Poonya.Exceptions.GetFieldOfNullException.html">GetFieldOfNullException</a></li><li><a href="Poonya.Exceptions.InvalidSequenceForLetiableAccessException.html">InvalidSequenceForLetiableAccessException</a></li><li><a href="Poonya.Exceptions.IsNotAConstructorException.html">IsNotAConstructorException</a></li><li><a href="Poonya.Exceptions.LinkerException.html">LinkerException</a></li><li><a href="Poonya.Exceptions.LinkerIOError.html">LinkerIOError</a></li><li><a href="Poonya.Exceptions.LinkerPathNotGiveExceptrion.html">LinkerPathNotGiveExceptrion</a></li><li><a href="Poonya.Exceptions.NativeFunctionExecutionError.html">NativeFunctionExecutionError</a></li><li><a href="Poonya.Exceptions.NativeFunctionReturnValueError.html">NativeFunctionReturnValueError</a></li><li><a href="Poonya.Exceptions.ParserEmtyArgumentException.html">ParserEmtyArgumentException</a></li><li><a href="Poonya.Exceptions.ParserException.html">ParserException</a></li><li><a href="Poonya.Exceptions.ParserLogicException.html">ParserLogicException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultEmptyArgumentException.html">SegmentationFaultEmptyArgumentException</a></li><li><a href="Poonya.Exceptions.SegmentationFaultMaximumSegmentsForBlockException.html">SegmentationFaultMaximumSegmentsForBlockException</a></li><li><a href="Poonya.Exceptions.TheFieldAlreadyHasBeenDeclaredException.html">TheFieldAlreadyHasBeenDeclaredException</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeAnArrayInstanceExceprion.html">TheFieldMustBeAnArrayInstanceExceprion</a></li><li><a href="Poonya.Exceptions.TheFieldMustBeNumberException.html">TheFieldMustBeNumberException</a></li><li><a href="Poonya.Exceptions.TheFieldNotHasDeclaredExceprion.html">TheFieldNotHasDeclaredExceprion</a></li><li><a href="Poonya.Exceptions.TheSequenceException.html">TheSequenceException</a></li><li><a href="Poonya.Exceptions.UnableToCreateAnObjectException.html">UnableToCreateAnObjectException</a></li><li><a href="Poonya.Exceptions.UnableToRecognizeTypeException.html">UnableToRecognizeTypeException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenException.html">UnexpectedTokenException</a></li><li><a href="Poonya.Exceptions.UnexpectedTokenStatement.html">UnexpectedTokenStatement</a></li><li><a href="Poonya.Exceptions.UnexpectedWordTypeAndGetException.html">UnexpectedWordTypeAndGetException</a></li><li><a href="PoonyaArray.html">PoonyaArray</a></li><li><a href="PoonyaBoolean.html">PoonyaBoolean</a></li><li><a href="PoonyaInteger.html">PoonyaInteger</a></li><li><a href="PoonyaNull.html">PoonyaNull</a></li><li><a href="PoonyaNumber.html">PoonyaNumber</a></li><li><a href="PoonyaObject.html">PoonyaObject</a></li><li><a href="PoonyaPrototype.html">PoonyaPrototype</a></li><li><a href="PoonyaStaticLibrary.html">PoonyaStaticLibrary</a></li><li><a href="PoonyaString.html">PoonyaString</a></li><li><a href="PushStatement.html">PushStatement</a></li><li><a href="RepeatStatement.html">RepeatStatement</a></li><li><a href="SequenceGroup.html">SequenceGroup</a></li><li><a href="SequenceMainGroup.html">SequenceMainGroup</a></li><li><a href="SetStatement.html">SetStatement</a></li><li><a href="TernarOperator.html">TernarOperator</a></li><li><a href="Token.html">Token</a></li><li><a href="WhileStatement.html">WhileStatement</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Thu Dec 24 2020 23:03:37 GMT+0400 (Самарское стандартное время)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Thu Dec 31 2020 02:14:45 GMT+0400 (Самарское стандартное время)
 </footer>
 
 <script> prettyPrint(); </script>

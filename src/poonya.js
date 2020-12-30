@@ -109,6 +109,7 @@ const
     { EventEmitter } = require("events"),
     // #!if platform === 'node'
     { readFile } = require("fs"),
+    { Stream } = require('stream'),
     { normalize, extname } = require("path"),
     // #!endif
     { IOError, PoonyaException } = require('./classes/exceptions'),
@@ -117,8 +118,10 @@ const
     { parser, parseExpression, parserMP } = require("./parser.js"),
     { SERVICE } = require('./classes/static'),
     { toFixed, toBytes, fromBytes } = require('./utils'),
+    { iPoonyaConstructsData } = require("./classes/interfaces"),
     lexer = require("./lexer/lexer.js");
 
+// Private fields
 const RESULT = Symbol('RESULT')
     , INIT = Symbol('INIT');
 
@@ -147,16 +150,46 @@ class PoonyaOutputStream extends EventEmitter {
     }
 
     /**
+     * Преобразует поток в ReadableStream или в Stream.Writable для nodejs
+     * 
+     * @returns {ReadableStream|Stream.Writable} поток чтения, если это браузер, или поток записи если это nodejs
+     * @method
+     * @public
+     */
+    toReadable(){
+        const _ = this;
+
+        // #!if platform === 'browser'
+        /*~
+        return new ReadableStream({
+            start(controller){
+                _.on('data', controller.enqueue.bind(controller));
+                _.on('end', controller.close.bind(controller));
+            }
+        });
+        */
+        // #!endif
+        // #!if platform === 'node'
+        const stream = new Stream.Writable();
+
+        _.on('data', stream.write.bind(stream));
+        _.on('end', stream.end.bind(stream));
+
+        return stream;
+        // #!endif
+    }
+
+    /**
      * Перенаправляет поток данных в `stream` переданный первым аргументом
      * 
      * @param {PoonyaOutputStream} stream поток которому необходимо передавать данные помимо этого
-     * @returns PoonyaOutputStream Поток который был передан.
+     * @returns`stream` Поток который был передан.
      * @method
      * @public
      */
     pipe(stream){
         if(typeof stream.write === 'function'){
-            this.on('data', stream.write);
+            this.on('data', stream.write.bind(stream));
 
             return stream;
         } else {
@@ -437,7 +470,7 @@ class CodeEmitter extends EventEmitter {
         if (Array.isArray(data)) {
             for (let i = 0, leng = data.length; i < leng; i++)
                 if (typeof data[i] === "object" && !(data[i] instanceof Heap)) {
-                    data[i] = new Heap(data[i]);
+                    data[i] = new Heap(null, data[i]);
                 }
 
             if (data.find((e) => !(e instanceof Heap)) == null) {
@@ -447,9 +480,17 @@ class CodeEmitter extends EventEmitter {
             } else {
                 throw new TypeError("Data must have a Heap type");
             }
+        } else if(data instanceof Context){
+            const clone = data.clone();
+
+            clone.import(this.libraries, error);
+
+            this.data.result(clone, out, error);
+
+            out.end();
         } else {
             if (typeof data === "object" && !(data instanceof Heap)) {
-                data = new Heap(data);
+                data = new Heap(null, data);
             }
 
             if (data instanceof Heap) {
@@ -465,7 +506,7 @@ class CodeEmitter extends EventEmitter {
     /**
      * Возвращает результат выполенения блока
      *
-     * @param {String|Heap} data данные преданые в исполнитель
+     * @param {Object|Heap|Context} data данные преданые в исполнитель
      * @param {Function} error функция вывода ошибок, опциаонально
      * 
      * @returns {Array<Any>} результат выполнения блока
@@ -525,8 +566,6 @@ class MessagePattern extends CodeEmitter {
                 this.data = await parserMP(lexer(toBytes(this.input)), block_prefix, this.throwError.bind(this), this.path);
             } catch (e) {
                 this.emit('error', e);
-
-                throw e;
             }
 
             this.loaded = true;
@@ -576,8 +615,6 @@ class ExecutionPattern extends CodeEmitter {
                 this.data = await parser(lexer(toBytes(this.input), false), this.throwError.bind(this), this.path);
             } catch (e) {
                 this.emit('error', e);
-
-                throw e;
             }
 
             this.loaded = true;
@@ -614,8 +651,6 @@ class ExpressionPattern extends CodeEmitter {
                 this.data = parseExpression(0, lexer(toBytes(this.input), false), this.throwError.bind(this)).data;
             } catch (e) {
                 this.emit('error', e);
-
-                throw e;
             }
             
             this.loaded = true;
@@ -625,14 +660,20 @@ class ExpressionPattern extends CodeEmitter {
     }
 
     [RESULT](data, error){
-        if (!(data instanceof Context)) {
+        if (data instanceof Context) {
+            const clone = data.clone();
+
+            clone.import(this.libraries, error);
+
+            return this.data.result(clone, [], error);
+        } else {
             if (Array.isArray(data)) {
                 for (let i = 0, leng = data.length; i < leng; i++)
                     if (
                         typeof data[i] === "object" &&
                         !(data[i] instanceof Heap)
                     ) {
-                        data[i] = new Heap(data[i]);
+                        data[i] = new Heap(null, data[i]);
                     }
 
                 if (data.find((e) => !(e instanceof Heap)) == null) {
@@ -646,7 +687,7 @@ class ExpressionPattern extends CodeEmitter {
                 }
             } else {
                 if (typeof data === "object" && !(data instanceof Heap)) {
-                    data = new Heap(data);
+                    data = new Heap(null, data);
                 }
 
                 if (data instanceof Heap) {
@@ -659,8 +700,6 @@ class ExpressionPattern extends CodeEmitter {
                     throw new TypeError("Data must have a Heap type");
                 }
             }
-        } else {
-            return this.data.result(data, [], error);
         }
     }
 
@@ -682,6 +721,89 @@ class ExpressionPattern extends CodeEmitter {
             else
                 _.on('load', () => res(_[RESULT](data, error)));
         });
+    }
+}
+
+/**
+ * Создает контекст выполнения, с полями `data`
+ * 
+ * @param {Object} data поля инициализации контекста, вы можете передать сюда объект с глобальными переменными доступными в контексте
+ * @param  {...String|...Array<String>} libs список библиотек для импорта
+ * @returns {Promise<Context>} контекст выполнения
+ * @memberof Poonya
+ * @async
+ */
+function createContext(data, ...libs) {
+    if(typeof data != 'object' || data == null)
+        throw new Error('Param "data" must be an object.');
+
+    libs = libs
+        // Если передан массив с массивами
+        .flat(Infinity)
+        // Фильтурем список библиотек целевых библиотек, если среди них есть не строки отбрасываем их.
+        .filter(e => typeof e != 'string');
+
+    return new Promise(res => {
+        if(SERVICE.LOADED) {        
+            res(new Context(
+                Import(['default', ...libs]),
+        
+                CodeEmitter.prototype.throwError.bind({
+                    input: '',
+                    charset: 'utf-8',
+                    path: 'untitled.po'
+                }),
+
+                data
+            ));
+        } else {
+            SERVICE.ACTIONS.on('load', () => {
+                res(new Context(
+                    Import(['default', ...libs]),
+            
+                    CodeEmitter.prototype.throwError.bind({
+                        input: '',
+                        charset: 'utf-8',
+                        path: 'untitled.po'
+                    }),
+    
+                    data
+                ));
+            });
+        }
+    });
+}
+
+/**
+ * Конструирует шаблон, возвращая обещаение с загрузкой этого шаблона
+ * 
+ * @param {CodeEmitter} Pattern шаблон для создания
+ * @param  {...Any} args аргументы вызов конструктора
+ * @returns {Promise<iPoonyaConstructsData>} ответ конструктора шаблона
+ * @memberof Poonya
+ * @async
+ */
+function patternCreator(Pattern, ...args) {
+    if(Object.prototype.isPrototypeOf.call(CodeEmitter, Pattern)){
+        Pattern = Function.prototype.apply(Object.create(Pattern), args);
+
+        return new Promise((res, rej) => {
+            Pattern.on('load', (...args) => 
+                res(Object.assign(new iPoonyaConstructsData(), {
+                    Pattern,
+                    args
+                }))
+            );
+
+            Pattern.on('error', (...args) => 
+                rej(Object.assign(new iPoonyaConstructsData(), {
+                    Pattern,
+                    args
+                }))
+            );
+        });
+    } else {
+        throw new Error('The "Pattern" must be a "CodeEmitter" heir');
     }
 }
 
@@ -754,8 +876,11 @@ class ExpressionPattern extends CodeEmitter {
 
 module.exports.CodeEmitter = CodeEmitter;
 module.exports.MessagePattern = MessagePattern;
+module.exports.PoonyaOutputStream = PoonyaOutputStream;
 module.exports.ExpressionPattern = ExpressionPattern;
 module.exports.ExecutionPattern = ExecutionPattern;
+module.exports.patternCreator = patternCreator;
+module.exports.createContext = createContext;
 module.exports.ImportFile = ImportFile.bind(null, module.parent != null ? module.parent.path : module.path);
 
 // #!if platform === 'node'

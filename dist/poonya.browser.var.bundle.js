@@ -2452,12 +2452,11 @@ poonya = /******/ (() => {
                  * Добавляет родительский прототип целевому
                  *
                  * @param {iPoonyaPrototype} parent прототип объекта
-                 * @memberof Poonya
-                 * @constructs PoonyaObject
+                 * @method
                  * @public
                  */
 
-                addParent(parent) {
+                expand(parent) {
                     if (parent instanceof iPoonyaPrototype)
                         this._parents.push(parent);
                     else
@@ -4379,9 +4378,13 @@ poonya = /******/ (() => {
                         header +
                         (message != null ? ': \n' + message : '');
                 }
+
+                toString() {
+                    return this.message;
+                }
             }
             /**
-             * Основное исключение шаблонизатора
+             * Основное исключение парсера
              *
              * @memberof Poonya.Exceptions
              * @name ParserException
@@ -4390,8 +4393,22 @@ poonya = /******/ (() => {
              */
 
             class ParserException extends PoonyaException {
-                constructor() {
-                    super('Error when processing raw data');
+                constructor(header, message) {
+                    super('Parser exception / ' + header, message);
+                }
+            }
+            /**
+             * Основное исключение линкера
+             *
+             * @memberof Poonya.Exceptions
+             * @name LinkerException
+             * @class
+             * @protected
+             */
+
+            class LinkerException extends PoonyaException {
+                constructor(header, message) {
+                    super('Linker exception / ' + header, message);
                 }
             }
             /**
@@ -4403,7 +4420,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class TheSequenceException extends PoonyaException {
+            class TheSequenceException extends ParserException {
                 constructor(entry, last) {
                     super(
                         `Wrong order: condition operator: '${entry.toString()}' after '${last.toString()}'`
@@ -4419,7 +4436,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class UnexpectedTokenException extends PoonyaException {
+            class UnexpectedTokenException extends ParserException {
                 constructor(token, expected) {
                     super(
                         `Unexpected token '${token.toString()}' when expected '${expected.toString()}'`
@@ -4435,7 +4452,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class UnexpectedTokenStatement extends PoonyaException {
+            class UnexpectedTokenStatement extends ParserException {
                 constructor(statement, token, expected) {
                     super(
                         `Error parsing the '${statement.toString()}' statement. Expected '${expected.toString()}', when actually: '${token.toString()}'`
@@ -4451,7 +4468,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class ParserLogicException extends PoonyaException {
+            class ParserLogicException extends ParserException {
                 constructor() {
                     super('The expression has incorrect logic');
                 }
@@ -4465,7 +4482,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class ParserEmtyArgumentException extends PoonyaException {
+            class ParserEmtyArgumentException extends ParserException {
                 constructor() {
                     super(
                         'It is not possible to pass an empty argument to a function, use null to denote an empty value'
@@ -4481,7 +4498,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class LinkerPathNotGiveExceptrion extends PoonyaException {
+            class LinkerPathNotGiveException extends LinkerException {
                 constructor() {
                     super(
                         'To use include, you must pass the path to the current execution file'
@@ -4497,7 +4514,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class IOError extends PoonyaException {
+            class IOError extends LinkerException {
                 constructor(path) {
                     super(
                         "An error occured while opening file: '" + path + "'"
@@ -4667,7 +4684,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class UnableToRecognizeTypeException extends PoonyaException {
+            class UnableToRecognizeTypeException extends ParserException {
                 constructor(type) {
                     super(`Unable to recognize type '${type}'`);
                 }
@@ -4681,7 +4698,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class SegmentationFaultEmptyArgumentException extends PoonyaException {
+            class SegmentationFaultEmptyArgumentException extends ParserException {
                 constructor(blockname) {
                     super(
                         `Segmentation fault: empty argument for ` + blockname
@@ -4697,7 +4714,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class ParserUnfinishedNotationException extends PoonyaException {
+            class ParserUnfinishedNotationException extends ParserException {
                 constructor() {
                     super(`Parser fault: unfinished notation`);
                 }
@@ -4711,7 +4728,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class SegmentationFaultMaximumSegmentsForBlockException extends PoonyaException {
+            class SegmentationFaultMaximumSegmentsForBlockException extends ParserException {
                 constructor(blockname) {
                     super(
                         `Segmentation fault exceeded the maximum number of segments for block ` +
@@ -4728,7 +4745,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class UnexpectedWordTypeAndGetException extends PoonyaException {
+            class UnexpectedWordTypeAndGetException extends ParserException {
                 constructor(value, type) {
                     super(
                         `Expected word type expression and get ${value}[${type}]`
@@ -4744,7 +4761,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class InvalidSequenceForLetiableAccessException extends PoonyaException {
+            class InvalidSequenceForLetiableAccessException extends ParserException {
                 constructor() {
                     super(`Invalid sequence for letiable access`);
                 }
@@ -4758,7 +4775,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class CriticalParserErrorException extends PoonyaException {
+            class CriticalParserErrorException extends ParserException {
                 constructor() {
                     super(`Critical parser error`);
                 }
@@ -4772,7 +4789,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class CriticalParserErrorUnexpectedEndOfExpression extends PoonyaException {
+            class CriticalParserErrorUnexpectedEndOfExpression extends ParserException {
                 constructor() {
                     super(
                         `Critical parser error: unexprected end of expression`
@@ -4788,7 +4805,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class CriticalParserErrorUnexpectedEndOfInputException extends PoonyaException {
+            class CriticalParserErrorUnexpectedEndOfInputException extends ParserException {
                 constructor() {
                     super(`Critical parser error: unexpected end of input`);
                 }
@@ -4802,7 +4819,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class CriticalParserErrorNoRawDataTransmittedException extends PoonyaException {
+            class CriticalParserErrorNoRawDataTransmittedException extends ParserException {
                 constructor() {
                     super(`Critical parser error: no raw data transmitted`);
                 }
@@ -4816,7 +4833,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class BadArrowNotationJTException extends PoonyaException {
+            class BadArrowNotationJTException extends ParserException {
                 constructor() {
                     super(
                         `Bad array notation: jumping two levels is not possible`
@@ -4832,7 +4849,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class BadArrowNotationJTULException extends PoonyaException {
+            class BadArrowNotationJTULException extends ParserException {
                 constructor() {
                     super(
                         `Bad array notation: unexpected transition to a upper level`
@@ -4848,7 +4865,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            class BadEmptyObjectException extends PoonyaException {
+            class BadEmptyObjectException extends ParserException {
                 constructor() {
                     super(
                         `Cannot create an empty object after declaring its keys`
@@ -4928,6 +4945,7 @@ poonya = /******/ (() => {
 
             module.exports.IOError = IOError;
             module.exports.LinkerIOError = LinkerIOError;
+            module.exports.LinkerException = LinkerException;
             module.exports.PoonyaException = PoonyaException;
             module.exports.ParserException = ParserException;
             module.exports.TheSequenceException = TheSequenceException;
@@ -4940,7 +4958,7 @@ poonya = /******/ (() => {
             module.exports.BadKeyInvalidTypeException = BadKeyInvalidTypeException;
             module.exports.IsNotAConstructorException = IsNotAConstructorException;
             module.exports.ParserEmtyArgumentException = ParserEmtyArgumentException;
-            module.exports.LinkerPathNotGiveExceptrion = LinkerPathNotGiveExceptrion;
+            module.exports.LinkerPathNotGiveException = LinkerPathNotGiveException;
             module.exports.CriticalParserErrorException = CriticalParserErrorException;
             module.exports.NativeFunctionExecutionError = NativeFunctionExecutionError;
             module.exports.BadKeyProtectedFieldException = BadKeyProtectedFieldException;
@@ -4979,11 +4997,28 @@ poonya = /******/ (() => {
 
             class iPoonyaObject {}
 
-            class iPoonyaPrototype {}
+            class iPoonyaPrototype {} // Poonya interfaces
+
+            /**
+             * @lends iPoonyaConstructsData
+             * @interface iPoonyaConstructsData
+             */
+
+            class iPoonyaConstructsData {
+                /**
+                 * Интерфейс ответа функции кострукирующий шаблон, на основе промисов - `patternCreator`
+                 *
+                 * @constructs iPoonyaConstructsData
+                 * @property {CodeEmitter} Pattern шаблон, который должен быть создан
+                 * @property {Array<Any>} args аргументы возвращенные по завершении инициализации шаблона
+                 */
+                constructor() {}
+            }
 
             module.exports.iContext = iContext;
             module.exports.iPoonyaObject = iPoonyaObject;
             module.exports.iPoonyaPrototype = iPoonyaPrototype;
+            module.exports.iPoonyaConstructsData = iPoonyaConstructsData;
 
             /***/
         },
@@ -5166,16 +5201,19 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const NativeFunction = __webpack_require__(492);
+            const lexer = __webpack_require__(513);
+
+            const { parser } = __webpack_require__(909);
 
             const {
                     GetFieldOfNullException,
                     IsNotAConstructorException,
                 } = __webpack_require__(707),
                 { GET, SERVICE, IS } = __webpack_require__(635),
-                { Cast } = __webpack_require__(270),
+                { Cast, toBytes } = __webpack_require__(270),
                 { iContext, iPoonyaPrototype } = __webpack_require__(779),
                 { PoonyaStaticLibrary } = __webpack_require__(239),
+                NativeFunction = __webpack_require__(492),
                 ExpressionGroup = __webpack_require__(606),
                 PoonyaObject = __webpack_require__(940),
                 PoonyaArray = __webpack_require__(358),
@@ -5265,8 +5303,8 @@ poonya = /******/ (() => {
                     try {
                         super.set(key, Cast(data, context, parents_three));
                     } catch (e) {
-                        console.log(e);
                         console.error('Error when cast value of ' + key);
+                        console.log(e);
                     }
                 }
                 /**
@@ -5308,14 +5346,39 @@ poonya = /******/ (() => {
                  *
                  * @memberof Poonya.Storage
                  * @constructs Context
-                 * @implements iContext
+                 * @implements {iContext}
                  * @classdesc Определяет набор данных для манипуляции в шаблонизаторе
                  * @protected
                  */
                 constructor(libraries, throw_error, ...initial) {
                     super();
                     this.levels = new Array();
+                    this._lib_cache = new Array(); // Если переданы дидлиотеки для импорта, то импортируем их в этот контекст
 
+                    if (libraries != null) this.import(libraries, throw_error); // Перебераем переданные для инициалзации объекты
+
+                    this.levels.push(
+                        ...initial
+                            .map(
+                                // Есл это хип
+                                (e) =>
+                                    e instanceof Heap // То ничего не делаем
+                                        ? e // Иначе, если это объект
+                                        : typeof e === 'object' // Создаем новый хип с ним
+                                        ? new Heap(this, e) // Если это не объект вставляем вместо него null
+                                        : null // Удаляем все не объекты
+                            )
+                            .filter((e) => e !== null)
+                    );
+                }
+                /**
+                 * Импортирует нативные библиотеки `libraries` в текущий контекст.
+                 *
+                 * @param {Array<PoonyaStaticLibrary>} libraries массив с библиотеками, которые нужно импортировать
+                 * @param {Function} throw_error фукнция вызова ошибки
+                 */
+
+                import(libraries, throw_error) {
                     if (libraries != null) {
                         // Корневой слой
                         this.levels.push(new Heap(this, null));
@@ -5325,7 +5388,12 @@ poonya = /******/ (() => {
                             i < leng;
                             i++
                         ) {
-                            if (libraries[i] instanceof PoonyaStaticLibrary) {
+                            if (
+                                libraries[i] instanceof PoonyaStaticLibrary &&
+                                !this._lib_cache.includes(
+                                    libraries[i].namespace
+                                )
+                            ) {
                                 if (libraries[i].global) {
                                     libraries[i].importTo(
                                         this.levels[0],
@@ -5350,13 +5418,39 @@ poonya = /******/ (() => {
                                         target
                                     );
                                 }
+
+                                this._lib_cache.push(libraries[i].namespace);
                             }
                         }
                     }
+                }
+                /**
+                 * Выполняет код poonya из строки
+                 *
+                 * @param {String} input Вход шаблона
+                 * @param {PoonyaOutputStream} out Вывод шаблонизатора
+                 * @param {Function} throw_error Функция вызова ошибки
+                 * @method
+                 * @public
+                 * @async
+                 */
 
-                    this.levels.push(
-                        ...initial.filter((e) => e instanceof Heap)
-                    );
+                async eval(input, out, throw_error) {
+                    return (
+                        await parser(
+                            // Выполняем лексинг переданого текста
+                            lexer(
+                                // Разбираем текст на байты
+                                toBytes(input),
+                                false
+                            ),
+                            throw_error, // Присваеваем рандомный идентификатор исполнителю
+                            'eval-' +
+                                Math.floor(
+                                    Math.random() * Number.MAX_SAFE_INTEGER
+                                ).toString(16)
+                        )
+                    ).result(this, out, throw_error);
                 }
                 /**
                  * Клонирует текущий контекст, возвращает новый кнотекст, со всеми уровнями текущего контекста
@@ -5367,10 +5461,14 @@ poonya = /******/ (() => {
                  */
 
                 clone() {
-                    return new Context(null, null, this.levels);
+                    const clone = new Context(null, null, ...this.levels);
+                    clone._lib_cache = Array.from(this._lib_cache);
+                    return clone;
                 }
                 /**
-                 * Добавляет уроень в текущий контекст
+                 * Добавляет уровень в текущий контекст
+                 *
+                 * @param {Heap} level уровень который необходимо добавить
                  * @method
                  * @public
                  */
@@ -5535,7 +5633,7 @@ poonya = /******/ (() => {
                         } else if (instance instanceof iPoonyaPrototype) {
                             instance = instance[GET](query_stack[index], this);
                         } else {
-                            throw_error(
+                            (throw_error || console.error)(
                                 position,
                                 new GetFieldOfNullException(query_stack[index])
                             );
@@ -5592,12 +5690,13 @@ poonya = /******/ (() => {
                     return instance != null;
                 }
                 /**
+                 * Создает объект используя конструктор вызванный по пути `path`
                  *
-                 * @param {*} initial
-                 * @param {*} position
-                 * @param {*} path
-                 * @param {*} throw_error
-                 * @param {*} parents_three
+                 * @param {Object} initial Значения для инициализации объекта
+                 * @param {Number} position Позиция, с который вызывается конструктор
+                 * @param {Array<String>} path Путь к конструктору в памяти
+                 * @param {Function} throw_error Функция вызова ошибки
+                 * @param {Array<String>} parents_three Дерево родителей объекта
                  *
                  * @returns {PoonyaObject} если по заданому пути существует значение вернет его, если нет то вернет null
                  * @method
@@ -5678,7 +5777,7 @@ poonya = /******/ (() => {
                                 return new PoonyaObject(prototype, init, this);
                         }
                     } else {
-                        throw_error(
+                        (throw_error || console.error)(
                             position,
                             new IsNotAConstructorException(path)
                         );
@@ -5716,6 +5815,9 @@ poonya = /******/ (() => {
 
             if (__webpack_require__.g[NAMESPACE] == null) {
                 __webpack_require__.g[NAMESPACE] = new Object();
+            }
+
+            if (__webpack_require__.g[NAMESPACE][modules] == null) {
                 __webpack_require__.g[NAMESPACE][modules] = new Map();
             }
             /**
@@ -5732,10 +5834,17 @@ poonya = /******/ (() => {
                  * @constructs PoonyaStaticLibrary
                  * @public
                  */
-                constructor(id, global = false, override = false, namespace) {
+                constructor(id, l_global = false, override = false, namespace) {
                     AddLibrary(id, this, override);
-                    this.namespace = namespace;
-                    this.global = global;
+                    this.namespace =
+                        namespace != null
+                            ? namespace
+                            : 'space-' +
+                              __webpack_require__.g[NAMESPACE][
+                                  modules
+                              ].size.toString(16) +
+                              (l_global ? '-global' : '');
+                    this.global = Boolean(l_global);
                     this._fields = new Map();
                 }
                 /**
@@ -5748,10 +5857,15 @@ poonya = /******/ (() => {
                  */
 
                 addField(field, data) {
-                    this._fields.set(field, data);
+                    field = String(field);
+                    if (this._fields.has(field))
+                        throw new Error(
+                            'The "' + field + '" field alredy exists'
+                        );
+                    else this._fields.set(field, data);
                 }
                 /**
-                 * Расширяет прототип класса переданного как proto
+                 * Расширяет прототип класса переданного как proto, или создает новый прототип объекта
                  *
                  * @param {PoonyaPrototype} proto название поля, которое устанавливаем
                  * @public
@@ -5765,7 +5879,11 @@ poonya = /******/ (() => {
                             proto
                         )
                     ) {
-                        this._fields.set(proto.name, proto);
+                        if (this._fields.has(proto.name)) {
+                            this._fields.get(proto.name).expand(proto);
+                        } else {
+                            this._fields.set(proto.name, proto);
+                        }
                     } else {
                         throw new Error(
                             `Only PoonyaPrototype instance can be passed as a prototype.`
@@ -6557,7 +6675,7 @@ poonya = /******/ (() => {
              */
 
             const {
-                    ParserException,
+                    PoonyaException,
                     BadEmptyObjectException,
                     ParserEmtyArgumentException,
                     UnexpectedTokenException,
@@ -7909,7 +8027,9 @@ poonya = /******/ (() => {
                                 );
                         }
                     } catch (e) {
-                        if (!(e instanceof ParserException)) {
+                        if (e instanceof PoonyaException) {
+                            throw e;
+                        } else {
                             if (entries.length != 0) {
                                 if (entries[i] != null)
                                     throw_error(
@@ -7927,8 +8047,6 @@ poonya = /******/ (() => {
                                     new CriticalParserErrorNoRawDataTransmittedException()
                                 );
                             }
-                        } else {
-                            throw e;
                         }
                     }
                 }
@@ -8212,7 +8330,7 @@ poonya = /******/ (() => {
             /*LIQUID-END*/
 
             const { EventEmitter } = __webpack_require__(245),
-                { IOError } = __webpack_require__(707),
+                { IOError, PoonyaException } = __webpack_require__(707),
                 { Import, ImportDir, ImportFile } = __webpack_require__(239),
                 { Context, Heap } = __webpack_require__(392),
                 { parser, parseExpression, parserMP } = __webpack_require__(
@@ -8220,7 +8338,8 @@ poonya = /******/ (() => {
                 ),
                 { SERVICE } = __webpack_require__(635),
                 { toFixed, toBytes, fromBytes } = __webpack_require__(270),
-                lexer = __webpack_require__(513);
+                { iPoonyaConstructsData } = __webpack_require__(779),
+                lexer = __webpack_require__(513); // Private fields
 
             const RESULT = Symbol('RESULT'),
                 INIT = Symbol('INIT');
@@ -8248,17 +8367,38 @@ poonya = /******/ (() => {
                     this._ended = false;
                 }
                 /**
+                 * Преобразует поток в ReadableStream или в Stream.Writable для nodejs
+                 *
+                 * @returns {ReadableStream|Stream.Writable} поток чтения, если это браузер, или поток записи если это nodejs
+                 * @method
+                 * @public
+                 */
+
+                toReadable() {
+                    const _ = this;
+                    /*LIQUID*/
+
+                    return new ReadableStream({
+                        start(controller) {
+                            _.on('data', controller.enqueue.bind(controller));
+
+                            _.on('end', controller.close.bind(controller));
+                        },
+                    });
+                    /*LIQUID-END*/
+                }
+                /**
                  * Перенаправляет поток данных в `stream` переданный первым аргументом
                  *
                  * @param {PoonyaOutputStream} stream поток которому необходимо передавать данные помимо этого
-                 * @returns PoonyaOutputStream Поток который был передан.
+                 * @returns`stream` Поток который был передан.
                  * @method
                  * @public
                  */
 
                 pipe(stream) {
                     if (typeof stream.write === 'function') {
-                        this.on('data', stream.write);
+                        this.on('data', stream.write.bind(stream));
                         return stream;
                     } else {
                         throw new TypeError('Is not a WriteStream');
@@ -8375,8 +8515,6 @@ poonya = /******/ (() => {
                         if (typeof input.raw === 'string') _.input = input.raw;
                         else if (typeof input.path === 'string') {
                             try {
-                                // Защищаю от выполнения браузерного кода в nodejs
-
                                 /*LIQUID*/
                                 fetch(input.path, {
                                     method: 'GET',
@@ -8467,13 +8605,13 @@ poonya = /******/ (() => {
                  * Выводит сообщение об ошибке, прекращает выполнения текущего шаблона.
                  *
                  * @param {Number} pos Позиция в которой произшла ошибка
-                 * @param {String} message Сообщение с ошибкой
+                 * @param {String} error Сообщение с ошибкой
                  * @param {Number} rad_of Радиус печати, т.е. количество строк которое будет печатать в вывод по мимо строки на которой произошла ошибка
                  * @method
                  * @public
                  */
 
-                throwError(pos, message, rad_of = 5) {
+                throwError(pos, error, rad_of = 5) {
                     rad_of = parseInt(rad_of);
                     let buffer = [],
                         data = this.input.split('\n'),
@@ -8525,7 +8663,10 @@ poonya = /******/ (() => {
                         }
                     }
 
-                    throw new Error(message.message + ': \n' + buffer.join(''));
+                    if (error instanceof PoonyaException) {
+                        error.message += '\n' + buffer.join('');
+                        throw error;
+                    } else throw new PoonyaException(error, buffer.join(''));
                 }
                 /**
                  * Инициалзирует блок инструкций/
@@ -8560,7 +8701,7 @@ poonya = /******/ (() => {
                                 typeof data[i] === 'object' &&
                                 !(data[i] instanceof Heap)
                             ) {
-                                data[i] = new Heap(data[i]);
+                                data[i] = new Heap(null, data[i]);
                             }
 
                         if (data.find((e) => !(e instanceof Heap)) == null) {
@@ -8573,12 +8714,17 @@ poonya = /******/ (() => {
                         } else {
                             throw new TypeError('Data must have a Heap type');
                         }
+                    } else if (data instanceof Context) {
+                        const clone = data.clone();
+                        clone.import(this.libraries, error);
+                        this.data.result(clone, out, error);
+                        out.end();
                     } else {
                         if (
                             typeof data === 'object' &&
                             !(data instanceof Heap)
                         ) {
-                            data = new Heap(data);
+                            data = new Heap(null, data);
                         }
 
                         if (data instanceof Heap) {
@@ -8596,7 +8742,7 @@ poonya = /******/ (() => {
                 /**
                  * Возвращает результат выполенения блока
                  *
-                 * @param {String|Heap} data данные преданые в исполнитель
+                 * @param {Object|Heap|Context} data данные преданые в исполнитель
                  * @param {Function} error функция вывода ошибок, опциаонально
                  *
                  * @returns {Array<Any>} результат выполнения блока
@@ -8668,7 +8814,6 @@ poonya = /******/ (() => {
                             );
                         } catch (e) {
                             this.emit('error', e);
-                            throw e;
                         }
 
                         this.loaded = true;
@@ -8721,7 +8866,6 @@ poonya = /******/ (() => {
                             );
                         } catch (e) {
                             this.emit('error', e);
-                            throw e;
                         }
 
                         this.loaded = true;
@@ -8761,7 +8905,6 @@ poonya = /******/ (() => {
                             ).data;
                         } catch (e) {
                             this.emit('error', e);
-                            throw e;
                         }
 
                         this.loaded = true;
@@ -8770,14 +8913,18 @@ poonya = /******/ (() => {
                 }
 
                 [RESULT](data, error) {
-                    if (!(data instanceof Context)) {
+                    if (data instanceof Context) {
+                        const clone = data.clone();
+                        clone.import(this.libraries, error);
+                        return this.data.result(clone, [], error);
+                    } else {
                         if (Array.isArray(data)) {
                             for (let i = 0, leng = data.length; i < leng; i++)
                                 if (
                                     typeof data[i] === 'object' &&
                                     !(data[i] instanceof Heap)
                                 ) {
-                                    data[i] = new Heap(data[i]);
+                                    data[i] = new Heap(null, data[i]);
                                 }
 
                             if (
@@ -8798,7 +8945,7 @@ poonya = /******/ (() => {
                                 typeof data === 'object' &&
                                 !(data instanceof Heap)
                             ) {
-                                data = new Heap(data);
+                                data = new Heap(null, data);
                             }
 
                             if (data instanceof Heap) {
@@ -8813,8 +8960,6 @@ poonya = /******/ (() => {
                                 );
                             }
                         }
-                    } else {
-                        return this.data.result(data, [], error);
                     }
                 }
                 /**
@@ -8834,6 +8979,92 @@ poonya = /******/ (() => {
                         if (_.loaded) res(_[RESULT](data, error));
                         else _.on('load', () => res(_[RESULT](data, error)));
                     });
+                }
+            }
+            /**
+             * Создает контекст выполнения, с полями `data`
+             *
+             * @param {Object} data поля инициализации контекста, вы можете передать сюда объект с глобальными переменными доступными в контексте
+             * @param  {...String|...Array<String>} libs список библиотек для импорта
+             * @returns {Promise<Context>} контекст выполнения
+             * @memberof Poonya
+             * @async
+             */
+
+            function createContext(data, ...libs) {
+                if (typeof data != 'object' || data == null)
+                    throw new Error('Param "data" must be an object.');
+                libs = libs // Если передан массив с массивами
+                    .flat(Infinity) // Фильтурем список библиотек целевых библиотек, если среди них есть не строки отбрасываем их.
+                    .filter((e) => typeof e != 'string');
+                return new Promise((res) => {
+                    if (SERVICE.LOADED) {
+                        res(
+                            new Context(
+                                Import(['default', ...libs]),
+                                CodeEmitter.prototype.throwError.bind({
+                                    input: '',
+                                    charset: 'utf-8',
+                                    path: 'untitled.po',
+                                }),
+                                data
+                            )
+                        );
+                    } else {
+                        SERVICE.ACTIONS.on('load', () => {
+                            res(
+                                new Context(
+                                    Import(['default', ...libs]),
+                                    CodeEmitter.prototype.throwError.bind({
+                                        input: '',
+                                        charset: 'utf-8',
+                                        path: 'untitled.po',
+                                    }),
+                                    data
+                                )
+                            );
+                        });
+                    }
+                });
+            }
+            /**
+             * Конструирует шаблон, возвращая обещаение с загрузкой этого шаблона
+             *
+             * @param {CodeEmitter} Pattern шаблон для создания
+             * @param  {...Any} args аргументы вызов конструктора
+             * @returns {Promise<iPoonyaConstructsData>} ответ конструктора шаблона
+             * @memberof Poonya
+             * @async
+             */
+
+            function patternCreator(Pattern, ...args) {
+                if (Object.prototype.isPrototypeOf.call(CodeEmitter, Pattern)) {
+                    Pattern = Function.prototype.apply(
+                        Object.create(Pattern),
+                        args
+                    );
+                    return new Promise((res, rej) => {
+                        Pattern.on('load', (...args) =>
+                            res(
+                                Object.assign(new iPoonyaConstructsData(), {
+                                    Pattern,
+                                    args,
+                                })
+                            )
+                        );
+                        Pattern.on('error', (...args) =>
+                            rej(
+                                Object.assign(new iPoonyaConstructsData(), {
+                                    Pattern,
+                                    args,
+                                })
+                            )
+                        );
+                    });
+                } else {
+                    throw new Error(
+                        'The "Pattern" must be a "CodeEmitter" heir'
+                    );
                 }
             }
 
@@ -8927,8 +9158,11 @@ poonya = /******/ (() => {
 
             module.exports.CodeEmitter = CodeEmitter;
             module.exports.MessagePattern = MessagePattern;
+            module.exports.PoonyaOutputStream = PoonyaOutputStream;
             module.exports.ExpressionPattern = ExpressionPattern;
             module.exports.ExecutionPattern = ExecutionPattern;
+            module.exports.patternCreator = patternCreator;
+            module.exports.createContext = createContext;
             module.exports.ImportFile = ImportFile.bind(
                 null,
                 module.parent != null ? module.parent.path : module.path
