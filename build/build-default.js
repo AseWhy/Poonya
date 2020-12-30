@@ -79,7 +79,7 @@ async function main(){
         const files = readdirSync('dist');
 
         for(let i = 0, leng = files.length; i < leng; i++){
-            if(extname(files[i]) != '.js')
+            if(!['.js', '.ts'].includes(extname(files[i])))
                 unlinkSync(join('dist', files[i]));
         }
 

@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/AseWhy/Poonya#readme",
   "devDependencies": {
+    "copy-webpack-plugin": "^7.0.0",
     "eslint": "^7.16.0",
     "mocha": "^8.2.1",
     "webpack": "^5.11.0",

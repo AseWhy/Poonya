@@ -1,3 +1,4 @@
+const CopyPlugin = require('copy-webpack-plugin');
 const path = require('path');
 
 function c(color, message){
@@ -17,6 +18,7 @@ module.exports = (env) => {
     env.type = env && env.type || 'var';
     env.minimize = env && env.minimize == 'true' ? true : false;
     env.path = (env && env.platform != 'node' ? 'poonya.browser.' + env.type + '.bundle' : 'poonya.node.bundle') + (env.minimize ? '.min' : '') + '.js';
+    env.intname = path.basename(env.path, '.js') + '.ts';
 
     l(
         '\n',
@@ -57,6 +59,14 @@ module.exports = (env) => {
         optimization: {
             minimize: env.minimize
         },
+
+        plugins: [
+            new CopyPlugin({
+                patterns: [
+                    { from: './poonya.ts', to: env.intname }
+                ]
+            })
+        ],
 
         module: {
             rules: [
