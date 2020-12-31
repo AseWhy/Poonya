@@ -2011,7 +2011,6 @@ System.register(
                                  * @file src/classes/common/ParserData.js
                                  * @description Cодержит прототипы исполняемых данных.
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const { OPERATOR } = __webpack_require__(635);
@@ -2160,7 +2159,6 @@ System.register(
                                  * @file src/classes/data/NativeFunction.js
                                  * @description Содержит в себе объект нативной функции, которая так-же вызывается при вызове функции
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const { Operand } = __webpack_require__(62),
@@ -2366,7 +2364,6 @@ System.register(
                                  * @file src/classes/data/PoonyaArray.js
                                  * @description Cодержит класс массива Poonya
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const { FIELDFLAGS } = __webpack_require__(635),
@@ -2538,7 +2535,6 @@ System.register(
                                  * @file src/classes/data/PoonyaBoolean.js
                                  * @description Cодержит класс булевого значения Poonya
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const PoonyaObject = __webpack_require__(940);
@@ -2643,7 +2639,6 @@ System.register(
                                  * @file src/classes/data/PoonyaInteger.js
                                  * @description Cодержит класс целого числа Poonya
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const PoonyaObject = __webpack_require__(940);
@@ -2748,7 +2743,6 @@ System.register(
                                  * @file src/classes/data/PoonyaNull.js
                                  * @description Cодержит класс null объекта Poonya
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const PoonyaObject = __webpack_require__(940);
@@ -2846,7 +2840,6 @@ System.register(
                                  * @file src/classes/data/PoonyaNumber.js
                                  * @description Cодержит класс числа Poonya
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const PoonyaObject = __webpack_require__(940);
@@ -2951,7 +2944,6 @@ System.register(
                                  * @file src/classes/data/PoonyaObject.js
                                  * @description Cодержит класс объекта Poonya
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const {
@@ -3317,7 +3309,6 @@ System.register(
                                  * @file src/classes/data/PoonyaPrototype.js
                                  * @description Cодержит объект прототипа объекта Poonya
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const {
@@ -3555,7 +3546,6 @@ System.register(
                                  * @file src/classes/data/PoonyaString.js
                                  * @description Cодержит класс строки Poonya
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const PoonyaObject = __webpack_require__(940);
@@ -3682,7 +3672,6 @@ System.register(
                                  * @file src/classes/excecution/expression/ExpressionGroup.js
                                  * @description Cодержит группу выражений, которая выполняется при выполнении выражения
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const {
@@ -4216,7 +4205,6 @@ System.register(
                                  * @file src/classes/excecution/expression/FunctionCall.js
                                  * @description Содержит в себе вхождение вызовва функции
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const { Operand } = __webpack_require__(62),
@@ -4338,7 +4326,6 @@ System.register(
                                  * @file src/classes/excecution/expression/GetOperator.js
                                  * @description Содержит в себе оператор получения значения по индексам
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const { Operand } = __webpack_require__(62),
@@ -4459,7 +4446,6 @@ System.register(
                                  *  Object ->
                                  *      field -> value...
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const { Operand } = __webpack_require__(62),
@@ -4604,7 +4590,6 @@ System.register(
                                  * @file src/classes/excecution/expression/TernarOperator.js
                                  * @description Содержит в себе тернарный оператор, который сериализуется как <condition> ? <v1> : <v2>
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const { Operand } = __webpack_require__(62);
@@ -4701,7 +4686,6 @@ System.register(
                                  * @file src/classes/excecution/statements/IfStatement.js
                                  * @description Содержит в себе оператор if, который используется для создания условных операций
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 /**
@@ -4801,7 +4785,6 @@ System.register(
                                  * @file src/classes/excecution/statements/OutStatement.js
                                  * @description Содержит в себе оператор вывода, который используется для вывода информации из шаблона
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 /**
@@ -5033,7 +5016,6 @@ System.register(
                                  * @file src/classes/excecution/statements/RepeatStatement.js
                                  * @description Содержит в себе оператор repeat, который используется для создания цикличных конечных конструкций
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const {
@@ -5168,7 +5150,6 @@ System.register(
                                  * @file src/classes/excecution/statements/ResetStatement.js
                                  * @description Содержит в себе оператор обновления значения переменной
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const ExpressionGroup = __webpack_require__(
@@ -5339,7 +5320,6 @@ System.register(
                                  * @file src/classes/excecution/statements/SequenceGroup.js
                                  * @description Содержит в себе дочернуюю исполняемую группу, которая, при нормальных услвиях, является чустью главной исполняемой группы.
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 /**
@@ -5434,7 +5414,6 @@ System.register(
                                  * @file src/classes/excecution/statements/SequenceMainGroup.js
                                  * @description Содержит в себе оператор главную сполняемую группу, т.е. группу которая явлся родетелем дочерних исполняемых групп, при нормальных условиях.
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 /**
@@ -5527,7 +5506,6 @@ System.register(
                                  * @file src/classes/excecution/statements/SetStatement.js
                                  * @description Содержит в себе оператор set, который используется для устновки значения в области памяти
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const {
@@ -5616,7 +5594,6 @@ System.register(
                                  * @file src/classes/excecution/statements/WhileStatement.js
                                  * @description Содержит в себе инструкцию while, который используется для создания цикличных условных операций
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 /**
@@ -5702,7 +5679,6 @@ System.register(
                                  * @file src/classes/exceptions.js
                                  * @description Тут я сгруппировал всевозможные исклюения
                                  * @author Astecom
-                                 * @license MIT
                                  */
 
                                 const { SERVICE } = __webpack_require__(635),
@@ -6378,7 +6354,6 @@ System.register(
                                 /**
                                  * @file src/interfaces.js
                                  * @description Тут собраны интерфейсы, для боллее удобного последующего сравнения объектов
-                                 * @license MIT
                                  * @author Astecom
                                  */
                                 // Storage
@@ -6422,7 +6397,6 @@ System.register(
                                 /**
                                  * @file src/static.js
                                  * @description Содержит в себе набор статических полей
-                                 * @license MIT
                                  * @author Astecom
                                  */
 
@@ -6595,7 +6569,6 @@ System.register(
                                 /**
                                  * @file src/storage.js
                                  * @description Содержит в себе напиор классов и функций для управления динамической памятью.
-                                 * @license MIT
                                  * @author Astecom
                                  */
 
@@ -6848,9 +6821,7 @@ System.register(
                                     import(libraries, throw_error) {
                                         if (libraries != null) {
                                             // Корневой слой
-                                            this.levels.push(
-                                                new Heap(this, null)
-                                            );
+                                            this.addLevel();
 
                                             for (
                                                 let i = 0,
@@ -6957,27 +6928,43 @@ System.register(
                                      */
 
                                     addLevel(level) {
+                                        let seed = -0x1;
+
                                         if (level != null) {
-                                            if (level instanceof Heap)
-                                                this.levels.push(level);
-                                            else
+                                            if (level instanceof Heap) {
+                                                seed =
+                                                    this.levels.push(level) - 1;
+                                            } else
                                                 throw new Error(
                                                     'The level for the context must be heap, or indexed by the heap'
                                                 );
                                         } else {
-                                            this.levels.push(
-                                                new Heap(this, null)
-                                            );
+                                            seed =
+                                                this.levels.push(
+                                                    new Heap(this, null)
+                                                ) - 1;
                                         }
+
+                                        return seed;
                                     }
                                     /**
-                                     * Выходит из текущего контекста
+                                     * Выходит из текущей области памяти
+                                     *
+                                     * @param {?Number} index позиция, области памти которую необходимо удалить.
+                                     * @param {Boolean} trnc если `true` то уддаляет все уровни выше.
                                      * @method
                                      * @public
                                      */
 
-                                    popLevel() {
-                                        this.levels.pop();
+                                    popLevel(index, trnc = true) {
+                                        if (index != null) {
+                                            this.levels.splice(
+                                                index,
+                                                trnc ? Infinity : 1
+                                            );
+                                        } else {
+                                            this.levels.pop();
+                                        }
                                     }
                                     /**
                                      * Получет значение из текущего контекста
@@ -7379,7 +7366,6 @@ System.register(
                                 /**
                                  * @file src/importer.js
                                  * @description Содержит в себе набор фнукций, которые необходимы для импорта нативных, написанных на js в нашем случае, библиотека в память poonya
-                                 * @license MIT
                                  * @author Astecom
                                  */
 
@@ -7868,7 +7854,6 @@ System.register(
                                 /**
                                  * @file src/Token.js
                                  * @description Содержит в себе класс вхождение лексера, массив которых получается на выходе из лексера
-                                 * @license MIT
                                  * @author Astecom
                                  */
 
@@ -7983,7 +7968,6 @@ System.register(
                                 /**
                                  * @file src/lexer.js
                                  * @description Содержит в себе лексер, который преобразует строку в набор токенов.
-                                 * @license MIT
                                  * @author Astecom
                                  */
 
@@ -8271,7 +8255,6 @@ System.register(
                                 /**
                                  * @file src/linker.js
                                  * @description Содержит в себе линкер, который позваоляет импортировать содержимое других файлов в исполняему последовательность poonya
-                                 * @license MIT
                                  * @author Astecom
                                  */
 
@@ -8383,7 +8366,6 @@ System.register(
                                 /**
                                  * @file src/parser.js
                                  * @description Содержит в себе парсер исходного кода poonya, на выходе экспортируемых функций можно получить либо выражение, либо главную исполняемую последовательность
-                                 * @license MIT
                                  * @author Astecom
                                  */
 
@@ -10405,9 +10387,9 @@ System.register(
                                 );
                                 /**
                                  * @author Astecom
-                                 * @license MIT
                                  * @version 0.4.5
                                  * @see {@link https://github.com/AseWhy/Poonya|GitHub}
+                                 * @license MIT
                                  * @namespace Poonya
                                  * @description A templating engine used to create templates and then render them
                                  *
@@ -11615,7 +11597,6 @@ System.register(
                                 /**
                                  * @file src/preset.js
                                  * @description Содержит в себе прессеть данных для создания нативных бибилотек
-                                 * @license MIT
                                  * @author Astecom
                                  */
 
@@ -11644,7 +11625,6 @@ System.register(
                                 /**
                                  * @file src/utils.js
                                  * @description Содержит в себе набор утилит, которые нужны много где, и их нельзя отнести к какой-либо конкретной группе
-                                 * @license MIT
                                  * @author Astecom
                                  */
 

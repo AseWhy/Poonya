@@ -186,7 +186,7 @@ class Context extends iContext {
     import(libraries, throw_error){
         if (libraries != null) {
             // Корневой слой
-            this.levels.push(new Heap(this, null));
+            this.addLevel();
 
             for (let i = 0, leng = libraries.length, target; i < leng; i++) {
                 if (libraries[i] instanceof PoonyaStaticLibrary && !this._lib_cache.includes(libraries[i].namespace)) {
@@ -256,21 +256,34 @@ class Context extends iContext {
      * @public
      */
     addLevel(level) {
+        let seed = -0x1;
+
         if (level != null) {
-            if (level instanceof Heap) this.levels.push(level);
-            else throw new Error('The level for the context must be heap, or indexed by the heap');
+            if (level instanceof Heap) {
+                seed = this.levels.push(level) - 1;
+            } else 
+                throw new Error('The level for the context must be heap, or indexed by the heap');
         } else {
-            this.levels.push(new Heap(this, null));
+            seed = this.levels.push(new Heap(this, null)) - 1;
         }
+
+        return seed;
     }
 
     /**
-     * Выходит из текущего контекста
+     * Выходит из текущей области памяти
+     * 
+     * @param {?Number} index позиция, области памти которую необходимо удалить.
+     * @param {Boolean} trnc если `true` то уддаляет все уровни выше.
      * @method
      * @public
      */
-    popLevel() {
-        this.levels.pop();
+    popLevel(index, trnc = true) {
+        if(index != null) {
+            this.levels.splice(index, trnc ? Infinity : 1);
+        } else {
+            this.levels.pop();
+        }
     }
 
     /**
