@@ -6,13 +6,13 @@
 
 "use strict";
 
-const lexer = require('../lexer/lexer');
-const { parser } = require('../parser');
 const { GetFieldOfNullException, IsNotAConstructorException } = require('./exceptions')
     , { GET, SERVICE, IS } = require('./static')
     , { Cast, toBytes } = require('../utils.js')
-    , { iContext, iPoonyaPrototype } = require('./interfaces')
+    , { iContext, iPoonyaPrototype, iPathData } = require('./interfaces')
     , { PoonyaStaticLibrary } = require('../importer.js')
+    , { parser } = require('../parser')
+    ,   lexer = require('../lexer/lexer')
     ,   NativeFunction = require('./data/NativeFunction')
     ,   ExpressionGroup = require('./excecution/expression/ExpressionGroup')
     ,   PoonyaObject = require('./data/PoonyaObject')
@@ -251,7 +251,8 @@ class Context extends iContext {
     /**
      * Добавляет уровень в текущий контекст
      * 
-     * @param {Heap} level уровень который необходимо добавить
+     * @param {?Heap} level уровень который необходимо добавить
+     * @returns {Number} позиция области памяти в птекущем контексте
      * @method
      * @public
      */
@@ -377,11 +378,7 @@ class Context extends iContext {
      * @param {Function} throw_error Фукцния которая выбрасывает ошибку(необходимо в случае возникновения ошибки)
      * @param {Boolean} return_full_info Возвращать полную информацию о переменной, включая родительский объект(если имеется)
      *
-     * @returns {?ParserData|?{
-     *  instance: ParserData,
-     *  parent: PoonyaObject|iPoonyaPrototype,
-     *  index: Number
-     * }} если по заданому пути существует значение вернет его, если нет то вернет null
+     * @returns {ParserData|iPathData|null} если по заданому пути существует значение вернет его, если нет то вернет null
      * @method
      * @public
      */
@@ -412,12 +409,12 @@ class Context extends iContext {
 
         if (type == null || instance instanceof type)
             if (return_full_info) {
-                return {
+                return Object.assign(new iPathData(), {
                     instance,
                     parent,
                     index,
                     flags
-                };
+                });
             } else {
                 return instance;
             }

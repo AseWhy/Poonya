@@ -6379,8 +6379,25 @@ System.register(
                                      */
                                     constructor() {}
                                 }
+                                /**
+                                 * @lends iPathData
+                                 * @interface iPathData
+                                 */
+
+                                class iPathData {
+                                    /**
+                                     * Интерфейс описывающий возвращаемые контекстом данные при поиске пути
+                                     *
+                                     * @constructs iPathData
+                                     * @property {ParserData} instance найденое значение
+                                     * @property {PoonyaObject|iPoonyaPrototype} parent родительский объект, если это поле объекта
+                                     * @property {Number} index глубина поиска
+                                     */
+                                    constructor() {}
+                                }
 
                                 module.exports.iContext = iContext;
+                                module.exports.iPathData = iPathData;
                                 module.exports.iPoonyaObject = iPoonyaObject;
                                 module.exports.iPoonyaPrototype = iPoonyaPrototype;
                                 module.exports.iPoonyaConstructsData = iPoonyaConstructsData;
@@ -6572,10 +6589,6 @@ System.register(
                                  * @author Astecom
                                  */
 
-                                const lexer = __webpack_require__(513);
-
-                                const { parser } = __webpack_require__(909);
-
                                 const {
                                         GetFieldOfNullException,
                                         IsNotAConstructorException,
@@ -6589,10 +6602,13 @@ System.register(
                                     {
                                         iContext,
                                         iPoonyaPrototype,
+                                        iPathData,
                                     } = __webpack_require__(779),
                                     {
                                         PoonyaStaticLibrary,
                                     } = __webpack_require__(239),
+                                    { parser } = __webpack_require__(909),
+                                    lexer = __webpack_require__(513),
                                     NativeFunction = __webpack_require__(492),
                                     ExpressionGroup = __webpack_require__(606),
                                     PoonyaObject = __webpack_require__(940),
@@ -6922,7 +6938,8 @@ System.register(
                                     /**
                                      * Добавляет уровень в текущий контекст
                                      *
-                                     * @param {Heap} level уровень который необходимо добавить
+                                     * @param {?Heap} level уровень который необходимо добавить
+                                     * @returns {Number} позиция области памяти в птекущем контексте
                                      * @method
                                      * @public
                                      */
@@ -7082,11 +7099,7 @@ System.register(
                                      * @param {Function} throw_error Фукцния которая выбрасывает ошибку(необходимо в случае возникновения ошибки)
                                      * @param {Boolean} return_full_info Возвращать полную информацию о переменной, включая родительский объект(если имеется)
                                      *
-                                     * @returns {?ParserData|?{
-                                     *  instance: ParserData,
-                                     *  parent: PoonyaObject|iPoonyaPrototype,
-                                     *  index: Number
-                                     * }} если по заданому пути существует значение вернет его, если нет то вернет null
+                                     * @returns {ParserData|iPathData|null} если по заданому пути существует значение вернет его, если нет то вернет null
                                      * @method
                                      * @public
                                      */
@@ -7157,12 +7170,15 @@ System.register(
                                             instance instanceof type
                                         ) {
                                             if (return_full_info) {
-                                                return {
-                                                    instance,
-                                                    parent,
-                                                    index,
-                                                    flags,
-                                                };
+                                                return Object.assign(
+                                                    new iPathData(),
+                                                    {
+                                                        instance,
+                                                        parent,
+                                                        index,
+                                                        flags,
+                                                    }
+                                                );
                                             } else {
                                                 return instance;
                                             }

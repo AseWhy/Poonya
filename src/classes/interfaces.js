@@ -30,7 +30,24 @@ class iPoonyaConstructsData {
     constructor(){}
 }
 
+/**
+ * @lends iPathData
+ * @interface iPathData
+ */
+class iPathData {
+    /**
+     * Интерфейс описывающий возвращаемые контекстом данные при поиске пути
+     * 
+     * @constructs iPathData
+     * @property {ParserData} instance найденое значение
+     * @property {PoonyaObject|iPoonyaPrototype} parent родительский объект, если это поле объекта
+     * @property {Number} index глубина поиска
+     */
+    constructor(){}
+}
+
 module.exports.iContext = iContext;
+module.exports.iPathData = iPathData;
 module.exports.iPoonyaObject = iPoonyaObject;
 module.exports.iPoonyaPrototype = iPoonyaPrototype;
 module.exports.iPoonyaConstructsData = iPoonyaConstructsData;
