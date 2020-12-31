@@ -1,8 +1,8 @@
 import { EventEmitter } from 'events';
 import { Writable } from 'stream';
-import { ImportDir as _ImportDir, ImportFile as _ImportFile } from './src/importer';
-import { iPoonyaConstructsData } from './src/classes/interfaces';
-import { Heap, Context } from './src/classes/storage';
+import { ImportDir as _ImportDir, ImportFile as _ImportFile } from '../src/importer';
+import { iPoonyaConstructsData } from '../src/classes/interfaces';
+import { Heap, Context } from '../src/classes/storage';
 
 export interface iInputData {
     raw: String;
@@ -46,7 +46,7 @@ export class ExpressionPattern extends CodeEmitter{
     }
 }
 
-export function createContext(data: any, ...{libs: []} : {libs: String | Array<String>}) : Promise<Context>{ return new Promise(res => {}) };
+export function createContext(data: any, libs: String | Array<String>) : Promise<Context>{ return new Promise(res => {}) };
 export function patternCreator(Pattern: CodeEmitter, ...args: any) : Promise<iPoonyaConstructsData> { return new Promise(res => {}) };
 export const ImportDir = _ImportDir;
 export const ImportFile = _ImportFile;

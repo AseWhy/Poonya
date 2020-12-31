@@ -19,6 +19,7 @@ module.exports = (env) => {
     env.minimize = env && env.minimize == 'true' ? true : false;
     env.path = (env && env.platform != 'node' ? 'poonya.browser.' + env.type + '.bundle' : 'poonya.node.bundle') + (env.minimize ? '.min' : '') + '.js';
     env.intname = path.basename(env.path, '.js') + '.ts';
+    env.intsource = './tsinterfaces/poonya.' + env.platform + '.interface.ts';
 
     l(
         '\n',
@@ -63,7 +64,10 @@ module.exports = (env) => {
         plugins: [
             new CopyPlugin({
                 patterns: [
-                    { from: './poonya.ts', to: env.intname }
+                    { 
+                        from: env.intsource,
+                        to: env.intname
+                    }
                 ]
             })
         ],
@@ -81,14 +85,17 @@ module.exports = (env) => {
 
                         {
                             loader: require.resolve('webpack-preprocessor-loader'),
+
                             options: {
                                 debug: process.env.NODE_ENV !== 'product',
                                 directives: {
                                     secret: false
                                 },
+
                                 params: {
                                     platform: env.platform
                                 },
+
                                 verbose: false,
                             },
                         }
