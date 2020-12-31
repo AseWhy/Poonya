@@ -1,7 +1,6 @@
 /**
  * @file src/storage.js
  * @description Содержит в себе напиор классов и функций для управления динамической памятью.
- * @license MIT
  * @author Astecom
  */
 

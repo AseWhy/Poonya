@@ -2,7 +2,6 @@
  * @file src/classes/excecution/statements/SetStatement.js
  * @description Содержит в себе оператор set, который используется для устновки значения в области памяти
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

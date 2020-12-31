@@ -1,7 +1,6 @@
 /**
  * @file src/interfaces.js
  * @description Тут собраны интерфейсы, для боллее удобного последующего сравнения объектов
- * @license MIT
  * @author Astecom
  */
 

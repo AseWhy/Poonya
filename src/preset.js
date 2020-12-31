@@ -1,7 +1,6 @@
 /**
  * @file src/preset.js
  * @description Содержит в себе прессеть данных для создания нативных бибилотек
- * @license MIT
  * @author Astecom
  */
 

@@ -2,7 +2,6 @@
  * @file src/classes/data/PoonyaNumber.js
  * @description Cодержит класс числа Poonya
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

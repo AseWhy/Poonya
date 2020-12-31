@@ -2,7 +2,6 @@
  * @file src/classes/excecution/expression/ExpressionGroup.js
  * @description Cодержит группу выражений, которая выполняется при выполнении выражения
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

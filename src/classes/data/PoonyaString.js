@@ -2,7 +2,6 @@
  * @file src/classes/data/PoonyaString.js
  * @description Cодержит класс строки Poonya
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

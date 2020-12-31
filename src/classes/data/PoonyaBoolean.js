@@ -2,7 +2,6 @@
  * @file src/classes/data/PoonyaBoolean.js
  * @description Cодержит класс булевого значения Poonya
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

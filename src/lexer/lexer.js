@@ -1,7 +1,6 @@
 /**
  * @file src/lexer.js
  * @description Содержит в себе лексер, который преобразует строку в набор токенов.
- * @license MIT
  * @author Astecom
  */
 

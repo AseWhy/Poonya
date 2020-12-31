@@ -2,7 +2,6 @@
  * @file src/classes/excecution/statements/WhileStatement.js
  * @description Содержит в себе инструкцию while, который используется для создания цикличных условных операций
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

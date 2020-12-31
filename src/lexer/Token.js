@@ -1,7 +1,6 @@
 /**
  * @file src/Token.js
  * @description Содержит в себе класс вхождение лексера, массив которых получается на выходе из лексера
- * @license MIT
  * @author Astecom
  */
 

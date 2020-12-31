@@ -1,8 +1,8 @@
 /**
  * @author Astecom
- * @license MIT
  * @version 0.4.5
  * @see {@link https://github.com/AseWhy/Poonya|GitHub}
+ * @license MIT
  * @namespace Poonya
  * @description A templating engine used to create templates and then render them
  * 

@@ -2,7 +2,6 @@
  * @file src/classes/data/PoonyaInteger.js
  * @description Cодержит класс целого числа Poonya
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

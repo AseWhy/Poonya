@@ -2,7 +2,6 @@
  * @file src/classes/excecution/expression/TernarOperator.js
  * @description Содержит в себе тернарный оператор, который сериализуется как <condition> ? <v1> : <v2>
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

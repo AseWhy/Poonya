@@ -2,7 +2,6 @@
  * @file src/classes/excecution/statements/IfStatement.js
  * @description Содержит в себе оператор if, который используется для создания условных операций
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

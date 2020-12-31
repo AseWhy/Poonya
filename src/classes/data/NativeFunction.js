@@ -2,7 +2,6 @@
  * @file src/classes/data/NativeFunction.js
  * @description Содержит в себе объект нативной функции, которая так-же вызывается при вызове функции
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

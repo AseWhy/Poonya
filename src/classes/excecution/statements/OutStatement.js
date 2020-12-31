@@ -2,7 +2,6 @@
  * @file src/classes/excecution/statements/OutStatement.js
  * @description Содержит в себе оператор вывода, который используется для вывода информации из шаблона
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

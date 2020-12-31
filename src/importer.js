@@ -1,7 +1,6 @@
 /**
  * @file src/importer.js
  * @description Содержит в себе набор фнукций, которые необходимы для импорта нативных, написанных на js в нашем случае, библиотека в память poonya
- * @license MIT
  * @author Astecom
  */
 

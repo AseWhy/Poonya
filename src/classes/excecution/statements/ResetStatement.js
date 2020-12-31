@@ -2,7 +2,6 @@
  * @file src/classes/excecution/statements/ResetStatement.js
  * @description Содержит в себе оператор обновления значения переменной
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

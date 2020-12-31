@@ -2,7 +2,6 @@
  * @file src/classes/exceptions.js
  * @description Тут я сгруппировал всевозможные исклюения
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

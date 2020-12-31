@@ -2,7 +2,6 @@
  * @file src/classes/excecution/statements/SequenceGroup.js
  * @description Содержит в себе дочернуюю исполняемую группу, которая, при нормальных услвиях, является чустью главной исполняемой группы.
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

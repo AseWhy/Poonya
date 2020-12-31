@@ -2,7 +2,6 @@
  * @file src/classes/data/PoonyaArray.js
  * @description Cодержит класс массива Poonya
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

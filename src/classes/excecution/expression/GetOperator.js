@@ -2,7 +2,6 @@
  * @file src/classes/excecution/expression/GetOperator.js
  * @description Содержит в себе оператор получения значения по индексам
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

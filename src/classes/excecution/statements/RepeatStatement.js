@@ -2,7 +2,6 @@
  * @file src/classes/excecution/statements/RepeatStatement.js
  * @description Содержит в себе оператор repeat, который используется для создания цикличных конечных конструкций
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

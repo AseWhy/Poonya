@@ -1,7 +1,6 @@
 /**
  * @file src/static.js
  * @description Содержит в себе набор статических полей
- * @license MIT
  * @author Astecom
  */
 

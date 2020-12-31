@@ -2,7 +2,6 @@
  * @file src/classes/data/PoonyaNull.js
  * @description Cодержит класс null объекта Poonya
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

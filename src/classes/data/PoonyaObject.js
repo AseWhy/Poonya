@@ -2,7 +2,6 @@
  * @file src/classes/data/PoonyaObject.js
  * @description Cодержит класс объекта Poonya
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

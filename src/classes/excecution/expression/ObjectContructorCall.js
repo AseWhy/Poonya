@@ -4,7 +4,6 @@
  *  Object ->
  *      field -> value...
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

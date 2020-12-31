@@ -2,7 +2,6 @@
  * @file src/classes/data/PoonyaPrototype.js
  * @description Cодержит объект прототипа объекта Poonya
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

@@ -2,7 +2,6 @@
  * @file src/classes/excecution/expression/FunctionCall.js
  * @description Содержит в себе вхождение вызовва функции
  * @author Astecom
- * @license MIT
  */
 
 "use strict";

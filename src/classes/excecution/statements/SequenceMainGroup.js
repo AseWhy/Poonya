@@ -2,7 +2,6 @@
  * @file src/classes/excecution/statements/SequenceMainGroup.js
  * @description Содержит в себе оператор главную сполняемую группу, т.е. группу которая явлся родетелем дочерних исполняемых групп, при нормальных условиях.
  * @author Astecom
- * @license MIT
  */
 
 "use strict";
