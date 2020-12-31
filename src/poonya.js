@@ -73,6 +73,7 @@
 
 "use strict";
 
+// #!if platform === 'browser'
 /*~
 if (!window.setImmediate)
     window.setImmediate = (function() {
@@ -101,6 +102,7 @@ if (!window.setImmediate)
         };
     }());
 */
+// #!endif
 
 // #!secret
 console.warn('Attention! You use raw version of poonya! Please, use poonya.browser.bundle.js or poonya.node.bundle.js for correct work it.');

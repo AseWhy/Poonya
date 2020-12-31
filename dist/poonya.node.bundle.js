@@ -7056,37 +7056,6 @@ module.exports = /******/ (() => {
              */
             // This file is compiled specifically for the node runtime, if you need a browser version use poonya.browser.bundle.js
 
-            /*LIQUID*/
-
-            if (!window.setImmediate)
-                window.setImmediate = (function () {
-                    var head = {},
-                        tail = head;
-                    var ID = Math.random();
-
-                    function onmessage(e) {
-                        if (e.data != ID) return;
-                        head = head.next;
-                        var func = head.func;
-                        delete head.func;
-                        func();
-                    }
-
-                    if (window.addEventListener) {
-                        window.addEventListener('message', onmessage);
-                    } else {
-                        window.attachEvent('onmessage', onmessage);
-                    }
-
-                    return function (func) {
-                        tail = tail.next = {
-                            func: func,
-                        };
-                        window.postMessage(ID, '*');
-                    };
-                })();
-            /*LIQUID-END*/
-
             const { EventEmitter } = __webpack_require__(614),
                 { readFile } = __webpack_require__(747),
                 { Stream } = __webpack_require__(413),
