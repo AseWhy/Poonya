@@ -37,7 +37,8 @@ class GetOperator extends Operand {
      *
      * @param {iContext} context Контекст выполнения
      * @param {PoonyaOutputStream} out вывод шаблонизатора
-     * @param {Function} throw_error Вызывается при ошибке
+     * @param {Function} reject Вызывается при ошибке
+     * @param {Function} resolve Вызывается при успешном получении значения
      *
      * @returns {Any} В зависимости от типа запрашиваемых данных
      * @throws {ParserException}
@@ -45,19 +46,19 @@ class GetOperator extends Operand {
      * @public
      * @method
      */
-    result(context, out, throw_error) {
-        const data = context.getByPath(this.query_stack, this.position, null, throw_error, true);
-
-        if (data.instance != null)
-            if(data.instance instanceof NativeFunction)
-                if((data.flags & FIELDFLAGS.PROPERTY) != 0)
-                    return data.instance.result(data.parent, [], context, out, this.position, throw_error);
+    result(context, out, reject, resolve) {
+        context.getByPath(this.query_stack, this.position, null, reject, true, result => {
+            if (result.instance != null)
+                if(result.instance instanceof NativeFunction)
+                    if((result.flags & FIELDFLAGS.PROPERTY) != 0)
+                        return result.instance.result(result.parent, [], context, out, this.position, reject, resolve);
+                    else
+                        return context.createObject(`[NativeCode:${result.instance.name}]`, this.position, SERVICE.CONSTRUCTORS.STRING, reject, new Array(), resolve);
                 else
-                    return context.createObject(`[NativeCode:${data.instance.name}]`, this.position, SERVICE.CONSTRUCTORS.STRING, throw_error);
+                    resolve(result.instance);
             else
-                return data.instance;
-        else
-            return context.createObject(null, this.position, SERVICE.CONSTRUCTORS.NULL, throw_error);
+                context.createObject(null, this.position, SERVICE.CONSTRUCTORS.NULL, reject, new Array(), resolve);
+        });
     }
 
     /**

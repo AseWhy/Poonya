@@ -39,19 +39,30 @@ class SequenceGroup {
      *
      * @param {iContext} context Контекст выполнения
      * @param {PoonyaOutputStream} out вывод шаблонизатора
-     * @param {Function} throw_error Вызывается при ошибке
+     * @param {Function} reject Вызывается при ошибке
+     * @param {Function} resolve функция возврата результата
      *
      * @public
      * @method
      */
-    result(context, out, throw_error, level_ops = true) {
-        if (level_ops) context.addLevel();
+    result(context, out, reject, resolve, level_ops = true) {
+        let _ = this, i = 0, leng = _.Sequence.length;
 
-        for (let i = 0, leng = this.Sequence.length; i < leng; i++) {
-            this.Sequence[i].result(context, out, throw_error);
-        }
+        if (level_ops)
+            context.addLevel();
 
-        if (level_ops) context.popLevel();
+        (function tick(result){
+            if(i >= leng){
+                if (level_ops)
+                    context.popLevel();
+
+                resolve(result);
+
+                return;
+            }
+
+            _.Sequence[i++].result(context, out, reject, tick);
+        })();
     }
 
     /**

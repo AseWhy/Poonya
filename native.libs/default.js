@@ -145,10 +145,14 @@ class PoonyaObjectPrototype extends PoonyaPrototype {
     assign(service, ...args){
         for(let i = 0, leng = args.length; i < leng; i++)
             this.append(args[i]);
+
+        return null;
     }
 
     set(service, key, value){
         this.set(service.context, key, value);
+
+        return null;
     }
 
     has(service, key){
@@ -161,6 +165,8 @@ class PoonyaObjectPrototype extends PoonyaPrototype {
 
     remove(service, key){
         this.delete(key);
+
+        return null;
     }
 
     create(){
@@ -203,7 +209,8 @@ class PoonyaStringPrototype extends PoonyaPrototype {
     charAt(service, index){
         if(index != null) {
             return this.data.charAt(index);
-        } else return null;
+        } else
+            return null;
     }
 
     length() {
@@ -232,7 +239,7 @@ class PoonyaArrayPrototype extends PoonyaPrototype {
 
     includes(service, target){
         for(let field of this.fields){
-            if(field.value.result(service.context, null, service.throw_error) == target)
+            if(field.value.result(service.context, null, service.reject) == target)
                 return true;
         }
 
@@ -241,10 +248,10 @@ class PoonyaArrayPrototype extends PoonyaPrototype {
 
     remove(service, from, to){
         if(typeof from != 'number' || isNaN(from))
-            service.throw_error(service.position, new Exceptions.PoonyaException('From must have a number type'));
+            service.reject(service.position, new Exceptions.PoonyaException('From must have a number type'));
 
         if(typeof to != 'number' || isNaN(to))
-            service.throw_error(service.position, new Exceptions.PoonyaException('To must have a number type'));
+            service.reject(service.position, new Exceptions.PoonyaException('To must have a number type'));
 
         const delta = to - from;
 
@@ -253,11 +260,13 @@ class PoonyaArrayPrototype extends PoonyaPrototype {
 
             from += delta;
         }
+
+        return null;
     }
 
     indexOf(service, target){
         for(let [key, value] of this.fields){
-            if(value.result(service.context, null, service.throw_error) == target)
+            if(value.result(service.context, null, service.reject) == target)
                 return key;
         }
         
@@ -270,6 +279,8 @@ class PoonyaArrayPrototype extends PoonyaPrototype {
 
     append(service, value){
         this.push(value);
+
+        return null;
     }
 
     concat(service, ...args){
@@ -278,14 +289,16 @@ class PoonyaArrayPrototype extends PoonyaPrototype {
                 this.push(args[i][j]);
             }
         }
+        
+        return null;
     }
 
     slice(service, from, to){
         if(typeof from != 'number' || isNaN(from))
-            service.throw_error(service.position, new Exceptions.PoonyaException('From must have a number type'));
+            service.reject(service.position, new Exceptions.PoonyaException('From must have a number type'));
 
         if(typeof to != 'number' || isNaN(to))
-            service.throw_error(service.position, new Exceptions.PoonyaException('To must have a number type'));
+            service.reject(service.position, new Exceptions.PoonyaException('To must have a number type'));
 
         const delta = to - from
             , out = new Array();
@@ -325,6 +338,7 @@ new class DefaultStaticLibrary extends PoonyaStaticLibrary {
         this.addField('tab', '\t', FIELDFLAGS.CONSTANT);
 
         this.addField('log', this.log, FIELDFLAGS.CONSTANT);
+        this.addField('wait', this.wait, FIELDFLAGS.CONSTANT);
 
         this.addLib('default.numbers');
         this.addLib('default.regexp');
@@ -332,7 +346,13 @@ new class DefaultStaticLibrary extends PoonyaStaticLibrary {
         this.addLib('default.math');
     }
 
+    wait(service, milis){
+        setTimeout(service.resolve, milis);
+    }
+
     log(service, ...args){
         console.log(...args);
+
+        return null;
     }
 };

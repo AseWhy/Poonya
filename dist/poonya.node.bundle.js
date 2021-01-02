@@ -188,7 +188,7 @@ module.exports = /******/ (() => {
                  * @param {Array<Any>} args аргументы функции
                  * @param {iContext} context Контекст выполнения фукнции
                  * @param {iPoonyaObject} thisArgs родительский объект
-                 * @param {Function} throw_error Метод выбрасывания ошибок
+                 * @param {Function} reject Метод выбрасывания ошибок
                  * @param {Number} call_pos Позиция из которой происходит вызов
                  *
                  * @returns {Any} в зависимости от результата выполнения нативной функции
@@ -200,123 +200,199 @@ module.exports = /******/ (() => {
                     context,
                     out,
                     call_pos,
-                    throw_error
+                    reject,
+                    resolve
                 ) {
-                    let data,
-                        args_f = new Array();
+                    let _ = this,
+                        args_f = new Array(),
+                        resolve_r = true,
+                        argc = args.length,
+                        i = 0;
 
-                    for (let i = 0, leng = args.length; i < leng; i++) {
-                        args_f.push(
-                            args[i]
-                                .result(context, out, throw_error) // Получаем значение poonya
-                                .result(context, out, throw_error) // Преобразуем в нативное значение
-                        );
-                    }
+                    function c_resolve(data) {
+                        if (resolve_r) resolve_r = false;
+                        else return;
 
-                    try {
-                        data = this.target.call(
-                            thisArg,
-                            {
-                                args,
-                                context,
-                                throw_error,
-                                position: call_pos,
-                            },
-                            ...args_f
-                        );
-                    } catch (e) {
-                        throw_error(
-                            call_pos,
-                            new NativeFunctionExecutionError(
-                                this.target.name,
-                                e.stack
-                            )
-                        );
-                    }
+                        switch (typeof data) {
+                            case 'bigint':
+                                context.createObject(
+                                    data,
+                                    -1,
+                                    SERVICE.CONSTRUCTORS.INTEGER,
+                                    null,
+                                    new Array(),
+                                    resolve
+                                );
+                                break;
 
-                    switch (typeof data) {
-                        case 'bigint':
-                            return context.createObject(
-                                data,
-                                -1,
-                                SERVICE.CONSTRUCTORS.INTEGER,
-                                null
-                            );
+                            case 'number':
+                                context.createObject(
+                                    data,
+                                    -1,
+                                    SERVICE.CONSTRUCTORS.NUMBER,
+                                    null,
+                                    new Array(),
+                                    resolve
+                                );
+                                break;
 
-                        case 'number':
-                            return context.createObject(
-                                data,
-                                -1,
-                                SERVICE.CONSTRUCTORS.NUMBER,
-                                null
-                            );
+                            case 'string':
+                                context.createObject(
+                                    data,
+                                    -1,
+                                    SERVICE.CONSTRUCTORS.STRING,
+                                    null,
+                                    new Array(),
+                                    resolve
+                                );
+                                break;
 
-                        case 'string':
-                            return context.createObject(
-                                data,
-                                -1,
-                                SERVICE.CONSTRUCTORS.STRING,
-                                null
-                            );
+                            case 'symbol':
+                                context.createObject(
+                                    Symbol.keyFor(data),
+                                    -1,
+                                    SERVICE.CONSTRUCTORS.STRING,
+                                    null,
+                                    new Array(),
+                                    resolve
+                                );
+                                break;
 
-                        case 'symbol':
-                            return context.createObject(
-                                Symbol.keyFor(data),
-                                -1,
-                                SERVICE.CONSTRUCTORS.STRING,
-                                null
-                            );
+                            case 'boolean':
+                                context.createObject(
+                                    data,
+                                    -1,
+                                    SERVICE.CONSTRUCTORS.BOOLEAN,
+                                    null,
+                                    new Array(),
+                                    resolve
+                                );
+                                break;
 
-                        case 'boolean':
-                            return context.createObject(
-                                data,
-                                -1,
-                                SERVICE.CONSTRUCTORS.BOOLEAN,
-                                null
-                            );
+                            case 'undefined':
+                                context.createObject(
+                                    data,
+                                    -1,
+                                    SERVICE.CONSTRUCTORS.NULL,
+                                    null,
+                                    new Array(),
+                                    resolve
+                                );
+                                break;
 
-                        case 'undefined':
-                            return context.createObject(
-                                data,
-                                -1,
-                                SERVICE.CONSTRUCTORS.NULL,
-                                null
-                            );
-
-                        case 'object':
-                            switch (true) {
-                                case data === null:
-                                    return context.createObject(
-                                        data,
-                                        -1,
-                                        SERVICE.CONSTRUCTORS.NULL,
-                                        null
-                                    );
-
-                                case data instanceof iPoonyaObject:
-                                case data instanceof Operand:
-                                case data instanceof iPoonyaPrototype:
-                                    return data;
-
-                                default:
-                                    if (Array.isArray(data))
-                                        return context.createObject(
+                            case 'object':
+                                switch (true) {
+                                    case data === null:
+                                        context.createObject(
                                             data,
                                             -1,
-                                            SERVICE.CONSTRUCTORS.ARRAY,
-                                            null
+                                            SERVICE.CONSTRUCTORS.NULL,
+                                            null,
+                                            new Array(),
+                                            resolve
                                         );
-                                    else
-                                        return context.createObject(
-                                            data,
-                                            -1,
-                                            SERVICE.CONSTRUCTORS.OBJECT,
-                                            null
-                                        );
-                            }
+                                        break;
 
-                        case 'function':
-                            return new NativeFunction(data);
+                                    case data instanceof iPoonyaPrototype ||
+                                        data instanceof iPoonyaObject ||
+                                        data instanceof Operand:
+                                        resolve(data);
+                                        break;
+
+                                    default:
+                                        if (Array.isArray(data))
+                                            context.createObject(
+                                                data,
+                                                -1,
+                                                SERVICE.CONSTRUCTORS.ARRAY,
+                                                null,
+                                                new Array(),
+                                                resolve
+                                            );
+                                        else
+                                            context.createObject(
+                                                data,
+                                                -1,
+                                                SERVICE.CONSTRUCTORS.OBJECT,
+                                                null,
+                                                new Array(),
+                                                resolve
+                                            );
+                                }
+
+                                break;
+
+                            case 'function':
+                                resolve(new NativeFunction(data));
+                                break;
+                        }
+                    }
+
+                    function start() {
+                        let data;
+
+                        try {
+                            data = _.target.call(
+                                thisArg,
+                                {
+                                    args,
+                                    context,
+                                    reject,
+                                    resolve: c_resolve,
+                                    position: call_pos,
+                                },
+                                ...args_f
+                            );
+                        } catch (err) {
+                            reject(
+                                call_pos,
+                                new NativeFunctionExecutionError(
+                                    _.target.name,
+                                    err instanceof Error
+                                        ? err.stack
+                                        : new Error().stack
+                                )
+                            );
+                        }
+
+                        if (data instanceof Promise) {
+                            data.catch((err) =>
+                                reject(
+                                    call_pos,
+                                    new NativeFunctionExecutionError(
+                                        _.target.name,
+                                        err instanceof Error
+                                            ? err.stack
+                                            : new Error().stack
+                                    )
+                                )
+                            ).then(c_resolve);
+                        } else if (data !== undefined) {
+                            c_resolve(data);
+                        }
+                    }
+
+                    if (argc != 0) {
+                        (function next() {
+                            args[i].result(context, out, reject, (p_result) => {
+                                p_result.result(
+                                    context,
+                                    out,
+                                    reject,
+                                    (d_result) => {
+                                        args_f[i] = d_result;
+
+                                        if (++i >= argc) {
+                                            start();
+                                        } else {
+                                            next();
+                                        }
+                                    }
+                                );
+                            });
+                        })();
+                    } else {
+                        start();
                     }
                 }
             }
@@ -418,7 +494,7 @@ module.exports = /******/ (() => {
                  * @public
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject, resolve) {
                     let output = new Array(this.fields.size),
                         data;
 
@@ -428,18 +504,16 @@ module.exports = /******/ (() => {
                             if (value instanceof NativeFunction)
                                 output[key] =
                                     value != null ? value.target : null;
-                            else
-                                output[key] =
-                                    value != null
-                                        ? value.result(
-                                              context,
-                                              out,
-                                              throw_error
-                                          )
-                                        : null;
+                            else if (value != null)
+                                value.result(
+                                    context,
+                                    out,
+                                    reject,
+                                    (result) => (output[key] = result)
+                                );
                     }
 
-                    return output;
+                    resolve(output);
                 }
                 /**
                  * Сериализует массив в простое значение.
@@ -538,8 +612,8 @@ module.exports = /******/ (() => {
                  * @public
                  */
 
-                result() {
-                    return this.data;
+                result(context, out, reject, resolve) {
+                    resolve(this.data);
                 }
                 /**
                  * Сериализует булевое значение в javascript boolean
@@ -638,8 +712,8 @@ module.exports = /******/ (() => {
                  * @public
                  */
 
-                result() {
-                    return this.data;
+                result(context, out, reject, resolve) {
+                    resolve(this.data);
                 }
                 /**
                  * Сериализует челое число в javascript bigint
@@ -734,8 +808,8 @@ module.exports = /******/ (() => {
                  * @public
                  */
 
-                result() {
-                    return null;
+                result(context, out, reject, resolve) {
+                    resolve(null);
                 }
                 /**
                  * Сериализует null в javascript null
@@ -834,8 +908,8 @@ module.exports = /******/ (() => {
                  * @public
                  */
 
-                result() {
-                    return this.data;
+                result(context, out, reject, resolve) {
+                    resolve(this.data);
                 }
                 /**
                  * Сериализует число в javascript число
@@ -1074,16 +1148,16 @@ module.exports = /******/ (() => {
                  *
                  * @param {iContext} context текущий контекст
                  * @param {Array<String>} out Выходной массив
-                 * @param {Function} throw_error Функция вызывающаяся при ошибках
+                 * @param {Function} reject Функция вызывающаяся при ошибках
                  *
                  * @returns {String}
                  */
 
-                toString(context, out, throw_error) {
+                toString(context, out, reject) {
                     let toString = this.fields.get('toString');
 
                     if (toString != null) {
-                        return toString.result(context, out, throw_error);
+                        return toString.result(context, out, reject);
                     } else {
                         return `[Object${this.prototype.name}]`;
                     }
@@ -1093,12 +1167,12 @@ module.exports = /******/ (() => {
                  *
                  * @param {?iContext} context текущий контекст
                  * @param {?Array<String>} out Выходной массив
-                 * @param {?Function} throw_error Функция вызывающаяся при ошибках
+                 * @param {?Function} reject Функция вызывающаяся при ошибках
                  * @method
                  * @public
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject, resolve) {
                     let output = new Object(),
                         data;
 
@@ -1108,18 +1182,19 @@ module.exports = /******/ (() => {
                             if (value instanceof NativeFunction)
                                 output[key] =
                                     value != null ? value.target : null;
-                            else
-                                output[key] =
-                                    value != null
-                                        ? value.result(
-                                              context,
-                                              out,
-                                              throw_error
-                                          )
-                                        : null;
+                            ///
+                            /// Поскольку асинхронными, в poonya, могут быть только нативные функции, то значения оберторк можно получить синхрнно
+                            ///
+                            else if (value != null)
+                                value.result(
+                                    context,
+                                    out,
+                                    reject,
+                                    (result) => (output[key] = result)
+                                );
                     }
 
-                    return output;
+                    resolve(output);
                 }
                 /**
                  * Сериализует объект в простое значение.
@@ -1433,8 +1508,8 @@ module.exports = /******/ (() => {
                  * @public
                  */
 
-                result() {
-                    return this.data;
+                result(context, out, reject, resolve) {
+                    resolve(this.data);
                 }
                 /**
                  * Сериализует строку в javascript строку
@@ -1520,7 +1595,7 @@ module.exports = /******/ (() => {
                  * Добавляет вхождение в выражение
                  *
                  * @param {Token} entry Выхождение, которое нужно добавить
-                 * @param {Function} throw_error Функция выбрасывания ошибок
+                 * @param {Function} reject Функция выбрасывания ошибок
                  *
                  * @throws {Exceptions.TheSequenceException}
                  *
@@ -1528,7 +1603,7 @@ module.exports = /******/ (() => {
                  * @method
                  */
 
-                append(entry, throw_error) {
+                append(entry, reject) {
                     let current;
 
                     switch (entry.type) {
@@ -1588,7 +1663,7 @@ module.exports = /******/ (() => {
                             )
                                 current = entry;
                             else
-                                throw_error(
+                                reject(
                                     entry.position,
                                     new UnableToRecognizeTypeException(
                                         entry.type
@@ -1606,7 +1681,7 @@ module.exports = /******/ (() => {
                                 this.data[this.data.length - 1] instanceof
                                     Operand)
                         )
-                            throw_error(
+                            reject(
                                 entry.position,
                                 new TheSequenceException(
                                     current,
@@ -1615,7 +1690,7 @@ module.exports = /******/ (() => {
                             );
                     } else {
                         if (current instanceof Operator)
-                            throw_error(
+                            reject(
                                 entry.position,
                                 new TheSequenceException(
                                     current,
@@ -1629,13 +1704,13 @@ module.exports = /******/ (() => {
                 /**
                  * Окончательно форматирует выражение по всем правилоам алгебры.
                  *
-                 * @param {Function} throw_error Функция выбрасывания ошибок
+                 * @param {Function} reject Функция выбрасывания ошибок
                  *
                  * @public
                  * @method
                  */
 
-                complete(throw_error) {
+                complete(reject) {
                     // Stage 1 => 2 + 2 * 2 => 2 + (2 * 2)
                     if (
                         this.data.filter(
@@ -1659,7 +1734,7 @@ module.exports = /******/ (() => {
                                         stack = new ExpressionGroup(
                                             dump[i + 1].position
                                         );
-                                        this.append(stack, throw_error);
+                                        this.append(stack, reject);
                                         break;
 
                                     case OPERATOR.PLUS:
@@ -1671,7 +1746,7 @@ module.exports = /******/ (() => {
                                     case OPERATOR.AND:
                                         if (!mltexp) break;
                                         mltexp = false;
-                                        stack.append(dump[i], throw_error);
+                                        stack.append(dump[i], reject);
                                         stack.complete();
                                         stack = null;
                                         continue;
@@ -1681,9 +1756,9 @@ module.exports = /******/ (() => {
                                 }
 
                             if (mltexp) {
-                                stack.append(dump[i], throw_error); // Добавляем в суб стек
+                                stack.append(dump[i], reject); // Добавляем в суб стек
                             } else {
-                                this.append(dump[i], throw_error); // Добавляем в основной стек
+                                this.append(dump[i], reject); // Добавляем в основной стек
                             }
                         }
                     } // Stage 2 => a & b => (a) & (b)
@@ -1703,17 +1778,17 @@ module.exports = /******/ (() => {
                                 dump[i].op_p === OPERATOR.AND
                             ) {
                                 stack.complete();
-                                this.append(stack, throw_error);
-                                this.append(dump[i], throw_error);
+                                this.append(stack, reject);
+                                this.append(dump[i], reject);
                                 stack = new ExpressionGroup(dump[i].position);
                                 continue;
                             }
 
-                            stack.append(dump[i], throw_error);
+                            stack.append(dump[i], reject);
                         }
 
                         stack.complete();
-                        this.append(stack, throw_error);
+                        this.append(stack, reject);
                     } // Stage 3 => a | b => (a) | (b)
 
                     if (
@@ -1731,17 +1806,17 @@ module.exports = /******/ (() => {
                                 dump[i].op_p === OPERATOR.OR
                             ) {
                                 stack.complete();
-                                this.append(stack, throw_error);
-                                this.append(dump[i], throw_error);
+                                this.append(stack, reject);
+                                this.append(dump[i], reject);
                                 stack = new ExpressionGroup(dump[i].position);
                                 continue;
                             }
 
-                            stack.append(dump[i], throw_error);
+                            stack.append(dump[i], reject);
                         }
 
                         stack.complete();
-                        this.append(stack, throw_error);
+                        this.append(stack, reject);
                     }
 
                     this.validated = true;
@@ -1751,7 +1826,8 @@ module.exports = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve Вызывается при возврате результата выполнения выражения
                  *
                  * @returns {Any} В зависимости от результатов выполнения выражения
                  * @throws {ParserException}
@@ -1760,80 +1836,82 @@ module.exports = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
-                    let result =
-                        this.data[0] != null
-                            ? this.data[0]
-                                  .result(context, out, throw_error) // Результируем значение функции
-                                  .result(context, out, throw_error) // Результируем значение контейнера
-                            : null;
+                result(context, out, reject, resolve) {
+                    let _ = this,
+                        i = 1,
+                        leng = _.data.length,
+                        result = null;
 
-                    for (
-                        let i = 1, leng = this.data.length, cur;
-                        i < leng;
-                        i += 2
-                    ) {
-                        // Получем значение функции
-                        cur = this.data[i + 1].result(
-                            context,
-                            out,
-                            throw_error
-                        );
+                    function tick() {
+                        // Получем прромежуточное значение
+                        _.data[i + 1].result(context, out, reject, (cur) => {
+                            switch (true) {
+                                case _.data[i].equals(OPERATOR.PLUS):
+                                    result += cur.toRawData();
+                                    break;
 
-                        switch (true) {
-                            case this.data[i].equals(OPERATOR.PLUS):
-                                result += cur.toRawData();
-                                break;
+                                case _.data[i].equals(OPERATOR.MINUS):
+                                    result -= cur.toRawData();
+                                    break;
 
-                            case this.data[i].equals(OPERATOR.MINUS):
-                                result -= cur.toRawData();
-                                break;
+                                case _.data[i].equals(OPERATOR.MULT):
+                                    result *= cur.toRawData();
+                                    break;
 
-                            case this.data[i].equals(OPERATOR.MULT):
-                                result *= cur.toRawData();
-                                break;
+                                case _.data[i].equals(OPERATOR.DIVIDE):
+                                    result /= cur.toRawData();
+                                    break;
 
-                            case this.data[i].equals(OPERATOR.DIVIDE):
-                                result /= cur.toRawData();
-                                break;
+                                case _.data[i].equals(OPERATOR.LARGER):
+                                    result = result > cur.toRawData();
+                                    break;
 
-                            case this.data[i].equals(OPERATOR.LARGER):
-                                result = result > cur.toRawData();
-                                break;
+                                case _.data[i].equals(OPERATOR.LESS):
+                                    result = result < cur.toRawData();
+                                    break;
 
-                            case this.data[i].equals(OPERATOR.LESS):
-                                result = result < cur.toRawData();
-                                break;
+                                case _.data[i].equals(OPERATOR.EQUAL):
+                                    result = result == cur.toRawData();
+                                    break;
 
-                            case this.data[i].equals(OPERATOR.EQUAL):
-                                result = result == cur.toRawData();
-                                break;
+                                case _.data[i].equals(OPERATOR.ELARGER):
+                                    result = result >= cur.toRawData();
+                                    break;
 
-                            case this.data[i].equals(OPERATOR.ELARGER):
-                                result = result >= cur.toRawData();
-                                break;
+                                case _.data[i].equals(OPERATOR.ELESS):
+                                    result = result <= cur.toRawData();
+                                    break;
 
-                            case this.data[i].equals(OPERATOR.ELESS):
-                                result = result <= cur.toRawData();
-                                break;
+                                case _.data[i].equals(OPERATOR.NEQUAL):
+                                    result = result != cur.toRawData();
+                                    break;
 
-                            case this.data[i].equals(OPERATOR.NEQUAL):
-                                result = result != cur.toRawData();
-                                break;
+                                case _.data[i].equals(OPERATOR.AND):
+                                    result = result && cur.toRawData();
+                                    if (!result) return result;
+                                    break;
 
-                            case this.data[i].equals(OPERATOR.AND):
-                                result = result && cur.toRawData();
-                                if (!result) return result;
-                                break;
+                                case _.data[i].equals(OPERATOR.OR):
+                                    result = result || cur.toRawData();
+                                    if (result) return result;
+                                    break;
+                            }
 
-                            case this.data[i].equals(OPERATOR.OR):
-                                result = result || cur.toRawData();
-                                if (result) return result;
-                                break;
-                        }
+                            if ((i += 2) >= leng) {
+                                resolve(Cast(result, context));
+                            } else {
+                                tick();
+                            }
+                        });
                     }
 
-                    return Cast(result, context);
+                    _.data[0].result(context, out, reject, (p_result) => {
+                        p_result.result(context, out, reject, (d_result) => {
+                            result = d_result;
+                            if (_.data.length > 1) tick();
+                            else resolve(Cast(result, context));
+                        });
+                    });
                 }
             }
 
@@ -1887,7 +1965,8 @@ module.exports = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve Вызывается при завершении вызова функции
                  *
                  * @returns {Any} В зависимости от возвращаемых функцией значения
                  * @throws {ParserException}
@@ -1896,36 +1975,43 @@ module.exports = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
-                    const data = context.getByPath(
+                result(context, out, reject, resolve) {
+                    context.getByPath(
                         this.query_stack,
                         this.position,
                         null,
-                        throw_error,
-                        true
-                    );
-                    if (data.instance instanceof NativeFunction)
-                        return data.instance.result(
-                            data.parent,
-                            this.args,
-                            context,
-                            out,
-                            this.position,
-                            throw_error
-                        );
-                    else if (data.instance instanceof iPoonyaPrototype)
-                        throw_error(
-                            this.position,
-                            new UnableToCreateAnObjectException()
-                        );
-                    else {
-                        throw_error(
-                            this.position,
-                            new FieldNotAFunctionException(
-                                this.query_stack[this.query_stack.length - 1]
+                        reject,
+                        true,
+                        (result) => {
+                            if (result.instance instanceof NativeFunction)
+                                result.instance.result(
+                                    result.parent,
+                                    this.args,
+                                    context,
+                                    out,
+                                    this.position,
+                                    reject,
+                                    resolve
+                                );
+                            else if (
+                                result.instance instanceof iPoonyaPrototype
                             )
-                        );
-                    }
+                                reject(
+                                    this.position,
+                                    new UnableToCreateAnObjectException()
+                                );
+                            else {
+                                reject(
+                                    this.position,
+                                    new FieldNotAFunctionException(
+                                        this.query_stack[
+                                            this.query_stack.length - 1
+                                        ]
+                                    )
+                                );
+                            }
+                        }
+                    );
                 }
                 /**
                  * Сериализует текущий объект в строку
@@ -1991,7 +2077,8 @@ module.exports = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve Вызывается при успешном получении значения
                  *
                  * @returns {Any} В зависимости от типа запрашиваемых данных
                  * @throws {ParserException}
@@ -2000,40 +2087,50 @@ module.exports = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
-                    const data = context.getByPath(
+                result(context, out, reject, resolve) {
+                    context.getByPath(
                         this.query_stack,
                         this.position,
                         null,
-                        throw_error,
-                        true
+                        reject,
+                        true,
+                        (result) => {
+                            if (result.instance != null) {
+                                if (result.instance instanceof NativeFunction) {
+                                    if (
+                                        (result.flags & FIELDFLAGS.PROPERTY) !=
+                                        0
+                                    )
+                                        return result.instance.result(
+                                            result.parent,
+                                            [],
+                                            context,
+                                            out,
+                                            this.position,
+                                            reject,
+                                            resolve
+                                        );
+                                    else
+                                        return context.createObject(
+                                            `[NativeCode:${result.instance.name}]`,
+                                            this.position,
+                                            SERVICE.CONSTRUCTORS.STRING,
+                                            reject,
+                                            new Array(),
+                                            resolve
+                                        );
+                                } else resolve(result.instance);
+                            } else
+                                context.createObject(
+                                    null,
+                                    this.position,
+                                    SERVICE.CONSTRUCTORS.NULL,
+                                    reject,
+                                    new Array(),
+                                    resolve
+                                );
+                        }
                     );
-                    if (data.instance != null) {
-                        if (data.instance instanceof NativeFunction) {
-                            if ((data.flags & FIELDFLAGS.PROPERTY) != 0)
-                                return data.instance.result(
-                                    data.parent,
-                                    [],
-                                    context,
-                                    out,
-                                    this.position,
-                                    throw_error
-                                );
-                            else
-                                return context.createObject(
-                                    `[NativeCode:${data.instance.name}]`,
-                                    this.position,
-                                    SERVICE.CONSTRUCTORS.STRING,
-                                    throw_error
-                                );
-                        } else return data.instance;
-                    } else
-                        return context.createObject(
-                            null,
-                            this.position,
-                            SERVICE.CONSTRUCTORS.NULL,
-                            throw_error
-                        );
                 }
                 /**
                  * Сериализует текущий объект в строку
@@ -2162,7 +2259,8 @@ module.exports = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve Вызывается при завершении создания объекта
                  *
                  * @throws {ParserException}
                  *
@@ -2170,12 +2268,14 @@ module.exports = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
-                    return context.createObject(
+                result(context, out, reject, resolve) {
+                    context.createObject(
                         this.initial,
                         this.position,
                         this.query_stack,
-                        throw_error
+                        reject,
+                        new Array(),
+                        resolve
                     );
                 }
             }
@@ -2244,23 +2344,23 @@ module.exports = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve Вызывается при завершении выполнения тернарного выражения
                  *
-                 * @returns {Any} В зависимости от возвращаемых операндами (`v1`, `v2`) начений
                  * @throws {ParserException}
                  *
                  * @public
                  * @method
                  */
 
-                result(context, out, throw_error) {
-                    if (
-                        context.toBooleanResult(
-                            this.condition.result(context, out, throw_error)
-                        )
-                    )
-                        return this.v_o.result(context, out, throw_error);
-                    else return this.v_t.result(context, out, throw_error);
+                result(context, out, reject, resolve) {
+                    const _ = this;
+
+                    _.condition.result(context, out, reject, (result) => {
+                        if (context.toBooleanResult(result))
+                            _.v_o.result(context, out, reject, resolve);
+                        else _.v_t.result(context, out, reject, resolve);
+                    });
                 }
             }
 
@@ -2323,7 +2423,8 @@ module.exports = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve функция возврата результата
                  *
                  * @throws {ParserException}
                  *
@@ -2331,15 +2432,16 @@ module.exports = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
-                    if (
-                        context.toBooleanResult(
-                            this.condition.result(context, out, throw_error)
-                        )
-                    )
-                        this.body_true.result(context, out, throw_error);
-                    else if (this.body_false != null)
-                        this.body_false.result(context, out, throw_error);
+                result(context, out, reject, resolve) {
+                    const _ = this;
+
+                    _.condition.result(context, out, reject, (result) => {
+                        if (context.toBooleanResult(result))
+                            _.body_true.result(context, out, reject, resolve);
+                        else if (_.body_false != null)
+                            _.body_false.result(context, out, reject, resolve);
+                        else resolve();
+                    });
                 }
             }
 
@@ -2392,7 +2494,8 @@ module.exports = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve функция возврата результата
                  *
                  * @throws {ParserException}
                  *
@@ -2400,12 +2503,20 @@ module.exports = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
-                    out.write(
-                        this.expression
-                            .result(context, out, throw_error)
-                            .result(context, out, throw_error)
-                    );
+                result(context, out, reject, resolve) {
+                    this.expression.result(context, out, reject, (p_result) => {
+                        if (p_result != null)
+                            p_result.result(
+                                context,
+                                out,
+                                reject,
+                                (d_result) => {
+                                    out.write(d_result);
+                                    resolve(d_result);
+                                }
+                            );
+                        else resolve(null);
+                    });
                 }
             }
 
@@ -2426,13 +2537,10 @@ module.exports = /******/ (() => {
              * @license MIT
              */
 
-            const ExpressionGroup = __webpack_require__(606),
+            const PoonyaArray = __webpack_require__(358),
                 {
                     TheFieldMustBeAnArrayInstanceExceprion,
-                    GetFieldOfNullException,
-                } = __webpack_require__(707),
-                PoonyaArray = __webpack_require__(358),
-                PoonyaObject = __webpack_require__(940);
+                } = __webpack_require__(707);
             /**
              * @lends PushStatement
              * @protected
@@ -2479,7 +2587,8 @@ module.exports = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve функция возврата результата
                  *
                  * @throws {Exceptions.ParserException}
                  *
@@ -2487,43 +2596,36 @@ module.exports = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
-                    let query_data = context.get(this.query_stack[0]),
-                        query_stack = [...this.query_stack];
+                result(context, out, reject, resolve) {
+                    const _ = this;
 
-                    if (query_data instanceof PoonyaObject) {
-                        let index = 1;
-
-                        for (
-                            let leng = query_stack.length;
-                            query_data && index < leng;
-                            index++
-                        ) {
-                            if (query_stack[index] instanceof ExpressionGroup)
-                                query_stack[index] = query_stack[index]
-                                    .result(context, out, throw_error)
-                                    .toRawData();
-                            query_data =
-                                query_data.get(query_stack[index]) || null;
+                    context.getByPath(
+                        _.query_stack,
+                        _.position,
+                        PoonyaArray,
+                        reject,
+                        false,
+                        (array) => {
+                            if (array != null) {
+                                _.value.result(
+                                    context,
+                                    out,
+                                    reject,
+                                    (result) => {
+                                        array.append(context, result);
+                                        resolve(result);
+                                    }
+                                );
+                            } else {
+                                reject(
+                                    _.position,
+                                    new TheFieldMustBeAnArrayInstanceExceprion(
+                                        _.query_stack[0]
+                                    )
+                                );
+                            }
                         }
-
-                        if (query_data instanceof PoonyaArray)
-                            query_data.push(
-                                context,
-                                this.value.result(context, out, throw_error)
-                            );
-                        else
-                            throw_error(
-                                this.position,
-                                new TheFieldMustBeAnArrayInstanceExceprion(
-                                    query_stack[index - 1]
-                                )
-                            );
-                    } else
-                        throw_error(
-                            this.position,
-                            new GetFieldOfNullException(query_stack[0])
-                        );
+                    );
                 }
             }
 
@@ -2591,7 +2693,8 @@ module.exports = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve функция возврата результата
                  *
                  * @throws {ParserException}
                  *
@@ -2599,35 +2702,57 @@ module.exports = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
-                    let from = this.from.result(context, out, throw_error),
-                        to = this.to.result(context, out, throw_error),
+                result(context, out, reject, resolve) {
+                    let _ = this,
                         difference;
-                    if (!(from instanceof PoonyaNumber))
-                        throw_error(
-                            this.from.position,
-                            new TheFieldMustBeNumberException('From')
-                        );
-                    if (!(to instanceof PoonyaNumber))
-                        throw_error(
-                            this.to.position,
-                            new TheFieldMustBeNumberException('To')
-                        );
-                    difference =
-                        (from = Math.floor(
-                            from.result(context, out, throw_error)
-                        )) <
-                        (to = Math.floor(to.result(context, out, throw_error)))
-                            ? 1
-                            : -1;
 
-                    while (from != to) {
-                        context.addLevel();
-                        context.set('current', from, 'up');
-                        this.body.result(context, out, throw_error, false);
-                        from += difference;
-                        context.popLevel();
-                    }
+                    _.from.result(context, out, reject, (from_d) => {
+                        _.to.result(context, out, reject, (to_d) => {
+                            if (!(from_d instanceof PoonyaNumber))
+                                reject(
+                                    _.from.position,
+                                    new TheFieldMustBeNumberException('From')
+                                );
+                            if (!(to_d instanceof PoonyaNumber))
+                                reject(
+                                    _.to.position,
+                                    new TheFieldMustBeNumberException('To')
+                                );
+                            from_d.result(context, out, reject, (from) => {
+                                to_d.result(context, out, reject, (to) => {
+                                    difference = from < to ? 1 : -1;
+                                    from = Math.floor(from);
+                                    to = Math.floor(to);
+
+                                    function end(result) {
+                                        from += difference;
+                                        context.popLevel();
+                                        tick(result, difference);
+                                    }
+
+                                    function tick(result) {
+                                        if (from == to) {
+                                            resolve(result);
+                                            return;
+                                        }
+
+                                        context.addLevel();
+                                        context.set('current', from, 'up');
+
+                                        _.body.result(
+                                            context,
+                                            out,
+                                            reject,
+                                            end,
+                                            false
+                                        );
+                                    }
+
+                                    tick();
+                                });
+                            });
+                        });
+                    });
                 }
             }
 
@@ -2647,11 +2772,19 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
+            const PoonyaObject = __webpack_require__(940);
+
+            const { GET } = __webpack_require__(635);
+
             const ExpressionGroup = __webpack_require__(606),
-                { iPoonyaObject } = __webpack_require__(779),
                 {
-                    TheFieldNotHasDeclaredExceprion,
+                    iPoonyaObject,
+                    iPoonyaPrototype,
+                    iContext,
+                } = __webpack_require__(779),
+                {
                     GetFieldOfNullException,
+                    TheFieldNotHasDeclaredExceprion,
                 } = __webpack_require__(707);
             /**
              * @lends ResetStatement
@@ -2699,7 +2832,8 @@ module.exports = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve функция возврата результата
                  *
                  * @throws {ParserException}
                  *
@@ -2707,57 +2841,79 @@ module.exports = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
-                    let query_data = context.get(this.query_stack[0]),
-                        query_stack = [...this.query_stack];
+                result(context, out, reject, resolve) {
+                    let _ = this,
+                        target = context,
+                        query_stack = Array.from(_.query_stack),
+                        leng = query_stack.length,
+                        index = 0;
 
-                    if (query_stack.length > 1) {
-                        let index = 1;
+                    function get(of_p) {
+                        if (++index < leng) {
+                            if (target instanceof PoonyaObject) {
+                                target = target.get(of_p, context);
+                            } else if (target instanceof iContext) {
+                                target = target.get(of_p);
+                            } else if (target instanceof iPoonyaPrototype) {
+                                target = target[GET](of_p, context);
+                            } else {
+                                reject(
+                                    _.position,
+                                    new GetFieldOfNullException(of_p)
+                                );
+                            }
 
-                        for (
-                            let leng = query_stack.length - 1;
-                            query_data && index < leng;
-                            index++
-                        ) {
-                            if (query_stack[index] instanceof ExpressionGroup)
-                                query_stack[index] = query_stack[index]
-                                    .result(context, out, throw_error)
-                                    .toRawData();
-                            query_data =
-                                query_data.get(query_stack[index]) || null;
+                            next();
+                        } else {
+                            if (
+                                target instanceof iPoonyaObject ||
+                                target instanceof iContext
+                            ) {
+                                _.value.result(
+                                    context,
+                                    out,
+                                    reject,
+                                    (value) => {
+                                        if (target instanceof iContext) {
+                                            if (target.has(of_p)) {
+                                                target.set(of_p, value);
+                                            } else {
+                                                reject(
+                                                    _.position,
+                                                    new TheFieldNotHasDeclaredExceprion(
+                                                        of_p
+                                                    )
+                                                );
+                                            }
+                                        } else {
+                                            target.set(context, of_p, value);
+                                        }
+
+                                        resolve(value);
+                                    }
+                                );
+                            } else
+                                reject(
+                                    _.position,
+                                    new GetFieldOfNullException(
+                                        query_stack[index - 1]
+                                    )
+                                );
                         }
-
-                        if (query_data instanceof iPoonyaObject) {
-                            const last_index =
-                                query_stack[query_stack.length - 1];
-                            query_data.set(
-                                context,
-                                last_index instanceof ExpressionGroup
-                                    ? last_index
-                                          .result(context, out, throw_error)
-                                          .toRawData()
-                                    : last_index,
-                                this.value.result(context, out, throw_error)
-                            );
-                        } else
-                            throw_error(
-                                this.position,
-                                new GetFieldOfNullException(query_stack[index])
-                            );
-                    } else {
-                        if (query_data != null)
-                            context.set(
-                                query_stack[0],
-                                this.value.result(context, out, throw_error)
-                            );
-                        else
-                            throw_error(
-                                this.position,
-                                new TheFieldNotHasDeclaredExceprion(
-                                    query_stack[0]
-                                )
-                            );
                     }
+
+                    function next() {
+                        if (query_stack[index] instanceof ExpressionGroup)
+                            query_stack[index].result(
+                                context,
+                                null,
+                                reject,
+                                (result) => get(result.toRawData())
+                            );
+                        else get(query_stack[index]);
+                    }
+
+                    next();
                 }
             }
 
@@ -2806,24 +2962,29 @@ module.exports = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve функция возврата результата
                  *
                  * @public
                  * @method
                  */
 
-                result(context, out, throw_error, level_ops = true) {
+                result(context, out, reject, resolve, level_ops = true) {
+                    let _ = this,
+                        i = 0,
+                        leng = _.Sequence.length;
+
                     if (level_ops) context.addLevel();
 
-                    for (
-                        let i = 0, leng = this.Sequence.length;
-                        i < leng;
-                        i++
-                    ) {
-                        this.Sequence[i].result(context, out, throw_error);
-                    }
+                    (function tick(result) {
+                        if (i >= leng) {
+                            if (level_ops) context.popLevel();
+                            resolve(result);
+                            return;
+                        }
 
-                    if (level_ops) context.popLevel();
+                        _.Sequence[i++].result(context, out, reject, tick);
+                    })();
                 }
                 /**
                  * Сериализует текущую группу в текст
@@ -2889,15 +3050,38 @@ module.exports = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve функция возврата результата
                  *
                  * @public
                  * @method
                  */
 
-                result(context, out, throw_error) {
-                    for (let i = 0, leng = this.Sequence.length; i < leng; i++)
-                        this.Sequence[i].result(context, out, throw_error);
+                result(context, out, reject, resolve) {
+                    let _ = this,
+                        i = 0,
+                        leng = _.Sequence.length;
+
+                    (function tick(result) {
+                        if (i >= leng) {
+                            if (result && typeof result.result === 'function') {
+                                result.result(
+                                    context,
+                                    out,
+                                    reject,
+                                    (p_result) => {
+                                        resolve(p_result);
+                                    }
+                                );
+                            } else {
+                                resolve(result);
+                            }
+
+                            return;
+                        }
+
+                        _.Sequence[i++].result(context, out, reject, tick);
+                    })();
                 }
                 /**
                  * Сериализует текущую группу в текст
@@ -2977,7 +3161,8 @@ module.exports = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve функция возврата результата
                  *
                  * @throws {ParserException}
                  *
@@ -2985,19 +3170,18 @@ module.exports = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
-                    if (!context.has(this.name, 'up')) {
-                        context.set(
-                            this.name,
-                            this.value.result(context, out, throw_error),
-                            'up'
-                        );
+                result(context, out, reject, resolve) {
+                    const _ = this;
+
+                    if (!context.has(_.name, 'up')) {
+                        _.value.result(context, out, reject, (result) => {
+                            context.set(_.name, result, 'up');
+                            resolve(result);
+                        });
                     } else {
-                        throw_error(
-                            this.position,
-                            new TheFieldAlreadyHasBeenDeclaredException(
-                                this.name
-                            )
+                        reject(
+                            _.position,
+                            new TheFieldAlreadyHasBeenDeclaredException(_.name)
                         );
                     }
                 }
@@ -3057,21 +3241,29 @@ module.exports = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve функция возврата результата
                  *
                  * @throws {ParserException}
                  *
                  * @public
                  * @method
+                 * @async
                  */
 
-                result(context, out, throw_error) {
-                    while (
-                        context.toBooleanResult(
-                            this.condition.result(context, out, throw_error)
-                        )
-                    )
-                        this.body.result(context, out, throw_error);
+                result(context, out, reject, resolve) {
+                    let _ = this;
+
+                    (function tick(result) {
+                        _.condition.result(context, out, reject, (d_result) => {
+                            if (context.toBooleanResult(d_result)) {
+                                _.body.result(context, out, reject, tick);
+                            } else {
+                                resolve(result);
+                                return;
+                            }
+                        });
+                    })();
                 }
             }
 
@@ -3738,7 +3930,7 @@ module.exports = /******/ (() => {
                  * Интерфейс ответа функции кострукирующий шаблон, на основе промисов - `patternCreator`
                  *
                  * @constructs iPoonyaConstructsData
-                 * @property {CodeEmitter} Pattern шаблон, который должен быть создан
+                 * @property {CodeEmitter} data шаблон, который должен быть создан
                  * @property {Array<Any>} args аргументы возвращенные по завершении инициализации шаблона
                  */
                 constructor() {}
@@ -3905,7 +4097,10 @@ module.exports = /******/ (() => {
                 },
                 ROOTPATH: dirname(__dirname),
                 CONFIG: {
-                    DEBUG: false,
+                    DEBUG:
+                        /*LIQUID*/
+                        false,
+                    /*LIQUID-END*/
                 },
                 LOADED: false,
                 ACTIONS: new EventEmitter(),
@@ -3942,6 +4137,7 @@ module.exports = /******/ (() => {
             const {
                     GetFieldOfNullException,
                     IsNotAConstructorException,
+                    PoonyaException,
                 } = __webpack_require__(707),
                 { GET, SERVICE, IS } = __webpack_require__(635),
                 { Cast, toBytes } = __webpack_require__(270),
@@ -4042,7 +4238,6 @@ module.exports = /******/ (() => {
                         super.set(key, Cast(data, context, parents_three));
                     } catch (e) {
                         console.error('Error when cast value of ' + key);
-                        console.log(e);
                     }
                 }
                 /**
@@ -4050,19 +4245,19 @@ module.exports = /******/ (() => {
                  *
                  * @param {?iContext} context контекст выполнения
                  * @param {?Array<String>} out Выходной массив
-                 * @param {?Function} throw_error Функция вызывающаяся при ошибках
+                 * @param {?Function} reject Функция вызывающаяся при ошибках
                  * @method
                  * @public
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     let output = new Object();
 
                     for (let [key, value] of this)
                         if (value instanceof NativeFunction)
                             output[key] =
                                 value != null
-                                    ? value.result(context, out, throw_error)
+                                    ? value.result(context, out, reject)
                                     : null;
                         else output[key] = value != null ? value.target : null;
 
@@ -4079,7 +4274,7 @@ module.exports = /******/ (() => {
                  * Контекст выполнения
                  *
                  * @param {PoonyaStaticLibrary[]} libraries бибилиотеки для инициалзиции контекста
-                 * @param {Function} throw_error функция, которая будет вызвана при ошибке
+                 * @param {Function} reject функция, которая будет вызвана при ошибке
                  * @param {...Heap} initial Значения переданные для инициализации
                  *
                  * @memberof Poonya.Storage
@@ -4088,12 +4283,12 @@ module.exports = /******/ (() => {
                  * @classdesc Определяет набор данных для манипуляции в шаблонизаторе
                  * @protected
                  */
-                constructor(libraries, throw_error, ...initial) {
+                constructor(libraries, reject, ...initial) {
                     super();
                     this.levels = new Array();
                     this._lib_cache = new Array(); // Если переданы дидлиотеки для импорта, то импортируем их в этот контекст
 
-                    if (libraries != null) this.import(libraries, throw_error); // Перебераем переданные для инициалзации объекты
+                    if (libraries != null) this.import(libraries, reject); // Перебераем переданные для инициалзации объекты
 
                     this.levels.push(
                         ...initial
@@ -4113,10 +4308,10 @@ module.exports = /******/ (() => {
                  * Импортирует нативные библиотеки `libraries` в текущий контекст.
                  *
                  * @param {Array<PoonyaStaticLibrary>} libraries массив с библиотеками, которые нужно импортировать
-                 * @param {Function} throw_error фукнция вызова ошибки
+                 * @param {Function} reject фукнция вызова ошибки
                  */
 
-                import(libraries, throw_error) {
+                import(libraries, reject) {
                     if (libraries != null) {
                         // Корневой слой
                         this.addLevel();
@@ -4136,20 +4331,17 @@ module.exports = /******/ (() => {
                                     libraries[i].importTo(
                                         this.levels[0],
                                         this,
-                                        throw_error
+                                        reject
                                     );
                                 } else {
-                                    target = this.createObject(
+                                    this.createObject(
                                         null,
                                         -1,
                                         SERVICE.CONSTRUCTORS.OBJECT,
-                                        throw_error
+                                        reject,
+                                        (p_target) => (target = p_target)
                                     );
-                                    libraries[i].importTo(
-                                        target,
-                                        this,
-                                        throw_error
-                                    );
+                                    libraries[i].importTo(target, this, reject);
                                     this.levels[0].set(
                                         this,
                                         libraries[i].namespace,
@@ -4167,28 +4359,48 @@ module.exports = /******/ (() => {
                  *
                  * @param {String} input Вход шаблона
                  * @param {PoonyaOutputStream} out Вывод шаблонизатора
-                 * @param {Function} throw_error Функция вызова ошибки
+                 *
                  * @method
                  * @public
                  * @async
                  */
 
-                async eval(input, out, throw_error) {
-                    return (
-                        await parser(
+                eval(input, out) {
+                    return new Promise((res, rej) => {
+                        parser(
                             // Выполняем лексинг переданого текста
                             lexer(
                                 // Разбираем текст на байты
                                 toBytes(input),
                                 false
                             ),
-                            throw_error, // Присваеваем рандомный идентификатор исполнителю
+                            (symbol, message) => {
+                                throw new PoonyaException(
+                                    message + ', at symbol ' + symbol
+                                );
+                            }, // Присваеваем рандомный идентификатор исполнителю
                             'eval-' +
                                 Math.floor(
                                     Math.random() * Number.MAX_SAFE_INTEGER
                                 ).toString(16)
                         )
-                    ).result(this, out, throw_error);
+                            .catch((error) => rej(error))
+                            .then((result) => {
+                                result.result(
+                                    this,
+                                    out,
+                                    (symbol, message) =>
+                                        rej(
+                                            new PoonyaException(
+                                                message +
+                                                    ', at symbol ' +
+                                                    symbol
+                                            )
+                                        ),
+                                    res
+                                );
+                            });
+                    });
                 }
                 /**
                  * Клонирует текущий контекст, возвращает новый кнотекст, со всеми уровнями текущего контекста
@@ -4343,62 +4555,80 @@ module.exports = /******/ (() => {
                  * @param {Array<String|Number|Operand>} path путь, по которому можно получить значение
                  * @param {Number} position Позиция вызова(необходимо в случае возникновения ошибки)
                  * @param {Object} type Тип который необходимо получить
-                 * @param {Function} throw_error Фукцния которая выбрасывает ошибку(необходимо в случае возникновения ошибки)
+                 * @param {Function} reject Фукцния которая выбрасывает ошибку(необходимо в случае возникновения ошибки)
                  * @param {Boolean} return_full_info Возвращать полную информацию о переменной, включая родительский объект(если имеется)
+                 * @param {Function} resolve функция возврата результата
                  *
                  * @returns {ParserData|iPathData|null} если по заданому пути существует значение вернет его, если нет то вернет null
                  * @method
                  * @public
+                 * @async
                  */
 
                 getByPath(
                     path,
                     position,
                     type = null,
-                    throw_error,
-                    return_full_info = false
+                    reject,
+                    return_full_info = false,
+                    resolve
                 ) {
-                    let instance = this.get(path[0]),
+                    let _ = this,
+                        instance = _,
                         parent = null,
                         flags = 0,
                         query_stack = Array.from(path),
                         leng = query_stack.length,
-                        index = 1;
+                        index = 0;
 
-                    for (; instance && index < leng; index++) {
-                        if (query_stack[index] instanceof ExpressionGroup)
-                            query_stack[index] = query_stack[index]
-                                .result(this, null, throw_error)
-                                .toRawData();
-
+                    function get(of_p) {
                         if (instance instanceof PoonyaObject) {
                             parent = instance;
-                            flags = instance.field_attrs.get(
-                                query_stack[index]
-                            );
-                            instance = instance.get(query_stack[index]);
+                            flags = instance.field_attrs.get(of_p);
+                            instance = instance.get(of_p, _);
+                        } else if (instance instanceof Context) {
+                            parent = instance;
+                            instance = instance.get(of_p, _);
                         } else if (instance instanceof iPoonyaPrototype) {
-                            instance = instance[GET](query_stack[index], this);
+                            instance = instance[GET](of_p, _);
                         } else {
-                            (throw_error || console.error)(
-                                position,
-                                new GetFieldOfNullException(query_stack[index])
-                            );
+                            reject(position, new GetFieldOfNullException(of_p));
+                        }
+
+                        if (++index < leng) {
+                            next();
+                        } else {
+                            if (type == null || instance instanceof type) {
+                                if (return_full_info) {
+                                    resolve(
+                                        Object.assign(new iPathData(), {
+                                            instance,
+                                            parent,
+                                            index,
+                                            flags,
+                                        })
+                                    );
+                                } else {
+                                    resolve(instance);
+                                }
+                            } else resolve(null);
                         }
                     }
 
-                    if (type == null || instance instanceof type) {
-                        if (return_full_info) {
-                            return Object.assign(new iPathData(), {
-                                instance,
-                                parent,
-                                index,
-                                flags,
-                            });
-                        } else {
-                            return instance;
-                        }
-                    } else return null;
+                    function next() {
+                        if (query_stack[index] instanceof ExpressionGroup)
+                            query_stack[index].result(
+                                _,
+                                null,
+                                reject,
+                                (result) => {
+                                    get(result.toRawData());
+                                }
+                            );
+                        else get(query_stack[index]);
+                    }
+
+                    next();
                 }
                 /**
                  * Сравнивает инстанцию, возвращает эквивалент в boolean
@@ -4442,93 +4672,140 @@ module.exports = /******/ (() => {
                  * @param {Object} initial Значения для инициализации объекта
                  * @param {Number} position Позиция, с который вызывается конструктор
                  * @param {Array<String>} path Путь к конструктору в памяти
-                 * @param {Function} throw_error Функция вызова ошибки
+                 * @param {Function} reject Функция вызова ошибки
                  * @param {Array<String>} parents_three Дерево родителей объекта
+                 * @param {Function} resolve функция возврата результата
                  *
                  * @returns {PoonyaObject} если по заданому пути существует значение вернет его, если нет то вернет null
                  * @method
                  * @public
+                 * @async
                  */
 
                 createObject(
                     initial,
                     position,
                     path,
-                    throw_error,
-                    parents_three = new Array()
+                    reject,
+                    parents_three = new Array(),
+                    resolve
                 ) {
-                    const prototype = this.getByPath(
+                    const _ = this;
+
+                    _.getByPath(
                         path,
                         position,
                         iPoonyaPrototype,
-                        throw_error
+                        reject,
+                        false,
+                        (prototype) => {
+                            let init = new Object(),
+                                cur = 0,
+                                from =
+                                    initial instanceof Map
+                                        ? Array.from(initial.entries())
+                                        : typeof initial === 'object' &&
+                                          initial != null
+                                        ? Object.entries(initial)
+                                        : initial;
+
+                            function done() {
+                                switch (true) {
+                                    case prototype[IS]('String'):
+                                        resolve(
+                                            new PoonyaString(prototype, init, _)
+                                        );
+                                        return;
+
+                                    case prototype[IS]('Integer'):
+                                        resolve(
+                                            new PoonyaInteger(
+                                                prototype,
+                                                init,
+                                                _
+                                            )
+                                        );
+                                        return;
+
+                                    case prototype[IS]('Boolean'):
+                                        resolve(
+                                            new PoonyaBoolean(
+                                                prototype,
+                                                init,
+                                                _
+                                            )
+                                        );
+                                        return;
+
+                                    case prototype[IS]('Number'):
+                                        resolve(
+                                            new PoonyaNumber(prototype, init, _)
+                                        );
+                                        return;
+
+                                    case prototype[IS]('Null'):
+                                        resolve(
+                                            new PoonyaNull(prototype, init, _)
+                                        );
+                                        return;
+
+                                    case prototype[IS]('Array'):
+                                        resolve(
+                                            new PoonyaArray(prototype, init, _)
+                                        );
+                                        return;
+
+                                    default:
+                                        resolve(
+                                            new PoonyaObject(prototype, init, _)
+                                        );
+                                        return;
+                                }
+                            }
+
+                            function next() {
+                                const entry = from[cur++];
+
+                                if (entry) {
+                                    if (!parents_three.includes(entry[1])) {
+                                        if (
+                                            typeof entry[1].result ===
+                                            'function'
+                                        )
+                                            init[entry[0]] = entry[1].result(
+                                                _,
+                                                null,
+                                                reject,
+                                                (result) =>
+                                                    set(entry[0], result)
+                                            );
+                                        else set(entry[0], entry[1]);
+                                    } else next();
+                                } else {
+                                    done();
+                                }
+                            }
+
+                            function set(key, value) {
+                                init[key] = value;
+                                next();
+                            }
+
+                            if (prototype != null) {
+                                if (typeof from == 'object' && from != null) {
+                                    next();
+                                } else {
+                                    init = from;
+                                    done();
+                                }
+                            } else {
+                                reject(
+                                    position,
+                                    new IsNotAConstructorException(path)
+                                );
+                            }
+                        }
                     );
-
-                    if (prototype != null) {
-                        let init = new Object();
-
-                        if (initial instanceof Map) {
-                            for (let entry of initial) {
-                                if (!parents_three.includes(entry[1])) {
-                                    if (typeof entry[1].result === 'function')
-                                        init[entry[0]] = entry[1].result(
-                                            this,
-                                            null,
-                                            throw_error
-                                        );
-                                    else init[entry[0]] = entry[1];
-                                }
-                            }
-                        } else if (
-                            typeof initial === 'object' &&
-                            initial != null
-                        ) {
-                            for (let key in initial) {
-                                if (!parents_three.includes(initial[key])) {
-                                    if (
-                                        typeof initial[key].result ===
-                                        'function'
-                                    )
-                                        init[key] = initial[key].result(
-                                            this,
-                                            null,
-                                            throw_error
-                                        );
-                                    else init[key] = initial[key];
-                                }
-                            }
-                        } else {
-                            init = initial;
-                        }
-
-                        switch (true) {
-                            case prototype[IS]('String'):
-                                return new PoonyaString(prototype, init, this);
-
-                            case prototype[IS]('Integer'):
-                                return new PoonyaInteger(prototype, init, this);
-
-                            case prototype[IS]('Boolean'):
-                                return new PoonyaBoolean(prototype, init, this);
-
-                            case prototype[IS]('Number'):
-                                return new PoonyaNumber(prototype, init, this);
-
-                            case prototype[IS]('Null'):
-                                return new PoonyaNull(prototype, init, this);
-
-                            case prototype[IS]('Array'):
-                                return new PoonyaArray(prototype, init, this);
-
-                            default:
-                                return new PoonyaObject(prototype, init, this);
-                        }
-                    } else {
-                        (throw_error || console.error)(
-                            position,
-                            new IsNotAConstructorException(path)
-                        );
-                    }
                 }
             }
 
@@ -4554,8 +4831,6 @@ module.exports = /******/ (() => {
                 { join, normalize, resolve } = __webpack_require__(622),
                 { NAMESPACE, SERVICE } = __webpack_require__(635),
                 { IOError } = __webpack_require__(707),
-                PoonyaObject = __webpack_require__(940),
-                PoonyaArray = __webpack_require__(358),
                 NativeFunction = __webpack_require__(492),
                 PoonyaPrototype = __webpack_require__(406); // Пространство модулей в глобальном контексте
 
@@ -4661,87 +4936,94 @@ module.exports = /******/ (() => {
                 /**
                  * Вызывается для преобразования библиотеки в модуль памяти, к которому в последствии можно будет получить доступ
                  *
-                 * @param {PoonyaObject|Heap} parent хип памяти, или объект в который нужно ипортировать библиотеку
+                 * Ипорт происходит синхронно, поэтому нет нужды в фуекции `resolve`
+                 *
+                 * [1] - Пояснение
+                 * createObject - фукнция, котрая создает объект из текущего прототипа, который должен быть был ранее зарегистрирован в памяти.
+                 * Асинхронность, а следовательно функция resolve, тут нужна только если путь к прототипу представляет из себя выражение, где могут быть асинхрнонные
+                 * функции. Тут их нет, объекты создаются из общепринятых прототипов, поэтому callback вызывается невыходя из функции - синхрнно.
+                 *
+                 * @param {PoonyaObject|Heap} parent хип памяти, или родительский объект в который нужно ипортировать библиотеку
+                 * @param {iContext} context контект, в котором будет использоватся эта библиотека
+                 * @param {Function} reject функция, которая будет вызвана при ошибке.
                  * @public
                  * @method
                  */
 
-                importTo(parent, context, throw_error) {
+                importTo(parent, context, reject) {
                     for (let [key, value] of this._fields) {
                         switch (typeof value) {
                             case 'bigint':
                                 if (isNaN(value))
-                                    parent.set(
-                                        context,
-                                        key,
-                                        context.createObject(
-                                            null,
-                                            -1,
-                                            SERVICE.CONSTRUCTORS.NULL,
-                                            throw_error
-                                        )
+                                    // [1]
+                                    context.createObject(
+                                        null,
+                                        -1,
+                                        SERVICE.CONSTRUCTORS.NULL,
+                                        reject,
+                                        new Array(),
+                                        (result) =>
+                                            parent.set(context, key, result)
                                     );
+                                // [1]
                                 else
-                                    parent.set(
-                                        context,
-                                        key,
-                                        context.createObject(
-                                            value,
-                                            -1,
-                                            SERVICE.CONSTRUCTORS.INTEGER,
-                                            throw_error
-                                        )
+                                    context.createObject(
+                                        value,
+                                        -1,
+                                        SERVICE.CONSTRUCTORS.INTEGER,
+                                        reject,
+                                        new Array(),
+                                        (result) =>
+                                            parent.set(context, key, result)
                                     );
                                 break;
 
                             case 'number':
                                 if (isNaN(value))
-                                    parent.set(
-                                        context,
-                                        key,
-                                        context.createObject(
-                                            null,
-                                            -1,
-                                            SERVICE.CONSTRUCTORS.NULL,
-                                            throw_error
-                                        )
+                                    // [1]
+                                    context.createObject(
+                                        null,
+                                        -1,
+                                        SERVICE.CONSTRUCTORS.NULL,
+                                        reject,
+                                        new Array(),
+                                        (result) =>
+                                            parent.set(context, key, result)
                                     );
+                                // [1]
                                 else
-                                    parent.set(
-                                        context,
-                                        key,
-                                        context.createObject(
-                                            value,
-                                            -1,
-                                            SERVICE.CONSTRUCTORS.NUMBER,
-                                            throw_error
-                                        )
+                                    context.createObject(
+                                        value,
+                                        -1,
+                                        SERVICE.CONSTRUCTORS.NUMBER,
+                                        reject,
+                                        new Array(),
+                                        (result) =>
+                                            parent.set(context, key, result)
                                     );
                                 break;
 
                             case 'string':
-                                parent.set(
-                                    context,
-                                    key,
-                                    context.createObject(
-                                        value,
-                                        -1,
-                                        SERVICE.CONSTRUCTORS.STRING,
-                                        throw_error
-                                    )
+                                // [1]
+                                context.createObject(
+                                    value,
+                                    -1,
+                                    SERVICE.CONSTRUCTORS.STRING,
+                                    reject,
+                                    new Array(),
+                                    (result) => parent.set(context, key, result)
                                 );
                                 break;
 
                             case 'symbol':
-                                parent.set(
-                                    context,
-                                    key,
-                                    context.createObject(
-                                        Symbol.keyFor(value),
-                                        -1,
-                                        SERVICE.CONSTRUCTORS.STRING,
-                                        throw_error
-                                    )
+                                // [1]
+                                context.createObject(
+                                    Symbol.keyFor(value),
+                                    -1,
+                                    SERVICE.CONSTRUCTORS.STRING,
+                                    reject,
+                                    new Array(),
+                                    (result) => parent.set(context, key, result)
                                 );
                                 break;
 
@@ -4768,80 +5050,75 @@ module.exports = /******/ (() => {
                                 break;
 
                             case 'boolean':
-                                parent.set(
-                                    context,
-                                    key,
-                                    context.createObject(
-                                        value,
-                                        -1,
-                                        SERVICE.CONSTRUCTORS.BOOLEAN,
-                                        throw_error
-                                    )
+                                // [1]
+                                context.createObject(
+                                    value,
+                                    -1,
+                                    SERVICE.CONSTRUCTORS.BOOLEAN,
+                                    reject,
+                                    new Array(),
+                                    (result) => parent.set(context, key, result)
                                 );
                                 break;
 
                             case 'undefined':
                             case 'object':
                                 if (value == null)
-                                    parent.set(
-                                        context,
-                                        key,
-                                        context.createObject(
-                                            null,
-                                            -1,
-                                            SERVICE.CONSTRUCTORS.NULL,
-                                            throw_error
-                                        )
+                                    // [1]
+                                    context.createObject(
+                                        null,
+                                        -1,
+                                        SERVICE.CONSTRUCTORS.NULL,
+                                        reject,
+                                        new Array(),
+                                        (result) =>
+                                            parent.set(context, key, result)
                                     );
                                 else {
                                     if (value instanceof PoonyaStaticLibrary) {
-                                        const target = new PoonyaObject(
-                                            context.getByPath(
-                                                SERVICE.CONSTRUCTORS.OBJECT,
-                                                -1,
-                                                PoonyaPrototype,
-                                                throw_error
-                                            ),
-                                            null
+                                        // [1]
+                                        context.createObject(
+                                            null,
+                                            -1,
+                                            SERVICE.CONSTRUCTORS.OBJECT,
+                                            reject,
+                                            new Array(),
+                                            (target) => {
+                                                value.importTo(
+                                                    target,
+                                                    context,
+                                                    reject
+                                                );
+                                                parent.set(
+                                                    context,
+                                                    key,
+                                                    target
+                                                );
+                                            }
                                         );
-                                        value.importTo(
-                                            target,
-                                            context,
-                                            throw_error
-                                        );
-                                        parent.set(context, key, target);
                                     } else if (value instanceof Array) {
-                                        parent.set(
-                                            context,
-                                            key,
-                                            new PoonyaArray(
-                                                context.getByPath(
-                                                    SERVICE.CONSTRUCTORS.ARRAY,
-                                                    -1,
-                                                    PoonyaPrototype,
-                                                    throw_error
-                                                ),
-                                                value,
-                                                null,
-                                                context
-                                            )
+                                        // [1]
+                                        context.createObject(
+                                            value,
+                                            -1,
+                                            SERVICE.CONSTRUCTORS.ARRAY,
+                                            reject,
+                                            new Array(),
+                                            (result) =>
+                                                parent.set(context, key, result)
                                         );
-                                    } else
-                                        parent.set(
-                                            context,
-                                            key,
-                                            new PoonyaObject(
-                                                context.getByPath(
-                                                    SERVICE.CONSTRUCTORS.OBJECT,
-                                                    -1,
-                                                    PoonyaPrototype,
-                                                    throw_error
-                                                ),
-                                                value,
-                                                null,
-                                                context
-                                            )
+                                    } else {
+                                        // [1]
+                                        context.createObject(
+                                            value,
+                                            -1,
+                                            SERVICE.CONSTRUCTORS.OBJECT,
+                                            reject,
+                                            new Array(),
+                                            (result) =>
+                                                parent.set(context, key, result)
                                         );
+                                    }
                                 }
                                 break;
                         }
@@ -5360,14 +5637,14 @@ module.exports = /******/ (() => {
              *
              * @param {Array<Token>} data данные для парсинга
              * @param {String} parent_path Путь к файлу, который сейчас обрабатываем
-             * @param {Function} throw_error Фукцния выбрасывания ошибок
+             * @param {Function} reject Фукцния выбрасывания ошибок
              *
              * @memberof Poonya.Linker
              * @protected
              * @async
              */
 
-            async function linker(data, parent_path, throw_error) {
+            async function linker(data, parent_path, reject) {
                 for (let i = 0; ; i++) {
                     if (data[i] == null) return data;
 
@@ -5401,13 +5678,13 @@ module.exports = /******/ (() => {
                                         ...lexer(await content, false)
                                     );
                                 } catch (e) {
-                                    throw_error(
+                                    reject(
                                         data[i].position,
                                         new Exceptions.LinkerIOError(path)
                                     );
                                 }
                             } else {
-                                throw_error(
+                                reject(
                                     data[i].position,
                                     new Exceptions.LinkerPathNotGiveExceptrion()
                                 );
@@ -5476,7 +5753,7 @@ module.exports = /******/ (() => {
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} data Вхождения которые будут обработаны парсером
              * @param {Number} block_start Начальная позиция вызова
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              *
              * @returns {{data: FunctionCall, jump: Number}} объект вызова функции, и позиция с которой можно продолжить прасинг
              *
@@ -5488,13 +5765,13 @@ module.exports = /******/ (() => {
                 query_stack,
                 start,
                 data,
-                throw_error,
+                reject,
                 block_start
             ) {
                 const args = segmentationParser(
                     start,
                     data,
-                    throw_error,
+                    reject,
                     ',',
                     Infinity,
                     `(${query_stack
@@ -5517,7 +5794,7 @@ module.exports = /******/ (() => {
              * @param {Number[]|String[]|Operand[]} query_stack путь к конструктору объекта
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} data Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              *
              * @returns {{data: ObjectContructorCall, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
              *
@@ -5525,13 +5802,7 @@ module.exports = /******/ (() => {
              * @protected
              */
 
-            function parseObject(
-                query_stack,
-                start,
-                data,
-                throw_error,
-                level = 0
-            ) {
+            function parseObject(query_stack, start, data, reject, level = 0) {
                 let result = null,
                     count = 0,
                     entries = new Array([]),
@@ -5545,7 +5816,7 @@ module.exports = /******/ (() => {
                                 !data[i].equals(CHARTYPE.OPERATOR, ',')) ||
                             data[i].equals(CHARTYPE.OPERATOR, [';', ')']):
                             if (entries[entries.length - 1].length !== 2)
-                                throw_error(
+                                reject(
                                     data[i].position,
                                     new ParserUnfinishedNotationException()
                                 );
@@ -5561,7 +5832,7 @@ module.exports = /******/ (() => {
                         case data[i].equals(CHARTYPE.OPERATOR, '*') &&
                             expected === 0:
                             if (entries.length !== 1)
-                                throw_error(
+                                reject(
                                     data[i].position,
                                     new BadEmptyObjectException()
                                 );
@@ -5594,7 +5865,7 @@ module.exports = /******/ (() => {
                                             entries.length - 1
                                         ][0] = parseInt(data[i].toRawString());
                                     } else {
-                                        throw_error(
+                                        reject(
                                             data[i].position,
                                             new UnexpectedTokenException(
                                                 data[i],
@@ -5623,7 +5894,7 @@ module.exports = /******/ (() => {
                                                 '>'
                                             )
                                         ) {
-                                            throw_error(
+                                            reject(
                                                 data[i].position,
                                                 new UnexpectedTokenException(
                                                     data[i],
@@ -5646,7 +5917,7 @@ module.exports = /******/ (() => {
                                                 jump: last_row - start,
                                             };
                                         } else {
-                                            throw_error(
+                                            reject(
                                                 data[i].position,
                                                 new BadArrowNotationJumpingToUpperLevel()
                                             );
@@ -5680,7 +5951,7 @@ module.exports = /******/ (() => {
                                             SERVICE.CONSTRUCTORS.OBJECT,
                                             i,
                                             data,
-                                            throw_error,
+                                            reject,
                                             level + 1
                                         );
                                         i += result.jump - 1;
@@ -5690,7 +5961,7 @@ module.exports = /******/ (() => {
                                         /// Попытка произвести нотация на два уровня выше чем родительская
                                         ///
                                     } else if (count > level + 2) {
-                                        throw_error(
+                                        reject(
                                             data[i + 1].position,
                                             new BadArrowNotationJumpingTwoLevels()
                                         ); /// Если как значение передано выражение
@@ -5700,7 +5971,7 @@ module.exports = /******/ (() => {
                                         result = parseExpression(
                                             i,
                                             data,
-                                            throw_error,
+                                            reject,
                                             [',', ';']
                                         ); // Текущие данные ставим как результат парсинга выражения
 
@@ -5742,7 +6013,7 @@ module.exports = /******/ (() => {
              * @param {ExpressionGroup} condition Условие, при котором тернарное выражение будет верным
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} data Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              *
              * @returns {{data: TernarOperator, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
              *
@@ -5750,17 +6021,17 @@ module.exports = /******/ (() => {
              * @protected
              */
 
-            function parseTernar(condition, start, data, throw_error) {
+            function parseTernar(condition, start, data, reject) {
                 let hook_index = 0,
                     buffer = new Array(),
                     args = new Array();
 
                 function push(token) {
                     if (buffer.length !== 0) {
-                        args.push(parseExpression(0, buffer, throw_error).data);
+                        args.push(parseExpression(0, buffer, reject).data);
                         buffer.splice(0, buffer.length);
                     } else
-                        throw_error(
+                        reject(
                             token != undefined ? token.position : data[start],
                             new ParserEmtyArgumentException()
                         );
@@ -5775,7 +6046,7 @@ module.exports = /******/ (() => {
                                 hook_index <= 0):
                             push(data[i]);
                             if (args[0] === undefined || args[1] === undefined)
-                                throw_error(
+                                reject(
                                     data[start].position,
                                     new ParserEmtyArgumentException()
                                 );
@@ -5813,7 +6084,7 @@ module.exports = /******/ (() => {
                         case data[i].equals(CHARTYPE.OPERATOR, ':') &&
                             hook_index === 0 &&
                             args.length !== 0:
-                            throw_error(
+                            reject(
                                 data[i].position,
                                 new ParserLogicException()
                             );
@@ -5830,7 +6101,7 @@ module.exports = /******/ (() => {
              *
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} data Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              *
              * @returns {{data: Array<Number|String>, jump: Number}} массив со стэком запроса, по которому можно получит доступ к переменной, и позиция с которой можно продолжить парсинг
              *
@@ -5838,7 +6109,7 @@ module.exports = /******/ (() => {
              * @protected
              */
 
-            function parseVarName(start, data, throw_error) {
+            function parseVarName(start, data, reject) {
                 let buffer = new Array(),
                     point_before = true,
                     hook_index = 0,
@@ -5897,7 +6168,7 @@ module.exports = /******/ (() => {
                             }
 
                             if (hook_index != 0)
-                                throw_error(
+                                reject(
                                     data[i].position,
                                     new ParserLogicException()
                                 ); // Вставляем выражение как оператор доступа
@@ -5906,13 +6177,13 @@ module.exports = /******/ (() => {
                                 parseExpression(
                                     0,
                                     data.slice(hook_start, i),
-                                    throw_error
+                                    reject
                                 ).data
                             );
                             continue;
 
                         default:
-                            throw_error(
+                            reject(
                                 data[i].position,
                                 new InvalidSequenceForLetiableAccessException()
                             );
@@ -5925,7 +6196,7 @@ module.exports = /******/ (() => {
              *
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} data Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              * @param {String} end_marker Маркер конца выражения
              *
              * @returns {{data: ExpressionGroup, jump: Number}} выражение и позиция, с которой можно продолжить парсинг
@@ -5934,12 +6205,7 @@ module.exports = /******/ (() => {
              * @protected
              */
 
-            function parseExpression(
-                start,
-                data,
-                throw_error,
-                end_marker = ';'
-            ) {
+            function parseExpression(start, data, reject, end_marker = ';') {
                 if (data.length === 0)
                     return {
                         data: new ExpressionGroup(0),
@@ -5955,13 +6221,13 @@ module.exports = /******/ (() => {
                         data[i].contentEquals(end_marker)
                     ) {
                         if (buffer.isNotDone())
-                            throw_error(
+                            reject(
                                 data[i - 1].position,
                                 data[i] == undefined
                                     ? new CriticalParserErrorUnexpectedEndOfInputException()
                                     : new CriticalParserErrorUnexpectedEndOfExpression()
                             );
-                        buffer.complete(throw_error);
+                        buffer.complete(reject);
                         return {
                             data: buffer,
                             jump: i - start,
@@ -5978,11 +6244,11 @@ module.exports = /******/ (() => {
                                 case 'true':
                                 case 'false':
                                 case 'null':
-                                    buffer.append(data[i], throw_error);
+                                    buffer.append(data[i], reject);
                                     continue;
                             }
 
-                            result[0] = parseVarName(i, data, throw_error);
+                            result[0] = parseVarName(i, data, reject);
 
                             if (
                                 data[i + result[0].jump] != null &&
@@ -5996,11 +6262,11 @@ module.exports = /******/ (() => {
                                     result[0].data,
                                     i + result[0].jump + 1,
                                     data,
-                                    throw_error,
+                                    reject,
                                     data[i].position
                                 );
                                 i += result[0].jump + result[1].jump + 1;
-                                buffer.append(result[1].data, throw_error);
+                                buffer.append(result[1].data, reject);
                             } else if (
                                 data[i + result[0].jump + 1] != null &&
                                 data[i + result[0].jump].equals(
@@ -6017,7 +6283,7 @@ module.exports = /******/ (() => {
                                     result[0].data,
                                     i + result[0].jump + 2,
                                     data,
-                                    throw_error,
+                                    reject,
                                     0
                                 );
                                 i += result[0].jump + result[1].jump + 1;
@@ -6025,7 +6291,7 @@ module.exports = /******/ (() => {
                                     data[i + 1].equals(CHARTYPE.OPERATOR, ['*'])
                                 )
                                     i += 1;
-                                buffer.append(result[1].data, throw_error);
+                                buffer.append(result[1].data, reject);
                             } else {
                                 // Получение значения переменной
                                 buffer.append(
@@ -6033,7 +6299,7 @@ module.exports = /******/ (() => {
                                         data[i].position,
                                         result[0].data
                                     ),
-                                    throw_error
+                                    reject
                                 );
                                 i += result[0].jump - 1;
                             }
@@ -6049,27 +6315,23 @@ module.exports = /******/ (() => {
                                 SERVICE.CONSTRUCTORS.OBJECT,
                                 i + 2,
                                 data,
-                                throw_error,
+                                reject,
                                 0
                             );
                             i += result[0].jump + 2;
-                            buffer.append(result[0].data, throw_error);
+                            buffer.append(result[0].data, reject);
                             continue;
                         // Другая группа выражений
 
                         case data[i].equals(CHARTYPE.OPERATOR, '('):
-                            result[0] = parseExpression(
-                                i + 1,
-                                data,
-                                throw_error
-                            );
+                            result[0] = parseExpression(i + 1, data, reject);
                             i += result[0].jump + 1;
-                            buffer.append(result[0].data, throw_error);
+                            buffer.append(result[0].data, reject);
                             continue;
                         // Тернарное выражение
 
                         case data[i].equals(CHARTYPE.OPERATOR, '?'):
-                            buffer.complete(throw_error);
+                            buffer.complete(reject);
                             result[0] = parseTernar(
                                 new ExpressionGroup(
                                     data[i].position,
@@ -6077,7 +6339,7 @@ module.exports = /******/ (() => {
                                 ),
                                 i + 1,
                                 data,
-                                throw_error
+                                reject
                             );
                             return {
                                 data: result[0].data,
@@ -6101,17 +6363,17 @@ module.exports = /******/ (() => {
                                 '|',
                                 '&',
                             ]):
-                            buffer.append(data[i], throw_error);
+                            buffer.append(data[i], reject);
                             continue;
                         // Неизвестно что это, завершаем парсинг выражения на этом
 
                         default:
                             if (buffer.isNotDone())
-                                throw_error(
+                                reject(
                                     data[i - 1].position,
                                     new CriticalParserErrorUnexpectedEndOfExpression()
                                 );
-                            buffer.complete(throw_error);
+                            buffer.complete(reject);
                             return {
                                 data: buffer,
                             };
@@ -6123,7 +6385,7 @@ module.exports = /******/ (() => {
              *
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызывается при ошибке функция, котора первым аргументом принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject {@link CodeEmitter.throwError} - Вызывается при ошибке функция, котора первым аргументом принимает позицию вхождения на котором произошла ошибка
              * @param {String} segment_separator Разделитель для сегментов
              * @param {Number} max_segments Максимальное число сегментов, если это число сегментов будет превышено, будет выбражено исключение
              * @param {String} blockname Название блока
@@ -6137,7 +6399,7 @@ module.exports = /******/ (() => {
             function segmentationParser(
                 start,
                 entries,
-                throw_error,
+                reject,
                 segment_separator = ',',
                 max_segments = Infinity,
                 blockname = 'unknown'
@@ -6159,10 +6421,10 @@ module.exports = /******/ (() => {
                                 buffer[buffer.length - 1] = parseExpression(
                                     0,
                                     buffer[buffer.length - 1],
-                                    throw_error
+                                    reject
                                 ).data;
                             } else if (buffer.length > 1) {
-                                throw_error(
+                                reject(
                                     entries[i - 1].position,
                                     new SegmentationFaultEmptyArgumentException(
                                         blockname
@@ -6189,7 +6451,7 @@ module.exports = /******/ (() => {
                                 hook_index--;
                                 buffer[buffer.length - 1].push(entries[i]);
                             } else
-                                throw_error(
+                                reject(
                                     entries[i].position,
                                     new ParserLogicException()
                                 );
@@ -6202,18 +6464,18 @@ module.exports = /******/ (() => {
                                 buffer[buffer.length - 1] = parseExpression(
                                     0,
                                     buffer[buffer.length - 1],
-                                    throw_error
+                                    reject
                                 ).data;
                                 buffer.push(new Array());
                                 if (buffer.length > max_segments)
-                                    throw_error(
+                                    reject(
                                         entries[i].position,
                                         new SegmentationFaultMaximumSegmentsForBlockException(
                                             blockname
                                         )
                                     );
                             } else {
-                                throw_error(
+                                reject(
                                     entries[i].position,
                                     new SegmentationFaultEmptyArgumentException(
                                         blockname
@@ -6234,7 +6496,7 @@ module.exports = /******/ (() => {
              *
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              *
              * @returns {{data: Array<SequenceGroup>, jump: Number}} массив с выражениями, и позиция с которой можно продолжить парсинг
              *
@@ -6242,7 +6504,7 @@ module.exports = /******/ (() => {
              * @protected
              */
 
-            function segmentCutter(start, entries, throw_error) {
+            function segmentCutter(start, entries, reject) {
                 let hook_index = 0,
                     body = new Array();
 
@@ -6253,8 +6515,7 @@ module.exports = /******/ (() => {
                                 hook_index <= 0):
                             return {
                                 // Сегменты
-                                data: codeBlockParser(0, body, throw_error)
-                                    .data,
+                                data: codeBlockParser(0, body, reject).data,
                                 // Прыжок парсера
                                 jump: i - start,
                             };
@@ -6269,7 +6530,7 @@ module.exports = /******/ (() => {
                                 hook_index--;
                                 body.push(entries[i]);
                             } else
-                                throw_error(
+                                reject(
                                     entries[i].position,
                                     new ParserLogicException()
                                 );
@@ -6287,7 +6548,7 @@ module.exports = /******/ (() => {
              *
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              *
              * @returns {{data: IfStatement, jump: Number}} Объякт дескриптор блока if, и позиция с которой можно продолжить парсинг
              *
@@ -6295,7 +6556,7 @@ module.exports = /******/ (() => {
              * @protected
              */
 
-            function ifStatementParser(start, entries, throw_error) {
+            function ifStatementParser(start, entries, reject) {
                 let index = start,
                     result = new Array();
 
@@ -6307,7 +6568,7 @@ module.exports = /******/ (() => {
                     result[0] = segmentationParser(
                         index + 2,
                         entries,
-                        throw_error,
+                        reject,
                         '',
                         1,
                         'if'
@@ -6318,11 +6579,7 @@ module.exports = /******/ (() => {
                         maybeEquals(entries, index, CHARTYPE.NEWLINE) &&
                         entries[index].equals(CHARTYPE.OPERATOR, '{')
                     ) {
-                        result[1] = segmentCutter(
-                            index + 1,
-                            entries,
-                            throw_error
-                        );
+                        result[1] = segmentCutter(index + 1, entries, reject);
                         index += result[1].jump + 1; // Else statement
 
                         if (
@@ -6344,7 +6601,7 @@ module.exports = /******/ (() => {
                                 result[2] = segmentCutter(
                                     index + 3,
                                     entries,
-                                    throw_error
+                                    reject
                                 );
                                 index += result[2].jump + 3;
                                 return {
@@ -6366,7 +6623,7 @@ module.exports = /******/ (() => {
                                 result[2] = ifStatementParser(
                                     index + 2,
                                     entries,
-                                    throw_error
+                                    reject
                                 );
                                 index += result[2].jump + 2;
                                 return {
@@ -6378,7 +6635,7 @@ module.exports = /******/ (() => {
                                     jump: index - start,
                                 };
                             } else {
-                                throw_error(
+                                reject(
                                     entries[index + 2].position,
                                     new UnexpectedTokenStatement(
                                         'else',
@@ -6397,7 +6654,7 @@ module.exports = /******/ (() => {
                             };
                         }
                     } else {
-                        throw_error(
+                        reject(
                             entries[index].position,
                             new UnexpectedTokenStatement(
                                 'if',
@@ -6407,7 +6664,7 @@ module.exports = /******/ (() => {
                         );
                     }
                 } else {
-                    throw_error(
+                    reject(
                         entries[index + 1].position,
                         new UnexpectedTokenStatement(
                             'if',
@@ -6422,7 +6679,7 @@ module.exports = /******/ (() => {
              *
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              *
              * @returns {
              *      {
@@ -6434,7 +6691,7 @@ module.exports = /******/ (() => {
              * @protected
              */
 
-            function codeBlockParser(start, entries, throw_error) {
+            function codeBlockParser(start, entries, reject) {
                 const buffer = new SequenceGroup(),
                     result = new Array();
 
@@ -6455,7 +6712,7 @@ module.exports = /******/ (() => {
                                 result[0] = parseExpression(
                                     i + 1,
                                     entries,
-                                    throw_error
+                                    reject
                                 );
                                 i += result[0].jump + 1;
                                 buffer.push(new OutStatement(result[0].data));
@@ -6465,7 +6722,7 @@ module.exports = /******/ (() => {
                                 result[0] = ifStatementParser(
                                     i,
                                     entries,
-                                    throw_error
+                                    reject
                                 );
                                 i += result[0].jump;
                                 buffer.push(result[0].data);
@@ -6488,7 +6745,7 @@ module.exports = /******/ (() => {
                                     result[0] = segmentationParser(
                                         i + 2,
                                         entries,
-                                        throw_error,
+                                        reject,
                                         '',
                                         1,
                                         'while'
@@ -6509,7 +6766,7 @@ module.exports = /******/ (() => {
                                         result[1] = segmentCutter(
                                             i + 1,
                                             entries,
-                                            throw_error
+                                            reject
                                         );
                                         i += result[1].jump + 1;
                                         buffer.push(
@@ -6519,7 +6776,7 @@ module.exports = /******/ (() => {
                                             )
                                         );
                                     } else {
-                                        throw_error(
+                                        reject(
                                             entries[i].position,
                                             new UnexpectedTokenStatement(
                                                 'while',
@@ -6529,7 +6786,7 @@ module.exports = /******/ (() => {
                                         );
                                     }
                                 } else {
-                                    throw_error(
+                                    reject(
                                         entries[i + 1].position,
                                         new UnexpectedTokenStatement(
                                             'while',
@@ -6558,7 +6815,7 @@ module.exports = /******/ (() => {
                                     result[0] = segmentationParser(
                                         i + 2,
                                         entries,
-                                        throw_error,
+                                        reject,
                                         ';',
                                         2,
                                         'repeat'
@@ -6579,7 +6836,7 @@ module.exports = /******/ (() => {
                                         result[1] = segmentCutter(
                                             i + 1,
                                             entries,
-                                            throw_error
+                                            reject
                                         );
                                         i += result[1].jump + 1;
                                         buffer.push(
@@ -6590,7 +6847,7 @@ module.exports = /******/ (() => {
                                             )
                                         );
                                     } else {
-                                        throw_error(
+                                        reject(
                                             entries[i].position,
                                             new UnexpectedTokenStatement(
                                                 'repeat',
@@ -6600,7 +6857,7 @@ module.exports = /******/ (() => {
                                         );
                                     }
                                 } else {
-                                    throw_error(
+                                    reject(
                                         entries[i + 1].position,
                                         new UnexpectedTokenStatement(
                                             'repeat',
@@ -6637,7 +6894,7 @@ module.exports = /******/ (() => {
                                         result[0] = parseExpression(
                                             i + 3,
                                             entries,
-                                            throw_error
+                                            reject
                                         );
                                         buffer.push(
                                             new SetStatement(
@@ -6648,7 +6905,7 @@ module.exports = /******/ (() => {
                                         i += result[0].jump + 3;
                                         continue;
                                     } else {
-                                        throw_error(
+                                        reject(
                                             entries[i + 3].position,
                                             new UnexpectedWordTypeAndGetException(
                                                 entries[i + 2].toString(),
@@ -6657,7 +6914,7 @@ module.exports = /******/ (() => {
                                         );
                                     }
                                 } else {
-                                    throw_error(
+                                    reject(
                                         entries[i + 2].position,
                                         new UnexpectedWordTypeAndGetException(
                                             entries[i + 1].toString(),
@@ -6669,11 +6926,7 @@ module.exports = /******/ (() => {
                                 break;
 
                             case entries[i].equals(CHARTYPE.WORD):
-                                result[0] = parseVarName(
-                                    i,
-                                    entries,
-                                    throw_error
-                                ); // Если следующий символ доступен
+                                result[0] = parseVarName(i, entries, reject); // Если следующий символ доступен
 
                                 if (i + result[0].jump < leng) {
                                     // Переопределение
@@ -6686,7 +6939,7 @@ module.exports = /******/ (() => {
                                         result[1] = parseExpression(
                                             result[0].jump + i + 1,
                                             entries,
-                                            throw_error
+                                            reject
                                         );
                                         buffer.push(
                                             new ResetStatement(
@@ -6713,7 +6966,7 @@ module.exports = /******/ (() => {
                                             result[1] = parseExpression(
                                                 result[0].jump + i + 2,
                                                 entries,
-                                                throw_error
+                                                reject
                                             );
                                             buffer.push(
                                                 new PushStatement(
@@ -6729,7 +6982,7 @@ module.exports = /******/ (() => {
                                                 result[1].jump +
                                                 2;
                                         } else {
-                                            throw_error(
+                                            reject(
                                                 entries[i + result[0].jump + 1]
                                                     .position,
                                                 new UnexpectedTokenException(
@@ -6749,12 +7002,12 @@ module.exports = /******/ (() => {
                                         result[1] = parseExpression(
                                             i,
                                             entries,
-                                            throw_error
+                                            reject
                                         );
                                         buffer.push(result[1].data);
                                         i += result[1].jump; // Ошибка
                                     } else {
-                                        throw_error(
+                                        reject(
                                             entries[i].position,
                                             new InvalidSequenceForLetiableAccessException()
                                         );
@@ -6767,17 +7020,13 @@ module.exports = /******/ (() => {
 
                             case entries[i].equals(CHARTYPE.NUMBER) ||
                                 entries[i].equals(CHARTYPE.STRING):
-                                result[0] = parseExpression(
-                                    i,
-                                    entries,
-                                    throw_error
-                                );
+                                result[0] = parseExpression(i, entries, reject);
                                 buffer.push(result[0].data);
                                 i += result[0].jump;
                                 continue;
 
                             default:
-                                throw_error(
+                                reject(
                                     entries[i].position,
                                     new UnexpectedTokenException(
                                         entries[i].toString(),
@@ -6791,17 +7040,17 @@ module.exports = /******/ (() => {
                         } else {
                             if (entries.length != 0) {
                                 if (entries[i] != null)
-                                    throw_error(
+                                    reject(
                                         entries[i].position,
                                         new CriticalParserErrorException()
                                     );
                                 else
-                                    throw_error(
+                                    reject(
                                         entries[entries.length - 1].position,
                                         new CriticalParserErrorUnexpectedEndOfInputException()
                                     );
                             } else {
-                                throw_error(
+                                reject(
                                     0,
                                     new CriticalParserErrorNoRawDataTransmittedException()
                                 );
@@ -6814,7 +7063,7 @@ module.exports = /******/ (() => {
              * Парсит вхождения, которые можно получить вызовом функции @see {@link lexer}
              *
              * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              * @param {?String} parent_path Путь к шаблону
              *
              * @returns {SequenceMainGroup} Тело исполнителя
@@ -6824,21 +7073,21 @@ module.exports = /******/ (() => {
              * @async
              */
 
-            async function parser(entries, throw_error, parent_path) {
+            async function parser(entries, reject, parent_path) {
                 return new SequenceMainGroup(
                     codeBlockParser(
                         0,
-                        await linker(entries, parent_path, throw_error),
-                        throw_error
+                        await linker(entries, parent_path, reject),
+                        reject
                     ).data.Sequence
                 );
             }
             /**
-             * Парсит шаблон сообщения, которое помимо кода Poonya может содержать и любые другие символы вне префикса
+             * Парсит шаблон сообщения, которое помимо кода Poonya может содержать и любые другие символы вне префикса.
              *
              * @param {Array<Token>} entries Вхождения для парсинга
              * @param {String} block_prefix Префикс для обозначения начала блока кода poonya
-             * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождени
+             * @param {Function} reject {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождени
              * @param {String} parent_path Путь к шаблону
              *
              * @returns {SequenceMainGroup} Тело исполнителя
@@ -6851,7 +7100,7 @@ module.exports = /******/ (() => {
             async function parserMP(
                 entries,
                 block_prefix,
-                throw_error,
+                reject,
                 parent_path
             ) {
                 let hook_index = 0,
@@ -6909,9 +7158,9 @@ module.exports = /******/ (() => {
                                         (e) => e.type !== CHARTYPE.SPACE
                                     ),
                                     parent_path,
-                                    throw_error
+                                    reject
                                 ),
-                                throw_error
+                                reject
                             ).data
                         );
                         buffer.splice(0, buffer.length);
@@ -6944,9 +7193,9 @@ module.exports = /******/ (() => {
                                         (e) => e.type !== CHARTYPE.SPACE
                                     ),
                                     parent_path,
-                                    throw_error
+                                    reject
                                 ),
-                                throw_error
+                                reject
                             ).data
                         );
                         buffer.splice(0, buffer.length);
@@ -6964,7 +7213,7 @@ module.exports = /******/ (() => {
                             buffer.splice(0, buffer.length);
                         }
                     } else {
-                        throw_error(
+                        reject(
                             entries[entries.length - 1].position,
                             new UnexpectedTokenException(
                                 entries[entries.length - 1],
@@ -7059,7 +7308,7 @@ module.exports = /******/ (() => {
             const { EventEmitter } = __webpack_require__(614),
                 { readFile } = __webpack_require__(747),
                 { Stream } = __webpack_require__(413),
-                { normalize, extname } = __webpack_require__(622),
+                { normalize, extname, join } = __webpack_require__(622),
                 { IOError, PoonyaException } = __webpack_require__(707),
                 { Import, ImportDir, ImportFile } = __webpack_require__(239),
                 { Context, Heap } = __webpack_require__(392),
@@ -7067,7 +7316,12 @@ module.exports = /******/ (() => {
                     909
                 ),
                 { SERVICE } = __webpack_require__(635),
-                { toFixed, toBytes, fromBytes } = __webpack_require__(270),
+                {
+                    toFixed,
+                    toBytes,
+                    fromBytes,
+                    setImmediate,
+                } = __webpack_require__(270),
                 { iPoonyaConstructsData } = __webpack_require__(779),
                 lexer = __webpack_require__(513); // Private fields
 
@@ -7230,8 +7484,18 @@ module.exports = /******/ (() => {
                         _.path = normalize(
                             typeof input.path === 'string'
                                 ? ['', '.'].includes(extname(input.path))
-                                    ? input.path + '.po'
-                                    : input.path
+                                    ? join(
+                                          module.parent
+                                              ? module.parent.path
+                                              : module.path,
+                                          input.path + '.po'
+                                      )
+                                    : join(
+                                          module.parent
+                                              ? module.parent.path
+                                              : module.path,
+                                          input.path
+                                      )
                                 : module.parent
                                 ? module.parent.filename
                                 : module.filename
@@ -7277,10 +7541,10 @@ module.exports = /******/ (() => {
                 throwError(pos, error, rad_of = 5) {
                     rad_of = parseInt(rad_of);
                     let buffer = [],
-                        data = this.input.split('\n'),
+                        data = this.input.split(/$\n/gm),
                         line_dump = fromBytes(
                             toBytes(this.input).slice(0, pos)
-                        ).split('\n'),
+                        ).split(/$\n/gm),
                         line = line_dump.length - 1,
                         line_start =
                             line - parseInt(rad_of / 2) < 0
@@ -7297,7 +7561,7 @@ module.exports = /******/ (() => {
                         ':',
                         line + 1,
                         ':',
-                        line_dump[line].length + 1
+                        line_dump[line].length
                     );
 
                     if (pos != -1) {
@@ -7315,7 +7579,7 @@ module.exports = /******/ (() => {
                                 buffer.push(
                                     '\n     '.padEnd(ll + 6, ' '),
                                     ' |> '.padEnd(
-                                        line_dump[line].length + 4,
+                                        line_dump[line].length + 3,
                                         ' '
                                     ),
                                     '^'
@@ -7327,6 +7591,7 @@ module.exports = /******/ (() => {
                     }
 
                     if (error instanceof PoonyaException) {
+                        if (SERVICE.CONFIG.DEBUG) console.trace(error);
                         error.message += '\n' + buffer.join('');
                         throw error;
                     } else throw new PoonyaException(error, buffer.join(''));
@@ -7371,17 +7636,16 @@ module.exports = /******/ (() => {
                             this.data.result(
                                 new Context(this.libraries, error, ...data),
                                 out,
-                                error
+                                error,
+                                () => out.end()
                             );
-                            out.end();
                         } else {
                             throw new TypeError('Data must have a Heap type');
                         }
                     } else if (data instanceof Context) {
                         const clone = data.clone();
                         clone.import(this.libraries, error);
-                        this.data.result(clone, out, error);
-                        out.end();
+                        this.data.result(clone, out, error, () => out.end());
                     } else {
                         if (
                             typeof data === 'object' &&
@@ -7394,9 +7658,9 @@ module.exports = /******/ (() => {
                             this.data.result(
                                 new Context(this.libraries, error, data),
                                 out,
-                                error
+                                error,
+                                () => out.end()
                             );
-                            out.end();
                         } else {
                             throw new TypeError('Data must have a Heap type');
                         }
@@ -7576,54 +7840,71 @@ module.exports = /******/ (() => {
                 }
 
                 [RESULT](data, error) {
-                    if (data instanceof Context) {
-                        const clone = data.clone();
-                        clone.import(this.libraries, error);
-                        return this.data.result(clone, [], error);
-                    } else {
-                        if (Array.isArray(data)) {
-                            for (let i = 0, leng = data.length; i < leng; i++)
+                    return new Promise((res) => {
+                        if (data instanceof Context) {
+                            const clone = data.clone();
+                            clone.import(this.libraries, error);
+                            this.data.result(clone, [], error, res);
+                        } else {
+                            if (Array.isArray(data)) {
+                                for (
+                                    let i = 0, leng = data.length;
+                                    i < leng;
+                                    i++
+                                )
+                                    if (
+                                        typeof data[i] === 'object' &&
+                                        !(data[i] instanceof Heap)
+                                    ) {
+                                        data[i] = new Heap(null, data[i]);
+                                    }
+
                                 if (
-                                    typeof data[i] === 'object' &&
-                                    !(data[i] instanceof Heap)
+                                    data.find((e) => !(e instanceof Heap)) ==
+                                    null
                                 ) {
-                                    data[i] = new Heap(null, data[i]);
+                                    this.data.result(
+                                        new Context(
+                                            this.libraries,
+                                            error,
+                                            ...data
+                                        ),
+                                        [],
+                                        error,
+                                        res
+                                    );
+                                } else {
+                                    throw new TypeError(
+                                        'Data must have a Heap type'
+                                    );
+                                }
+                            } else {
+                                if (
+                                    typeof data === 'object' &&
+                                    !(data instanceof Heap)
+                                ) {
+                                    data = new Heap(null, data);
                                 }
 
-                            if (
-                                data.find((e) => !(e instanceof Heap)) == null
-                            ) {
-                                return this.data.result(
-                                    new Context(this.libraries, error, ...data),
-                                    [],
-                                    error
-                                );
-                            } else {
-                                throw new TypeError(
-                                    'Data must have a Heap type'
-                                );
-                            }
-                        } else {
-                            if (
-                                typeof data === 'object' &&
-                                !(data instanceof Heap)
-                            ) {
-                                data = new Heap(null, data);
-                            }
-
-                            if (data instanceof Heap) {
-                                return this.data.result(
-                                    new Context(this.libraries, error, data),
-                                    [],
-                                    error
-                                );
-                            } else {
-                                throw new TypeError(
-                                    'Data must have a Heap type'
-                                );
+                                if (data instanceof Heap) {
+                                    this.data.result(
+                                        new Context(
+                                            this.libraries,
+                                            error,
+                                            data
+                                        ),
+                                        [],
+                                        error,
+                                        res
+                                    );
+                                } else {
+                                    throw new TypeError(
+                                        'Data must have a Heap type'
+                                    );
+                                }
                             }
                         }
-                    }
+                    });
                 }
                 /**
                  * Возвращает результат выполенения выражения
@@ -7639,8 +7920,11 @@ module.exports = /******/ (() => {
                     const _ = this;
 
                     return new Promise((res) => {
-                        if (_.loaded) res(_[RESULT](data, error));
-                        else _.on('load', () => res(_[RESULT](data, error)));
+                        if (_.loaded) _[RESULT](data, error).then(res);
+                        else
+                            _.on('load', () =>
+                                _[RESULT](data, error).then(res)
+                            );
                     });
                 }
             }
@@ -7669,6 +7953,7 @@ module.exports = /******/ (() => {
                                     input: '',
                                     charset: 'utf-8',
                                     path: 'untitled.po',
+                                    logger: console,
                                 }),
                                 data
                             )
@@ -7682,6 +7967,7 @@ module.exports = /******/ (() => {
                                         input: '',
                                         charset: 'utf-8',
                                         path: 'untitled.po',
+                                        logger: console,
                                     }),
                                     data
                                 )
@@ -7700,17 +7986,14 @@ module.exports = /******/ (() => {
              * @async
              */
 
-            function patternCreator(Pattern, ...args) {
+            function createPattern(Pattern, ...args) {
                 if (Object.prototype.isPrototypeOf.call(CodeEmitter, Pattern)) {
-                    Pattern = Function.prototype.apply(
-                        Object.create(Pattern),
-                        args
-                    );
+                    Pattern = new Pattern(...args);
                     return new Promise((res, rej) => {
                         Pattern.on('load', (...args) =>
                             res(
                                 Object.assign(new iPoonyaConstructsData(), {
-                                    Pattern,
+                                    data: Pattern,
                                     args,
                                 })
                             )
@@ -7718,7 +8001,7 @@ module.exports = /******/ (() => {
                         Pattern.on('error', (...args) =>
                             rej(
                                 Object.assign(new iPoonyaConstructsData(), {
-                                    Pattern,
+                                    data: Pattern,
                                     args,
                                 })
                             )
@@ -7742,7 +8025,7 @@ module.exports = /******/ (() => {
             module.exports.PoonyaOutputStream = PoonyaOutputStream;
             module.exports.ExpressionPattern = ExpressionPattern;
             module.exports.ExecutionPattern = ExecutionPattern;
-            module.exports.patternCreator = patternCreator;
+            module.exports.createPattern = createPattern;
             module.exports.createContext = createContext;
             module.exports.ImportFile = ImportFile.bind(
                 null,
@@ -7806,100 +8089,131 @@ module.exports = /******/ (() => {
              */
 
             function Cast(data, context, parents_three = new Array()) {
+                ///
+                /// При кастинге значения, значение data (js примитив) преобразовывается в значение poonya
+                /// Никаких ассинхрнных операций тут нет, поэтому можно возвращать результат, как результат
+                /// Кастинга примитива js
+                ///
+                let result;
+
                 switch (typeof data) {
                     case 'bigint':
-                        return context.createObject(
+                        context.createObject(
                             data,
                             -1,
                             SERVICE.CONSTRUCTORS.INTEGER,
                             null,
-                            parents_three
+                            parents_three,
+                            (d_result) => (result = d_result)
                         );
+                        break;
 
                     case 'number':
-                        return context.createObject(
+                        context.createObject(
                             data,
                             -1,
                             SERVICE.CONSTRUCTORS.NUMBER,
                             null,
-                            parents_three
+                            parents_three,
+                            (d_result) => (result = d_result)
                         );
+                        break;
 
                     case 'string':
-                        return context.createObject(
+                        context.createObject(
                             data,
                             -1,
                             SERVICE.CONSTRUCTORS.STRING,
                             null,
-                            parents_three
+                            parents_three,
+                            (d_result) => (result = d_result)
                         );
+                        break;
 
                     case 'symbol':
-                        return context.createObject(
+                        context.createObject(
                             Symbol.keyFor(data),
                             -1,
                             SERVICE.CONSTRUCTORS.STRING,
                             null,
-                            parents_three
+                            parents_three,
+                            (d_result) => (result = d_result)
                         );
+                        break;
 
                     case 'boolean':
-                        return context.createObject(
+                        context.createObject(
                             data,
                             -1,
                             SERVICE.CONSTRUCTORS.BOOLEAN,
                             null,
-                            parents_three
+                            parents_three,
+                            (d_result) => (result = d_result)
                         );
+                        break;
 
                     case 'undefined':
-                        return context.createObject(
+                        context.createObject(
                             data,
                             -1,
                             SERVICE.CONSTRUCTORS.NULL,
-                            null
+                            null,
+                            parents_three,
+                            (d_result) => (result = d_result)
                         );
+                        break;
 
                     case 'object':
                         switch (true) {
                             case data === null:
-                                return context.createObject(
+                                context.createObject(
                                     data,
                                     -1,
                                     SERVICE.CONSTRUCTORS.NULL,
                                     null,
-                                    parents_three
+                                    parents_three,
+                                    (d_result) => (result = d_result)
                                 );
+                                break;
 
                             case data instanceof iPoonyaObject:
                             case data instanceof iPoonyaPrototype:
                             case data instanceof Operand:
                             case data instanceof NativeFunction:
-                                return data;
+                                result = data;
+                                break;
 
                             default:
                                 parents_three.push(data);
                                 if (Array.isArray(data))
-                                    return context.createObject(
+                                    context.createObject(
                                         data,
                                         -1,
                                         SERVICE.CONSTRUCTORS.ARRAY,
                                         null,
-                                        parents_three
+                                        parents_three,
+                                        (d_result) => (result = d_result)
                                     );
                                 else
-                                    return context.createObject(
+                                    context.createObject(
                                         data,
                                         -1,
                                         SERVICE.CONSTRUCTORS.OBJECT,
                                         null,
-                                        parents_three
+                                        parents_three,
+                                        (d_result) => (result = d_result)
                                     );
+                                break;
                         }
 
+                        break;
+
                     case 'function':
-                        return new NativeFunction(data);
+                        result = new NativeFunction(data);
+                        break;
                 }
+
+                return result;
             }
             /**
              * Иногда некоторые выражения записываются неоднозначно, допустим <br> <br>
@@ -8011,6 +8325,7 @@ module.exports = /******/ (() => {
                 return string;
             }
 
+            module.exports.setImmediate = setImmediate;
             module.exports.maybeEquals = maybeEquals;
             module.exports.countKeys = countKeys;
             module.exports.fromBytes = fromBytes;

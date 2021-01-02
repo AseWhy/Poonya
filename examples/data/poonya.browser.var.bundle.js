@@ -563,7 +563,7 @@ poonya = /******/ (() => {
                             value.result(
                                 service.context,
                                 null,
-                                service.throw_error
+                                service.reject
                             ) == target
                         )
                             return true;
@@ -574,14 +574,14 @@ poonya = /******/ (() => {
 
                 remove(service, from, to) {
                     if (typeof from != 'number' || isNaN(from))
-                        service.throw_error(
+                        service.reject(
                             service.position,
                             new Exceptions.PoonyaException(
                                 'From must have a number type'
                             )
                         );
                     if (typeof to != 'number' || isNaN(to))
-                        service.throw_error(
+                        service.reject(
                             service.position,
                             new Exceptions.PoonyaException(
                                 'To must have a number type'
@@ -601,7 +601,7 @@ poonya = /******/ (() => {
                             value.result(
                                 service.context,
                                 null,
-                                service.throw_error
+                                service.reject
                             ) == target
                         )
                             return key;
@@ -632,14 +632,14 @@ poonya = /******/ (() => {
 
                 slice(service, from, to) {
                     if (typeof from != 'number' || isNaN(from))
-                        service.throw_error(
+                        service.reject(
                             service.position,
                             new Exceptions.PoonyaException(
                                 'From must have a number type'
                             )
                         );
                     if (typeof to != 'number' || isNaN(to))
-                        service.throw_error(
+                        service.reject(
                             service.position,
                             new Exceptions.PoonyaException(
                                 'To must have a number type'
@@ -1412,7 +1412,7 @@ poonya = /******/ (() => {
                  * @param {Array<Any>} args аргументы функции
                  * @param {iContext} context Контекст выполнения фукнции
                  * @param {iPoonyaObject} thisArgs родительский объект
-                 * @param {Function} throw_error Метод выбрасывания ошибок
+                 * @param {Function} reject Метод выбрасывания ошибок
                  * @param {Number} call_pos Позиция из которой происходит вызов
                  *
                  * @returns {Any} в зависимости от результата выполнения нативной функции
@@ -1424,7 +1424,7 @@ poonya = /******/ (() => {
                     context,
                     out,
                     call_pos,
-                    throw_error
+                    reject
                 ) {
                     let data,
                         args_f = new Array();
@@ -1432,8 +1432,8 @@ poonya = /******/ (() => {
                     for (let i = 0, leng = args.length; i < leng; i++) {
                         args_f.push(
                             args[i]
-                                .result(context, out, throw_error) // Получаем значение poonya
-                                .result(context, out, throw_error) // Преобразуем в нативное значение
+                                .result(context, out, reject) // Получаем значение poonya
+                                .result(context, out, reject) // Преобразуем в нативное значение
                         );
                     }
 
@@ -1443,13 +1443,13 @@ poonya = /******/ (() => {
                             {
                                 args,
                                 context,
-                                throw_error,
+                                reject,
                                 position: call_pos,
                             },
                             ...args_f
                         );
                     } catch (e) {
-                        throw_error(
+                        reject(
                             call_pos,
                             new NativeFunctionExecutionError(
                                 this.target.name,
@@ -1644,7 +1644,7 @@ poonya = /******/ (() => {
                  * @public
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     let output = new Array(this.fields.size),
                         data;
 
@@ -1660,7 +1660,7 @@ poonya = /******/ (() => {
                                         ? value.result(
                                               context,
                                               out,
-                                              throw_error
+                                              reject
                                           )
                                         : null;
                     }
@@ -2310,16 +2310,16 @@ poonya = /******/ (() => {
                  *
                  * @param {iContext} context текущий контекст
                  * @param {Array<String>} out Выходной массив
-                 * @param {Function} throw_error Функция вызывающаяся при ошибках
+                 * @param {Function} reject Функция вызывающаяся при ошибках
                  *
                  * @returns {String}
                  */
 
-                toString(context, out, throw_error) {
+                toString(context, out, reject) {
                     let toString = this.fields.get('toString');
 
                     if (toString != null) {
-                        return toString.result(context, out, throw_error);
+                        return toString.result(context, out, reject);
                     } else {
                         return `[Object${this.prototype.name}]`;
                     }
@@ -2329,12 +2329,12 @@ poonya = /******/ (() => {
                  *
                  * @param {?iContext} context текущий контекст
                  * @param {?Array<String>} out Выходной массив
-                 * @param {?Function} throw_error Функция вызывающаяся при ошибках
+                 * @param {?Function} reject Функция вызывающаяся при ошибках
                  * @method
                  * @public
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     let output = new Object(),
                         data;
 
@@ -2350,7 +2350,7 @@ poonya = /******/ (() => {
                                         ? value.result(
                                               context,
                                               out,
-                                              throw_error
+                                              reject
                                           )
                                         : null;
                     }
@@ -2763,7 +2763,7 @@ poonya = /******/ (() => {
                  * Добавляет вхождение в выражение
                  *
                  * @param {Token} entry Выхождение, которое нужно добавить
-                 * @param {Function} throw_error Функция выбрасывания ошибок
+                 * @param {Function} reject Функция выбрасывания ошибок
                  *
                  * @throws {Exceptions.TheSequenceException}
                  *
@@ -2771,7 +2771,7 @@ poonya = /******/ (() => {
                  * @method
                  */
 
-                append(entry, throw_error) {
+                append(entry, reject) {
                     let current;
 
                     switch (entry.type) {
@@ -2831,7 +2831,7 @@ poonya = /******/ (() => {
                             )
                                 current = entry;
                             else
-                                throw_error(
+                                reject(
                                     entry.position,
                                     new UnableToRecognizeTypeException(
                                         entry.type
@@ -2849,7 +2849,7 @@ poonya = /******/ (() => {
                                 this.data[this.data.length - 1] instanceof
                                     Operand)
                         )
-                            throw_error(
+                            reject(
                                 entry.position,
                                 new TheSequenceException(
                                     current,
@@ -2858,7 +2858,7 @@ poonya = /******/ (() => {
                             );
                     } else {
                         if (current instanceof Operator)
-                            throw_error(
+                            reject(
                                 entry.position,
                                 new TheSequenceException(
                                     current,
@@ -2872,13 +2872,13 @@ poonya = /******/ (() => {
                 /**
                  * Окончательно форматирует выражение по всем правилоам алгебры.
                  *
-                 * @param {Function} throw_error Функция выбрасывания ошибок
+                 * @param {Function} reject Функция выбрасывания ошибок
                  *
                  * @public
                  * @method
                  */
 
-                complete(throw_error) {
+                complete(reject) {
                     // Stage 1 => 2 + 2 * 2 => 2 + (2 * 2)
                     if (
                         this.data.filter(
@@ -2902,7 +2902,7 @@ poonya = /******/ (() => {
                                         stack = new ExpressionGroup(
                                             dump[i + 1].position
                                         );
-                                        this.append(stack, throw_error);
+                                        this.append(stack, reject);
                                         break;
 
                                     case OPERATOR.PLUS:
@@ -2914,7 +2914,7 @@ poonya = /******/ (() => {
                                     case OPERATOR.AND:
                                         if (!mltexp) break;
                                         mltexp = false;
-                                        stack.append(dump[i], throw_error);
+                                        stack.append(dump[i], reject);
                                         stack.complete();
                                         stack = null;
                                         continue;
@@ -2924,9 +2924,9 @@ poonya = /******/ (() => {
                                 }
 
                             if (mltexp) {
-                                stack.append(dump[i], throw_error); // Добавляем в суб стек
+                                stack.append(dump[i], reject); // Добавляем в суб стек
                             } else {
-                                this.append(dump[i], throw_error); // Добавляем в основной стек
+                                this.append(dump[i], reject); // Добавляем в основной стек
                             }
                         }
                     } // Stage 2 => a & b => (a) & (b)
@@ -2946,17 +2946,17 @@ poonya = /******/ (() => {
                                 dump[i].op_p === OPERATOR.AND
                             ) {
                                 stack.complete();
-                                this.append(stack, throw_error);
-                                this.append(dump[i], throw_error);
+                                this.append(stack, reject);
+                                this.append(dump[i], reject);
                                 stack = new ExpressionGroup(dump[i].position);
                                 continue;
                             }
 
-                            stack.append(dump[i], throw_error);
+                            stack.append(dump[i], reject);
                         }
 
                         stack.complete();
-                        this.append(stack, throw_error);
+                        this.append(stack, reject);
                     } // Stage 3 => a | b => (a) | (b)
 
                     if (
@@ -2974,17 +2974,17 @@ poonya = /******/ (() => {
                                 dump[i].op_p === OPERATOR.OR
                             ) {
                                 stack.complete();
-                                this.append(stack, throw_error);
-                                this.append(dump[i], throw_error);
+                                this.append(stack, reject);
+                                this.append(dump[i], reject);
                                 stack = new ExpressionGroup(dump[i].position);
                                 continue;
                             }
 
-                            stack.append(dump[i], throw_error);
+                            stack.append(dump[i], reject);
                         }
 
                         stack.complete();
-                        this.append(stack, throw_error);
+                        this.append(stack, reject);
                     }
 
                     this.validated = true;
@@ -2994,7 +2994,7 @@ poonya = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
                  *
                  * @returns {Any} В зависимости от результатов выполнения выражения
                  * @throws {ParserException}
@@ -3003,12 +3003,12 @@ poonya = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     let result =
                         this.data[0] != null
                             ? this.data[0]
-                                  .result(context, out, throw_error) // Результируем значение функции
-                                  .result(context, out, throw_error) // Результируем значение контейнера
+                                  .result(context, out, reject) // Результируем значение функции
+                                  .result(context, out, reject) // Результируем значение контейнера
                             : null;
 
                     for (
@@ -3020,7 +3020,7 @@ poonya = /******/ (() => {
                         cur = this.data[i + 1].result(
                             context,
                             out,
-                            throw_error
+                            reject
                         );
 
                         switch (true) {
@@ -3132,7 +3132,7 @@ poonya = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
                  *
                  * @returns {Any} В зависимости от возвращаемых функцией значения
                  * @throws {ParserException}
@@ -3141,12 +3141,12 @@ poonya = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     const data = context.getByPath(
                         this.query_stack,
                         this.position,
                         null,
-                        throw_error,
+                        reject,
                         true
                     );
                     if (data.instance instanceof NativeFunction)
@@ -3156,15 +3156,15 @@ poonya = /******/ (() => {
                             context,
                             out,
                             this.position,
-                            throw_error
+                            reject
                         );
                     else if (data.instance instanceof iPoonyaPrototype)
-                        throw_error(
+                        reject(
                             this.position,
                             new UnableToCreateAnObjectException()
                         );
                     else {
-                        throw_error(
+                        reject(
                             this.position,
                             new FieldNotAFunctionException(
                                 this.query_stack[this.query_stack.length - 1]
@@ -3238,7 +3238,7 @@ poonya = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
                  *
                  * @returns {Any} В зависимости от типа запрашиваемых данных
                  * @throws {ParserException}
@@ -3247,12 +3247,12 @@ poonya = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     const data = context.getByPath(
                         this.query_stack,
                         this.position,
                         null,
-                        throw_error,
+                        reject,
                         true
                     );
                     if (data.instance != null) {
@@ -3264,14 +3264,14 @@ poonya = /******/ (() => {
                                     context,
                                     out,
                                     this.position,
-                                    throw_error
+                                    reject
                                 );
                             else
                                 return context.createObject(
                                     `[NativeCode:${data.instance.name}]`,
                                     this.position,
                                     SERVICE.CONSTRUCTORS.STRING,
-                                    throw_error
+                                    reject
                                 );
                         } else return data.instance;
                     } else
@@ -3279,7 +3279,7 @@ poonya = /******/ (() => {
                             null,
                             this.position,
                             SERVICE.CONSTRUCTORS.NULL,
-                            throw_error
+                            reject
                         );
                 }
                 /**
@@ -3410,7 +3410,7 @@ poonya = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
                  *
                  * @throws {ParserException}
                  *
@@ -3418,12 +3418,12 @@ poonya = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     return context.createObject(
                         this.initial,
                         this.position,
                         this.query_stack,
-                        throw_error
+                        reject
                     );
                 }
             }
@@ -3494,7 +3494,7 @@ poonya = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
                  *
                  * @returns {Any} В зависимости от возвращаемых операндами (`v1`, `v2`) начений
                  * @throws {ParserException}
@@ -3503,14 +3503,14 @@ poonya = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     if (
                         context.toBooleanResult(
-                            this.condition.result(context, out, throw_error)
+                            this.condition.result(context, out, reject)
                         )
                     )
-                        return this.v_o.result(context, out, throw_error);
-                    else return this.v_t.result(context, out, throw_error);
+                        return this.v_o.result(context, out, reject);
+                    else return this.v_t.result(context, out, reject);
                 }
             }
 
@@ -3575,7 +3575,7 @@ poonya = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
                  *
                  * @throws {ParserException}
                  *
@@ -3583,15 +3583,15 @@ poonya = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     if (
                         context.toBooleanResult(
-                            this.condition.result(context, out, throw_error)
+                            this.condition.result(context, out, reject)
                         )
                     )
-                        this.body_true.result(context, out, throw_error);
+                        this.body_true.result(context, out, reject);
                     else if (this.body_false != null)
-                        this.body_false.result(context, out, throw_error);
+                        this.body_false.result(context, out, reject);
                 }
             }
 
@@ -3646,7 +3646,7 @@ poonya = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
                  *
                  * @throws {ParserException}
                  *
@@ -3654,11 +3654,11 @@ poonya = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     out.write(
                         this.expression
-                            .result(context, out, throw_error)
-                            .result(context, out, throw_error)
+                            .result(context, out, reject)
+                            .result(context, out, reject)
                     );
                 }
             }
@@ -3734,7 +3734,7 @@ poonya = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
                  *
                  * @throws {Exceptions.ParserException}
                  *
@@ -3742,7 +3742,7 @@ poonya = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     let query_data = context.get(this.query_stack[0]),
                         query_stack = [...this.query_stack];
 
@@ -3756,7 +3756,7 @@ poonya = /******/ (() => {
                         ) {
                             if (query_stack[index] instanceof ExpressionGroup)
                                 query_stack[index] = query_stack[index]
-                                    .result(context, out, throw_error)
+                                    .result(context, out, reject)
                                     .toRawData();
                             query_data =
                                 query_data.get(query_stack[index]) || null;
@@ -3765,17 +3765,17 @@ poonya = /******/ (() => {
                         if (query_data instanceof PoonyaArray)
                             query_data.push(
                                 context,
-                                this.value.result(context, out, throw_error)
+                                this.value.result(context, out, reject)
                             );
                         else
-                            throw_error(
+                            reject(
                                 this.position,
                                 new TheFieldMustBeAnArrayInstanceExceprion(
                                     query_stack[index - 1]
                                 )
                             );
                     } else
-                        throw_error(
+                        reject(
                             this.position,
                             new GetFieldOfNullException(query_stack[0])
                         );
@@ -3848,7 +3848,7 @@ poonya = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
                  *
                  * @throws {ParserException}
                  *
@@ -3856,32 +3856,32 @@ poonya = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
-                    let from = this.from.result(context, out, throw_error),
-                        to = this.to.result(context, out, throw_error),
+                result(context, out, reject) {
+                    let from = this.from.result(context, out, reject),
+                        to = this.to.result(context, out, reject),
                         difference;
                     if (!(from instanceof PoonyaNumber))
-                        throw_error(
+                        reject(
                             this.from.position,
                             new TheFieldMustBeNumberException('From')
                         );
                     if (!(to instanceof PoonyaNumber))
-                        throw_error(
+                        reject(
                             this.to.position,
                             new TheFieldMustBeNumberException('To')
                         );
                     difference =
                         (from = Math.floor(
-                            from.result(context, out, throw_error)
+                            from.result(context, out, reject)
                         )) <
-                        (to = Math.floor(to.result(context, out, throw_error)))
+                        (to = Math.floor(to.result(context, out, reject)))
                             ? 1
                             : -1;
 
                     while (from != to) {
                         context.addLevel();
                         context.set('current', from, 'up');
-                        this.body.result(context, out, throw_error, false);
+                        this.body.result(context, out, reject, false);
                         from += difference;
                         context.popLevel();
                     }
@@ -3958,7 +3958,7 @@ poonya = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
                  *
                  * @throws {ParserException}
                  *
@@ -3966,7 +3966,7 @@ poonya = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     let query_data = context.get(this.query_stack[0]),
                         query_stack = [...this.query_stack];
 
@@ -3980,7 +3980,7 @@ poonya = /******/ (() => {
                         ) {
                             if (query_stack[index] instanceof ExpressionGroup)
                                 query_stack[index] = query_stack[index]
-                                    .result(context, out, throw_error)
+                                    .result(context, out, reject)
                                     .toRawData();
                             query_data =
                                 query_data.get(query_stack[index]) || null;
@@ -3993,13 +3993,13 @@ poonya = /******/ (() => {
                                 context,
                                 last_index instanceof ExpressionGroup
                                     ? last_index
-                                          .result(context, out, throw_error)
+                                          .result(context, out, reject)
                                           .toRawData()
                                     : last_index,
-                                this.value.result(context, out, throw_error)
+                                this.value.result(context, out, reject)
                             );
                         } else
-                            throw_error(
+                            reject(
                                 this.position,
                                 new GetFieldOfNullException(query_stack[index])
                             );
@@ -4007,10 +4007,10 @@ poonya = /******/ (() => {
                         if (query_data != null)
                             context.set(
                                 query_stack[0],
-                                this.value.result(context, out, throw_error)
+                                this.value.result(context, out, reject)
                             );
                         else
-                            throw_error(
+                            reject(
                                 this.position,
                                 new TheFieldNotHasDeclaredExceprion(
                                     query_stack[0]
@@ -4067,13 +4067,13 @@ poonya = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
                  *
                  * @public
                  * @method
                  */
 
-                result(context, out, throw_error, level_ops = true) {
+                result(context, out, reject, level_ops = true) {
                     if (level_ops) context.addLevel();
 
                     for (
@@ -4081,7 +4081,7 @@ poonya = /******/ (() => {
                         i < leng;
                         i++
                     ) {
-                        this.Sequence[i].result(context, out, throw_error);
+                        this.Sequence[i].result(context, out, reject);
                     }
 
                     if (level_ops) context.popLevel();
@@ -4152,15 +4152,15 @@ poonya = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
                  *
                  * @public
                  * @method
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     for (let i = 0, leng = this.Sequence.length; i < leng; i++)
-                        this.Sequence[i].result(context, out, throw_error);
+                        this.Sequence[i].result(context, out, reject);
                 }
                 /**
                  * Сериализует текущую группу в текст
@@ -4242,7 +4242,7 @@ poonya = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
                  *
                  * @throws {ParserException}
                  *
@@ -4250,15 +4250,15 @@ poonya = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     if (!context.has(this.name, 'up')) {
                         context.set(
                             this.name,
-                            this.value.result(context, out, throw_error),
+                            this.value.result(context, out, reject),
                             'up'
                         );
                     } else {
-                        throw_error(
+                        reject(
                             this.position,
                             new TheFieldAlreadyHasBeenDeclaredException(
                                 this.name
@@ -4324,7 +4324,7 @@ poonya = /******/ (() => {
                  *
                  * @param {iContext} context Контекст выполнения
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
-                 * @param {Function} throw_error Вызывается при ошибке
+                 * @param {Function} reject Вызывается при ошибке
                  *
                  * @throws {ParserException}
                  *
@@ -4332,13 +4332,13 @@ poonya = /******/ (() => {
                  * @method
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     while (
                         context.toBooleanResult(
-                            this.condition.result(context, out, throw_error)
+                            this.condition.result(context, out, reject)
                         )
                     )
-                        this.body.result(context, out, throw_error);
+                        this.body.result(context, out, reject);
                 }
             }
 
@@ -5273,19 +5273,19 @@ poonya = /******/ (() => {
                  *
                  * @param {?iContext} context контекст выполнения
                  * @param {?Array<String>} out Выходной массив
-                 * @param {?Function} throw_error Функция вызывающаяся при ошибках
+                 * @param {?Function} reject Функция вызывающаяся при ошибках
                  * @method
                  * @public
                  */
 
-                result(context, out, throw_error) {
+                result(context, out, reject) {
                     let output = new Object();
 
                     for (let [key, value] of this)
                         if (value instanceof NativeFunction)
                             output[key] =
                                 value != null
-                                    ? value.result(context, out, throw_error)
+                                    ? value.result(context, out, reject)
                                     : null;
                         else output[key] = value != null ? value.target : null;
 
@@ -5302,7 +5302,7 @@ poonya = /******/ (() => {
                  * Контекст выполнения
                  *
                  * @param {PoonyaStaticLibrary[]} libraries бибилиотеки для инициалзиции контекста
-                 * @param {Function} throw_error функция, которая будет вызвана при ошибке
+                 * @param {Function} reject функция, которая будет вызвана при ошибке
                  * @param {...Heap} initial Значения переданные для инициализации
                  *
                  * @memberof Poonya.Storage
@@ -5311,7 +5311,7 @@ poonya = /******/ (() => {
                  * @classdesc Определяет набор данных для манипуляции в шаблонизаторе
                  * @protected
                  */
-                constructor(libraries, throw_error, ...initial) {
+                constructor(libraries, reject, ...initial) {
                     super();
                     this.levels = new Array();
 
@@ -5329,19 +5329,19 @@ poonya = /******/ (() => {
                                     libraries[i].importTo(
                                         this.levels[0],
                                         this,
-                                        throw_error
+                                        reject
                                     );
                                 } else {
                                     target = this.createObject(
                                         null,
                                         -1,
                                         SERVICE.CONSTRUCTORS.OBJECT,
-                                        throw_error
+                                        reject
                                     );
                                     libraries[i].importTo(
                                         target,
                                         this,
-                                        throw_error
+                                        reject
                                     );
                                     this.levels[0].set(
                                         this,
@@ -5493,7 +5493,7 @@ poonya = /******/ (() => {
                  * @param {Array<String|Number|Operand>} path путь, по которому можно получить значение
                  * @param {Number} position Позиция вызова(необходимо в случае возникновения ошибки)
                  * @param {Object} type Тип который необходимо получить
-                 * @param {Function} throw_error Фукцния которая выбрасывает ошибку(необходимо в случае возникновения ошибки)
+                 * @param {Function} reject Фукцния которая выбрасывает ошибку(необходимо в случае возникновения ошибки)
                  * @param {Boolean} return_full_info Возвращать полную информацию о переменной, включая родительский объект(если имеется)
                  *
                  * @returns {?ParserData|?{
@@ -5509,7 +5509,7 @@ poonya = /******/ (() => {
                     path,
                     position,
                     type = null,
-                    throw_error,
+                    reject,
                     return_full_info = false
                 ) {
                     let instance = this.get(path[0]),
@@ -5522,7 +5522,7 @@ poonya = /******/ (() => {
                     for (; instance && index < leng; index++) {
                         if (query_stack[index] instanceof ExpressionGroup)
                             query_stack[index] = query_stack[index]
-                                .result(this, null, throw_error)
+                                .result(this, null, reject)
                                 .toRawData();
 
                         if (instance instanceof PoonyaObject) {
@@ -5534,7 +5534,7 @@ poonya = /******/ (() => {
                         } else if (instance instanceof iPoonyaPrototype) {
                             instance = instance[GET](query_stack[index], this);
                         } else {
-                            throw_error(
+                            reject(
                                 position,
                                 new GetFieldOfNullException(query_stack[index])
                             );
@@ -5595,7 +5595,7 @@ poonya = /******/ (() => {
                  * @param {*} initial
                  * @param {*} position
                  * @param {*} path
-                 * @param {*} throw_error
+                 * @param {*} reject
                  * @param {*} parents_three
                  *
                  * @returns {PoonyaObject} если по заданому пути существует значение вернет его, если нет то вернет null
@@ -5607,14 +5607,14 @@ poonya = /******/ (() => {
                     initial,
                     position,
                     path,
-                    throw_error,
+                    reject,
                     parents_three = new Array()
                 ) {
                     const prototype = this.getByPath(
                         path,
                         position,
                         iPoonyaPrototype,
-                        throw_error
+                        reject
                     );
 
                     if (prototype != null) {
@@ -5627,7 +5627,7 @@ poonya = /******/ (() => {
                                         init[entry[0]] = entry[1].result(
                                             this,
                                             null,
-                                            throw_error
+                                            reject
                                         );
                                     else init[entry[0]] = entry[1];
                                 }
@@ -5645,7 +5645,7 @@ poonya = /******/ (() => {
                                         init[key] = initial[key].result(
                                             this,
                                             null,
-                                            throw_error
+                                            reject
                                         );
                                     else init[key] = initial[key];
                                 }
@@ -5677,7 +5677,7 @@ poonya = /******/ (() => {
                                 return new PoonyaObject(prototype, init, this);
                         }
                     } else {
-                        throw_error(
+                        reject(
                             position,
                             new IsNotAConstructorException(path)
                         );
@@ -5801,7 +5801,7 @@ poonya = /******/ (() => {
                  * @method
                  */
 
-                importTo(parent, context, throw_error) {
+                importTo(parent, context, reject) {
                     for (let [key, value] of this._fields) {
                         switch (typeof value) {
                             case 'bigint':
@@ -5813,7 +5813,7 @@ poonya = /******/ (() => {
                                             null,
                                             -1,
                                             SERVICE.CONSTRUCTORS.NULL,
-                                            throw_error
+                                            reject
                                         )
                                     );
                                 else
@@ -5824,7 +5824,7 @@ poonya = /******/ (() => {
                                             value,
                                             -1,
                                             SERVICE.CONSTRUCTORS.INTEGER,
-                                            throw_error
+                                            reject
                                         )
                                     );
                                 break;
@@ -5838,7 +5838,7 @@ poonya = /******/ (() => {
                                             null,
                                             -1,
                                             SERVICE.CONSTRUCTORS.NULL,
-                                            throw_error
+                                            reject
                                         )
                                     );
                                 else
@@ -5849,7 +5849,7 @@ poonya = /******/ (() => {
                                             value,
                                             -1,
                                             SERVICE.CONSTRUCTORS.NUMBER,
-                                            throw_error
+                                            reject
                                         )
                                     );
                                 break;
@@ -5862,7 +5862,7 @@ poonya = /******/ (() => {
                                         value,
                                         -1,
                                         SERVICE.CONSTRUCTORS.STRING,
-                                        throw_error
+                                        reject
                                     )
                                 );
                                 break;
@@ -5875,7 +5875,7 @@ poonya = /******/ (() => {
                                         Symbol.keyFor(value),
                                         -1,
                                         SERVICE.CONSTRUCTORS.STRING,
-                                        throw_error
+                                        reject
                                     )
                                 );
                                 break;
@@ -5910,7 +5910,7 @@ poonya = /******/ (() => {
                                         value,
                                         -1,
                                         SERVICE.CONSTRUCTORS.BOOLEAN,
-                                        throw_error
+                                        reject
                                     )
                                 );
                                 break;
@@ -5925,7 +5925,7 @@ poonya = /******/ (() => {
                                             null,
                                             -1,
                                             SERVICE.CONSTRUCTORS.NULL,
-                                            throw_error
+                                            reject
                                         )
                                     );
                                 else {
@@ -5935,14 +5935,14 @@ poonya = /******/ (() => {
                                                 SERVICE.CONSTRUCTORS.OBJECT,
                                                 -1,
                                                 PoonyaPrototype,
-                                                throw_error
+                                                reject
                                             ),
                                             null
                                         );
                                         value.importTo(
                                             target,
                                             context,
-                                            throw_error
+                                            reject
                                         );
                                         parent.set(context, key, target);
                                     } else if (value instanceof Array) {
@@ -5954,7 +5954,7 @@ poonya = /******/ (() => {
                                                     SERVICE.CONSTRUCTORS.ARRAY,
                                                     -1,
                                                     PoonyaPrototype,
-                                                    throw_error
+                                                    reject
                                                 ),
                                                 value,
                                                 null,
@@ -5970,7 +5970,7 @@ poonya = /******/ (() => {
                                                     SERVICE.CONSTRUCTORS.OBJECT,
                                                     -1,
                                                     PoonyaPrototype,
-                                                    throw_error
+                                                    reject
                                                 ),
                                                 value,
                                                 null,
@@ -6478,14 +6478,14 @@ poonya = /******/ (() => {
              *
              * @param {Array<Token>} data данные для парсинга
              * @param {String} parent_path Путь к файлу, который сейчас обрабатываем
-             * @param {Function} throw_error Фукцния выбрасывания ошибок
+             * @param {Function} reject Фукцния выбрасывания ошибок
              *
              * @memberof Poonya.Linker
              * @protected
              * @async
              */
 
-            async function linker(data, parent_path, throw_error) {
+            async function linker(data, parent_path, reject) {
                 for (let i = 0; ; i++) {
                     if (data[i] == null) return data;
 
@@ -6521,13 +6521,13 @@ poonya = /******/ (() => {
                                         ...lexer(await content, false)
                                     );
                                 } catch (e) {
-                                    throw_error(
+                                    reject(
                                         data[i].position,
                                         new Exceptions.LinkerIOError(path)
                                     );
                                 }
                             } else {
-                                throw_error(
+                                reject(
                                     data[i].position,
                                     new Exceptions.LinkerPathNotGiveExceptrion()
                                 );
@@ -6598,7 +6598,7 @@ poonya = /******/ (() => {
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} data Вхождения которые будут обработаны парсером
              * @param {Number} block_start Начальная позиция вызова
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              *
              * @returns {{data: FunctionCall, jump: Number}} объект вызова функции, и позиция с которой можно продолжить прасинг
              *
@@ -6610,13 +6610,13 @@ poonya = /******/ (() => {
                 query_stack,
                 start,
                 data,
-                throw_error,
+                reject,
                 block_start
             ) {
                 const args = segmentationParser(
                     start,
                     data,
-                    throw_error,
+                    reject,
                     ',',
                     Infinity,
                     `(${query_stack
@@ -6639,7 +6639,7 @@ poonya = /******/ (() => {
              * @param {Number[]|String[]|Operand[]} query_stack путь к конструктору объекта
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} data Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              *
              * @returns {{data: ObjectContructorCall, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
              *
@@ -6651,7 +6651,7 @@ poonya = /******/ (() => {
                 query_stack,
                 start,
                 data,
-                throw_error,
+                reject,
                 level = 0
             ) {
                 let result = null,
@@ -6667,7 +6667,7 @@ poonya = /******/ (() => {
                                 !data[i].equals(CHARTYPE.OPERATOR, ',')) ||
                             data[i].equals(CHARTYPE.OPERATOR, [';', ')']):
                             if (entries[entries.length - 1].length !== 2)
-                                throw_error(
+                                reject(
                                     data[i].position,
                                     new ParserUnfinishedNotationException()
                                 );
@@ -6683,7 +6683,7 @@ poonya = /******/ (() => {
                         case data[i].equals(CHARTYPE.OPERATOR, '*') &&
                             expected === 0:
                             if (entries.length !== 1)
-                                throw_error(
+                                reject(
                                     data[i].position,
                                     new BadEmptyObjectException()
                                 );
@@ -6716,7 +6716,7 @@ poonya = /******/ (() => {
                                             entries.length - 1
                                         ][0] = parseInt(data[i].toRawString());
                                     } else {
-                                        throw_error(
+                                        reject(
                                             data[i].position,
                                             new UnexpectedTokenException(
                                                 data[i],
@@ -6745,7 +6745,7 @@ poonya = /******/ (() => {
                                                 '>'
                                             )
                                         ) {
-                                            throw_error(
+                                            reject(
                                                 data[i].position,
                                                 new UnexpectedTokenException(
                                                     data[i],
@@ -6768,7 +6768,7 @@ poonya = /******/ (() => {
                                                 jump: last_row - start,
                                             };
                                         } else {
-                                            throw_error(
+                                            reject(
                                                 data[i].position,
                                                 new BadArrowNotationJumpingToUpperLevel()
                                             );
@@ -6802,7 +6802,7 @@ poonya = /******/ (() => {
                                             SERVICE.CONSTRUCTORS.OBJECT,
                                             i,
                                             data,
-                                            throw_error,
+                                            reject,
                                             level + 1
                                         );
                                         i += result.jump - 1;
@@ -6812,7 +6812,7 @@ poonya = /******/ (() => {
                                         /// Попытка произвести нотация на два уровня выше чем родительская
                                         ///
                                     } else if (count > level + 2) {
-                                        throw_error(
+                                        reject(
                                             data[i + 1].position,
                                             new BadArrowNotationJumpingTwoLevels()
                                         ); /// Если как значение передано выражение
@@ -6822,7 +6822,7 @@ poonya = /******/ (() => {
                                         result = parseExpression(
                                             i,
                                             data,
-                                            throw_error,
+                                            reject,
                                             [',', ';']
                                         ); // Текущие данные ставим как результат парсинга выражения
 
@@ -6864,7 +6864,7 @@ poonya = /******/ (() => {
              * @param {ExpressionGroup} condition Условие, при котором тернарное выражение будет верным
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} data Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              *
              * @returns {{data: TernarOperator, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
              *
@@ -6872,17 +6872,17 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            function parseTernar(condition, start, data, throw_error) {
+            function parseTernar(condition, start, data, reject) {
                 let hook_index = 0,
                     buffer = new Array(),
                     args = new Array();
 
                 function push(token) {
                     if (buffer.length !== 0) {
-                        args.push(parseExpression(0, buffer, throw_error).data);
+                        args.push(parseExpression(0, buffer, reject).data);
                         buffer.splice(0, buffer.length);
                     } else
-                        throw_error(
+                        reject(
                             token != undefined ? token.position : data[start],
                             new ParserEmtyArgumentException()
                         );
@@ -6897,7 +6897,7 @@ poonya = /******/ (() => {
                                 hook_index <= 0):
                             push(data[i]);
                             if (args[0] === undefined || args[1] === undefined)
-                                throw_error(
+                                reject(
                                     data[start].position,
                                     new ParserEmtyArgumentException()
                                 );
@@ -6935,7 +6935,7 @@ poonya = /******/ (() => {
                         case data[i].equals(CHARTYPE.OPERATOR, ':') &&
                             hook_index === 0 &&
                             args.length !== 0:
-                            throw_error(
+                            reject(
                                 data[i].position,
                                 new ParserLogicException()
                             );
@@ -6952,7 +6952,7 @@ poonya = /******/ (() => {
              *
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} data Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              *
              * @returns {{data: Array<Number|String>, jump: Number}} массив со стэком запроса, по которому можно получит доступ к переменной, и позиция с которой можно продолжить парсинг
              *
@@ -6960,7 +6960,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            function parseVarName(start, data, throw_error) {
+            function parseVarName(start, data, reject) {
                 let buffer = new Array(),
                     point_before = true,
                     hook_index = 0,
@@ -7019,7 +7019,7 @@ poonya = /******/ (() => {
                             }
 
                             if (hook_index != 0)
-                                throw_error(
+                                reject(
                                     data[i].position,
                                     new ParserLogicException()
                                 ); // Вставляем выражение как оператор доступа
@@ -7028,13 +7028,13 @@ poonya = /******/ (() => {
                                 parseExpression(
                                     0,
                                     data.slice(hook_start, i),
-                                    throw_error
+                                    reject
                                 ).data
                             );
                             continue;
 
                         default:
-                            throw_error(
+                            reject(
                                 data[i].position,
                                 new InvalidSequenceForLetiableAccessException()
                             );
@@ -7047,7 +7047,7 @@ poonya = /******/ (() => {
              *
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} data Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              * @param {String} end_marker Маркер конца выражения
              *
              * @returns {{data: ExpressionGroup, jump: Number}} выражение и позиция, с которой можно продолжить парсинг
@@ -7059,7 +7059,7 @@ poonya = /******/ (() => {
             function parseExpression(
                 start,
                 data,
-                throw_error,
+                reject,
                 end_marker = ';'
             ) {
                 if (data.length === 0)
@@ -7077,13 +7077,13 @@ poonya = /******/ (() => {
                         data[i].contentEquals(end_marker)
                     ) {
                         if (buffer.isNotDone())
-                            throw_error(
+                            reject(
                                 data[i - 1].position,
                                 data[i] == undefined
                                     ? new CriticalParserErrorUnexpectedEndOfInputException()
                                     : new CriticalParserErrorUnexpectedEndOfExpression()
                             );
-                        buffer.complete(throw_error);
+                        buffer.complete(reject);
                         return {
                             data: buffer,
                             jump: i - start,
@@ -7100,11 +7100,11 @@ poonya = /******/ (() => {
                                 case 'true':
                                 case 'false':
                                 case 'null':
-                                    buffer.append(data[i], throw_error);
+                                    buffer.append(data[i], reject);
                                     continue;
                             }
 
-                            result[0] = parseVarName(i, data, throw_error);
+                            result[0] = parseVarName(i, data, reject);
 
                             if (
                                 data[i + result[0].jump] != null &&
@@ -7118,11 +7118,11 @@ poonya = /******/ (() => {
                                     result[0].data,
                                     i + result[0].jump + 1,
                                     data,
-                                    throw_error,
+                                    reject,
                                     data[i].position
                                 );
                                 i += result[0].jump + result[1].jump + 1;
-                                buffer.append(result[1].data, throw_error);
+                                buffer.append(result[1].data, reject);
                             } else if (
                                 data[i + result[0].jump + 1] != null &&
                                 data[i + result[0].jump].equals(
@@ -7139,7 +7139,7 @@ poonya = /******/ (() => {
                                     result[0].data,
                                     i + result[0].jump + 2,
                                     data,
-                                    throw_error,
+                                    reject,
                                     0
                                 );
                                 i += result[0].jump + result[1].jump + 1;
@@ -7147,7 +7147,7 @@ poonya = /******/ (() => {
                                     data[i + 1].equals(CHARTYPE.OPERATOR, ['*'])
                                 )
                                     i += 1;
-                                buffer.append(result[1].data, throw_error);
+                                buffer.append(result[1].data, reject);
                             } else {
                                 // Получение значения переменной
                                 buffer.append(
@@ -7155,7 +7155,7 @@ poonya = /******/ (() => {
                                         data[i].position,
                                         result[0].data
                                     ),
-                                    throw_error
+                                    reject
                                 );
                                 i += result[0].jump - 1;
                             }
@@ -7171,11 +7171,11 @@ poonya = /******/ (() => {
                                 SERVICE.CONSTRUCTORS.OBJECT,
                                 i + 2,
                                 data,
-                                throw_error,
+                                reject,
                                 0
                             );
                             i += result[0].jump + 2;
-                            buffer.append(result[0].data, throw_error);
+                            buffer.append(result[0].data, reject);
                             continue;
                         // Другая группа выражений
 
@@ -7183,15 +7183,15 @@ poonya = /******/ (() => {
                             result[0] = parseExpression(
                                 i + 1,
                                 data,
-                                throw_error
+                                reject
                             );
                             i += result[0].jump + 1;
-                            buffer.append(result[0].data, throw_error);
+                            buffer.append(result[0].data, reject);
                             continue;
                         // Тернарное выражение
 
                         case data[i].equals(CHARTYPE.OPERATOR, '?'):
-                            buffer.complete(throw_error);
+                            buffer.complete(reject);
                             result[0] = parseTernar(
                                 new ExpressionGroup(
                                     data[i].position,
@@ -7199,7 +7199,7 @@ poonya = /******/ (() => {
                                 ),
                                 i + 1,
                                 data,
-                                throw_error
+                                reject
                             );
                             return {
                                 data: result[0].data,
@@ -7223,17 +7223,17 @@ poonya = /******/ (() => {
                                 '|',
                                 '&',
                             ]):
-                            buffer.append(data[i], throw_error);
+                            buffer.append(data[i], reject);
                             continue;
                         // Неизвестно что это, завершаем парсинг выражения на этом
 
                         default:
                             if (buffer.isNotDone())
-                                throw_error(
+                                reject(
                                     data[i - 1].position,
                                     new CriticalParserErrorUnexpectedEndOfExpression()
                                 );
-                            buffer.complete(throw_error);
+                            buffer.complete(reject);
                             return {
                                 data: buffer,
                             };
@@ -7245,7 +7245,7 @@ poonya = /******/ (() => {
              *
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызывается при ошибке функция, котора первым аргументом принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject {@link CodeEmitter.throwError} - Вызывается при ошибке функция, котора первым аргументом принимает позицию вхождения на котором произошла ошибка
              * @param {String} segment_separator Разделитель для сегментов
              * @param {Number} max_segments Максимальное число сегментов, если это число сегментов будет превышено, будет выбражено исключение
              * @param {String} blockname Название блока
@@ -7259,7 +7259,7 @@ poonya = /******/ (() => {
             function segmentationParser(
                 start,
                 entries,
-                throw_error,
+                reject,
                 segment_separator = ',',
                 max_segments = Infinity,
                 blockname = 'unknown'
@@ -7281,10 +7281,10 @@ poonya = /******/ (() => {
                                 buffer[buffer.length - 1] = parseExpression(
                                     0,
                                     buffer[buffer.length - 1],
-                                    throw_error
+                                    reject
                                 ).data;
                             } else if (buffer.length > 1) {
-                                throw_error(
+                                reject(
                                     entries[i - 1].position,
                                     new SegmentationFaultEmptyArgumentException(
                                         blockname
@@ -7311,7 +7311,7 @@ poonya = /******/ (() => {
                                 hook_index--;
                                 buffer[buffer.length - 1].push(entries[i]);
                             } else
-                                throw_error(
+                                reject(
                                     entries[i].position,
                                     new ParserLogicException()
                                 );
@@ -7324,18 +7324,18 @@ poonya = /******/ (() => {
                                 buffer[buffer.length - 1] = parseExpression(
                                     0,
                                     buffer[buffer.length - 1],
-                                    throw_error
+                                    reject
                                 ).data;
                                 buffer.push(new Array());
                                 if (buffer.length > max_segments)
-                                    throw_error(
+                                    reject(
                                         entries[i].position,
                                         new SegmentationFaultMaximumSegmentsForBlockException(
                                             blockname
                                         )
                                     );
                             } else {
-                                throw_error(
+                                reject(
                                     entries[i].position,
                                     new SegmentationFaultEmptyArgumentException(
                                         blockname
@@ -7356,7 +7356,7 @@ poonya = /******/ (() => {
              *
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              *
              * @returns {{data: Array<SequenceGroup>, jump: Number}} массив с выражениями, и позиция с которой можно продолжить парсинг
              *
@@ -7364,7 +7364,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            function segmentCutter(start, entries, throw_error) {
+            function segmentCutter(start, entries, reject) {
                 let hook_index = 0,
                     body = new Array();
 
@@ -7375,7 +7375,7 @@ poonya = /******/ (() => {
                                 hook_index <= 0):
                             return {
                                 // Сегменты
-                                data: codeBlockParser(0, body, throw_error)
+                                data: codeBlockParser(0, body, reject)
                                     .data,
                                 // Прыжок парсера
                                 jump: i - start,
@@ -7391,7 +7391,7 @@ poonya = /******/ (() => {
                                 hook_index--;
                                 body.push(entries[i]);
                             } else
-                                throw_error(
+                                reject(
                                     entries[i].position,
                                     new ParserLogicException()
                                 );
@@ -7409,7 +7409,7 @@ poonya = /******/ (() => {
              *
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              *
              * @returns {{data: IfStatement, jump: Number}} Объякт дескриптор блока if, и позиция с которой можно продолжить парсинг
              *
@@ -7417,7 +7417,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            function ifStatementParser(start, entries, throw_error) {
+            function ifStatementParser(start, entries, reject) {
                 let index = start,
                     result = new Array();
 
@@ -7429,7 +7429,7 @@ poonya = /******/ (() => {
                     result[0] = segmentationParser(
                         index + 2,
                         entries,
-                        throw_error,
+                        reject,
                         '',
                         1,
                         'if'
@@ -7443,7 +7443,7 @@ poonya = /******/ (() => {
                         result[1] = segmentCutter(
                             index + 1,
                             entries,
-                            throw_error
+                            reject
                         );
                         index += result[1].jump + 1; // Else statement
 
@@ -7466,7 +7466,7 @@ poonya = /******/ (() => {
                                 result[2] = segmentCutter(
                                     index + 3,
                                     entries,
-                                    throw_error
+                                    reject
                                 );
                                 index += result[2].jump + 3;
                                 return {
@@ -7488,7 +7488,7 @@ poonya = /******/ (() => {
                                 result[2] = ifStatementParser(
                                     index + 2,
                                     entries,
-                                    throw_error
+                                    reject
                                 );
                                 index += result[2].jump + 2;
                                 return {
@@ -7500,7 +7500,7 @@ poonya = /******/ (() => {
                                     jump: index - start,
                                 };
                             } else {
-                                throw_error(
+                                reject(
                                     entries[index + 2].position,
                                     new UnexpectedTokenStatement(
                                         'else',
@@ -7519,7 +7519,7 @@ poonya = /******/ (() => {
                             };
                         }
                     } else {
-                        throw_error(
+                        reject(
                             entries[index].position,
                             new UnexpectedTokenStatement(
                                 'if',
@@ -7529,7 +7529,7 @@ poonya = /******/ (() => {
                         );
                     }
                 } else {
-                    throw_error(
+                    reject(
                         entries[index + 1].position,
                         new UnexpectedTokenStatement(
                             'if',
@@ -7544,7 +7544,7 @@ poonya = /******/ (() => {
              *
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              *
              * @returns {
              *      {
@@ -7556,7 +7556,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            function codeBlockParser(start, entries, throw_error) {
+            function codeBlockParser(start, entries, reject) {
                 const buffer = new SequenceGroup(),
                     result = new Array();
 
@@ -7577,7 +7577,7 @@ poonya = /******/ (() => {
                                 result[0] = parseExpression(
                                     i + 1,
                                     entries,
-                                    throw_error
+                                    reject
                                 );
                                 i += result[0].jump + 1;
                                 buffer.push(new OutStatement(result[0].data));
@@ -7587,7 +7587,7 @@ poonya = /******/ (() => {
                                 result[0] = ifStatementParser(
                                     i,
                                     entries,
-                                    throw_error
+                                    reject
                                 );
                                 i += result[0].jump;
                                 buffer.push(result[0].data);
@@ -7610,7 +7610,7 @@ poonya = /******/ (() => {
                                     result[0] = segmentationParser(
                                         i + 2,
                                         entries,
-                                        throw_error,
+                                        reject,
                                         '',
                                         1,
                                         'while'
@@ -7631,7 +7631,7 @@ poonya = /******/ (() => {
                                         result[1] = segmentCutter(
                                             i + 1,
                                             entries,
-                                            throw_error
+                                            reject
                                         );
                                         i += result[1].jump + 1;
                                         buffer.push(
@@ -7641,7 +7641,7 @@ poonya = /******/ (() => {
                                             )
                                         );
                                     } else {
-                                        throw_error(
+                                        reject(
                                             entries[i].position,
                                             new UnexpectedTokenStatement(
                                                 'while',
@@ -7651,7 +7651,7 @@ poonya = /******/ (() => {
                                         );
                                     }
                                 } else {
-                                    throw_error(
+                                    reject(
                                         entries[i + 1].position,
                                         new UnexpectedTokenStatement(
                                             'while',
@@ -7680,7 +7680,7 @@ poonya = /******/ (() => {
                                     result[0] = segmentationParser(
                                         i + 2,
                                         entries,
-                                        throw_error,
+                                        reject,
                                         ';',
                                         2,
                                         'repeat'
@@ -7701,7 +7701,7 @@ poonya = /******/ (() => {
                                         result[1] = segmentCutter(
                                             i + 1,
                                             entries,
-                                            throw_error
+                                            reject
                                         );
                                         i += result[1].jump + 1;
                                         buffer.push(
@@ -7712,7 +7712,7 @@ poonya = /******/ (() => {
                                             )
                                         );
                                     } else {
-                                        throw_error(
+                                        reject(
                                             entries[i].position,
                                             new UnexpectedTokenStatement(
                                                 'repeat',
@@ -7722,7 +7722,7 @@ poonya = /******/ (() => {
                                         );
                                     }
                                 } else {
-                                    throw_error(
+                                    reject(
                                         entries[i + 1].position,
                                         new UnexpectedTokenStatement(
                                             'repeat',
@@ -7759,7 +7759,7 @@ poonya = /******/ (() => {
                                         result[0] = parseExpression(
                                             i + 3,
                                             entries,
-                                            throw_error
+                                            reject
                                         );
                                         buffer.push(
                                             new SetStatement(
@@ -7770,7 +7770,7 @@ poonya = /******/ (() => {
                                         i += result[0].jump + 3;
                                         continue;
                                     } else {
-                                        throw_error(
+                                        reject(
                                             entries[i + 3].position,
                                             new UnexpectedWordTypeAndGetException(
                                                 entries[i + 2].toString(),
@@ -7779,7 +7779,7 @@ poonya = /******/ (() => {
                                         );
                                     }
                                 } else {
-                                    throw_error(
+                                    reject(
                                         entries[i + 2].position,
                                         new UnexpectedWordTypeAndGetException(
                                             entries[i + 1].toString(),
@@ -7794,7 +7794,7 @@ poonya = /******/ (() => {
                                 result[0] = parseVarName(
                                     i,
                                     entries,
-                                    throw_error
+                                    reject
                                 ); // Если следующий символ доступен
 
                                 if (i + result[0].jump < leng) {
@@ -7808,7 +7808,7 @@ poonya = /******/ (() => {
                                         result[1] = parseExpression(
                                             result[0].jump + i + 1,
                                             entries,
-                                            throw_error
+                                            reject
                                         );
                                         buffer.push(
                                             new ResetStatement(
@@ -7835,7 +7835,7 @@ poonya = /******/ (() => {
                                             result[1] = parseExpression(
                                                 result[0].jump + i + 2,
                                                 entries,
-                                                throw_error
+                                                reject
                                             );
                                             buffer.push(
                                                 new PushStatement(
@@ -7851,7 +7851,7 @@ poonya = /******/ (() => {
                                                 result[1].jump +
                                                 2;
                                         } else {
-                                            throw_error(
+                                            reject(
                                                 entries[i + result[0].jump + 1]
                                                     .position,
                                                 new UnexpectedTokenException(
@@ -7871,12 +7871,12 @@ poonya = /******/ (() => {
                                         result[1] = parseExpression(
                                             i,
                                             entries,
-                                            throw_error
+                                            reject
                                         );
                                         buffer.push(result[1].data);
                                         i += result[1].jump; // Ошибка
                                     } else {
-                                        throw_error(
+                                        reject(
                                             entries[i].position,
                                             new InvalidSequenceForLetiableAccessException()
                                         );
@@ -7892,14 +7892,14 @@ poonya = /******/ (() => {
                                 result[0] = parseExpression(
                                     i,
                                     entries,
-                                    throw_error
+                                    reject
                                 );
                                 buffer.push(result[0].data);
                                 i += result[0].jump;
                                 continue;
 
                             default:
-                                throw_error(
+                                reject(
                                     entries[i].position,
                                     new UnexpectedTokenException(
                                         entries[i].toString(),
@@ -7911,17 +7911,17 @@ poonya = /******/ (() => {
                         if (!(e instanceof ParserException)) {
                             if (entries.length != 0) {
                                 if (entries[i] != null)
-                                    throw_error(
+                                    reject(
                                         entries[i].position,
                                         new CriticalParserErrorException()
                                     );
                                 else
-                                    throw_error(
+                                    reject(
                                         entries[entries.length - 1].position,
                                         new CriticalParserErrorUnexpectedEndOfInputException()
                                     );
                             } else {
-                                throw_error(
+                                reject(
                                     0,
                                     new CriticalParserErrorNoRawDataTransmittedException()
                                 );
@@ -7936,7 +7936,7 @@ poonya = /******/ (() => {
              * Парсит вхождения, которые можно получить вызовом функции @see {@link lexer}
              *
              * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
-             * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {Function} reject {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              * @param {?String} parent_path Путь к шаблону
              *
              * @returns {SequenceMainGroup} Тело исполнителя
@@ -7946,12 +7946,12 @@ poonya = /******/ (() => {
              * @async
              */
 
-            async function parser(entries, throw_error, parent_path) {
+            async function parser(entries, reject, parent_path) {
                 return new SequenceMainGroup(
                     codeBlockParser(
                         0,
-                        await linker(entries, parent_path, throw_error),
-                        throw_error
+                        await linker(entries, parent_path, reject),
+                        reject
                     ).data.Sequence
                 );
             }
@@ -7960,7 +7960,7 @@ poonya = /******/ (() => {
              *
              * @param {Array<Token>} entries Вхождения для парсинга
              * @param {String} block_prefix Префикс для обозначения начала блока кода poonya
-             * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождени
+             * @param {Function} reject {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождени
              * @param {String} parent_path Путь к шаблону
              *
              * @returns {SequenceMainGroup} Тело исполнителя
@@ -7973,7 +7973,7 @@ poonya = /******/ (() => {
             async function parserMP(
                 entries,
                 block_prefix,
-                throw_error,
+                reject,
                 parent_path
             ) {
                 let hook_index = 0,
@@ -8031,9 +8031,9 @@ poonya = /******/ (() => {
                                         (e) => e.type !== CHARTYPE.SPACE
                                     ),
                                     parent_path,
-                                    throw_error
+                                    reject
                                 ),
-                                throw_error
+                                reject
                             ).data
                         );
                         buffer.splice(0, buffer.length);
@@ -8066,9 +8066,9 @@ poonya = /******/ (() => {
                                         (e) => e.type !== CHARTYPE.SPACE
                                     ),
                                     parent_path,
-                                    throw_error
+                                    reject
                                 ),
-                                throw_error
+                                reject
                             ).data
                         );
                         buffer.splice(0, buffer.length);
@@ -8086,7 +8086,7 @@ poonya = /******/ (() => {
                             buffer.splice(0, buffer.length);
                         }
                     } else {
-                        throw_error(
+                        reject(
                             entries[entries.length - 1].position,
                             new UnexpectedTokenException(
                                 entries[entries.length - 1],

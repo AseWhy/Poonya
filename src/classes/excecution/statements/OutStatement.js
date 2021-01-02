@@ -43,17 +43,25 @@ class OutStatement {
      *
      * @param {iContext} context Контекст выполнения
      * @param {PoonyaOutputStream} out вывод шаблонизатора
-     * @param {Function} throw_error Вызывается при ошибке
+     * @param {Function} reject Вызывается при ошибке
+     * @param {Function} resolve функция возврата результата
      *
      * @throws {ParserException}
      *
      * @public
      * @method
      */
-    result(context, out, throw_error) {
-        out.write(
-            this.expression.result(context, out, throw_error).result(context, out, throw_error)
-        );
+    result(context, out, reject, resolve) {
+        this.expression.result(context, out, reject, p_result => {
+            if(p_result != null)
+                p_result.result(context, out, reject, d_result => {
+                    out.write(d_result);
+
+                    resolve(d_result);
+                });
+            else
+                resolve(null);
+        });
     }
 }
 

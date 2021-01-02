@@ -79,8 +79,8 @@ class PoonyaBoolean extends PoonyaObject {
      * @method
      * @public
      */
-    result() {
-        return this.data;
+    result(context, out, reject, resolve) {
+        resolve(this.data);
     }
 
     /**

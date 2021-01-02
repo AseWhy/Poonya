@@ -24,7 +24,7 @@ class iPoonyaConstructsData {
      * Интерфейс ответа функции кострукирующий шаблон, на основе промисов - `patternCreator`
      * 
      * @constructs iPoonyaConstructsData
-     * @property {CodeEmitter} Pattern шаблон, который должен быть создан
+     * @property {CodeEmitter} data шаблон, который должен быть создан
      * @property {Array<Any>} args аргументы возвращенные по завершении инициализации шаблона
      */
     constructor(){}

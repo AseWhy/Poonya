@@ -43,16 +43,29 @@ class WhileStatement {
      *
      * @param {iContext} context Контекст выполнения
      * @param {PoonyaOutputStream} out вывод шаблонизатора
-     * @param {Function} throw_error Вызывается при ошибке
+     * @param {Function} reject Вызывается при ошибке
+     * @param {Function} resolve функция возврата результата
      *
      * @throws {ParserException}
      *
      * @public
      * @method
+     * @async
      */
-    result(context, out, throw_error) {
-        while (context.toBooleanResult(this.condition.result(context, out, throw_error)))
-            this.body.result(context, out, throw_error);
+    result(context, out, reject, resolve) {
+        let _ = this;
+
+        (function tick(result){
+            _.condition.result(context, out, reject, d_result => {
+                if(context.toBooleanResult(d_result)) {
+                    _.body.result(context, out, reject, tick);
+                } else {
+                    resolve(result);
+
+                    return;
+                }
+            });
+        })();
     }
 }
 

@@ -1,16 +1,11 @@
 const poonya = require("../../src/poonya");
 
 async function main() {
-    const context = await poonya.createContext({
-        hello: 1,
-        world: 2
-    });
+    const pattern = await poonya.createPattern(poonya.ExecutionPattern, { path: './sandbox-data/sandbox.po' });
 
-    let out = new poonya.PoonyaOutputStream();
+    let stream = pattern.data.result();
 
-    out.on('data', console.log);
-
-    console.log(await context.eval('> "hello world"', out, console.error));
+    stream.on('data', console.log);
 }
 
 main();

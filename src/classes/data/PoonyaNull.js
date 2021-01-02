@@ -74,8 +74,8 @@ class PoonyaNull extends PoonyaObject {
      * @method
      * @public
      */
-    result() {
-        return null;
+    result(context, out, reject, resolve) {
+        resolve(null);
     }
 
     /**

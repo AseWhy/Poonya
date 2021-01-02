@@ -6,7 +6,7 @@
 
 "use strict";
 
-const { GetFieldOfNullException, IsNotAConstructorException } = require('./exceptions')
+const { GetFieldOfNullException, IsNotAConstructorException, PoonyaException } = require('./exceptions')
     , { GET, SERVICE, IS } = require('./static')
     , { Cast, toBytes } = require('../utils.js')
     , { iContext, iPoonyaPrototype, iPathData } = require('./interfaces')
@@ -104,8 +104,6 @@ class Heap extends Map {
             super.set(key, Cast(data, context, parents_three));
         } catch (e) {
             console.error('Error when cast value of ' + key);
-
-            console.log(e);
         }
     }
 
@@ -114,16 +112,16 @@ class Heap extends Map {
      *
      * @param {?iContext} context контекст выполнения
      * @param {?Array<String>} out Выходной массив
-     * @param {?Function} throw_error Функция вызывающаяся при ошибках
+     * @param {?Function} reject Функция вызывающаяся при ошибках
      * @method
      * @public
      */
-    result(context, out, throw_error) {
+    result(context, out, reject) {
         let output = new Object();
 
         for (let [key, value] of this)
             if (value instanceof NativeFunction)
-                output[key] = value != null ? value.result(context, out, throw_error) : null;
+                output[key] = value != null ? value.result(context, out, reject) : null;
             else output[key] = value != null ? value.target : null;
 
         return output;
@@ -139,7 +137,7 @@ class Context extends iContext {
      * Контекст выполнения
      *
      * @param {PoonyaStaticLibrary[]} libraries бибилиотеки для инициалзиции контекста
-     * @param {Function} throw_error функция, которая будет вызвана при ошибке
+     * @param {Function} reject функция, которая будет вызвана при ошибке
      * @param {...Heap} initial Значения переданные для инициализации
      *
      * @memberof Poonya.Storage
@@ -148,7 +146,7 @@ class Context extends iContext {
      * @classdesc Определяет набор данных для манипуляции в шаблонизаторе
      * @protected
      */
-    constructor(libraries, throw_error, ...initial) {
+    constructor(libraries, reject, ...initial) {
         super();
 
         this.levels = new Array();
@@ -157,7 +155,7 @@ class Context extends iContext {
         
         // Если переданы дидлиотеки для импорта, то импортируем их в этот контекст
         if(libraries != null)
-            this.import(libraries, throw_error);
+            this.import(libraries, reject);
 
         // Перебераем переданные для инициалзации объекты
         this.levels.push(...initial
@@ -181,9 +179,9 @@ class Context extends iContext {
      * Импортирует нативные библиотеки `libraries` в текущий контекст.
      * 
      * @param {Array<PoonyaStaticLibrary>} libraries массив с библиотеками, которые нужно импортировать
-     * @param {Function} throw_error фукнция вызова ошибки
+     * @param {Function} reject фукнция вызова ошибки
      */
-    import(libraries, throw_error){
+    import(libraries, reject){
         if (libraries != null) {
             // Корневой слой
             this.addLevel();
@@ -191,16 +189,17 @@ class Context extends iContext {
             for (let i = 0, leng = libraries.length, target; i < leng; i++) {
                 if (libraries[i] instanceof PoonyaStaticLibrary && !this._lib_cache.includes(libraries[i].namespace)) {
                     if (libraries[i].global) {
-                        libraries[i].importTo(this.levels[0], this, throw_error);
+                        libraries[i].importTo(this.levels[0], this, reject);
                     } else {
-                        target = this.createObject(
+                        this.createObject(
                             null,
                             -1,
                             SERVICE.CONSTRUCTORS.OBJECT,
-                            throw_error
+                            reject,
+                            p_target => target = p_target
                         );
 
-                        libraries[i].importTo(target, this, throw_error);
+                        libraries[i].importTo(target, this, reject);
 
                         this.levels[0].set(this, libraries[i].namespace, target);
                     }
@@ -216,21 +215,32 @@ class Context extends iContext {
      * 
      * @param {String} input Вход шаблона
      * @param {PoonyaOutputStream} out Вывод шаблонизатора
-     * @param {Function} throw_error Функция вызова ошибки
+     * 
      * @method
      * @public
      * @async
      */
-    async eval(input, out, throw_error) {
-        return (await parser(
-            // Выполняем лексинг переданого текста
-            lexer(
-                // Разбираем текст на байты
-                toBytes(input), false
-            ), throw_error,
-            // Присваеваем рандомный идентификатор исполнителю
-            'eval-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)
-        )).result(this, out, throw_error);
+    eval(input, out) {
+        return new Promise((res, rej) => {
+            parser(
+                // Выполняем лексинг переданого текста
+                lexer(
+                    // Разбираем текст на байты
+                    toBytes(input), false
+                ),
+                (symbol, message) => { throw new PoonyaException(message + ', at symbol ' + symbol); },
+                // Присваеваем рандомный идентификатор исполнителю
+                'eval-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)
+            )
+                .catch(
+                    error => rej(error)
+                )
+                .then(
+                    result => {
+                        result.result(this, out, (symbol, message) => rej(new PoonyaException(message + ', at symbol ' + symbol)), res);
+                    }
+                );
+        });
     }
 
     /**
@@ -375,50 +385,69 @@ class Context extends iContext {
      * @param {Array<String|Number|Operand>} path путь, по которому можно получить значение
      * @param {Number} position Позиция вызова(необходимо в случае возникновения ошибки)
      * @param {Object} type Тип который необходимо получить
-     * @param {Function} throw_error Фукцния которая выбрасывает ошибку(необходимо в случае возникновения ошибки)
+     * @param {Function} reject Фукцния которая выбрасывает ошибку(необходимо в случае возникновения ошибки)
      * @param {Boolean} return_full_info Возвращать полную информацию о переменной, включая родительский объект(если имеется)
+     * @param {Function} resolve функция возврата результата
      *
      * @returns {ParserData|iPathData|null} если по заданому пути существует значение вернет его, если нет то вернет null
      * @method
      * @public
+     * @async
      */
-    getByPath(path, position, type = null, throw_error, return_full_info = false) {
-        let instance = this.get(path[0]),
+    getByPath(path, position, type = null, reject, return_full_info = false, resolve) {
+        let _ = this,
+            instance = _,
             parent = null,
             flags = 0,
             query_stack = Array.from(path),
             leng = query_stack.length,
-            index = 1;
+            index = 0;
 
-        for (; instance && index < leng; index++) {
-            if (query_stack[index] instanceof ExpressionGroup)
-                query_stack[index] = query_stack[index].result(this, null, throw_error).toRawData();
-
+        function get(of_p) {
             if (instance instanceof PoonyaObject) {
                 parent = instance;
 
-                flags = instance.field_attrs.get(query_stack[index]);
+                flags = instance.field_attrs.get(of_p);
 
-                instance = instance.get(query_stack[index]);
+                instance = instance.get(of_p, _);
+            } else if (instance instanceof Context) {
+                parent = instance;
+
+                instance = instance.get(of_p, _);
             } else if (instance instanceof iPoonyaPrototype) {
-                instance = instance[GET](query_stack[index], this);
+                instance = instance[GET](of_p, _);
             } else {
-                (throw_error || console.error)(position, new GetFieldOfNullException(query_stack[index]));
+                reject(position, new GetFieldOfNullException(of_p));
+            }
+
+            if(++index < leng){
+                next();
+            } else {
+                if (type == null || instance instanceof type)
+                    if (return_full_info) {
+                        resolve(Object.assign(new iPathData(), {
+                            instance,
+                            parent,
+                            index,
+                            flags
+                        }));
+                    } else {
+                        resolve(instance);
+                    }
+                else resolve(null);
             }
         }
 
-        if (type == null || instance instanceof type)
-            if (return_full_info) {
-                return Object.assign(new iPathData(), {
-                    instance,
-                    parent,
-                    index,
-                    flags
+        function next(){
+            if (query_stack[index] instanceof ExpressionGroup)
+                query_stack[index].result(_, null, reject, result => {
+                    get(result.toRawData());
                 });
-            } else {
-                return instance;
-            }
-        else return null;
+            else
+                get(query_stack[index]);
+        }
+
+        next();
     }
 
     /**
@@ -457,53 +486,83 @@ class Context extends iContext {
      * @param {Object} initial Значения для инициализации объекта
      * @param {Number} position Позиция, с который вызывается конструктор
      * @param {Array<String>} path Путь к конструктору в памяти
-     * @param {Function} throw_error Функция вызова ошибки
+     * @param {Function} reject Функция вызова ошибки
      * @param {Array<String>} parents_three Дерево родителей объекта
+     * @param {Function} resolve функция возврата результата
      *
      * @returns {PoonyaObject} если по заданому пути существует значение вернет его, если нет то вернет null
      * @method
      * @public
+     * @async
      */
-    createObject(initial, position, path, throw_error, parents_three = new Array()) {
-        const prototype = this.getByPath(path, position, iPoonyaPrototype, throw_error);
+    createObject(initial, position, path, reject, parents_three = new Array(), resolve) {
+        const _ = this;
 
-        if (prototype != null) {
-            let init = new Object();
+        _.getByPath(path, position, iPoonyaPrototype, reject, false, prototype => {
+            let init = new Object(), 
+                cur = 0, 
+                from = initial instanceof Map ? Array.from(initial.entries()) : typeof initial === 'object' && initial != null ? Object.entries(initial) : initial;
 
-            if (initial instanceof Map) {
-                for (let entry of initial) {
-                    if (!parents_three.includes(entry[1])) {
-                        if(typeof entry[1].result === 'function')
-                            init[entry[0]] = entry[1].result(this, null, throw_error);
-                        else
-                            init[entry[0]] = entry[1];
-                    }
+            function done() {
+                switch (true) {
+                    case prototype[IS]('String'): 
+                        resolve(new PoonyaString(prototype, init, _)); 
+                    return;
+                    case prototype[IS]('Integer'): 
+                        resolve(new PoonyaInteger(prototype, init, _)); 
+                    return;
+                    case prototype[IS]('Boolean'): 
+                        resolve(new PoonyaBoolean(prototype, init, _)); 
+                    return;
+                    case prototype[IS]('Number'): 
+                        resolve(new PoonyaNumber(prototype, init, _)); 
+                    return;
+                    case prototype[IS]('Null'): 
+                        resolve(new PoonyaNull(prototype, init, _)); 
+                    return;
+                    case prototype[IS]('Array'): 
+                        resolve(new PoonyaArray(prototype, init, _)); 
+                    return;
+                    default: 
+                        resolve(new PoonyaObject(prototype, init, _)); 
+                    return;
                 }
-            } else if (typeof initial === 'object' && initial != null) {
-                for (let key in initial) {
-                    if (!parents_three.includes(initial[key])) {
-                        if(typeof initial[key].result === 'function')
-                            init[key] = initial[key].result(this, null, throw_error);
+            }
+
+            function next(){
+                const entry = from[cur++];
+
+                if(entry) {
+                    if(!parents_three.includes(entry[1]))
+                        if(typeof entry[1].result === 'function')
+                            init[entry[0]] = entry[1].result(_, null, reject, result => set(entry[0], result));
                         else
-                            init[key] = initial[key];
-                    }
+                            set(entry[0], entry[1]);
+                    else
+                        next();
+                } else {
+                    done();
+                }
+            }
+            
+            function set(key, value) {
+                init[key] = value;
+
+                next();
+            }
+
+            if (prototype != null) {
+                if(typeof from == 'object' && from != null) {
+                    next();
+                } else {
+                    init = from;
+
+                    done();
                 }
             } else {
-                init = initial;
+                reject(position, new IsNotAConstructorException(path));
             }
-
-            switch (true) {
-                case prototype[IS]('String'): return new PoonyaString(prototype, init, this);
-                case prototype[IS]('Integer'): return new PoonyaInteger(prototype, init, this);
-                case prototype[IS]('Boolean'): return new PoonyaBoolean(prototype, init, this);
-                case prototype[IS]('Number'): return new PoonyaNumber(prototype, init, this);
-                case prototype[IS]('Null'): return new PoonyaNull(prototype, init, this);
-                case prototype[IS]('Array'): return new PoonyaArray(prototype, init, this);
-                default: return new PoonyaObject(prototype, init, this);
-            }
-        } else {
-            (throw_error || console.error)(position, new IsNotAConstructorException(path));
-        }
+        });
     }
 }
 

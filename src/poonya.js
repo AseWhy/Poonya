@@ -73,37 +73,6 @@
 
 "use strict";
 
-// #!if platform === 'browser'
-/*~
-if (!window.setImmediate)
-    window.setImmediate = (function() {
-        var head = { }, tail = head;
-
-        var ID = Math.random();
-
-        function onmessage(e) {
-            if(e.data != ID) return;
-            head = head.next;
-            var func = head.func;
-            delete head.func;
-            func();
-        }
-
-        if(window.addEventListener) {
-            window.addEventListener('message', onmessage);
-        } else {
-            window.attachEvent( 'onmessage', onmessage );
-        }
-
-        return function(func) {
-            tail = tail.next = { func: func };
-
-            window.postMessage(ID, "*");
-        };
-    }());
-*/
-// #!endif
-
 // #!secret
 console.warn('Attention! You use raw version of poonya! Please, use poonya.browser.bundle.js or poonya.node.bundle.js for correct work it.');
 
@@ -112,14 +81,14 @@ const
     // #!if platform === 'node'
     { readFile } = require("fs"),
     { Stream } = require('stream'),
-    { normalize, extname } = require("path"),
+    { normalize, extname, join } = require("path"),
     // #!endif
     { IOError, PoonyaException } = require('./classes/exceptions'),
     { Import, ImportDir, ImportFile } = require("./importer.js"),
     { Context, Heap } = require("./classes/storage"),
     { parser, parseExpression, parserMP } = require("./parser.js"),
     { SERVICE } = require('./classes/static'),
-    { toFixed, toBytes, fromBytes } = require('./utils'),
+    { toFixed, toBytes, fromBytes, setImmediate } = require('./utils'),
     { iPoonyaConstructsData } = require("./classes/interfaces"),
     lexer = require("./lexer/lexer.js");
 
@@ -301,8 +270,8 @@ class CodeEmitter extends EventEmitter {
             _.path = normalize(
                 typeof input.path === "string" ? 
                     ['', '.'].includes(extname(input.path)) ?
-                        input.path + '.po' :
-                        input.path :
+                        join((module.parent ? module.parent.path : module.path), input.path + '.po') :
+                        join((module.parent ? module.parent.path : module.path), input.path) :
                     module.parent ?
                         module.parent.filename :
                         module.filename
@@ -386,12 +355,12 @@ class CodeEmitter extends EventEmitter {
 
         let buffer = [],
 
-            data = this.input.split("\n"),
+            data = this.input.split(/$\n/gm),
 
             line_dump = fromBytes(
                     toBytes(this.input).slice(0, pos)
                 )
-                .split("\n"),
+                .split(/$\n/gm),
 
             line = line_dump.length - 1,
 
@@ -412,7 +381,7 @@ class CodeEmitter extends EventEmitter {
             this.path,
             ':',
             line + 1,
-            ":", line_dump[line].length + 1,
+            ":", line_dump[line].length,
         );
 
         if(pos != -1) {
@@ -424,7 +393,7 @@ class CodeEmitter extends EventEmitter {
                 if (i === line) {
                     buffer.push(
                         "\n     ".padEnd(ll + 6, ' '),
-                        " |> ".padEnd(line_dump[line].length + 4, ' '),
+                        " |> ".padEnd(line_dump[line].length + 3, ' '),
                         "^",
                     );
                 }
@@ -434,6 +403,9 @@ class CodeEmitter extends EventEmitter {
         }
         
         if(error instanceof PoonyaException) {
+            if(SERVICE.CONFIG.DEBUG)
+                console.trace(error);
+
             error.message += '\n' + buffer.join('');
 
             throw error;
@@ -476,9 +448,7 @@ class CodeEmitter extends EventEmitter {
                 }
 
             if (data.find((e) => !(e instanceof Heap)) == null) {
-                this.data.result(new Context(this.libraries, error, ...data), out, error);
-
-                out.end();
+                this.data.result(new Context(this.libraries, error, ...data), out, error, () => out.end());
             } else {
                 throw new TypeError("Data must have a Heap type");
             }
@@ -487,18 +457,14 @@ class CodeEmitter extends EventEmitter {
 
             clone.import(this.libraries, error);
 
-            this.data.result(clone, out, error);
-
-            out.end();
+            this.data.result(clone, out, error, () => out.end());
         } else {
             if (typeof data === "object" && !(data instanceof Heap)) {
                 data = new Heap(null, data);
             }
 
             if (data instanceof Heap) {
-                this.data.result(new Context(this.libraries, error, data), out, error);
-
-                out.end();
+                this.data.result(new Context(this.libraries, error, data), out, error, () => out.end());
             } else {
                 throw new TypeError("Data must have a Heap type");
             }
@@ -662,47 +628,51 @@ class ExpressionPattern extends CodeEmitter {
     }
 
     [RESULT](data, error){
-        if (data instanceof Context) {
-            const clone = data.clone();
-
-            clone.import(this.libraries, error);
-
-            return this.data.result(clone, [], error);
-        } else {
-            if (Array.isArray(data)) {
-                for (let i = 0, leng = data.length; i < leng; i++)
-                    if (
-                        typeof data[i] === "object" &&
-                        !(data[i] instanceof Heap)
-                    ) {
-                        data[i] = new Heap(null, data[i]);
-                    }
-
-                if (data.find((e) => !(e instanceof Heap)) == null) {
-                    return this.data.result(
-                        new Context(this.libraries, error, ...data),
-                        [],
-                        error,
-                    );
-                } else {
-                    throw new TypeError("Data must have a Heap type");
-                }
+        return new Promise(res => {
+            if (data instanceof Context) {
+                const clone = data.clone();
+    
+                clone.import(this.libraries, error);
+    
+                this.data.result(clone, [], error, res);
             } else {
-                if (typeof data === "object" && !(data instanceof Heap)) {
-                    data = new Heap(null, data);
-                }
-
-                if (data instanceof Heap) {
-                    return this.data.result(
-                        new Context(this.libraries, error, data),
-                        [],
-                        error,
-                    );
+                if (Array.isArray(data)) {
+                    for (let i = 0, leng = data.length; i < leng; i++)
+                        if (
+                            typeof data[i] === "object" &&
+                            !(data[i] instanceof Heap)
+                        ) {
+                            data[i] = new Heap(null, data[i]);
+                        }
+    
+                    if (data.find((e) => !(e instanceof Heap)) == null) {
+                        this.data.result(
+                            new Context(this.libraries, error, ...data),
+                            [],
+                            error,
+                            res
+                        );
+                    } else {
+                        throw new TypeError("Data must have a Heap type");
+                    }
                 } else {
-                    throw new TypeError("Data must have a Heap type");
+                    if (typeof data === "object" && !(data instanceof Heap)) {
+                        data = new Heap(null, data);
+                    }
+    
+                    if (data instanceof Heap) {
+                        this.data.result(
+                            new Context(this.libraries, error, data),
+                            [],
+                            error,
+                            res
+                        );
+                    } else {
+                        throw new TypeError("Data must have a Heap type");
+                    }
                 }
             }
-        }
+        });
     }
 
     /**
@@ -719,9 +689,9 @@ class ExpressionPattern extends CodeEmitter {
 
         return new Promise(res => {
             if(_.loaded)
-                res(_[RESULT](data, error));
+                _[RESULT](data, error).then(res);
             else
-                _.on('load', () => res(_[RESULT](data, error)));
+                _.on('load', () => _[RESULT](data, error).then(res));
         });
     }
 }
@@ -753,7 +723,8 @@ function createContext(data, ...libs) {
                 CodeEmitter.prototype.throwError.bind({
                     input: '',
                     charset: 'utf-8',
-                    path: 'untitled.po'
+                    path: 'untitled.po',
+                    logger: console
                 }),
 
                 data
@@ -766,7 +737,8 @@ function createContext(data, ...libs) {
                     CodeEmitter.prototype.throwError.bind({
                         input: '',
                         charset: 'utf-8',
-                        path: 'untitled.po'
+                        path: 'untitled.po',
+                        logger: console
                     }),
     
                     data
@@ -785,21 +757,21 @@ function createContext(data, ...libs) {
  * @memberof Poonya
  * @async
  */
-function patternCreator(Pattern, ...args) {
+function createPattern(Pattern, ...args) {
     if(Object.prototype.isPrototypeOf.call(CodeEmitter, Pattern)){
-        Pattern = Function.prototype.apply(Object.create(Pattern), args);
+        Pattern = new Pattern(...args);
 
         return new Promise((res, rej) => {
             Pattern.on('load', (...args) => 
                 res(Object.assign(new iPoonyaConstructsData(), {
-                    Pattern,
+                    data: Pattern,
                     args
                 }))
             );
 
             Pattern.on('error', (...args) => 
                 rej(Object.assign(new iPoonyaConstructsData(), {
-                    Pattern,
+                    data: Pattern,
                     args
                 }))
             );
@@ -881,7 +853,7 @@ module.exports.MessagePattern = MessagePattern;
 module.exports.PoonyaOutputStream = PoonyaOutputStream;
 module.exports.ExpressionPattern = ExpressionPattern;
 module.exports.ExecutionPattern = ExecutionPattern;
-module.exports.patternCreator = patternCreator;
+module.exports.createPattern = createPattern;
 module.exports.createContext = createContext;
 module.exports.ImportFile = ImportFile.bind(null, module.parent != null ? module.parent.path : module.path);
 

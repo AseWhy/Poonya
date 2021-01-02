@@ -51,18 +51,23 @@ class TernarOperator extends Operand {
      *
      * @param {iContext} context Контекст выполнения
      * @param {PoonyaOutputStream} out вывод шаблонизатора
-     * @param {Function} throw_error Вызывается при ошибке
+     * @param {Function} reject Вызывается при ошибке
+     * @param {Function} resolve Вызывается при завершении выполнения тернарного выражения
      *
-     * @returns {Any} В зависимости от возвращаемых операндами (`v1`, `v2`) начений
      * @throws {ParserException}
      *
      * @public
      * @method
      */
-    result(context, out, throw_error) {
-        if (context.toBooleanResult(this.condition.result(context, out, throw_error)))
-            return this.v_o.result(context, out, throw_error);
-        else return this.v_t.result(context, out, throw_error);
+    result(context, out, reject, resolve) {
+        const _ = this;
+
+        _.condition.result(context, out, reject, result => {
+            if (context.toBooleanResult(result))
+                _.v_o.result(context, out, reject, resolve);
+            else 
+                _.v_t.result(context, out, reject, resolve);
+        });
     }
 }
 

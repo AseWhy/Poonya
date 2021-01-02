@@ -6,9 +6,11 @@
 
 "use strict";
 
+const PoonyaObject = require('../../data/PoonyaObject');
+const { GET } = require('../../static');
 const ExpressionGroup = require('../expression/ExpressionGroup')
-    , { iPoonyaObject } = require('../../interfaces')
-    , { TheFieldNotHasDeclaredExceprion, GetFieldOfNullException } = require('../../exceptions');
+    , { iPoonyaObject, iPoonyaPrototype, iContext } = require('../../interfaces')
+    , { GetFieldOfNullException, TheFieldNotHasDeclaredExceprion } = require('../../exceptions');
 
 /**
  * @lends ResetStatement
@@ -54,45 +56,62 @@ class ResetStatement {
      *
      * @param {iContext} context Контекст выполнения
      * @param {PoonyaOutputStream} out вывод шаблонизатора
-     * @param {Function} throw_error Вызывается при ошибке
+     * @param {Function} reject Вызывается при ошибке
+     * @param {Function} resolve функция возврата результата
      *
      * @throws {ParserException}
      *
      * @public
      * @method
      */
-    result(context, out, throw_error) {
-        let query_data = context.get(this.query_stack[0]),
-            query_stack = [...this.query_stack];
+    result(context, out, reject, resolve) {
+        let _ = this,
+            target = context,
+            query_stack = Array.from(_.query_stack),
+            leng = query_stack.length,
+            index = 0;
 
-        if (query_stack.length > 1) {
-            let index = 1;
-
-            for (let leng = query_stack.length - 1; query_data && index < leng; index++) {
-                if (query_stack[index] instanceof ExpressionGroup)
-                    query_stack[index] = query_stack[index]
-                        .result(context, out, throw_error)
-                        .toRawData();
-
-                query_data = query_data.get(query_stack[index]) || null;
+        function get(of_p) {
+            if(++index < leng){
+                if (target instanceof PoonyaObject) {
+                    target = target.get(of_p, context);
+                } else if(target instanceof iContext){
+                    target = target.get(of_p);
+                } else if (target instanceof iPoonyaPrototype) {
+                    target = target[GET](of_p, context);
+                } else {
+                    reject(_.position, new GetFieldOfNullException(of_p));
+                }
+            
+                next();
+            } else {
+                if (target instanceof iPoonyaObject || target instanceof iContext) {
+                    _.value.result(context, out, reject, value => {
+                        if(target instanceof iContext) {
+                            if(target.has(of_p)) {
+                                target.set(of_p, value);
+                            } else {
+                                reject(_.position, new TheFieldNotHasDeclaredExceprion(of_p));
+                            }
+                        } else {
+                            target.set(context, of_p, value);
+                        }
+                        
+                        resolve(value);
+                    });
+                } else
+                    reject(_.position, new GetFieldOfNullException(query_stack[index - 1]));
             }
-
-            if (query_data instanceof iPoonyaObject) {
-                const last_index = query_stack[query_stack.length - 1];
-
-                query_data.set(
-                    context,
-                    last_index instanceof ExpressionGroup
-                        ? last_index.result(context, out, throw_error).toRawData()
-                        : last_index,
-                    this.value.result(context, out, throw_error)
-                );
-            } else throw_error(this.position, new GetFieldOfNullException(query_stack[index]));
-        } else {
-            if (query_data != null)
-                context.set(query_stack[0], this.value.result(context, out, throw_error));
-            else throw_error(this.position, new TheFieldNotHasDeclaredExceprion(query_stack[0]));
         }
+
+        function next(){
+            if (query_stack[index] instanceof ExpressionGroup)
+                query_stack[index].result(context, null, reject, result => get(result.toRawData()));
+            else
+                get(query_stack[index]);
+        }
+
+        next();
     }
 }
 

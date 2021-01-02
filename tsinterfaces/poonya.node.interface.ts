@@ -47,6 +47,6 @@ export class ExpressionPattern extends CodeEmitter{
 }
 
 export function createContext(data: any, libs: String | Array<String>) : Promise<Context>{ return new Promise(res => {}) };
-export function patternCreator(Pattern: CodeEmitter, ...args: any) : Promise<iPoonyaConstructsData> { return new Promise(res => {}) };
+export function createPattern(Pattern: CodeEmitter, ...args: any) : Promise<iPoonyaConstructsData> { return new Promise(res => {}) };
 export const ImportDir = _ImportDir;
 export const ImportFile = _ImportFile;

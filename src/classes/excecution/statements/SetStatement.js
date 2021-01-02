@@ -45,18 +45,25 @@ class SetStatement {
      *
      * @param {iContext} context Контекст выполнения
      * @param {PoonyaOutputStream} out вывод шаблонизатора
-     * @param {Function} throw_error Вызывается при ошибке
+     * @param {Function} reject Вызывается при ошибке
+     * @param {Function} resolve функция возврата результата
      *
      * @throws {ParserException}
      *
      * @public
      * @method
      */
-    result(context, out, throw_error) {
-        if (!context.has(this.name, 'up')) {
-            context.set(this.name, this.value.result(context, out, throw_error), 'up');
+    result(context, out, reject, resolve) {
+        const _ = this;
+
+        if (!context.has(_.name, 'up')) {
+            _.value.result(context, out, reject, result => {
+                context.set(_.name, result, 'up');
+
+                resolve(result);
+            });
         } else {
-            throw_error(this.position, new TheFieldAlreadyHasBeenDeclaredException(this.name));
+            reject(_.position, new TheFieldAlreadyHasBeenDeclaredException(_.name));
         }
     }
 }

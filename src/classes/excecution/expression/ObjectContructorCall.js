@@ -84,15 +84,16 @@ class ObjectContructorCall extends Operand {
      *
      * @param {iContext} context Контекст выполнения
      * @param {PoonyaOutputStream} out вывод шаблонизатора
-     * @param {Function} throw_error Вызывается при ошибке
+     * @param {Function} reject Вызывается при ошибке
+     * @param {Function} resolve Вызывается при завершении создания объекта
      *
      * @throws {ParserException}
      *
      * @public
      * @method
      */
-    result(context, out, throw_error) {
-        return context.createObject(this.initial, this.position, this.query_stack, throw_error);
+    result(context, out, reject, resolve) {
+        context.createObject(this.initial, this.position, this.query_stack, reject, new Array(), resolve);
     }
 }
 

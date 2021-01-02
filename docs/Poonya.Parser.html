@@ -112,7 +112,7 @@
     
 
     
-    <h4 class="name" id=".codeBlockParser"><span class="type-signature">(protected, static) </span>codeBlockParser<span class="signature">(start, entries, throw_error)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id=".codeBlockParser"><span class="type-signature">(protected, static) </span>codeBlockParser<span class="signature">(start, entries, reject)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -202,7 +202,7 @@
 
         <tr>
             
-                <td class="name"><code>throw_error</code></td>
+                <td class="name"><code>reject</code></td>
             
 
             <td class="type">
@@ -317,7 +317,7 @@
     
 
     
-    <h4 class="name" id=".ifStatementParser"><span class="type-signature">(protected, static) </span>ifStatementParser<span class="signature">(start, entries, throw_error)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id=".ifStatementParser"><span class="type-signature">(protected, static) </span>ifStatementParser<span class="signature">(start, entries, reject)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -407,7 +407,7 @@
 
         <tr>
             
-                <td class="name"><code>throw_error</code></td>
+                <td class="name"><code>reject</code></td>
             
 
             <td class="type">
@@ -522,7 +522,7 @@
     
 
     
-    <h4 class="name" id=".parseExpression"><span class="type-signature">(protected, static) </span>parseExpression<span class="signature">(start, data, throw_error, end_marker)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id=".parseExpression"><span class="type-signature">(protected, static) </span>parseExpression<span class="signature">(start, data, reject, end_marker)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -622,7 +622,7 @@
 
         <tr>
             
-                <td class="name"><code>throw_error</code></td>
+                <td class="name"><code>reject</code></td>
             
 
             <td class="type">
@@ -770,7 +770,7 @@
     
 
     
-    <h4 class="name" id=".parseFunctionCall"><span class="type-signature">(protected, static) </span>parseFunctionCall<span class="signature">(query_stack, start, data, block_start, throw_error)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id=".parseFunctionCall"><span class="type-signature">(protected, static) </span>parseFunctionCall<span class="signature">(query_stack, start, data, block_start, reject)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -906,7 +906,7 @@
 
         <tr>
             
-                <td class="name"><code>throw_error</code></td>
+                <td class="name"><code>reject</code></td>
             
 
             <td class="type">
@@ -1021,7 +1021,7 @@
     
 
     
-    <h4 class="name" id=".parseObject"><span class="type-signature">(protected, static) </span>parseObject<span class="signature">(query_stack, start, data, throw_error)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id=".parseObject"><span class="type-signature">(protected, static) </span>parseObject<span class="signature">(query_stack, start, data, reject)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -1140,7 +1140,7 @@
 
         <tr>
             
-                <td class="name"><code>throw_error</code></td>
+                <td class="name"><code>reject</code></td>
             
 
             <td class="type">
@@ -1255,7 +1255,7 @@
     
 
     
-    <h4 class="name" id=".parser"><span class="type-signature">(async, protected, static) </span>parser<span class="signature">(entries, throw_error, parent_path<span class="signature-attributes">nullable</span>)</span><span class="type-signature"> &rarr; {<a href="SequenceMainGroup.html">SequenceMainGroup</a>}</span></h4>
+    <h4 class="name" id=".parser"><span class="type-signature">(async, protected, static) </span>parser<span class="signature">(entries, reject, parent_path<span class="signature-attributes">nullable</span>)</span><span class="type-signature"> &rarr; {<a href="SequenceMainGroup.html">SequenceMainGroup</a>}</span></h4>
     
 
     
@@ -1332,7 +1332,7 @@
 
         <tr>
             
-                <td class="name"><code>throw_error</code></td>
+                <td class="name"><code>reject</code></td>
             
 
             <td class="type">
@@ -1430,7 +1430,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parser.js.html">parser.js</a>, <a href="parser.js.html#line1155">line 1155</a>
+        <a href="parser.js.html">parser.js</a>, <a href="parser.js.html#line1154">line 1154</a>
     </li></ul></dd>
     
 
@@ -1488,7 +1488,7 @@
     
 
     
-    <h4 class="name" id=".parserMP"><span class="type-signature">(async, protected, static) </span>parserMP<span class="signature">(entries, block_prefix, throw_error, parent_path)</span><span class="type-signature"> &rarr; {<a href="SequenceMainGroup.html">SequenceMainGroup</a>}</span></h4>
+    <h4 class="name" id=".parserMP"><span class="type-signature">(async, protected, static) </span>parserMP<span class="signature">(entries, block_prefix, reject, parent_path)</span><span class="type-signature"> &rarr; {<a href="SequenceMainGroup.html">SequenceMainGroup</a>}</span></h4>
     
 
     
@@ -1496,7 +1496,7 @@
 
 
 <div class="description">
-    Парсит шаблон сообщения, которое помимо кода Poonya может содержать и любые другие символы вне префикса
+    Парсит шаблон сообщения, которое помимо кода Poonya может содержать и любые другие символы вне префикса.
 </div>
 
 
@@ -1578,7 +1578,7 @@
 
         <tr>
             
-                <td class="name"><code>throw_error</code></td>
+                <td class="name"><code>reject</code></td>
             
 
             <td class="type">
@@ -1658,7 +1658,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parser.js.html">parser.js</a>, <a href="parser.js.html#line1181">line 1181</a>
+        <a href="parser.js.html">parser.js</a>, <a href="parser.js.html#line1180">line 1180</a>
     </li></ul></dd>
     
 
@@ -1716,7 +1716,7 @@
     
 
     
-    <h4 class="name" id=".parseTernar"><span class="type-signature">(protected, static) </span>parseTernar<span class="signature">(condition, start, data, throw_error)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id=".parseTernar"><span class="type-signature">(protected, static) </span>parseTernar<span class="signature">(condition, start, data, reject)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -1829,7 +1829,7 @@
 
         <tr>
             
-                <td class="name"><code>throw_error</code></td>
+                <td class="name"><code>reject</code></td>
             
 
             <td class="type">
@@ -1944,7 +1944,7 @@
     
 
     
-    <h4 class="name" id=".parseVarName"><span class="type-signature">(protected, static) </span>parseVarName<span class="signature">(start, data, throw_error)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id=".parseVarName"><span class="type-signature">(protected, static) </span>parseVarName<span class="signature">(start, data, reject)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -2034,7 +2034,7 @@
 
         <tr>
             
-                <td class="name"><code>throw_error</code></td>
+                <td class="name"><code>reject</code></td>
             
 
             <td class="type">
@@ -2149,7 +2149,7 @@
     
 
     
-    <h4 class="name" id=".segmentationParser"><span class="type-signature">(protected, static) </span>segmentationParser<span class="signature">(start, entries, throw_error, segment_separator, max_segments, blockname)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id=".segmentationParser"><span class="type-signature">(protected, static) </span>segmentationParser<span class="signature">(start, entries, reject, segment_separator, max_segments, blockname)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -2249,7 +2249,7 @@
 
         <tr>
             
-                <td class="name"><code>throw_error</code></td>
+                <td class="name"><code>reject</code></td>
             
 
             <td class="type">
@@ -2453,7 +2453,7 @@
     
 
     
-    <h4 class="name" id=".segmentCutter"><span class="type-signature">(protected, static) </span>segmentCutter<span class="signature">(start, entries, throw_error)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id=".segmentCutter"><span class="type-signature">(protected, static) </span>segmentCutter<span class="signature">(start, entries, reject)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -2543,7 +2543,7 @@
 
         <tr>
             
-                <td class="name"><code>throw_error</code></td>
+                <td class="name"><code>reject</code></td>
             
 
             <td class="type">
@@ -2674,7 +2674,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Thu Dec 31 2020 20:57:45 GMT+0400 (Самарское стандартное время)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Sat Jan 02 2021 21:30:34 GMT+0400 (Самарское стандартное время)
 </footer>
 
 <script> prettyPrint(); </script>

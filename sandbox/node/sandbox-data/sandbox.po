@@ -2,14 +2,16 @@
     Multilevel object notation
 </
 
-> Object ->
-    Field1 -> 'value1',
-    Field2 ->
-        (
-            Array ->
-                0 -> 1,
-                1 -> 2,
-                2 -> 3,
-                3 -> 4
-        ),
-    Field3 -> 0;
+set test1 = Object ->
+                field1 -> 1;
+
+// Using the functions inherited from Object
+test1.set('SomeField', 1);
+
+wait(5000);
+
+> test1.has('SomeField');
+
+wait(5000);
+
+> test1;

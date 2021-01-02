@@ -142,7 +142,11 @@ const SERVICE = {
     // #!endif
 
     CONFIG: {
-        DEBUG: false,
+        DEBUG:
+            // #!secret 
+            true
+            //~ false
+            ,
     },
 
     LOADED: false,

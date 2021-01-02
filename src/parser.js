@@ -56,18 +56,18 @@ const {
  * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<Token>} data Вхождения которые будут обработаны парсером
  * @param {Number} block_start Начальная позиция вызова
- * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+ * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: FunctionCall, jump: Number}} объект вызова функции, и позиция с которой можно продолжить прасинг
  *
  * @memberof Poonya.Parser
  * @protected
  */
-function parseFunctionCall(query_stack, start, data, throw_error, block_start) {
+function parseFunctionCall(query_stack, start, data, reject, block_start) {
     const args = segmentationParser(
         start,
         data,
-        throw_error,
+        reject,
         ",",
         Infinity,
         `(${query_stack.map((e) => (typeof e === "number" ? `[${e}]` : e)).join(" => ")})()`
@@ -89,14 +89,14 @@ function parseFunctionCall(query_stack, start, data, throw_error, block_start) {
  * @param {Number[]|String[]|Operand[]} query_stack путь к конструктору объекта
  * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<Token>} data Вхождения которые будут обработаны парсером
- * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+ * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: ObjectContructorCall, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
  *
  * @memberof Poonya.Parser
  * @protected
  */
-function parseObject(query_stack, start, data, throw_error, level = 0) {
+function parseObject(query_stack, start, data, reject, level = 0) {
     let result = null,
         count = 0,
         entries = new Array([]),
@@ -110,7 +110,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                 expected === 3 && !data[i].equals(CHARTYPE.OPERATOR, ',') ||
                 data[i].equals(CHARTYPE.OPERATOR, [';', ')']):
                 if (entries[entries.length - 1].length !== 2)
-                    throw_error(data[i].position, new ParserUnfinishedNotationException());
+                    reject(data[i].position, new ParserUnfinishedNotationException());
 
                 return {
                     data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
@@ -118,7 +118,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                 };
             case data[i].equals(CHARTYPE.OPERATOR, '*') && expected === 0:
                 if (entries.length !== 1)
-                    throw_error(data[i].position, new BadEmptyObjectException());
+                    reject(data[i].position, new BadEmptyObjectException());
 
                 return {
                     data: new ObjectContructorCall(query_stack, new Map(), data[start].position),
@@ -134,7 +134,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                         } else if (data[i].equals(CHARTYPE.NUMBER)) {
                             entries[entries.length - 1][0] = parseInt(data[i].toRawString());
                         } else {
-                            throw_error(data[i].position, new UnexpectedTokenException(data[i], '[Word]'));
+                            reject(data[i].position, new UnexpectedTokenException(data[i], '[Word]'));
                         }
 
                         expected = 1;
@@ -147,7 +147,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                             i += count;
 
                             if (!data[i].equals(CHARTYPE.OPERATOR, '>')) {
-                                throw_error(data[i].position, new UnexpectedTokenException(data[i], '>'));
+                                reject(data[i].position, new UnexpectedTokenException(data[i], '>'));
                             }
 
                             expected = 2;
@@ -160,7 +160,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                                     jump: last_row - start
                                 };
                             } else {
-                                throw_error(data[i].position, new BadArrowNotationJumpingToUpperLevel());
+                                reject(data[i].position, new BadArrowNotationJumpingToUpperLevel());
                             }
                         }
                     continue;
@@ -178,7 +178,7 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                             ) &&
                             count === level + 2 &&
                             data[i + level + 3].equals(CHARTYPE.OPERATOR, '>')) {
-                            result = parseObject(SERVICE.CONSTRUCTORS.OBJECT, i, data, throw_error, level + 1);
+                            result = parseObject(SERVICE.CONSTRUCTORS.OBJECT, i, data, reject, level + 1);
 
                             i += result.jump - 1;
 
@@ -190,12 +190,12 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
                             /// Попытка произвести нотация на два уровня выше чем родительская
                             ///
                         } else if (count > level + 2) {
-                            throw_error(data[i + 1].position, new BadArrowNotationJumpingTwoLevels());
+                            reject(data[i + 1].position, new BadArrowNotationJumpingTwoLevels());
                             /// Если как значение передано выражение
                             ///
                             /// some -> 'somesome...';
                         } else {
-                            result = parseExpression(i, data, throw_error, [',', ';']);
+                            result = parseExpression(i, data, reject, [',', ';']);
 
                             // Текущие данные ставим как результат парсинга выражения
                             entries[entries.length - 1][1] = result.data;
@@ -231,26 +231,26 @@ function parseObject(query_stack, start, data, throw_error, level = 0) {
  * @param {ExpressionGroup} condition Условие, при котором тернарное выражение будет верным
  * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<Token>} data Вхождения которые будут обработаны парсером
- * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+ * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: TernarOperator, jump: Number}} объект тернарного выражения, и позиция с которой можно продолжить прасинг
  *
  * @memberof Poonya.Parser
  * @protected
  */
-function parseTernar(condition, start, data, throw_error) {
+function parseTernar(condition, start, data, reject) {
     let hook_index = 0,
         buffer = new Array(),
         args = new Array();
 
     function push(token) {
         if (buffer.length !== 0) {
-            args.push(parseExpression(0, buffer, throw_error).data);
+            args.push(parseExpression(0, buffer, reject).data);
 
             buffer.splice(0, buffer.length);
         }
         else
-            throw_error(
+            reject(
                 token != undefined ? token.position : data[start],
                 new ParserEmtyArgumentException()
             );
@@ -268,7 +268,7 @@ function parseTernar(condition, start, data, throw_error) {
                 push(data[i]);
 
                 if (args[0] === undefined || args[1] === undefined)
-                    throw_error(
+                    reject(
                         data[start].position,
                         new ParserEmtyArgumentException()
                     );
@@ -299,7 +299,7 @@ function parseTernar(condition, start, data, throw_error) {
             case data[i].equals(CHARTYPE.OPERATOR, ":") &&
                 hook_index === 0 &&
                 args.length !== 0:
-                throw_error(
+                reject(
                     data[i].position,
                     new ParserLogicException()
                 );
@@ -315,14 +315,14 @@ function parseTernar(condition, start, data, throw_error) {
  *
  * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<Token>} data Вхождения которые будут обработаны парсером
- * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+ * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: Array<Number|String>, jump: Number}} массив со стэком запроса, по которому можно получит доступ к переменной, и позиция с которой можно продолжить парсинг
  *
  * @memberof Poonya.Parser
  * @protected
  */
-function parseVarName(start, data, throw_error) {
+function parseVarName(start, data, reject) {
     let buffer = new Array(),
         point_before = true,
         hook_index = 0,
@@ -376,19 +376,19 @@ function parseVarName(start, data, throw_error) {
                 }
 
                 if (hook_index != 0)
-                    throw_error(
+                    reject(
                         data[i].position,
                         new ParserLogicException()
                     );
 
                 // Вставляем выражение как оператор доступа
                 buffer.push(
-                    parseExpression(0, data.slice(hook_start, i), throw_error)
+                    parseExpression(0, data.slice(hook_start, i), reject)
                         .data
                 );
                 continue;
             default:
-                throw_error(
+                reject(
                     data[i].position,
                     new InvalidSequenceForLetiableAccessException()
                 );
@@ -401,7 +401,7 @@ function parseVarName(start, data, throw_error) {
  *
  * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<Token>} data Вхождения которые будут обработаны парсером
- * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+ * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  * @param {String} end_marker Маркер конца выражения
  *
  * @returns {{data: ExpressionGroup, jump: Number}} выражение и позиция, с которой можно продолжить парсинг
@@ -409,7 +409,7 @@ function parseVarName(start, data, throw_error) {
  * @memberof Poonya.Parser
  * @protected
  */
-function parseExpression(start, data, throw_error, end_marker = ';') {
+function parseExpression(start, data, reject, end_marker = ';') {
     if (data.length === 0)
         return {
             data: new ExpressionGroup(0),
@@ -426,9 +426,9 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
             data[i].contentEquals(end_marker)
         ) {
             if (buffer.isNotDone())
-                throw_error(data[i - 1].position, data[i] == undefined ? new CriticalParserErrorUnexpectedEndOfInputException() : new CriticalParserErrorUnexpectedEndOfExpression());
+                reject(data[i - 1].position, data[i] == undefined ? new CriticalParserErrorUnexpectedEndOfInputException() : new CriticalParserErrorUnexpectedEndOfExpression());
 
-            buffer.complete(throw_error);
+            buffer.complete(reject);
 
             return {
                 data: buffer,
@@ -445,11 +445,11 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                 // Ключевые слова
                 switch (data[i].toString()) {
                     case "true": case "false": case "null":
-                        buffer.append(data[i], throw_error);
+                        buffer.append(data[i], reject);
                         continue;
                 }
 
-                result[0] = parseVarName(i, data, throw_error);
+                result[0] = parseVarName(i, data, reject);
 
                 if (data[i + result[0].jump] != null && data[i + result[0].jump].equals(CHARTYPE.OPERATOR, "(")) {
                     // Функция
@@ -457,13 +457,13 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                         result[0].data,
                         i + result[0].jump + 1,
                         data,
-                        throw_error,
+                        reject,
                         data[i].position
                     );
 
                     i += result[0].jump + result[1].jump + 1;
 
-                    buffer.append(result[1].data, throw_error);
+                    buffer.append(result[1].data, reject);
                 } else if (
                     data[i + result[0].jump + 1] != null &&
                     data[i + result[0].jump].equals(CHARTYPE.OPERATOR, "-") &&
@@ -475,7 +475,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                         result[0].data,
                         i + result[0].jump + 2,
                         data,
-                        throw_error,
+                        reject,
                         0
                     );
 
@@ -484,10 +484,10 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                     if(data[i + 1].equals(CHARTYPE.OPERATOR, [ '*' ]))
                         i += 1;
 
-                    buffer.append(result[1].data, throw_error);
+                    buffer.append(result[1].data, reject);
                 } else {
                     // Получение значения переменной
-                    buffer.append(new GetOperator(data[i].position, result[0].data), throw_error);
+                    buffer.append(new GetOperator(data[i].position, result[0].data), reject);
 
                     i += result[0].jump - 1;
                 }
@@ -501,32 +501,32 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                     SERVICE.CONSTRUCTORS.OBJECT,
                     i + 2,
                     data,
-                    throw_error,
+                    reject,
                     0
                 );
 
                 i += result[0].jump + 2;
 
-                buffer.append(result[0].data, throw_error);
+                buffer.append(result[0].data, reject);
 
             continue;
             // Другая группа выражений
             case data[i].equals(CHARTYPE.OPERATOR, "("):
-                result[0] = parseExpression(i + 1, data, throw_error);
+                result[0] = parseExpression(i + 1, data, reject);
 
                 i += result[0].jump + 1;
 
-                buffer.append(result[0].data, throw_error);
+                buffer.append(result[0].data, reject);
             continue;
             // Тернарное выражение
             case data[i].equals(CHARTYPE.OPERATOR, "?"):
-                buffer.complete(throw_error);
+                buffer.complete(reject);
 
                 result[0] = parseTernar(
                     new ExpressionGroup(data[i].position, buffer.data),
                     i + 1,
                     data,
-                    throw_error
+                    reject
                 );
 
                 return {
@@ -550,14 +550,14 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
                     "|",
                     "&",
                 ]):
-                buffer.append(data[i], throw_error);
+                buffer.append(data[i], reject);
             continue;
             // Неизвестно что это, завершаем парсинг выражения на этом
             default:
                 if (buffer.isNotDone())
-                    throw_error(data[i - 1].position, new CriticalParserErrorUnexpectedEndOfExpression());
+                    reject(data[i - 1].position, new CriticalParserErrorUnexpectedEndOfExpression());
 
-                buffer.complete(throw_error);
+                buffer.complete(reject);
 
                 return {
                     data: buffer
@@ -571,7 +571,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
  *
  * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
- * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызывается при ошибке функция, котора первым аргументом принимает позицию вхождения на котором произошла ошибка
+ * @param {Function} reject {@link CodeEmitter.throwError} - Вызывается при ошибке функция, котора первым аргументом принимает позицию вхождения на котором произошла ошибка
  * @param {String} segment_separator Разделитель для сегментов
  * @param {Number} max_segments Максимальное число сегментов, если это число сегментов будет превышено, будет выбражено исключение
  * @param {String} blockname Название блока
@@ -584,7 +584,7 @@ function parseExpression(start, data, throw_error, end_marker = ';') {
 function segmentationParser(
     start,
     entries,
-    throw_error,
+    reject,
     segment_separator = ",",
     max_segments = Infinity,
     blockname = "unknown"
@@ -603,10 +603,10 @@ function segmentationParser(
                     buffer[buffer.length - 1] = parseExpression(
                         0,
                         buffer[buffer.length - 1],
-                        throw_error
+                        reject
                     ).data;
                 } else if (buffer.length > 1) {
-                    throw_error(
+                    reject(
                         entries[i - 1].position,
                         new SegmentationFaultEmptyArgumentException(blockname)
                     );
@@ -632,7 +632,7 @@ function segmentationParser(
                     buffer[buffer.length - 1].push(entries[i]);
                 }
                 else
-                    throw_error(
+                    reject(
                         entries[i].position,
                         new ParserLogicException()
                     );
@@ -643,18 +643,18 @@ function segmentationParser(
                         buffer[buffer.length - 1] = parseExpression(
                             0,
                             buffer[buffer.length - 1],
-                            throw_error
+                            reject
                         ).data;
 
                         buffer.push(new Array());
 
                         if (buffer.length > max_segments)
-                            throw_error(
+                            reject(
                                 entries[i].position,
                                 new SegmentationFaultMaximumSegmentsForBlockException(blockname)
                             );
                     } else {
-                        throw_error(
+                        reject(
                             entries[i].position,
                             new SegmentationFaultEmptyArgumentException(blockname)
                         );
@@ -671,14 +671,14 @@ function segmentationParser(
  *
  * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
- * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+ * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: Array<SequenceGroup>, jump: Number}} массив с выражениями, и позиция с которой можно продолжить парсинг
  *
  * @memberof Poonya.Parser
  * @protected
  */
-function segmentCutter(start, entries, throw_error) {
+function segmentCutter(start, entries, reject) {
     let hook_index = 0,
         body = new Array();
 
@@ -688,7 +688,7 @@ function segmentCutter(start, entries, throw_error) {
                 (entries[i].equals(CHARTYPE.OPERATOR, "}") && hook_index <= 0):
                 return {
                     // Сегменты
-                    data: codeBlockParser(0, body, throw_error).data,
+                    data: codeBlockParser(0, body, reject).data,
                     // Прыжок парсера
                     jump: i - start,
                 };
@@ -704,7 +704,7 @@ function segmentCutter(start, entries, throw_error) {
                     body.push(entries[i]);
                 }
                 else
-                    throw_error(
+                    reject(
                         entries[i].position,
                         new ParserLogicException()
                     );
@@ -720,14 +720,14 @@ function segmentCutter(start, entries, throw_error) {
  *
  * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
- * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+ * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {{data: IfStatement, jump: Number}} Объякт дескриптор блока if, и позиция с которой можно продолжить парсинг
  *
  * @memberof Poonya.Parser
  * @protected
  */
-function ifStatementParser(start, entries, throw_error) {
+function ifStatementParser(start, entries, reject) {
     let index = start,
         result = new Array();
 
@@ -737,7 +737,7 @@ function ifStatementParser(start, entries, throw_error) {
         result[0] = segmentationParser(
             index + 2,
             entries,
-            throw_error,
+            reject,
             "",
             1,
             "if"
@@ -748,7 +748,7 @@ function ifStatementParser(start, entries, throw_error) {
         // { expression }
         if (maybeEquals(entries, index, CHARTYPE.NEWLINE) &&
             entries[index].equals(CHARTYPE.OPERATOR, "{")) {
-            result[1] = segmentCutter(index + 1, entries, throw_error);
+            result[1] = segmentCutter(index + 1, entries, reject);
 
             index += result[1].jump + 1;
 
@@ -758,7 +758,7 @@ function ifStatementParser(start, entries, throw_error) {
                 // { expression }
                 if (maybeEquals(entries, index + 2, CHARTYPE.NEWLINE) &&
                     entries[index + 2].equals(CHARTYPE.OPERATOR, "{")) {
-                    result[2] = segmentCutter(index + 3, entries, throw_error);
+                    result[2] = segmentCutter(index + 3, entries, reject);
 
                     index += result[2].jump + 3;
 
@@ -775,7 +775,7 @@ function ifStatementParser(start, entries, throw_error) {
                     result[2] = ifStatementParser(
                         index + 2,
                         entries,
-                        throw_error
+                        reject
                     );
 
                     index += result[2].jump + 2;
@@ -789,7 +789,7 @@ function ifStatementParser(start, entries, throw_error) {
                         jump: index - start,
                     };
                 } else {
-                    throw_error(
+                    reject(
                         entries[index + 2].position,
                         new UnexpectedTokenStatement(
                             "else",
@@ -805,7 +805,7 @@ function ifStatementParser(start, entries, throw_error) {
                 };
             }
         } else {
-            throw_error(
+            reject(
                 entries[index].position,
                 new UnexpectedTokenStatement(
                     "if",
@@ -815,7 +815,7 @@ function ifStatementParser(start, entries, throw_error) {
             );
         }
     } else {
-        throw_error(
+        reject(
             entries[index + 1].position,
             new UnexpectedTokenStatement(
                 "if",
@@ -830,7 +830,7 @@ function ifStatementParser(start, entries, throw_error) {
  *
  * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
- * @param {Function} throw_error Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+ * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  *
  * @returns {
  *      {
@@ -841,7 +841,7 @@ function ifStatementParser(start, entries, throw_error) {
  * @memberof Poonya.Parser
  * @protected
  */
-function codeBlockParser(start, entries, throw_error) {
+function codeBlockParser(start, entries, reject) {
     const buffer = new SequenceGroup(),
         result = new Array();
 
@@ -858,14 +858,14 @@ function codeBlockParser(start, entries, throw_error) {
                 case entries[i].equals(CHARTYPE.NEWLINE):
                     continue;
                 case entries[i].equals(CHARTYPE.OPERATOR, ">"):
-                    result[0] = parseExpression(i + 1, entries, throw_error);
+                    result[0] = parseExpression(i + 1, entries, reject);
 
                     i += result[0].jump + 1;
 
                     buffer.push(new OutStatement(result[0].data));
                     continue;
                 case entries[i].equals(CHARTYPE.WORD, "if"):
-                    result[0] = ifStatementParser(i, entries, throw_error);
+                    result[0] = ifStatementParser(i, entries, reject);
 
                     i += result[0].jump;
 
@@ -879,7 +879,7 @@ function codeBlockParser(start, entries, throw_error) {
                         result[0] = segmentationParser(
                             i + 2,
                             entries,
-                            throw_error,
+                            reject,
                             "",
                             1,
                             "while"
@@ -893,7 +893,7 @@ function codeBlockParser(start, entries, throw_error) {
                             result[1] = segmentCutter(
                                 i + 1,
                                 entries,
-                                throw_error
+                                reject
                             );
 
                             i += result[1].jump + 1;
@@ -905,7 +905,7 @@ function codeBlockParser(start, entries, throw_error) {
                                 )
                             );
                         } else {
-                            throw_error(
+                            reject(
                                 entries[i].position,
                                 new UnexpectedTokenStatement(
                                     "while",
@@ -915,7 +915,7 @@ function codeBlockParser(start, entries, throw_error) {
                             );
                         }
                     } else {
-                        throw_error(
+                        reject(
                             entries[i + 1].position,
                             new UnexpectedTokenStatement(
                                 "while",
@@ -933,7 +933,7 @@ function codeBlockParser(start, entries, throw_error) {
                         result[0] = segmentationParser(
                             i + 2,
                             entries,
-                            throw_error,
+                            reject,
                             ";",
                             2,
                             "repeat"
@@ -947,7 +947,7 @@ function codeBlockParser(start, entries, throw_error) {
                             result[1] = segmentCutter(
                                 i + 1,
                                 entries,
-                                throw_error
+                                reject
                             );
 
                             i += result[1].jump + 1;
@@ -960,7 +960,7 @@ function codeBlockParser(start, entries, throw_error) {
                                 )
                             );
                         } else {
-                            throw_error(
+                            reject(
                                 entries[i].position,
                                 new UnexpectedTokenStatement(
                                     "repeat",
@@ -970,7 +970,7 @@ function codeBlockParser(start, entries, throw_error) {
                             );
                         }
                     } else {
-                        throw_error(
+                        reject(
                             entries[i + 1].position,
                             new UnexpectedTokenStatement(
                                 "repeat",
@@ -990,7 +990,7 @@ function codeBlockParser(start, entries, throw_error) {
                             result[0] = parseExpression(
                                 i + 3,
                                 entries,
-                                throw_error
+                                reject
                             );
 
                             buffer.push(
@@ -1001,20 +1001,20 @@ function codeBlockParser(start, entries, throw_error) {
 
                             continue;
                         } else {
-                            throw_error(
+                            reject(
                                 entries[i + 3].position,
                                 new UnexpectedWordTypeAndGetException(entries[i + 2].toString(), entries[i + 2].type)
                             );
                         }
                     } else {
-                        throw_error(
+                        reject(
                             entries[i + 2].position,
                             new UnexpectedWordTypeAndGetException(entries[i + 1].toString(), entries[i + 1].type)
                         );
                     }
                 break;
                 case entries[i].equals(CHARTYPE.WORD):
-                    result[0] = parseVarName(i, entries, throw_error);
+                    result[0] = parseVarName(i, entries, reject);
 
                     // Если следующий символ доступен
                     if (i + result[0].jump < leng) {
@@ -1026,7 +1026,7 @@ function codeBlockParser(start, entries, throw_error) {
                             result[1] = parseExpression(
                                 result[0].jump + i + 1,
                                 entries,
-                                throw_error
+                                reject
                             );
 
                             buffer.push(
@@ -1051,7 +1051,7 @@ function codeBlockParser(start, entries, throw_error) {
                                 result[1] = parseExpression(
                                     result[0].jump + i + 2,
                                     entries,
-                                    throw_error
+                                    reject
                                 );
 
                                 buffer.push(
@@ -1064,7 +1064,7 @@ function codeBlockParser(start, entries, throw_error) {
 
                                 i += result[0].jump + result[1].jump + 2;
                             } else {
-                                throw_error(
+                                reject(
                                     entries[i + result[0].jump + 1].position,
                                     new UnexpectedTokenException(
                                         entries[i + result[0].jump + 1].toString(),
@@ -1081,7 +1081,7 @@ function codeBlockParser(start, entries, throw_error) {
                             result[1] = parseExpression(
                                 i,
                                 entries,
-                                throw_error
+                                reject
                             );
 
                             buffer.push(result[1].data);
@@ -1090,7 +1090,7 @@ function codeBlockParser(start, entries, throw_error) {
 
                             // Ошибка
                         } else {
-                            throw_error(
+                            reject(
                                 entries[i].position,
                                 new InvalidSequenceForLetiableAccessException()
                             );
@@ -1101,14 +1101,14 @@ function codeBlockParser(start, entries, throw_error) {
                     continue;
                 case entries[i].equals(CHARTYPE.NUMBER) ||
                     entries[i].equals(CHARTYPE.STRING):
-                    result[0] = parseExpression(i, entries, throw_error);
+                    result[0] = parseExpression(i, entries, reject);
 
                     buffer.push(result[0].data);
 
                     i += result[0].jump;
                     continue;
                 default:
-                    throw_error(
+                    reject(
                         entries[i].position,
                         new UnexpectedTokenException(
                             entries[i].toString(),
@@ -1122,15 +1122,14 @@ function codeBlockParser(start, entries, throw_error) {
             } else {
                 if (entries.length != 0) {
                     if (entries[i] != null)
-                        throw_error(entries[i].position, new CriticalParserErrorException());
-
+                        reject(entries[i].position, new CriticalParserErrorException());
                     else
-                        throw_error(
+                        reject(
                             entries[entries.length - 1].position,
                             new CriticalParserErrorUnexpectedEndOfInputException()
                         );
                 } else {
-                    throw_error(
+                    reject(
                         0,
                         new CriticalParserErrorNoRawDataTransmittedException()
                     );
@@ -1143,7 +1142,7 @@ function codeBlockParser(start, entries, throw_error) {
  * Парсит вхождения, которые можно получить вызовом функции @see {@link lexer}
  *
  * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
- * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+ * @param {Function} reject {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  * @param {?String} parent_path Путь к шаблону
  *
  * @returns {SequenceMainGroup} Тело исполнителя
@@ -1152,24 +1151,24 @@ function codeBlockParser(start, entries, throw_error) {
  * @protected
  * @async
  */
-async function parser(entries, throw_error, parent_path) {
+async function parser(entries, reject, parent_path) {
     return new SequenceMainGroup(codeBlockParser(
         0,
         await linker(
             entries,
             parent_path,
-            throw_error
+            reject
         ),
-        throw_error
+        reject
     ).data.Sequence);
 }
 
 /**
- * Парсит шаблон сообщения, которое помимо кода Poonya может содержать и любые другие символы вне префикса
+ * Парсит шаблон сообщения, которое помимо кода Poonya может содержать и любые другие символы вне префикса.
  * 
  * @param {Array<Token>} entries Вхождения для парсинга
  * @param {String} block_prefix Префикс для обозначения начала блока кода poonya
- * @param {Function} throw_error {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождени
+ * @param {Function} reject {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождени
  * @param {String} parent_path Путь к шаблону
  * 
  * @returns {SequenceMainGroup} Тело исполнителя
@@ -1178,7 +1177,7 @@ async function parser(entries, throw_error, parent_path) {
  * @protected
  * @async
  */
-async function parserMP(entries, block_prefix, throw_error, parent_path) {
+async function parserMP(entries, block_prefix, reject, parent_path) {
     let   hook_index = 0
         , buffer = new Array()
         , out = new SequenceMainGroup();
@@ -1223,9 +1222,9 @@ async function parserMP(entries, block_prefix, throw_error, parent_path) {
                     await linker(
                         buffer.filter((e) => e.type !== CHARTYPE.SPACE),
                         parent_path,
-                        throw_error
+                        reject
                     ),
-                    throw_error
+                    reject
                 ).data
             );
 
@@ -1260,9 +1259,9 @@ async function parserMP(entries, block_prefix, throw_error, parent_path) {
                     await linker(
                         buffer.filter((e) => e.type !== CHARTYPE.SPACE),
                         parent_path,
-                        throw_error
+                        reject
                     ),
-                    throw_error
+                    reject
                 ).data
             );
 
@@ -1276,7 +1275,7 @@ async function parserMP(entries, block_prefix, throw_error, parent_path) {
                 buffer.splice(0, buffer.length);
             }
         } else {
-            throw_error(
+            reject(
                 entries[entries.length - 1].position,
                 new UnexpectedTokenException(entries[entries.length - 1], "}"),
             );

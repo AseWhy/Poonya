@@ -55,40 +55,59 @@ class RepeatStatement {
      *
      * @param {iContext} context Контекст выполнения
      * @param {PoonyaOutputStream} out вывод шаблонизатора
-     * @param {Function} throw_error Вызывается при ошибке
+     * @param {Function} reject Вызывается при ошибке
+     * @param {Function} resolve функция возврата результата
      *
      * @throws {ParserException}
      *
      * @public
      * @method
      */
-    result(context, out, throw_error) {
-        let from = this.from.result(context, out, throw_error),
-            to = this.to.result(context, out, throw_error),
-            difference;
+    result(context, out, reject, resolve) {
+        let _ = this, difference;
 
-        if (!(from instanceof PoonyaNumber))
-            throw_error(this.from.position, new TheFieldMustBeNumberException('From'));
+        _.from.result(context, out, reject, from_d => {
+            _.to.result(context, out, reject, to_d => {
+                if (!(from_d instanceof PoonyaNumber))
+                    reject(_.from.position, new TheFieldMustBeNumberException('From'));
+        
+                if (!(to_d instanceof PoonyaNumber))
+                    reject(_.to.position, new TheFieldMustBeNumberException('To'));
 
-        if (!(to instanceof PoonyaNumber))
-            throw_error(this.to.position, new TheFieldMustBeNumberException('To'));
+                from_d.result(context, out, reject, from => {
+                    to_d.result(context, out, reject, to => {
+                        difference = from < to ? 1 : -1;
 
-        difference =
-            (from = Math.floor(from.result(context, out, throw_error))) <
-            (to = Math.floor(to.result(context, out, throw_error)))
-                ? 1 : -1;
+                        from = Math.floor(from);
+                        to = Math.floor(to);
 
-        while (from != to) {
-            context.addLevel();
+                        function end(result) {
+                            from += difference;
 
-            context.set('current', from, 'up');
+                            context.popLevel();
 
-            this.body.result(context, out, throw_error, false);
+                            tick(result, difference);
+                        }
 
-            from += difference;
+                        function tick(result){
+                            if(from == to){
+                                resolve(result);
+                
+                                return;
+                            }
+                
+                            context.addLevel();
+                
+                            context.set('current', from, 'up');
+                            
+                            _.body.result(context, out, reject, end, false);
+                        }
 
-            context.popLevel();
-        }
+                        tick();
+                    });
+                });
+            });
+        });
     }
 }
 

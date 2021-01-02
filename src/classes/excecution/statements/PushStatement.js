@@ -7,13 +7,10 @@
 
 "use strict";
 
-const ExpressionGroup = require('../expression/ExpressionGroup'),
+const   PoonyaArray = require('../../data/PoonyaArray'),
     {
         TheFieldMustBeAnArrayInstanceExceprion,
-        GetFieldOfNullException,
-    } = require('../../exceptions')
-    ,   PoonyaArray = require('../../data/PoonyaArray')
-    ,   PoonyaObject = require('../../data/PoonyaObject');
+    } = require('../../exceptions');
 
 /**
  * @lends PushStatement
@@ -48,9 +45,9 @@ class PushStatement {
     toString(indent) {
         return (
             '(' +
-            this.query_stack.map(e => (typeof e === 'number' ? `[${e}]` : e)).join(' => ') +
+                this.query_stack.map(e => (typeof e === 'number' ? `[${e}]` : e)).join(' => ') +
             ') <- ' +
-            this.value.toString(indent + '\t')
+                this.value.toString(indent + '\t')
         );
     }
 
@@ -59,37 +56,31 @@ class PushStatement {
      *
      * @param {iContext} context Контекст выполнения
      * @param {PoonyaOutputStream} out вывод шаблонизатора
-     * @param {Function} throw_error Вызывается при ошибке
+     * @param {Function} reject Вызывается при ошибке
+     * @param {Function} resolve функция возврата результата
      *
      * @throws {Exceptions.ParserException}
      *
      * @public
      * @method
      */
-    result(context, out, throw_error) {
-        let query_data = context.get(this.query_stack[0]),
-            query_stack = [...this.query_stack];
+    result(context, out, reject, resolve) {
+        const _ = this;
 
-        if (query_data instanceof PoonyaObject) {
-            let index = 1;
+        context.getByPath(_.query_stack, _.position, PoonyaArray, reject, false, array => {
+            if(array != null){
+                _.value.result(context, out, reject, result => {
+                    array.append(context, result);
 
-            for (let leng = query_stack.length; query_data && index < leng; index++) {
-                if (query_stack[index] instanceof ExpressionGroup)
-                    query_stack[index] = query_stack[index]
-                        .result(context, out, throw_error)
-                        .toRawData();
-
-                query_data = query_data.get(query_stack[index]) || null;
-            }
-
-            if (query_data instanceof PoonyaArray)
-                query_data.push(context, this.value.result(context, out, throw_error));
-            else
-                throw_error(
-                    this.position,
-                    new TheFieldMustBeAnArrayInstanceExceprion(query_stack[index - 1])
+                    resolve(result);
+                });
+            } else {
+                reject(
+                    _.position,
+                    new TheFieldMustBeAnArrayInstanceExceprion(_.query_stack[0])
                 );
-        } else throw_error(this.position, new GetFieldOfNullException(query_stack[0]));
+            }
+        });
     }
 }
 

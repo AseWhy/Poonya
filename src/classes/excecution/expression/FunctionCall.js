@@ -39,7 +39,8 @@ class FunctionCall extends Operand {
      *
      * @param {iContext} context Контекст выполнения
      * @param {PoonyaOutputStream} out вывод шаблонизатора
-     * @param {Function} throw_error Вызывается при ошибке
+     * @param {Function} reject Вызывается при ошибке
+     * @param {Function} resolve Вызывается при завершении вызова функции
      *
      * @returns {Any} В зависимости от возвращаемых функцией значения
      * @throws {ParserException}
@@ -47,16 +48,16 @@ class FunctionCall extends Operand {
      * @public
      * @method
      */
-    result(context, out, throw_error) {
-        const data = context.getByPath(this.query_stack, this.position, null, throw_error, true);
-
-        if (data.instance instanceof NativeFunction)
-            return data.instance.result(data.parent, this.args, context, out, this.position, throw_error);
-        else if (data.instance instanceof iPoonyaPrototype)
-            throw_error(this.position, new UnableToCreateAnObjectException());
-        else {
-            throw_error(this.position, new FieldNotAFunctionException(this.query_stack[this.query_stack.length - 1]));
-        }
+    result(context, out, reject, resolve) {
+        context.getByPath(this.query_stack, this.position, null, reject, true, result => {
+            if (result.instance instanceof NativeFunction)
+                result.instance.result(result.parent, this.args, context, out, this.position, reject, resolve);
+            else if (result.instance instanceof iPoonyaPrototype)
+                reject(this.position, new UnableToCreateAnObjectException());
+            else {
+                reject(this.position, new FieldNotAFunctionException(this.query_stack[this.query_stack.length - 1]));
+            }
+        });
     }
 
     /**

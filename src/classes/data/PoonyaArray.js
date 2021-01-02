@@ -79,12 +79,12 @@ class PoonyaArray extends PoonyaObject {
 
     /**
      * Сериализует массив в javascript массив
-     *
+     * 
      * @override
      * @method
      * @public
      */
-    result(context, out, throw_error) {
+    result(context, out, reject, resolve) {
         let output = new Array(this.fields.size),
             data;
         
@@ -94,11 +94,11 @@ class PoonyaArray extends PoonyaObject {
             if (data == null || (data & FIELDFLAGS.NOOUTPUT) === 0)
                 if (value instanceof NativeFunction)
                     output[key] = value != null ? value.target : null;
-                else
-                    output[key] = value != null ? value.result(context, out, throw_error) : null;
+                else if(value != null)
+                    value.result(context, out, reject, result => output[key] = result);
         }
 
-        return output;
+        resolve(output);
     }
 
     /**

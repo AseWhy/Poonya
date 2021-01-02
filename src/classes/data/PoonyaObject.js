@@ -209,15 +209,15 @@ class PoonyaObject extends iPoonyaObject {
      *
      * @param {iContext} context текущий контекст
      * @param {Array<String>} out Выходной массив
-     * @param {Function} throw_error Функция вызывающаяся при ошибках
+     * @param {Function} reject Функция вызывающаяся при ошибках
      * 
      * @returns {String}
      */
-    toString(context, out, throw_error){
+    toString(context, out, reject){
         let toString = this.fields.get('toString');
 
         if(toString != null) {
-            return toString.result(context, out, throw_error);
+            return toString.result(context, out, reject);
         } else {
             return `[Object${this.prototype.name}]`;
         }
@@ -228,11 +228,11 @@ class PoonyaObject extends iPoonyaObject {
      *
      * @param {?iContext} context текущий контекст
      * @param {?Array<String>} out Выходной массив
-     * @param {?Function} throw_error Функция вызывающаяся при ошибках
+     * @param {?Function} reject Функция вызывающаяся при ошибках
      * @method
      * @public
      */
-    result(context, out, throw_error) {
+    result(context, out, reject, resolve) {
         let output = new Object(),
             data;
 
@@ -242,11 +242,14 @@ class PoonyaObject extends iPoonyaObject {
             if (data == null || (data & FIELDFLAGS.NOOUTPUT) === 0)
                 if (value instanceof NativeFunction)
                     output[key] = value != null ? value.target : null;
-                else
-                    output[key] = value != null ? value.result(context, out, throw_error) : null;
+                ///
+                /// Поскольку асинхронными, в poonya, могут быть только нативные функции, то значения оберторк можно получить синхрнно
+                ///
+                else if(value != null)
+                    value.result(context, out, reject, result => output[key] = result);
         }
 
-        return output;
+        resolve(output);
     }
 
     /**

@@ -22,13 +22,13 @@ const
  *
  * @param {Array<Token>} data данные для парсинга
  * @param {String} parent_path Путь к файлу, который сейчас обрабатываем
- * @param {Function} throw_error Фукцния выбрасывания ошибок
+ * @param {Function} reject Фукцния выбрасывания ошибок
  *
  * @memberof Poonya.Linker
  * @protected
  * @async
  */
-async function linker(data, parent_path, throw_error) {
+async function linker(data, parent_path, reject) {
     for (let i = 0;; i++) {
         if (data[i] == null)
             return data;
@@ -66,10 +66,10 @@ async function linker(data, parent_path, throw_error) {
                             ...lexer(await content, false)
                         );
                     } catch (e) {
-                        throw_error(data[i].position, new Exceptions.LinkerIOError(path));
+                        reject(data[i].position, new Exceptions.LinkerIOError(path));
                     }
                 } else {
-                    throw_error(data[i].position, new Exceptions.LinkerPathNotGiveExceptrion());
+                    reject(data[i].position, new Exceptions.LinkerPathNotGiveExceptrion());
                 }
             }
         }

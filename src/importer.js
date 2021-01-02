@@ -14,8 +14,6 @@ const
     // #!endif
     { NAMESPACE, SERVICE } = require('./classes/static'),
     { IOError } = require('./classes/exceptions'),
-    PoonyaObject = require('./classes/data/PoonyaObject'),
-    PoonyaArray = require('./classes/data/PoonyaArray'),
     NativeFunction = require('./classes/data/NativeFunction'),
     PoonyaPrototype = require('./classes/data/PoonyaPrototype');
 
@@ -107,68 +105,86 @@ class PoonyaStaticLibrary {
 
     /**
      * Вызывается для преобразования библиотеки в модуль памяти, к которому в последствии можно будет получить доступ
+     * 
+     * Ипорт происходит синхронно, поэтому нет нужды в фуекции `resolve`
+     * 
+     * [1] - Пояснение
+     * createObject - фукнция, котрая создает объект из текущего прототипа, который должен быть был ранее зарегистрирован в памяти.
+     * Асинхронность, а следовательно функция resolve, тут нужна только если путь к прототипу представляет из себя выражение, где могут быть асинхрнонные 
+     * функции. Тут их нет, объекты создаются из общепринятых прототипов, поэтому callback вызывается невыходя из функции - синхрнно.
      *
-     * @param {PoonyaObject|Heap} parent хип памяти, или объект в который нужно ипортировать библиотеку
+     * @param {PoonyaObject|Heap} parent хип памяти, или родительский объект в который нужно ипортировать библиотеку
+     * @param {iContext} context контект, в котором будет использоватся эта библиотека
+     * @param {Function} reject функция, которая будет вызвана при ошибке. 
      * @public
      * @method
      */
-    importTo(parent, context, throw_error) {
+    importTo(parent, context, reject) {
         for (let [key, value] of this._fields){
             switch (typeof value) {
                 case 'bigint':
                     if (isNaN(value))
-                        parent.set(
+                        // [1]
+                        context.createObject(null, -1, SERVICE.CONSTRUCTORS.NULL, reject, new Array(),  result => parent.set(
                             context,
                             key,
-                            context.createObject(null, -1, SERVICE.CONSTRUCTORS.NULL, throw_error)
-                        );
+                            result
+                        ));
                     else
-                        parent.set(
-                            context,
-                            key,
-                            context.createObject(
-                                value,
-                                -1,
-                                SERVICE.CONSTRUCTORS.INTEGER,
-                                throw_error
+                        // [1]
+                        context.createObject(
+                            value,
+                            -1,
+                            SERVICE.CONSTRUCTORS.INTEGER,
+                            reject, new Array(), 
+                            result => parent.set(
+                                context,
+                                key,
+                                result
                             )
                         );
                     break;
                 case 'number':
                     if (isNaN(value))
-                        parent.set(
+                        // [1]
+                        context.createObject(null, -1, SERVICE.CONSTRUCTORS.NULL, reject, new Array(),  result => parent.set(
                             context,
                             key,
-                            context.createObject(null, -1, SERVICE.CONSTRUCTORS.NULL, throw_error)
-                        );
+                            result
+                        ));
                     else
-                        parent.set(
-                            context,
-                            key,
-                            context.createObject(
-                                value,
-                                -1,
-                                SERVICE.CONSTRUCTORS.NUMBER,
-                                throw_error
+                        // [1]
+                        context.createObject(
+                            value,
+                            -1,
+                            SERVICE.CONSTRUCTORS.NUMBER,
+                            reject, new Array(), 
+                            result => parent.set(
+                                context,
+                                key,
+                                result
                             )
                         );
                     break;
                 case 'string':
-                    parent.set(
+                    // [1]
+                    context.createObject(value, -1, SERVICE.CONSTRUCTORS.STRING, reject, new Array(),  result => parent.set(
                         context,
                         key,
-                        context.createObject(value, -1, SERVICE.CONSTRUCTORS.STRING, throw_error)
-                    );
+                        result
+                    ));
                     break;
                 case 'symbol':
-                    parent.set(
-                        context,
-                        key,
-                        context.createObject(
-                            Symbol.keyFor(value),
-                            -1,
-                            SERVICE.CONSTRUCTORS.STRING,
-                            throw_error
+                    // [1]
+                    context.createObject(
+                        Symbol.keyFor(value),
+                        -1,
+                        SERVICE.CONSTRUCTORS.STRING,
+                        reject, new Array(), 
+                        result => parent.set(
+                            context,
+                            key,
+                            result
                         )
                     );
                     break;
@@ -180,69 +196,47 @@ class PoonyaStaticLibrary {
                     }
                     break;
                 case 'boolean':
-                    parent.set(
+                    // [1]
+                    context.createObject(value, -1, SERVICE.CONSTRUCTORS.BOOLEAN, reject, new Array(),  result => parent.set(
                         context,
                         key,
-                        context.createObject(value, -1, SERVICE.CONSTRUCTORS.BOOLEAN, throw_error)
-                    );
+                        result
+                    ));
                     break;
                 case 'undefined':
                 case 'object':
                     if (value == null)
-                        parent.set(
+                        // [1]
+                        context.createObject(null, -1, SERVICE.CONSTRUCTORS.NULL, reject, new Array(),  result => parent.set(
                             context,
                             key,
-                            context.createObject(null, -1, SERVICE.CONSTRUCTORS.NULL, throw_error)
-                        );
+                            result
+                        ));
                     else {
                         if (value instanceof PoonyaStaticLibrary) {
-                            const target = new PoonyaObject(
-                                context.getByPath(
-                                    SERVICE.CONSTRUCTORS.OBJECT,
-                                    -1,
-                                    PoonyaPrototype,
-                                    throw_error
-                                ),
-                                null
-                            );
+                            // [1]
+                            context.createObject(null, -1, SERVICE.CONSTRUCTORS.OBJECT, reject, new Array(),  target => {
+                                value.importTo(target, context, reject);
 
-                            value.importTo(target, context, throw_error);
-
-                            parent.set(context, key, target);
+                                parent.set(context, key, target);
+                            });
                         } else if (value instanceof Array) {
-                            parent.set(
+                            // [1]
+                            context.createObject(value, -1, SERVICE.CONSTRUCTORS.ARRAY, reject, new Array(),  result => parent.set(
                                 context,
                                 key,
-                                new PoonyaArray(
-                                    context.getByPath(
-                                        SERVICE.CONSTRUCTORS.ARRAY,
-                                        -1,
-                                        PoonyaPrototype,
-                                        throw_error
-                                    ),
-                                    value,
-                                    null,
-                                    context
-                                )
-                            );
-                        } else
-                            parent.set(
+                                result
+                            ));
+                        } else {
+                            // [1]
+                            context.createObject(value, -1, SERVICE.CONSTRUCTORS.OBJECT, reject, new Array(),  result => parent.set(
                                 context,
                                 key,
-                                new PoonyaObject(
-                                    context.getByPath(
-                                        SERVICE.CONSTRUCTORS.OBJECT,
-                                        -1,
-                                        PoonyaPrototype,
-                                        throw_error
-                                    ),
-                                    value,
-                                    null,
-                                    context
-                                )
-                            );
+                                result
+                            ));
+                        }
                     }
-                    break;
+                break;
             }
         }
     }
