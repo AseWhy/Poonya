@@ -9,7 +9,7 @@
 const { Operand, Operator } = require('../../common/ParserData')
     , { CHARTYPE, OPERATOR, SERVICE } = require('../../static')
     , { UnableToRecognizeTypeException, TheSequenceException } = require('../../exceptions')
-    , { Cast } = require('../../../utils')
+    , { Cast, Tick } = require('../../../utils')
     ,   ObjectContructorCall = require('./ObjectContructorCall');
 
 /**
@@ -321,7 +321,7 @@ class ExpressionGroup extends Operand {
                 if((i += 2) >= leng) {
                     resolve(Cast(result, context));
                 } else {
-                    tick();
+                    Tick(tick);
                 }
             });
         }

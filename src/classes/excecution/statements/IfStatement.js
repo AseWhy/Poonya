@@ -6,6 +6,8 @@
 
 "use strict";
 
+const { Tick } = require("../../../utils");
+
 /**
  * @lends IfStatement
  * @protected
@@ -73,7 +75,7 @@ class IfStatement {
             else if(_.body_false != null)
                 _.body_false.result(context, out, reject, resolve);
             else
-                resolve();
+                Tick(resolve, null);
         });
     }
 }

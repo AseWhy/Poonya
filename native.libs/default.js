@@ -198,6 +198,12 @@ class PoonyaNullPrototype extends PoonyaPrototype {
     }
 }
 
+class PoonyaPatternPrototype extends PoonyaPrototype {
+    constructor(){
+        super([], 'Pattern');
+    }
+}
+
 class PoonyaStringPrototype extends PoonyaPrototype {
     constructor(context){
         super([], 'String');
@@ -332,6 +338,7 @@ new class DefaultStaticLibrary extends PoonyaStaticLibrary {
         this.expandPrototype(PoonyaBooleanPrototype);
         this.expandPrototype(PoonyaNumberPrototype);
         this.expandPrototype(PoonyaNullPrototype);
+        this.expandPrototype(PoonyaPatternPrototype);
 
         this.addField('endd', '\n\n', FIELDFLAGS.CONSTANT);
         this.addField('endl', '\n', FIELDFLAGS.CONSTANT);

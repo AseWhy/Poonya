@@ -6,6 +6,8 @@
 
 "use strict";
 
+const { Tick } = require("../../../utils");
+
 /**
  * @lends OutStatement
  * @protected
@@ -57,10 +59,10 @@ class OutStatement {
                 p_result.result(context, out, reject, d_result => {
                     out.write(d_result);
 
-                    resolve(d_result);
+                    Tick(resolve, d_result);
                 });
             else
-                resolve(null);
+                Tick(resolve, null);
         });
     }
 }

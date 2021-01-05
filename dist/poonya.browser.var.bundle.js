@@ -470,6 +470,12 @@ poonya = /******/ (() => {
                 }
             }
 
+            class PoonyaPatternPrototype extends PoonyaPrototype {
+                constructor() {
+                    super([], 'Pattern');
+                }
+            }
+
             class PoonyaStringPrototype extends PoonyaPrototype {
                 constructor(context) {
                     super([], 'String');
@@ -682,6 +688,7 @@ poonya = /******/ (() => {
                     this.expandPrototype(PoonyaBooleanPrototype);
                     this.expandPrototype(PoonyaNumberPrototype);
                     this.expandPrototype(PoonyaNullPrototype);
+                    this.expandPrototype(PoonyaPatternPrototype);
                     this.addField('endd', '\n\n', FIELDFLAGS.CONSTANT);
                     this.addField('endl', '\n', FIELDFLAGS.CONSTANT);
                     this.addField('tab', '\t', FIELDFLAGS.CONSTANT);
@@ -1400,7 +1407,11 @@ poonya = /******/ (() => {
             const { Operand } = __webpack_require__(62),
                 { SERVICE } = __webpack_require__(635),
                 { NativeFunctionExecutionError } = __webpack_require__(707),
-                { iPoonyaObject, iPoonyaPrototype } = __webpack_require__(779);
+                {
+                    iPoonyaObject,
+                    iPoonyaPrototype,
+                    iCodeEmitter,
+                } = __webpack_require__(779);
             /**
              * @lends NativeFunction
              * @class
@@ -1524,6 +1535,17 @@ poonya = /******/ (() => {
                                             data,
                                             -1,
                                             SERVICE.CONSTRUCTORS.NULL,
+                                            null,
+                                            new Array(),
+                                            resolve
+                                        );
+                                        break;
+
+                                    case data instanceof iCodeEmitter:
+                                        context.createObject(
+                                            data,
+                                            -1,
+                                            SERVICE.CONSTRUCTORS.PATTERN,
                                             null,
                                             new Array(),
                                             resolve
@@ -2457,6 +2479,118 @@ poonya = /******/ (() => {
             /***/
         },
 
+        /***/ 293: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
+            'use strict';
+            /**
+             * @file src/classes/data/PoonyaPattern.js
+             * @description Cодержит класс строки Poonya
+             * @author Astecom
+             */
+
+            const { Cast } = __webpack_require__(270);
+
+            const PoonyaObject = __webpack_require__(940);
+            /**
+             * @lends PoonyaPattern
+             * @class
+             */
+
+            class PoonyaPattern extends PoonyaObject {
+                /**
+                 * Дескриптор объекта строки в poonya
+                 *
+                 * @param {iPoonyaPrototype} prototype Прототип строки
+                 * @param {iCodeEmitter} init Исходная строка
+                 *
+                 * @memberof Poonya.Data
+                 * @constructs PoonyaPattern
+                 * @extends PoonyaObject
+                 * @public
+                 */
+                constructor(prototype = null, init) {
+                    super(prototype);
+                    this.data = init;
+                }
+                /**
+                 * Возвращает копию этого объекта
+                 *
+                 * @returns {PoonyaPattern} клонированый объект
+                 */
+
+                clone() {
+                    return new PoonyaPattern(this.prototype, this.data);
+                }
+                /**
+                 * Нельзя получить данные из шаблона по индексу
+                 *
+                 * @method
+                 * @override
+                 */
+
+                get() {
+                    return null;
+                }
+                /**
+                 * Устанавливать значения шаблону нельзя
+                 *
+                 * @override
+                 * @method
+                 * @public
+                 */
+
+                set() {}
+                /**
+                 * Удалять значения шаблону нельзя
+                 *
+                 * @override
+                 * @method
+                 * @public
+                 */
+
+                remove() {}
+                /**
+                 * Сериализует строку значение результата
+                 *
+                 * @override
+                 * @method
+                 * @public
+                 */
+
+                result(context, out, reject, resolve) {
+                    const result = this.data.result();
+                    if (result instanceof Promise)
+                        result.then((d_result) =>
+                            resolve(Cast(d_result, context))
+                        );
+                    else
+                        result
+                            .complete()
+                            .then((d_result) =>
+                                resolve(Cast(d_result, context))
+                            );
+                }
+                /**
+                 * Сериализует строку в javascript строку
+                 *
+                 * @override
+                 * @method
+                 * @public
+                 */
+
+                toRawData() {
+                    return '[Object:Pattern]';
+                }
+            }
+
+            module.exports = PoonyaPattern;
+
+            /***/
+        },
+
         /***/ 406: /***/ (
             module,
             __unused_webpack_exports,
@@ -2792,7 +2926,7 @@ poonya = /******/ (() => {
                     UnableToRecognizeTypeException,
                     TheSequenceException,
                 } = __webpack_require__(707),
-                { Cast } = __webpack_require__(270),
+                { Cast, Tick } = __webpack_require__(270),
                 ObjectContructorCall = __webpack_require__(552);
             /**
              * @lends MessagePattern;
@@ -3146,7 +3280,7 @@ poonya = /******/ (() => {
                             if ((i += 2) >= leng) {
                                 resolve(Cast(result, context));
                             } else {
-                                tick();
+                                Tick(tick);
                             }
                         });
                     }
@@ -3619,7 +3753,11 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 350: /***/ (module) => {
+        /***/ 350: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
             'use strict';
             /**
              * @file src/classes/excecution/statements/IfStatement.js
@@ -3627,6 +3765,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
+            const { Tick } = __webpack_require__(270);
             /**
              * @lends IfStatement
              * @protected
@@ -3691,7 +3830,7 @@ poonya = /******/ (() => {
                             _.body_true.result(context, out, reject, resolve);
                         else if (_.body_false != null)
                             _.body_false.result(context, out, reject, resolve);
-                        else resolve();
+                        else Tick(resolve, null);
                     });
                 }
             }
@@ -3701,7 +3840,11 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 674: /***/ (module) => {
+        /***/ 674: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
             'use strict';
             /**
              * @file src/classes/excecution/statements/OutStatement.js
@@ -3709,6 +3852,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
+            const { Tick } = __webpack_require__(270);
             /**
              * @lends OutStatement
              * @protected
@@ -3764,10 +3908,10 @@ poonya = /******/ (() => {
                                 reject,
                                 (d_result) => {
                                     out.write(d_result);
-                                    resolve(d_result);
+                                    Tick(resolve, d_result);
                                 }
                             );
-                        else resolve(null);
+                        else Tick(resolve, null);
                     });
                 }
             }
@@ -3791,6 +3935,7 @@ poonya = /******/ (() => {
              */
 
             const PoonyaArray = __webpack_require__(358),
+                { Tick } = __webpack_require__(270),
                 {
                     TheFieldMustBeAnArrayInstanceExceprion,
                 } = __webpack_require__(707);
@@ -3865,8 +4010,8 @@ poonya = /******/ (() => {
                                     out,
                                     reject,
                                     (result) => {
-                                        array.append(context, result);
-                                        resolve(result);
+                                        array.push(context, result);
+                                        Tick(resolve, result);
                                     }
                                 );
                             } else {
@@ -3900,6 +4045,7 @@ poonya = /******/ (() => {
              */
 
             const { TheFieldMustBeNumberException } = __webpack_require__(707),
+                { Tick } = __webpack_require__(270),
                 PoonyaNumber = __webpack_require__(773);
             /**
              * @lends RepeatStatement;
@@ -3981,12 +4127,12 @@ poonya = /******/ (() => {
                                     function end(result) {
                                         from += difference;
                                         context.popLevel();
-                                        tick(result, difference);
+                                        Tick(tick, result, difference);
                                     }
 
                                     function tick(result) {
                                         if (from == to) {
-                                            resolve(result);
+                                            Tick(resolve, result);
                                             return;
                                         }
 
@@ -4027,10 +4173,6 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(940);
-
-            const { GET } = __webpack_require__(635);
-
             const ExpressionGroup = __webpack_require__(606),
                 {
                     iPoonyaObject,
@@ -4040,7 +4182,10 @@ poonya = /******/ (() => {
                 {
                     GetFieldOfNullException,
                     TheFieldNotHasDeclaredExceprion,
-                } = __webpack_require__(707);
+                } = __webpack_require__(707),
+                { GET } = __webpack_require__(635),
+                { Tick } = __webpack_require__(270),
+                PoonyaObject = __webpack_require__(940);
             /**
              * @lends ResetStatement
              * @protected
@@ -4144,7 +4289,7 @@ poonya = /******/ (() => {
                                             target.set(context, of_p, value);
                                         }
 
-                                        resolve(value);
+                                        Tick(resolve, value);
                                     }
                                 );
                             } else
@@ -4177,7 +4322,11 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 113: /***/ (module) => {
+        /***/ 113: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
             'use strict';
             /**
              * @file src/classes/excecution/statements/SequenceGroup.js
@@ -4185,6 +4334,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
+            const { Tick } = __webpack_require__(270);
             /**
              * @lends SequenceGroup;
              * @protected
@@ -4232,15 +4382,21 @@ poonya = /******/ (() => {
 
                     if (level_ops) context.addLevel();
 
-                    (function tick(result) {
+                    function next(result) {
+                        Tick(tick, result);
+                    }
+
+                    function tick(result) {
                         if (i >= leng) {
                             if (level_ops) context.popLevel();
-                            resolve(result);
+                            Tick(resolve, result);
                             return;
                         }
 
-                        _.Sequence[i++].result(context, out, reject, tick);
-                    })();
+                        _.Sequence[i++].result(context, out, reject, next);
+                    }
+
+                    tick();
                 }
                 /**
                  * Сериализует текущую группу в текст
@@ -4264,7 +4420,11 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 998: /***/ (module) => {
+        /***/ 998: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
             'use strict';
             /**
              * @file src/classes/excecution/statements/SequenceMainGroup.js
@@ -4272,6 +4432,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
+            const { Tick } = __webpack_require__(270);
             /**
              * @lends SequenceMainGroup;
              * @protected
@@ -4319,7 +4480,11 @@ poonya = /******/ (() => {
                         i = 0,
                         leng = _.Sequence.length;
 
-                    (function tick(result) {
+                    function next(result) {
+                        Tick(tick, result);
+                    }
+
+                    function tick(result) {
                         if (i >= leng) {
                             if (result && typeof result.result === 'function') {
                                 result.result(
@@ -4327,18 +4492,20 @@ poonya = /******/ (() => {
                                     out,
                                     reject,
                                     (p_result) => {
-                                        resolve(p_result);
+                                        Tick(resolve, p_result);
                                     }
                                 );
                             } else {
-                                resolve(result);
+                                Tick(resolve, result);
                             }
 
                             return;
                         }
 
-                        _.Sequence[i++].result(context, out, reject, tick);
-                    })();
+                        _.Sequence[i++].result(context, out, reject, next);
+                    }
+
+                    tick();
                 }
                 /**
                  * Сериализует текущую группу в текст
@@ -4375,8 +4542,9 @@ poonya = /******/ (() => {
              */
 
             const {
-                TheFieldAlreadyHasBeenDeclaredException,
-            } = __webpack_require__(707);
+                    TheFieldAlreadyHasBeenDeclaredException,
+                } = __webpack_require__(707),
+                { Tick } = __webpack_require__(270);
             /**
              * @lends SetStatement
              * @protected
@@ -4434,7 +4602,7 @@ poonya = /******/ (() => {
                     if (!context.has(_.name, 'up')) {
                         _.value.result(context, out, reject, (result) => {
                             context.set(_.name, result, 'up');
-                            resolve(result);
+                            Tick(resolve, result);
                         });
                     } else {
                         reject(
@@ -4450,7 +4618,11 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 114: /***/ (module) => {
+        /***/ 114: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
             'use strict';
             /**
              * @file src/classes/excecution/statements/WhileStatement.js
@@ -4458,6 +4630,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
+            const { Tick } = __webpack_require__(270);
             /**
              * @lends WhileStatement
              * @protected
@@ -4518,7 +4691,7 @@ poonya = /******/ (() => {
                             if (context.toBooleanResult(d_result)) {
                                 _.body.result(context, out, reject, tick);
                             } else {
-                                resolve(result);
+                                Tick(resolve, result);
                                 return;
                             }
                         });
@@ -5173,7 +5346,9 @@ poonya = /******/ (() => {
              * @description Тут собраны интерфейсы, для боллее удобного последующего сравнения объектов
              * @author Astecom
              */
-            // Storage
+            // Poonya
+
+            class iCodeEmitter {} // Storage
 
             class iContext {} // Datas
 
@@ -5215,6 +5390,7 @@ poonya = /******/ (() => {
 
             module.exports.iContext = iContext;
             module.exports.iPathData = iPathData;
+            module.exports.iCodeEmitter = iCodeEmitter;
             module.exports.iPoonyaObject = iPoonyaObject;
             module.exports.iPoonyaPrototype = iPoonyaPrototype;
             module.exports.iPoonyaConstructsData = iPoonyaConstructsData;
@@ -5361,6 +5537,7 @@ poonya = /******/ (() => {
                     NUMBER: ['Number'],
                     INTEGER: ['Integer'],
                     NULL: ['Null'],
+                    PATTERN: ['Pattern'],
                 },
                 CONFIG: {
                     DEBUG:
@@ -5401,6 +5578,8 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
+            const PoonyaPattern = __webpack_require__(293);
+
             const {
                     GetFieldOfNullException,
                     IsNotAConstructorException,
@@ -5408,9 +5587,13 @@ poonya = /******/ (() => {
                 } = __webpack_require__(707),
                 { GET, SERVICE, IS } = __webpack_require__(635),
                 { Cast, toBytes } = __webpack_require__(270),
-                { iContext, iPoonyaPrototype, iPathData } = __webpack_require__(
-                    779
-                ),
+                {
+                    iContext,
+                    iPoonyaPrototype,
+                    iPathData,
+                    iCodeEmitter,
+                    iPoonyaObject,
+                } = __webpack_require__(779),
                 { PoonyaStaticLibrary } = __webpack_require__(239),
                 { parser } = __webpack_require__(909),
                 lexer = __webpack_require__(513),
@@ -5974,7 +6157,7 @@ poonya = /******/ (() => {
                                         : typeof initial === 'object' &&
                                           initial != null
                                         ? Object.entries(initial)
-                                        : initial;
+                                        : null;
 
                             function done() {
                                 switch (true) {
@@ -6022,6 +6205,16 @@ poonya = /******/ (() => {
                                         );
                                         return;
 
+                                    case prototype[IS]('Pattern'):
+                                        resolve(
+                                            new PoonyaPattern(
+                                                prototype,
+                                                init,
+                                                _
+                                            )
+                                        );
+                                        break;
+
                                     default:
                                         resolve(
                                             new PoonyaObject(prototype, init, _)
@@ -6033,11 +6226,12 @@ poonya = /******/ (() => {
                             function next() {
                                 const entry = from[cur++];
 
-                                if (entry) {
+                                if (entry != null) {
                                     if (!parents_three.includes(entry[1])) {
                                         if (
-                                            typeof entry[1].result ===
-                                            'function'
+                                            entry[1] instanceof
+                                                iPoonyaPrototype ||
+                                            entry[1] instanceof iPoonyaObject
                                         )
                                             init[entry[0]] = entry[1].result(
                                                 _,
@@ -6059,10 +6253,14 @@ poonya = /******/ (() => {
                             }
 
                             if (prototype != null) {
-                                if (typeof from == 'object' && from != null) {
+                                if (
+                                    typeof from == 'object' &&
+                                    from != null &&
+                                    !(initial instanceof iCodeEmitter)
+                                ) {
                                     next();
                                 } else {
-                                    init = from;
+                                    init = initial;
                                     done();
                                 }
                             } else {
@@ -6477,17 +6675,20 @@ poonya = /******/ (() => {
 
             ImportFile = (lib_dir, file) => {
                 const path = lib_dir + '/' + file;
-                return new Promise(async (res, rej) => {
+                return new Promise((res, rej) => {
                     try {
-                        let wait = await fetch(path, {
+                        fetch(path, {
                             method: 'GET',
-                        });
-                        wait = await wait.text();
-                        res(
-                            new Function('require', `"use strict";${wait}`)(
-                                crequire
-                            )
-                        );
+                        })
+                            .then((responce) => responce.text())
+                            .then((responce) =>
+                                res(
+                                    new Function(
+                                        'require',
+                                        `"use strict";${wait}`
+                                    )(crequire)
+                                )
+                            );
                     } catch (e) {
                         rej(new IOError(path));
                     }
@@ -8570,7 +8771,9 @@ poonya = /******/ (() => {
                     fromBytes,
                     setImmediate,
                 } = __webpack_require__(270),
-                { iPoonyaConstructsData } = __webpack_require__(779),
+                { iPoonyaConstructsData, iCodeEmitter } = __webpack_require__(
+                    779
+                ),
                 lexer = __webpack_require__(513); // Private fields
 
             const RESULT = Symbol('RESULT'),
@@ -8678,7 +8881,7 @@ poonya = /******/ (() => {
              * @lends CodeEmitter;
              */
 
-            class CodeEmitter extends EventEmitter {
+            class CodeEmitter extends iCodeEmitter {
                 /**
                  * Абстрактный класс который предназначен для подготовке всех наследуемых эмитттеров.
                  *
@@ -8703,6 +8906,12 @@ poonya = /******/ (() => {
                     super();
 
                     const _ = this;
+
+                    const emitter = new EventEmitter(); // Poonya events
+
+                    _.on = emitter.on;
+                    _.once = emitter.once;
+                    _.emit = emitter.emit; // Service data
 
                     _.input = null;
                     _.loaded = false;
@@ -8927,48 +9136,31 @@ poonya = /******/ (() => {
                  * @private
                  */
 
-                [RESULT](data, error, out) {
+                [RESULT](data, error, out, c_clone) {
                     if (Array.isArray(data)) {
-                        for (let i = 0, leng = data.length; i < leng; i++)
-                            if (
-                                typeof data[i] === 'object' &&
-                                !(data[i] instanceof Heap)
-                            ) {
-                                data[i] = new Heap(null, data[i]);
-                            }
-
-                        if (data.find((e) => !(e instanceof Heap)) == null) {
-                            this.data.result(
-                                new Context(this.libraries, error, ...data),
-                                out,
-                                error,
-                                () => out.end()
-                            );
-                        } else {
-                            throw new TypeError('Data must have a Heap type');
-                        }
+                        this.data.result(
+                            new Context(this.libraries, error, ...data),
+                            out,
+                            error,
+                            () => out.end()
+                        );
                     } else if (data instanceof Context) {
-                        const clone = data.clone();
-                        clone.import(this.libraries, error);
-                        this.data.result(clone, out, error, () => out.end());
-                    } else {
-                        if (
-                            typeof data === 'object' &&
-                            !(data instanceof Heap)
-                        ) {
-                            data = new Heap(null, data);
-                        }
-
-                        if (data instanceof Heap) {
-                            this.data.result(
-                                new Context(this.libraries, error, data),
-                                out,
-                                error,
-                                () => out.end()
+                        if (c_clone) {
+                            const clone = data.clone();
+                            clone.import(this.libraries, error);
+                            this.data.result(clone, out, error, () =>
+                                out.end()
                             );
                         } else {
-                            throw new TypeError('Data must have a Heap type');
+                            this.data.result(data, out, error, () => out.end());
                         }
+                    } else {
+                        this.data.result(
+                            new Context(this.libraries, error, data),
+                            out,
+                            error,
+                            () => out.end()
+                        );
                     }
                 }
                 /**
@@ -8976,21 +9168,28 @@ poonya = /******/ (() => {
                  *
                  * @param {Object|Heap|Context} data данные преданые в исполнитель
                  * @param {Function} error функция вывода ошибок, опциаонально
+                 * @param {Boolean} c_clone если в `data` передан контекст, то при true, он будет склонирован, при false будет использован переданный контекст.
                  *
                  * @returns {Array<Any>} результат выполнения блока
                  * @method
                  * @public
                  */
 
-                result(data = new Heap(), error = this.throwError.bind(this)) {
+                result(
+                    data = new Heap(),
+                    error = this.throwError.bind(this),
+                    c_clone = false
+                ) {
                     const out = new PoonyaOutputStream(); // Если вхождения уже загружены, выполняем последовательность
 
                     if (this.loaded) {
-                        setImmediate(() => this[RESULT](data, error, out));
+                        setImmediate(() =>
+                            this[RESULT](data, error, out, c_clone)
+                        );
                     } // Иначе, ждем окончания загрузки и выполняем последовательность
                     else
-                        this.addListener('load', () =>
-                            this[RESULT](data, error, out)
+                        this.on('load', () =>
+                            this[RESULT](data, error, out, c_clone)
                         );
 
                     return out;
@@ -9144,69 +9343,39 @@ poonya = /******/ (() => {
                     });
                 }
 
-                [RESULT](data, error) {
+                [RESULT](data, error, c_clone) {
                     return new Promise((res) => {
                         if (data instanceof Context) {
-                            const clone = data.clone();
-                            clone.import(this.libraries, error);
-                            this.data.result(clone, [], error, res);
+                            if (c_clone) {
+                                const context = data.clone();
+                                context.import(this.libraries, error);
+                                this.data.result(context, [], error, (result) =>
+                                    result.result(context, null, null, res)
+                                );
+                            } else {
+                                this.data.result(data, [], error, (result) =>
+                                    result.result(data, null, null, res)
+                                );
+                            }
                         } else {
                             if (Array.isArray(data)) {
-                                for (
-                                    let i = 0, leng = data.length;
-                                    i < leng;
-                                    i++
-                                )
-                                    if (
-                                        typeof data[i] === 'object' &&
-                                        !(data[i] instanceof Heap)
-                                    ) {
-                                        data[i] = new Heap(null, data[i]);
-                                    }
-
-                                if (
-                                    data.find((e) => !(e instanceof Heap)) ==
-                                    null
-                                ) {
-                                    this.data.result(
-                                        new Context(
-                                            this.libraries,
-                                            error,
-                                            ...data
-                                        ),
-                                        [],
-                                        error,
-                                        res
-                                    );
-                                } else {
-                                    throw new TypeError(
-                                        'Data must have a Heap type'
-                                    );
-                                }
+                                const context = new Context(
+                                    this.libraries,
+                                    error,
+                                    ...data
+                                );
+                                this.data.result(context, [], error, (result) =>
+                                    result.result(context, null, null, res)
+                                );
                             } else {
-                                if (
-                                    typeof data === 'object' &&
-                                    !(data instanceof Heap)
-                                ) {
-                                    data = new Heap(null, data);
-                                }
-
-                                if (data instanceof Heap) {
-                                    this.data.result(
-                                        new Context(
-                                            this.libraries,
-                                            error,
-                                            data
-                                        ),
-                                        [],
-                                        error,
-                                        res
-                                    );
-                                } else {
-                                    throw new TypeError(
-                                        'Data must have a Heap type'
-                                    );
-                                }
+                                const context = new Context(
+                                    this.libraries,
+                                    error,
+                                    ...data
+                                );
+                                this.data.result(context, [], error, (result) =>
+                                    result.result(context, null, null, res)
+                                );
                             }
                         }
                     });
@@ -9221,14 +9390,18 @@ poonya = /******/ (() => {
                  * @async
                  */
 
-                result(data = new Heap(), error = this.throwError.bind(this)) {
+                result(
+                    data = new Heap(),
+                    error = this.throwError.bind(this),
+                    c_clone = false
+                ) {
                     const _ = this;
 
                     return new Promise((res) => {
-                        if (_.loaded) _[RESULT](data, error).then(res);
+                        if (_.loaded) _[RESULT](data, error, c_clone).then(res);
                         else
                             _.on('load', () =>
-                                _[RESULT](data, error).then(res)
+                                _[RESULT](data, error, c_clone).then(res)
                             );
                     });
                 }
@@ -9458,7 +9631,11 @@ poonya = /******/ (() => {
 
             const { SERVICE } = __webpack_require__(635),
                 { Operand } = __webpack_require__(62),
-                { iPoonyaObject, iPoonyaPrototype } = __webpack_require__(779),
+                {
+                    iPoonyaObject,
+                    iPoonyaPrototype,
+                    iCodeEmitter,
+                } = __webpack_require__(779),
                 NativeFunction = __webpack_require__(492);
             /**
              * Фукция которая преобразует нативное значение в значение Poonya
@@ -9563,9 +9740,20 @@ poonya = /******/ (() => {
 
                             case data instanceof iPoonyaObject:
                             case data instanceof iPoonyaPrototype:
-                            case data instanceof Operand:
                             case data instanceof NativeFunction:
+                            case data instanceof Operand:
                                 result = data;
+                                break;
+
+                            case data instanceof iCodeEmitter:
+                                context.createObject(
+                                    data,
+                                    -1,
+                                    SERVICE.CONSTRUCTORS.PATTERN,
+                                    null,
+                                    parents_three,
+                                    (d_result) => (result = d_result)
+                                );
                                 break;
 
                             default:
@@ -9720,8 +9908,10 @@ poonya = /******/ (() => {
                     if (e.data != ID) return;
                     head = head.next;
                     const func = head.func;
+                    const args = head.args;
                     delete head.func;
-                    func();
+                    delete head.args;
+                    func(...args);
                 }
 
                 if (window.addEventListener) {
@@ -9730,13 +9920,19 @@ poonya = /******/ (() => {
                     window.attachEvent('onmessage', onmessage);
                 }
 
-                return function (func) {
+                return function (func, ...args) {
                     tail = tail.next = {
                         func: func,
+                        args,
                     };
                     window.postMessage(ID, '*');
                 };
             })();
+            /*LIQUID-END*/
+
+            /*LIQUID*/
+
+            const Tick = setImmediate;
             /*LIQUID-END*/
 
             module.exports.setImmediate = setImmediate;
@@ -9745,6 +9941,7 @@ poonya = /******/ (() => {
             module.exports.fromBytes = fromBytes;
             module.exports.toFixed = toFixed;
             module.exports.toBytes = toBytes;
+            module.exports.Tick = Tick;
             module.exports.Cast = Cast;
 
             /***/

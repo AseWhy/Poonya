@@ -135,6 +135,7 @@ const SERVICE = {
         NUMBER: ['Number'],
         INTEGER: ['Integer'],
         NULL: ['Null'],
+        PATTERN: ['Pattern']
     },
 
     // #!if platform === 'node'

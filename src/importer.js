@@ -371,13 +371,11 @@ function crequire(id){
 ImportFile = (lib_dir, file) => {
     const path = lib_dir + '/' + file;
 
-    return new Promise(async (res, rej) => {
+    return new Promise((res, rej) => {
         try {
-            let wait = await fetch(path, { method: "GET" });
-
-            wait = await wait.text();
-
-            res(new Function('require', `"use strict";${wait}`)(crequire));
+            fetch(path, { method: "GET" })
+                .then(responce => responce.text())
+                .then(responce => res(new Function('require', `"use strict";${wait}`)(crequire)));
         } catch (e) {
             rej(new IOError(path));
         }

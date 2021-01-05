@@ -6,6 +6,8 @@
 
 "use strict";
 
+const { Tick } = require("../../../utils");
+
 /**
  * @lends SequenceGroup;
  * @protected
@@ -51,18 +53,24 @@ class SequenceGroup {
         if (level_ops)
             context.addLevel();
 
-        (function tick(result){
+        function next(result){
+            Tick(tick, result);
+        }
+
+        function tick(result){
             if(i >= leng){
                 if (level_ops)
                     context.popLevel();
-
-                resolve(result);
+                
+                Tick(resolve, result);
 
                 return;
             }
 
-            _.Sequence[i++].result(context, out, reject, tick);
-        })();
+            _.Sequence[i++].result(context, out, reject, next);
+        }
+
+        tick();
     }
 
     /**

@@ -6,6 +6,8 @@
 
 "use strict";
 
+const { Tick } = require("../../../utils");
+
 /**
  * @lends WhileStatement
  * @protected
@@ -60,7 +62,7 @@ class WhileStatement {
                 if(context.toBooleanResult(d_result)) {
                     _.body.result(context, out, reject, tick);
                 } else {
-                    resolve(result);
+                    Tick(resolve, result);
 
                     return;
                 }

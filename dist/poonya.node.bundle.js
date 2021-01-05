@@ -163,7 +163,11 @@ module.exports = /******/ (() => {
             const { Operand } = __webpack_require__(62),
                 { SERVICE } = __webpack_require__(635),
                 { NativeFunctionExecutionError } = __webpack_require__(707),
-                { iPoonyaObject, iPoonyaPrototype } = __webpack_require__(779);
+                {
+                    iPoonyaObject,
+                    iPoonyaPrototype,
+                    iCodeEmitter,
+                } = __webpack_require__(779);
             /**
              * @lends NativeFunction
              * @class
@@ -287,6 +291,17 @@ module.exports = /******/ (() => {
                                             data,
                                             -1,
                                             SERVICE.CONSTRUCTORS.NULL,
+                                            null,
+                                            new Array(),
+                                            resolve
+                                        );
+                                        break;
+
+                                    case data instanceof iCodeEmitter:
+                                        context.createObject(
+                                            data,
+                                            -1,
+                                            SERVICE.CONSTRUCTORS.PATTERN,
                                             null,
                                             new Array(),
                                             resolve
@@ -1214,6 +1229,117 @@ module.exports = /******/ (() => {
             /***/
         },
 
+        /***/ 293: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
+            /**
+             * @file src/classes/data/PoonyaPattern.js
+             * @description Cодержит класс строки Poonya
+             * @author Astecom
+             */
+
+            const { Cast } = __webpack_require__(270);
+
+            const PoonyaObject = __webpack_require__(940);
+            /**
+             * @lends PoonyaPattern
+             * @class
+             */
+
+            class PoonyaPattern extends PoonyaObject {
+                /**
+                 * Дескриптор объекта строки в poonya
+                 *
+                 * @param {iPoonyaPrototype} prototype Прототип строки
+                 * @param {iCodeEmitter} init Исходная строка
+                 *
+                 * @memberof Poonya.Data
+                 * @constructs PoonyaPattern
+                 * @extends PoonyaObject
+                 * @public
+                 */
+                constructor(prototype = null, init) {
+                    super(prototype);
+                    this.data = init;
+                }
+                /**
+                 * Возвращает копию этого объекта
+                 *
+                 * @returns {PoonyaPattern} клонированый объект
+                 */
+
+                clone() {
+                    return new PoonyaPattern(this.prototype, this.data);
+                }
+                /**
+                 * Нельзя получить данные из шаблона по индексу
+                 *
+                 * @method
+                 * @override
+                 */
+
+                get() {
+                    return null;
+                }
+                /**
+                 * Устанавливать значения шаблону нельзя
+                 *
+                 * @override
+                 * @method
+                 * @public
+                 */
+
+                set() {}
+                /**
+                 * Удалять значения шаблону нельзя
+                 *
+                 * @override
+                 * @method
+                 * @public
+                 */
+
+                remove() {}
+                /**
+                 * Сериализует строку значение результата
+                 *
+                 * @override
+                 * @method
+                 * @public
+                 */
+
+                result(context, out, reject, resolve) {
+                    const result = this.data.result();
+                    if (result instanceof Promise)
+                        result.then((d_result) =>
+                            resolve(Cast(d_result, context))
+                        );
+                    else
+                        result
+                            .complete()
+                            .then((d_result) =>
+                                resolve(Cast(d_result, context))
+                            );
+                }
+                /**
+                 * Сериализует строку в javascript строку
+                 *
+                 * @override
+                 * @method
+                 * @public
+                 */
+
+                toRawData() {
+                    return '[Object:Pattern]';
+                }
+            }
+
+            module.exports = PoonyaPattern;
+
+            /***/
+        },
+
         /***/ 406: /***/ (
             module,
             __unused_webpack_exports,
@@ -1546,7 +1672,7 @@ module.exports = /******/ (() => {
                     UnableToRecognizeTypeException,
                     TheSequenceException,
                 } = __webpack_require__(707),
-                { Cast } = __webpack_require__(270),
+                { Cast, Tick } = __webpack_require__(270),
                 ObjectContructorCall = __webpack_require__(552);
             /**
              * @lends MessagePattern;
@@ -1900,7 +2026,7 @@ module.exports = /******/ (() => {
                             if ((i += 2) >= leng) {
                                 resolve(Cast(result, context));
                             } else {
-                                tick();
+                                Tick(tick);
                             }
                         });
                     }
@@ -2369,13 +2495,18 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 350: /***/ (module) => {
+        /***/ 350: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
             /**
              * @file src/classes/excecution/statements/IfStatement.js
              * @description Содержит в себе оператор if, который используется для создания условных операций
              * @author Astecom
              */
 
+            const { Tick } = __webpack_require__(270);
             /**
              * @lends IfStatement
              * @protected
@@ -2440,7 +2571,7 @@ module.exports = /******/ (() => {
                             _.body_true.result(context, out, reject, resolve);
                         else if (_.body_false != null)
                             _.body_false.result(context, out, reject, resolve);
-                        else resolve();
+                        else Tick(resolve, null);
                     });
                 }
             }
@@ -2450,13 +2581,18 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 674: /***/ (module) => {
+        /***/ 674: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
             /**
              * @file src/classes/excecution/statements/OutStatement.js
              * @description Содержит в себе оператор вывода, который используется для вывода информации из шаблона
              * @author Astecom
              */
 
+            const { Tick } = __webpack_require__(270);
             /**
              * @lends OutStatement
              * @protected
@@ -2512,10 +2648,10 @@ module.exports = /******/ (() => {
                                 reject,
                                 (d_result) => {
                                     out.write(d_result);
-                                    resolve(d_result);
+                                    Tick(resolve, d_result);
                                 }
                             );
-                        else resolve(null);
+                        else Tick(resolve, null);
                     });
                 }
             }
@@ -2538,6 +2674,7 @@ module.exports = /******/ (() => {
              */
 
             const PoonyaArray = __webpack_require__(358),
+                { Tick } = __webpack_require__(270),
                 {
                     TheFieldMustBeAnArrayInstanceExceprion,
                 } = __webpack_require__(707);
@@ -2612,8 +2749,8 @@ module.exports = /******/ (() => {
                                     out,
                                     reject,
                                     (result) => {
-                                        array.append(context, result);
-                                        resolve(result);
+                                        array.push(context, result);
+                                        Tick(resolve, result);
                                     }
                                 );
                             } else {
@@ -2646,6 +2783,7 @@ module.exports = /******/ (() => {
              */
 
             const { TheFieldMustBeNumberException } = __webpack_require__(707),
+                { Tick } = __webpack_require__(270),
                 PoonyaNumber = __webpack_require__(773);
             /**
              * @lends RepeatStatement;
@@ -2727,12 +2865,12 @@ module.exports = /******/ (() => {
                                     function end(result) {
                                         from += difference;
                                         context.popLevel();
-                                        tick(result, difference);
+                                        Tick(tick, result, difference);
                                     }
 
                                     function tick(result) {
                                         if (from == to) {
-                                            resolve(result);
+                                            Tick(resolve, result);
                                             return;
                                         }
 
@@ -2772,10 +2910,6 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(940);
-
-            const { GET } = __webpack_require__(635);
-
             const ExpressionGroup = __webpack_require__(606),
                 {
                     iPoonyaObject,
@@ -2785,7 +2919,10 @@ module.exports = /******/ (() => {
                 {
                     GetFieldOfNullException,
                     TheFieldNotHasDeclaredExceprion,
-                } = __webpack_require__(707);
+                } = __webpack_require__(707),
+                { GET } = __webpack_require__(635),
+                { Tick } = __webpack_require__(270),
+                PoonyaObject = __webpack_require__(940);
             /**
              * @lends ResetStatement
              * @protected
@@ -2889,7 +3026,7 @@ module.exports = /******/ (() => {
                                             target.set(context, of_p, value);
                                         }
 
-                                        resolve(value);
+                                        Tick(resolve, value);
                                     }
                                 );
                             } else
@@ -2922,13 +3059,18 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 113: /***/ (module) => {
+        /***/ 113: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
             /**
              * @file src/classes/excecution/statements/SequenceGroup.js
              * @description Содержит в себе дочернуюю исполняемую группу, которая, при нормальных услвиях, является чустью главной исполняемой группы.
              * @author Astecom
              */
 
+            const { Tick } = __webpack_require__(270);
             /**
              * @lends SequenceGroup;
              * @protected
@@ -2976,15 +3118,21 @@ module.exports = /******/ (() => {
 
                     if (level_ops) context.addLevel();
 
-                    (function tick(result) {
+                    function next(result) {
+                        Tick(tick, result);
+                    }
+
+                    function tick(result) {
                         if (i >= leng) {
                             if (level_ops) context.popLevel();
-                            resolve(result);
+                            Tick(resolve, result);
                             return;
                         }
 
-                        _.Sequence[i++].result(context, out, reject, tick);
-                    })();
+                        _.Sequence[i++].result(context, out, reject, next);
+                    }
+
+                    tick();
                 }
                 /**
                  * Сериализует текущую группу в текст
@@ -3008,13 +3156,18 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 998: /***/ (module) => {
+        /***/ 998: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
             /**
              * @file src/classes/excecution/statements/SequenceMainGroup.js
              * @description Содержит в себе оператор главную сполняемую группу, т.е. группу которая явлся родетелем дочерних исполняемых групп, при нормальных условиях.
              * @author Astecom
              */
 
+            const { Tick } = __webpack_require__(270);
             /**
              * @lends SequenceMainGroup;
              * @protected
@@ -3062,7 +3215,11 @@ module.exports = /******/ (() => {
                         i = 0,
                         leng = _.Sequence.length;
 
-                    (function tick(result) {
+                    function next(result) {
+                        Tick(tick, result);
+                    }
+
+                    function tick(result) {
                         if (i >= leng) {
                             if (result && typeof result.result === 'function') {
                                 result.result(
@@ -3070,18 +3227,20 @@ module.exports = /******/ (() => {
                                     out,
                                     reject,
                                     (p_result) => {
-                                        resolve(p_result);
+                                        Tick(resolve, p_result);
                                     }
                                 );
                             } else {
-                                resolve(result);
+                                Tick(resolve, result);
                             }
 
                             return;
                         }
 
-                        _.Sequence[i++].result(context, out, reject, tick);
-                    })();
+                        _.Sequence[i++].result(context, out, reject, next);
+                    }
+
+                    tick();
                 }
                 /**
                  * Сериализует текущую группу в текст
@@ -3117,8 +3276,9 @@ module.exports = /******/ (() => {
              */
 
             const {
-                TheFieldAlreadyHasBeenDeclaredException,
-            } = __webpack_require__(707);
+                    TheFieldAlreadyHasBeenDeclaredException,
+                } = __webpack_require__(707),
+                { Tick } = __webpack_require__(270);
             /**
              * @lends SetStatement
              * @protected
@@ -3176,7 +3336,7 @@ module.exports = /******/ (() => {
                     if (!context.has(_.name, 'up')) {
                         _.value.result(context, out, reject, (result) => {
                             context.set(_.name, result, 'up');
-                            resolve(result);
+                            Tick(resolve, result);
                         });
                     } else {
                         reject(
@@ -3192,13 +3352,18 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 114: /***/ (module) => {
+        /***/ 114: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
             /**
              * @file src/classes/excecution/statements/WhileStatement.js
              * @description Содержит в себе инструкцию while, который используется для создания цикличных условных операций
              * @author Astecom
              */
 
+            const { Tick } = __webpack_require__(270);
             /**
              * @lends WhileStatement
              * @protected
@@ -3259,7 +3424,7 @@ module.exports = /******/ (() => {
                             if (context.toBooleanResult(d_result)) {
                                 _.body.result(context, out, reject, tick);
                             } else {
-                                resolve(result);
+                                Tick(resolve, result);
                                 return;
                             }
                         });
@@ -3912,7 +4077,9 @@ module.exports = /******/ (() => {
              * @description Тут собраны интерфейсы, для боллее удобного последующего сравнения объектов
              * @author Astecom
              */
-            // Storage
+            // Poonya
+
+            class iCodeEmitter {} // Storage
 
             class iContext {} // Datas
 
@@ -3954,6 +4121,7 @@ module.exports = /******/ (() => {
 
             module.exports.iContext = iContext;
             module.exports.iPathData = iPathData;
+            module.exports.iCodeEmitter = iCodeEmitter;
             module.exports.iPoonyaObject = iPoonyaObject;
             module.exports.iPoonyaPrototype = iPoonyaPrototype;
             module.exports.iPoonyaConstructsData = iPoonyaConstructsData;
@@ -4094,6 +4262,7 @@ module.exports = /******/ (() => {
                     NUMBER: ['Number'],
                     INTEGER: ['Integer'],
                     NULL: ['Null'],
+                    PATTERN: ['Pattern'],
                 },
                 ROOTPATH: dirname(__dirname),
                 CONFIG: {
@@ -4134,6 +4303,8 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
+            const PoonyaPattern = __webpack_require__(293);
+
             const {
                     GetFieldOfNullException,
                     IsNotAConstructorException,
@@ -4141,9 +4312,13 @@ module.exports = /******/ (() => {
                 } = __webpack_require__(707),
                 { GET, SERVICE, IS } = __webpack_require__(635),
                 { Cast, toBytes } = __webpack_require__(270),
-                { iContext, iPoonyaPrototype, iPathData } = __webpack_require__(
-                    779
-                ),
+                {
+                    iContext,
+                    iPoonyaPrototype,
+                    iPathData,
+                    iCodeEmitter,
+                    iPoonyaObject,
+                } = __webpack_require__(779),
                 { PoonyaStaticLibrary } = __webpack_require__(239),
                 { parser } = __webpack_require__(909),
                 lexer = __webpack_require__(513),
@@ -4707,7 +4882,7 @@ module.exports = /******/ (() => {
                                         : typeof initial === 'object' &&
                                           initial != null
                                         ? Object.entries(initial)
-                                        : initial;
+                                        : null;
 
                             function done() {
                                 switch (true) {
@@ -4755,6 +4930,16 @@ module.exports = /******/ (() => {
                                         );
                                         return;
 
+                                    case prototype[IS]('Pattern'):
+                                        resolve(
+                                            new PoonyaPattern(
+                                                prototype,
+                                                init,
+                                                _
+                                            )
+                                        );
+                                        break;
+
                                     default:
                                         resolve(
                                             new PoonyaObject(prototype, init, _)
@@ -4766,11 +4951,12 @@ module.exports = /******/ (() => {
                             function next() {
                                 const entry = from[cur++];
 
-                                if (entry) {
+                                if (entry != null) {
                                     if (!parents_three.includes(entry[1])) {
                                         if (
-                                            typeof entry[1].result ===
-                                            'function'
+                                            entry[1] instanceof
+                                                iPoonyaPrototype ||
+                                            entry[1] instanceof iPoonyaObject
                                         )
                                             init[entry[0]] = entry[1].result(
                                                 _,
@@ -4792,10 +4978,14 @@ module.exports = /******/ (() => {
                             }
 
                             if (prototype != null) {
-                                if (typeof from == 'object' && from != null) {
+                                if (
+                                    typeof from == 'object' &&
+                                    from != null &&
+                                    !(initial instanceof iCodeEmitter)
+                                ) {
                                     next();
                                 } else {
-                                    init = from;
+                                    init = initial;
                                     done();
                                 }
                             } else {
@@ -7322,7 +7512,9 @@ module.exports = /******/ (() => {
                     fromBytes,
                     setImmediate,
                 } = __webpack_require__(270),
-                { iPoonyaConstructsData } = __webpack_require__(779),
+                { iPoonyaConstructsData, iCodeEmitter } = __webpack_require__(
+                    779
+                ),
                 lexer = __webpack_require__(513); // Private fields
 
             const RESULT = Symbol('RESULT'),
@@ -7428,7 +7620,7 @@ module.exports = /******/ (() => {
              * @lends CodeEmitter;
              */
 
-            class CodeEmitter extends EventEmitter {
+            class CodeEmitter extends iCodeEmitter {
                 /**
                  * Абстрактный класс который предназначен для подготовке всех наследуемых эмитттеров.
                  *
@@ -7453,6 +7645,12 @@ module.exports = /******/ (() => {
                     super();
 
                     const _ = this;
+
+                    const emitter = new EventEmitter(); // Poonya events
+
+                    _.on = emitter.on;
+                    _.once = emitter.once;
+                    _.emit = emitter.emit; // Service data
 
                     _.input = null;
                     _.loaded = false;
@@ -7622,48 +7820,31 @@ module.exports = /******/ (() => {
                  * @private
                  */
 
-                [RESULT](data, error, out) {
+                [RESULT](data, error, out, c_clone) {
                     if (Array.isArray(data)) {
-                        for (let i = 0, leng = data.length; i < leng; i++)
-                            if (
-                                typeof data[i] === 'object' &&
-                                !(data[i] instanceof Heap)
-                            ) {
-                                data[i] = new Heap(null, data[i]);
-                            }
-
-                        if (data.find((e) => !(e instanceof Heap)) == null) {
-                            this.data.result(
-                                new Context(this.libraries, error, ...data),
-                                out,
-                                error,
-                                () => out.end()
-                            );
-                        } else {
-                            throw new TypeError('Data must have a Heap type');
-                        }
+                        this.data.result(
+                            new Context(this.libraries, error, ...data),
+                            out,
+                            error,
+                            () => out.end()
+                        );
                     } else if (data instanceof Context) {
-                        const clone = data.clone();
-                        clone.import(this.libraries, error);
-                        this.data.result(clone, out, error, () => out.end());
-                    } else {
-                        if (
-                            typeof data === 'object' &&
-                            !(data instanceof Heap)
-                        ) {
-                            data = new Heap(null, data);
-                        }
-
-                        if (data instanceof Heap) {
-                            this.data.result(
-                                new Context(this.libraries, error, data),
-                                out,
-                                error,
-                                () => out.end()
+                        if (c_clone) {
+                            const clone = data.clone();
+                            clone.import(this.libraries, error);
+                            this.data.result(clone, out, error, () =>
+                                out.end()
                             );
                         } else {
-                            throw new TypeError('Data must have a Heap type');
+                            this.data.result(data, out, error, () => out.end());
                         }
+                    } else {
+                        this.data.result(
+                            new Context(this.libraries, error, data),
+                            out,
+                            error,
+                            () => out.end()
+                        );
                     }
                 }
                 /**
@@ -7671,21 +7852,28 @@ module.exports = /******/ (() => {
                  *
                  * @param {Object|Heap|Context} data данные преданые в исполнитель
                  * @param {Function} error функция вывода ошибок, опциаонально
+                 * @param {Boolean} c_clone если в `data` передан контекст, то при true, он будет склонирован, при false будет использован переданный контекст.
                  *
                  * @returns {Array<Any>} результат выполнения блока
                  * @method
                  * @public
                  */
 
-                result(data = new Heap(), error = this.throwError.bind(this)) {
+                result(
+                    data = new Heap(),
+                    error = this.throwError.bind(this),
+                    c_clone = false
+                ) {
                     const out = new PoonyaOutputStream(); // Если вхождения уже загружены, выполняем последовательность
 
                     if (this.loaded) {
-                        setImmediate(() => this[RESULT](data, error, out));
+                        setImmediate(() =>
+                            this[RESULT](data, error, out, c_clone)
+                        );
                     } // Иначе, ждем окончания загрузки и выполняем последовательность
                     else
-                        this.addListener('load', () =>
-                            this[RESULT](data, error, out)
+                        this.on('load', () =>
+                            this[RESULT](data, error, out, c_clone)
                         );
 
                     return out;
@@ -7839,69 +8027,39 @@ module.exports = /******/ (() => {
                     });
                 }
 
-                [RESULT](data, error) {
+                [RESULT](data, error, c_clone) {
                     return new Promise((res) => {
                         if (data instanceof Context) {
-                            const clone = data.clone();
-                            clone.import(this.libraries, error);
-                            this.data.result(clone, [], error, res);
+                            if (c_clone) {
+                                const context = data.clone();
+                                context.import(this.libraries, error);
+                                this.data.result(context, [], error, (result) =>
+                                    result.result(context, null, null, res)
+                                );
+                            } else {
+                                this.data.result(data, [], error, (result) =>
+                                    result.result(data, null, null, res)
+                                );
+                            }
                         } else {
                             if (Array.isArray(data)) {
-                                for (
-                                    let i = 0, leng = data.length;
-                                    i < leng;
-                                    i++
-                                )
-                                    if (
-                                        typeof data[i] === 'object' &&
-                                        !(data[i] instanceof Heap)
-                                    ) {
-                                        data[i] = new Heap(null, data[i]);
-                                    }
-
-                                if (
-                                    data.find((e) => !(e instanceof Heap)) ==
-                                    null
-                                ) {
-                                    this.data.result(
-                                        new Context(
-                                            this.libraries,
-                                            error,
-                                            ...data
-                                        ),
-                                        [],
-                                        error,
-                                        res
-                                    );
-                                } else {
-                                    throw new TypeError(
-                                        'Data must have a Heap type'
-                                    );
-                                }
+                                const context = new Context(
+                                    this.libraries,
+                                    error,
+                                    ...data
+                                );
+                                this.data.result(context, [], error, (result) =>
+                                    result.result(context, null, null, res)
+                                );
                             } else {
-                                if (
-                                    typeof data === 'object' &&
-                                    !(data instanceof Heap)
-                                ) {
-                                    data = new Heap(null, data);
-                                }
-
-                                if (data instanceof Heap) {
-                                    this.data.result(
-                                        new Context(
-                                            this.libraries,
-                                            error,
-                                            data
-                                        ),
-                                        [],
-                                        error,
-                                        res
-                                    );
-                                } else {
-                                    throw new TypeError(
-                                        'Data must have a Heap type'
-                                    );
-                                }
+                                const context = new Context(
+                                    this.libraries,
+                                    error,
+                                    ...data
+                                );
+                                this.data.result(context, [], error, (result) =>
+                                    result.result(context, null, null, res)
+                                );
                             }
                         }
                     });
@@ -7916,14 +8074,18 @@ module.exports = /******/ (() => {
                  * @async
                  */
 
-                result(data = new Heap(), error = this.throwError.bind(this)) {
+                result(
+                    data = new Heap(),
+                    error = this.throwError.bind(this),
+                    c_clone = false
+                ) {
                     const _ = this;
 
                     return new Promise((res) => {
-                        if (_.loaded) _[RESULT](data, error).then(res);
+                        if (_.loaded) _[RESULT](data, error, c_clone).then(res);
                         else
                             _.on('load', () =>
-                                _[RESULT](data, error).then(res)
+                                _[RESULT](data, error, c_clone).then(res)
                             );
                     });
                 }
@@ -8073,7 +8235,12 @@ module.exports = /******/ (() => {
 
             const { SERVICE } = __webpack_require__(635),
                 { Operand } = __webpack_require__(62),
-                { iPoonyaObject, iPoonyaPrototype } = __webpack_require__(779),
+                {
+                    iPoonyaObject,
+                    iPoonyaPrototype,
+                    iCodeEmitter,
+                } = __webpack_require__(779),
+                { nextTick } = __webpack_require__(765),
                 NativeFunction = __webpack_require__(492);
             /**
              * Фукция которая преобразует нативное значение в значение Poonya
@@ -8178,9 +8345,20 @@ module.exports = /******/ (() => {
 
                             case data instanceof iPoonyaObject:
                             case data instanceof iPoonyaPrototype:
-                            case data instanceof Operand:
                             case data instanceof NativeFunction:
+                            case data instanceof Operand:
                                 result = data;
+                                break;
+
+                            case data instanceof iCodeEmitter:
+                                context.createObject(
+                                    data,
+                                    -1,
+                                    SERVICE.CONSTRUCTORS.PATTERN,
+                                    null,
+                                    parents_three,
+                                    (d_result) => (result = d_result)
+                                );
                                 break;
 
                             default:
@@ -8325,12 +8503,15 @@ module.exports = /******/ (() => {
                 return string;
             }
 
+            const setImmediate = global.setImmediate;
+            const Tick = nextTick;
             module.exports.setImmediate = setImmediate;
             module.exports.maybeEquals = maybeEquals;
             module.exports.countKeys = countKeys;
             module.exports.fromBytes = fromBytes;
             module.exports.toFixed = toFixed;
             module.exports.toBytes = toBytes;
+            module.exports.Tick = Tick;
             module.exports.Cast = Cast;
 
             /***/
@@ -8356,6 +8537,12 @@ module.exports = /******/ (() => {
 
         /***/ 622: /***/ (module) => {
             module.exports = require('path');
+
+            /***/
+        },
+
+        /***/ 765: /***/ (module) => {
+            module.exports = require('process');
 
             /***/
         },

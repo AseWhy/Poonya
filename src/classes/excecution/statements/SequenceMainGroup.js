@@ -6,6 +6,8 @@
 
 "use strict";
 
+const { Tick } = require("../../../utils");
+
 /**
  * @lends SequenceMainGroup;
  * @protected
@@ -50,21 +52,27 @@ class SequenceMainGroup {
     result(context, out, reject, resolve) {
         let _ = this, i = 0, leng = _.Sequence.length;
 
-        (function tick(result){
+        function next(result){
+            Tick(tick, result);
+        }
+
+        function tick(result){
             if(i >= leng){
                 if(result && typeof result.result === 'function') {
                     result.result(context, out, reject, p_result => {
-                        resolve(p_result);
+                        Tick(resolve, p_result);
                     });
                 } else {
-                    resolve(result);
+                    Tick(resolve, result);
                 }
 
                 return;
             }
 
-            _.Sequence[i++].result(context, out, reject, tick);
-        })();
+            _.Sequence[i++].result(context, out, reject, next);
+        }
+
+        tick();
     }
 
     /**

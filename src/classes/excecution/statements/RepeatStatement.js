@@ -5,8 +5,8 @@
  */
 
 "use strict";
-
 const { TheFieldMustBeNumberException } = require('../../exceptions')
+    , { Tick } = require('../../../utils')
     ,   PoonyaNumber = require('../../data/PoonyaNumber');
 
 /**
@@ -86,12 +86,12 @@ class RepeatStatement {
 
                             context.popLevel();
 
-                            tick(result, difference);
+                            Tick(tick, result, difference);
                         }
 
                         function tick(result){
                             if(from == to){
-                                resolve(result);
+                                Tick(resolve, result);
                 
                                 return;
                             }

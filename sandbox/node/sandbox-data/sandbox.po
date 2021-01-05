@@ -2,16 +2,4 @@
     Multilevel object notation
 </
 
-set test1 = Object ->
-                field1 -> 1;
-
-// Using the functions inherited from Object
-test1.set('SomeField', 1);
-
-wait(5000);
-
-> test1.has('SomeField');
-
-wait(5000);
-
-> test1;
+> pattern;

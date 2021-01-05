@@ -6,6 +6,9 @@
 
 "use strict";
 
+// Poonya
+class iCodeEmitter {}
+
 // Storage
 class iContext {}
 
@@ -48,6 +51,7 @@ class iPathData {
 
 module.exports.iContext = iContext;
 module.exports.iPathData = iPathData;
+module.exports.iCodeEmitter = iCodeEmitter;
 module.exports.iPoonyaObject = iPoonyaObject;
 module.exports.iPoonyaPrototype = iPoonyaPrototype;
 module.exports.iPoonyaConstructsData = iPoonyaConstructsData;

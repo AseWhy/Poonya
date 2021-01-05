@@ -6,10 +6,11 @@
 
 "use strict";
 
+const PoonyaPattern = require('./data/PoonyaPattern');
 const { GetFieldOfNullException, IsNotAConstructorException, PoonyaException } = require('./exceptions')
     , { GET, SERVICE, IS } = require('./static')
     , { Cast, toBytes } = require('../utils.js')
-    , { iContext, iPoonyaPrototype, iPathData } = require('./interfaces')
+    , { iContext, iPoonyaPrototype, iPathData, iCodeEmitter, iPoonyaObject } = require('./interfaces')
     , { PoonyaStaticLibrary } = require('../importer.js')
     , { parser } = require('../parser')
     ,   lexer = require('../lexer/lexer')
@@ -501,7 +502,7 @@ class Context extends iContext {
         _.getByPath(path, position, iPoonyaPrototype, reject, false, prototype => {
             let init = new Object(), 
                 cur = 0, 
-                from = initial instanceof Map ? Array.from(initial.entries()) : typeof initial === 'object' && initial != null ? Object.entries(initial) : initial;
+                from = initial instanceof Map ? Array.from(initial.entries()) : typeof initial === 'object' && initial != null ? Object.entries(initial) : null;
 
             function done() {
                 switch (true) {
@@ -523,6 +524,9 @@ class Context extends iContext {
                     case prototype[IS]('Array'): 
                         resolve(new PoonyaArray(prototype, init, _)); 
                     return;
+                    case prototype[IS]('Pattern'):
+                        resolve(new PoonyaPattern(prototype, init, _));
+                    break;
                     default: 
                         resolve(new PoonyaObject(prototype, init, _)); 
                     return;
@@ -532,9 +536,9 @@ class Context extends iContext {
             function next(){
                 const entry = from[cur++];
 
-                if(entry) {
+                if(entry != null) {
                     if(!parents_three.includes(entry[1]))
-                        if(typeof entry[1].result === 'function')
+                        if(entry[1] instanceof iPoonyaPrototype || entry[1] instanceof iPoonyaObject)
                             init[entry[0]] = entry[1].result(_, null, reject, result => set(entry[0], result));
                         else
                             set(entry[0], entry[1]);
@@ -552,10 +556,10 @@ class Context extends iContext {
             }
 
             if (prototype != null) {
-                if(typeof from == 'object' && from != null) {
+                if(typeof from == 'object' && from != null && !(initial instanceof iCodeEmitter)) {
                     next();
                 } else {
-                    init = from;
+                    init = initial;
 
                     done();
                 }

@@ -6,7 +6,8 @@
 
 "use strict";
 
-const { TheFieldAlreadyHasBeenDeclaredException } = require('../../exceptions');
+const { TheFieldAlreadyHasBeenDeclaredException } = require('../../exceptions')
+    , { Tick } = require('../../../utils');
 
 /**
  * @lends SetStatement
@@ -60,7 +61,7 @@ class SetStatement {
             _.value.result(context, out, reject, result => {
                 context.set(_.name, result, 'up');
 
-                resolve(result);
+                Tick(resolve, result);
             });
         } else {
             reject(_.position, new TheFieldAlreadyHasBeenDeclaredException(_.name));

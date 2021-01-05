@@ -12,8 +12,14 @@ const {
         Operand
     } = require('./classes/common/ParserData'), {
         iPoonyaObject,
-        iPoonyaPrototype
+        iPoonyaPrototype,
+        iCodeEmitter
     } = require('./classes/interfaces'),
+    // #!if platform === 'node'
+    {
+        nextTick
+    } = require('process'),
+    // #!endif
         NativeFunction = require('./classes/data/NativeFunction');
 
 /**
@@ -62,9 +68,12 @@ function Cast(data, context, parents_three = new Array()) {
                 break;
                 case data instanceof iPoonyaObject:
                 case data instanceof iPoonyaPrototype:
-                case data instanceof Operand:
                 case data instanceof NativeFunction:
+                case data instanceof Operand:
                     result = data;
+                break;
+                case data instanceof iCodeEmitter:
+                    context.createObject(data, -1, SERVICE.CONSTRUCTORS.PATTERN, null, parents_three, d_result => result = d_result);
                 break;
                 default:
                     parents_three.push(data);
@@ -187,6 +196,9 @@ function fromBytes(input) {
     return string;
 }
 
+// #!if platform === 'node'
+const setImmediate = global.setImmediate;
+// #!endif
 // #!if platform === 'browser'
 /*~
 const setImmediate = (function() {
@@ -202,9 +214,12 @@ const setImmediate = (function() {
 
         const func = head.func;
 
-        delete head.func;
+        const args = head.args;
 
-        func();
+        delete head.func;
+        delete head.args;
+
+        func(...args);
     }
 
     if(window.addEventListener) {
@@ -213,13 +228,20 @@ const setImmediate = (function() {
         window.attachEvent( 'onmessage', onmessage );
     }
 
-    return function(func) {
-        tail = tail.next = { func: func };
+    return function(func, ...args) {
+        tail = tail.next = { func: func, args };
 
         window.postMessage(ID, "*");
     };
 }());
 */
+// #!endif
+
+// #!if platform === 'node'
+const Tick = nextTick;
+// #!endif
+// #!if platform === 'browser'
+// ~ const Tick = setImmediate;
 // #!endif
 
 module.exports.setImmediate = setImmediate;
@@ -228,4 +250,5 @@ module.exports.countKeys = countKeys;
 module.exports.fromBytes = fromBytes;
 module.exports.toFixed = toFixed;
 module.exports.toBytes = toBytes;
+module.exports.Tick = Tick;
 module.exports.Cast = Cast;

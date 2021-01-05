@@ -89,7 +89,7 @@ const
     { parser, parseExpression, parserMP } = require("./parser.js"),
     { SERVICE } = require('./classes/static'),
     { toFixed, toBytes, fromBytes, setImmediate } = require('./utils'),
-    { iPoonyaConstructsData } = require("./classes/interfaces"),
+    { iPoonyaConstructsData, iCodeEmitter } = require("./classes/interfaces"),
     lexer = require("./lexer/lexer.js");
 
 // Private fields
@@ -209,7 +209,7 @@ class PoonyaOutputStream extends EventEmitter {
 /**
  * @lends CodeEmitter;
  */
-class CodeEmitter extends EventEmitter {
+class CodeEmitter extends iCodeEmitter {
     /**
      * Абстрактный класс который предназначен для подготовке всех наследуемых эмитттеров.
      *
@@ -235,6 +235,14 @@ class CodeEmitter extends EventEmitter {
 
         const _ = this;
 
+        const emitter = new EventEmitter();
+
+        // Poonya events
+        _.on = emitter.on;
+        _.once = emitter.once;
+        _.emit = emitter.emit;
+
+        // Service data
         _.input = null;
 
         _.loaded = false;
@@ -440,34 +448,21 @@ class CodeEmitter extends EventEmitter {
      * @method
      * @private
      */
-    [RESULT](data, error, out){
+    [RESULT](data, error, out, c_clone){
         if (Array.isArray(data)) {
-            for (let i = 0, leng = data.length; i < leng; i++)
-                if (typeof data[i] === "object" && !(data[i] instanceof Heap)) {
-                    data[i] = new Heap(null, data[i]);
-                }
-
-            if (data.find((e) => !(e instanceof Heap)) == null) {
-                this.data.result(new Context(this.libraries, error, ...data), out, error, () => out.end());
-            } else {
-                throw new TypeError("Data must have a Heap type");
-            }
+            this.data.result(new Context(this.libraries, error, ...data), out, error, () => out.end());
         } else if(data instanceof Context){
-            const clone = data.clone();
+            if(c_clone) {
+                const clone = data.clone();
 
-            clone.import(this.libraries, error);
+                clone.import(this.libraries, error);
 
-            this.data.result(clone, out, error, () => out.end());
-        } else {
-            if (typeof data === "object" && !(data instanceof Heap)) {
-                data = new Heap(null, data);
-            }
-
-            if (data instanceof Heap) {
-                this.data.result(new Context(this.libraries, error, data), out, error, () => out.end());
+                this.data.result(clone, out, error, () => out.end());
             } else {
-                throw new TypeError("Data must have a Heap type");
+                this.data.result(data, out, error, () => out.end());
             }
+        } else {
+            this.data.result(new Context(this.libraries, error, data), out, error, () => out.end());
         }
     }
 
@@ -476,20 +471,21 @@ class CodeEmitter extends EventEmitter {
      *
      * @param {Object|Heap|Context} data данные преданые в исполнитель
      * @param {Function} error функция вывода ошибок, опциаонально
+     * @param {Boolean} c_clone если в `data` передан контекст, то при true, он будет склонирован, при false будет использован переданный контекст.
      * 
      * @returns {Array<Any>} результат выполнения блока
      * @method
      * @public
      */
-    result(data = new Heap(), error = this.throwError.bind(this)) {
+    result(data = new Heap(), error = this.throwError.bind(this), c_clone = false) {
         const out = new PoonyaOutputStream();
 
         // Если вхождения уже загружены, выполняем последовательность
         if(this.loaded) {
-            setImmediate(() => this[RESULT](data, error, out));
+            setImmediate(() => this[RESULT](data, error, out, c_clone));
         } else
             // Иначе, ждем окончания загрузки и выполняем последовательность
-            this.addListener('load', () => this[RESULT](data, error, out));
+            this.on('load', () => this[RESULT](data, error, out, c_clone));
 
         return out;
     }
@@ -627,49 +623,37 @@ class ExpressionPattern extends CodeEmitter {
         });
     }
 
-    [RESULT](data, error){
+    [RESULT](data, error, c_clone){
         return new Promise(res => {
             if (data instanceof Context) {
-                const clone = data.clone();
-    
-                clone.import(this.libraries, error);
-    
-                this.data.result(clone, [], error, res);
+                if(c_clone) {
+                    const context = data.clone();
+        
+                    context.import(this.libraries, error);
+        
+                    this.data.result(context, [], error, result => result.result(context, null, null, res));
+                } else {
+                    this.data.result(data, [], error, result => result.result(data, null, null, res));
+                }
             } else {
                 if (Array.isArray(data)) {
-                    for (let i = 0, leng = data.length; i < leng; i++)
-                        if (
-                            typeof data[i] === "object" &&
-                            !(data[i] instanceof Heap)
-                        ) {
-                            data[i] = new Heap(null, data[i]);
-                        }
-    
-                    if (data.find((e) => !(e instanceof Heap)) == null) {
-                        this.data.result(
-                            new Context(this.libraries, error, ...data),
-                            [],
-                            error,
-                            res
-                        );
-                    } else {
-                        throw new TypeError("Data must have a Heap type");
-                    }
+                    const context = new Context(this.libraries, error, ...data);
+
+                    this.data.result(
+                        context,
+                        [],
+                        error,
+                        result => result.result(context, null, null, res)
+                    );
                 } else {
-                    if (typeof data === "object" && !(data instanceof Heap)) {
-                        data = new Heap(null, data);
-                    }
-    
-                    if (data instanceof Heap) {
-                        this.data.result(
-                            new Context(this.libraries, error, data),
-                            [],
-                            error,
-                            res
-                        );
-                    } else {
-                        throw new TypeError("Data must have a Heap type");
-                    }
+                    const context = new Context(this.libraries, error, ...data);
+
+                    this.data.result(
+                        context,
+                        [],
+                        error,
+                        result => result.result(context, null, null, res)
+                    );
                 }
             }
         });
@@ -684,14 +668,14 @@ class ExpressionPattern extends CodeEmitter {
      * @public
      * @async
      */
-    result(data = new Heap(), error = this.throwError.bind(this)) {
+    result(data = new Heap(), error = this.throwError.bind(this), c_clone = false) {
         const _ = this;
 
         return new Promise(res => {
             if(_.loaded)
-                _[RESULT](data, error).then(res);
+                _[RESULT](data, error, c_clone).then(res);
             else
-                _.on('load', () => _[RESULT](data, error).then(res));
+                _.on('load', () => _[RESULT](data, error, c_clone).then(res));
         });
     }
 }

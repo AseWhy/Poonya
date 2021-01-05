@@ -8,6 +8,9 @@
 "use strict";
 
 const   PoonyaArray = require('../../data/PoonyaArray'),
+    {   
+        Tick 
+    } = require('../../../utils'),
     {
         TheFieldMustBeAnArrayInstanceExceprion,
     } = require('../../exceptions');
@@ -70,9 +73,9 @@ class PushStatement {
         context.getByPath(_.query_stack, _.position, PoonyaArray, reject, false, array => {
             if(array != null){
                 _.value.result(context, out, reject, result => {
-                    array.append(context, result);
+                    array.push(context, result);
 
-                    resolve(result);
+                    Tick(resolve, result);
                 });
             } else {
                 reject(

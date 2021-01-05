@@ -9,7 +9,7 @@
 const { Operand } = require('../common/ParserData')
     , { SERVICE } = require('../static')
     , { NativeFunctionExecutionError } = require('../exceptions')
-    , { iPoonyaObject, iPoonyaPrototype } = require('../interfaces');
+    , { iPoonyaObject, iPoonyaPrototype, iCodeEmitter } = require('../interfaces');
 
 /**
  * @lends NativeFunction
@@ -72,6 +72,9 @@ class NativeFunction {
                     switch (true) {
                         case data === null:
                             context.createObject(data, -1, SERVICE.CONSTRUCTORS.NULL, null, new Array(), resolve);
+                        break;
+                        case data instanceof iCodeEmitter:
+                            context.createObject(data, -1, SERVICE.CONSTRUCTORS.PATTERN, null, new Array(), resolve);
                         break;
                         case data instanceof iPoonyaPrototype || data instanceof iPoonyaObject || data instanceof Operand:
                             resolve(data);

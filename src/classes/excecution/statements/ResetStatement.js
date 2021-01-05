@@ -6,11 +6,12 @@
 
 "use strict";
 
-const PoonyaObject = require('../../data/PoonyaObject');
-const { GET } = require('../../static');
 const ExpressionGroup = require('../expression/ExpressionGroup')
     , { iPoonyaObject, iPoonyaPrototype, iContext } = require('../../interfaces')
-    , { GetFieldOfNullException, TheFieldNotHasDeclaredExceprion } = require('../../exceptions');
+    , { GetFieldOfNullException, TheFieldNotHasDeclaredExceprion } = require('../../exceptions')
+    , { GET } = require('../../static')
+    , { Tick } = require('../../../utils')
+    , PoonyaObject = require('../../data/PoonyaObject');
 
 /**
  * @lends ResetStatement
@@ -97,7 +98,7 @@ class ResetStatement {
                             target.set(context, of_p, value);
                         }
                         
-                        resolve(value);
+                        Tick(resolve, value);
                     });
                 } else
                     reject(_.position, new GetFieldOfNullException(query_stack[index - 1]));
