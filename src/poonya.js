@@ -140,6 +140,7 @@ class PoonyaOutputStream extends EventEmitter {
         });
         */
         // #!endif
+
         // #!if platform === 'node'
         const stream = new Stream.Writable();
 
@@ -153,7 +154,7 @@ class PoonyaOutputStream extends EventEmitter {
     /**
      * Перенаправляет поток данных в `stream` переданный первым аргументом
      * 
-     * @param {PoonyaOutputStream} stream поток которому необходимо передавать данные помимо этого
+     * @param {PoonyaOutputStream|Stream} stream поток которому необходимо передавать данные помимо этого
      * @returns`stream` Поток который был передан.
      * @method
      * @public
@@ -213,16 +214,8 @@ class CodeEmitter extends iCodeEmitter {
     /**
      * Абстрактный класс который предназначен для подготовке всех наследуемых эмитттеров.
      *
-     * @param {
-     *  String | {
-     *          raw: String,
-     *          path: String,
-     *          charset: String
-     *      }
-     * } input Входящая строка с выражением
-     *
+     * @param {String | iInputData} input Входящая строка с выражением
      * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
-     *
      * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
      *
      * @memberof Poonya
@@ -263,6 +256,7 @@ class CodeEmitter extends iCodeEmitter {
             
             if(SERVICE.LOADED) {
                 _[INIT](import_s, logger);
+                
                 setImmediate(() => onload.call(_));
             } else {
                 SERVICE.ACTIONS.on('load', () => {
@@ -483,9 +477,10 @@ class CodeEmitter extends iCodeEmitter {
         // Если вхождения уже загружены, выполняем последовательность
         if(this.loaded) {
             setImmediate(() => this[RESULT](data, error, out, c_clone));
-        } else
+        } else {
             // Иначе, ждем окончания загрузки и выполняем последовательность
             this.on('load', () => this[RESULT](data, error, out, c_clone));
+        }
 
         return out;
     }
@@ -508,16 +503,8 @@ class MessagePattern extends CodeEmitter {
      * </code> <br>
      * Т.е. код поадется туда в фигурных скобках, а все что не в них будет распознано как текст.
      *
-     * @param {
-     *      String | {
-     *          raw: String,
-     *          path: String,
-     *          charset: String
-     *      }
-     * } input Входящая строка с выражением
-     *
+     * @param {String | iInputData} input Входящая строка с выражением
      * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
-     *
      * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
      *
      * @memberof Poonya
@@ -557,16 +544,8 @@ class ExecutionPattern extends CodeEmitter {
      *  // По завершению выполнения шаблона будет выведено Hello World
      * </code> <br> <br>
      *
-     * @param {
-     *      String | {
-     *          raw: String,
-     *          path: String,
-     *          charset: String
-     *      }
-     * } input Входящая строка с выражением
-     *
+     * @param {String | iInputData} input Входящая строка с выражением
      * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
-     *
      * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
      *
      * @memberof Poonya
@@ -600,9 +579,7 @@ class ExpressionPattern extends CodeEmitter {
      * Пример выше выведет 22
      *
      * @param {String} input Входящая строка с выражением
-     *
      * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
-     *
      * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
      *
      * @memberof Poonya

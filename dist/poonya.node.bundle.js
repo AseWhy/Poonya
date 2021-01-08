@@ -4118,9 +4118,26 @@ module.exports = /******/ (() => {
                  */
                 constructor() {}
             }
+            /**
+             * @lends iInputData
+             * @interface iInputData
+             */
+
+            class iInputData {
+                /**
+                 * Интерфейс описывающий возвращаемые контекстом данные при поиске пути
+                 *
+                 * @constructs iInputData
+                 * @property {?String} raw Ввод шаблонизатора
+                 * @property {?String} path Путь к файлу(необязательно, если переданы сырые данные). Путь к файлу указывается относительно файла, из которого был импортирован poonya
+                 * @property {?String} charset кодировка файла, по умолчанию это utf-8
+                 */
+                constructor() {}
+            }
 
             module.exports.iContext = iContext;
             module.exports.iPathData = iPathData;
+            module.exports.iInputData = iInputData;
             module.exports.iCodeEmitter = iCodeEmitter;
             module.exports.iPoonyaObject = iPoonyaObject;
             module.exports.iPoonyaPrototype = iPoonyaPrototype;
@@ -7564,7 +7581,7 @@ module.exports = /******/ (() => {
                 /**
                  * Перенаправляет поток данных в `stream` переданный первым аргументом
                  *
-                 * @param {PoonyaOutputStream} stream поток которому необходимо передавать данные помимо этого
+                 * @param {PoonyaOutputStream|Stream} stream поток которому необходимо передавать данные помимо этого
                  * @returns`stream` Поток который был передан.
                  * @method
                  * @public
@@ -7624,16 +7641,8 @@ module.exports = /******/ (() => {
                 /**
                  * Абстрактный класс который предназначен для подготовке всех наследуемых эмитттеров.
                  *
-                 * @param {
-                 *  String | {
-                 *          raw: String,
-                 *          path: String,
-                 *          charset: String
-                 *      }
-                 * } input Входящая строка с выражением
-                 *
+                 * @param {String | iInputData} input Входящая строка с выражением
                  * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
-                 *
                  * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
                  *
                  * @memberof Poonya
@@ -7870,11 +7879,12 @@ module.exports = /******/ (() => {
                         setImmediate(() =>
                             this[RESULT](data, error, out, c_clone)
                         );
-                    } // Иначе, ждем окончания загрузки и выполняем последовательность
-                    else
+                    } else {
+                        // Иначе, ждем окончания загрузки и выполняем последовательность
                         this.on('load', () =>
                             this[RESULT](data, error, out, c_clone)
                         );
+                    }
 
                     return out;
                 }
@@ -7897,16 +7907,8 @@ module.exports = /******/ (() => {
                  * </code> <br>
                  * Т.е. код поадется туда в фигурных скобках, а все что не в них будет распознано как текст.
                  *
-                 * @param {
-                 *      String | {
-                 *          raw: String,
-                 *          path: String,
-                 *          charset: String
-                 *      }
-                 * } input Входящая строка с выражением
-                 *
+                 * @param {String | iInputData} input Входящая строка с выражением
                  * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
-                 *
                  * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
                  *
                  * @memberof Poonya
@@ -7955,16 +7957,8 @@ module.exports = /******/ (() => {
                  *  // По завершению выполнения шаблона будет выведено Hello World
                  * </code> <br> <br>
                  *
-                 * @param {
-                 *      String | {
-                 *          raw: String,
-                 *          path: String,
-                 *          charset: String
-                 *      }
-                 * } input Входящая строка с выражением
-                 *
+                 * @param {String | iInputData} input Входящая строка с выражением
                  * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
-                 *
                  * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
                  *
                  * @memberof Poonya
@@ -8001,9 +7995,7 @@ module.exports = /******/ (() => {
                  * Пример выше выведет 22
                  *
                  * @param {String} input Входящая строка с выражением
-                 *
                  * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
-                 *
                  * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
                  *
                  * @memberof Poonya

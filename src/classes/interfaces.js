@@ -49,8 +49,25 @@ class iPathData {
     constructor(){}
 }
 
+/**
+ * @lends iInputData
+ * @interface iInputData
+ */
+class iInputData {
+    /**
+     * Интерфейс описывающий возвращаемые контекстом данные при поиске пути
+     * 
+     * @constructs iInputData
+     * @property {?String} raw Ввод шаблонизатора
+     * @property {?String} path Путь к файлу(необязательно, если переданы сырые данные). Путь к файлу указывается относительно файла, из которого был импортирован poonya
+     * @property {?String} charset кодировка файла, по умолчанию это utf-8
+     */
+    constructor(){}
+}
+
 module.exports.iContext = iContext;
 module.exports.iPathData = iPathData;
+module.exports.iInputData = iInputData;
 module.exports.iCodeEmitter = iCodeEmitter;
 module.exports.iPoonyaObject = iPoonyaObject;
 module.exports.iPoonyaPrototype = iPoonyaPrototype;

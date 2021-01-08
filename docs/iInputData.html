@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: MessagePattern</title>
+    <title>JSDoc: Class: iInputData</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: MessagePattern</h1>
+    <h1 class="page-title">Class: iInputData</h1>
 
     
 
@@ -28,8 +28,7 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature">(protected) </span></span>
-            <span class="ancestors"><a href="Poonya.html">Poonya</a><a href="Poonya.Expression.html">.Expression</a></span>MessagePattern<span class="signature">(position, initial<span class="signature-attributes">nullable</span>)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>iInputData<span class="signature">()</span><span class="type-signature"></span></h2>
         
     
 </header>
@@ -42,7 +41,7 @@
     
 
     
-    <h4 class="name" id="MessagePattern"><span class="type-signature">(protected) </span>new MessagePattern<span class="signature">(position, initial<span class="signature-attributes">nullable</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="iInputData"><span class="type-signature"></span>new iInputData<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -50,7 +49,7 @@
 
 
 <div class="description">
-    Группа выражения, водержит последовательность, кторая выполняется как выражение.
+    Интерфейс описывающий возвращаемые контекстом данные при поиске пути
 </div>
 
 
@@ -61,10 +60,15 @@
 
 
 
-    <h5>Parameters:</h5>
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
     
 
-<table class="params">
+<table class="props">
     <thead>
     <tr>
         
@@ -88,44 +92,13 @@
 
         <tr>
             
-                <td class="name"><code>position</code></td>
+                <td class="name"><code>raw</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">начало выражения</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>initial</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;<a href="Token.html">Token</a>></span>
+<span class="param-type">String</span>
 
 
             
@@ -138,251 +111,79 @@
                 
                     &lt;nullable><br>
                 
-
-                
                 </td>
             
 
             
 
-            <td class="description last">иницированное значение выражения</td>
+            <td class="description last">Ввод шаблонизатора</td>
         </tr>
 
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="classes_excecution_expression_ExpressionGroup.js.html">classes/excecution/expression/ExpressionGroup.js</a>, <a href="classes_excecution_expression_ExpressionGroup.js.html#line29">line 29</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
-
-
-
-
-
-
-
-<section>
-
-<header>
-    
-        <h2><span class="attribs"><span class="type-signature">(protected) </span></span>
-            <span class="ancestors"><a href="Poonya.html">Poonya</a></span>MessagePattern<span class="signature">(input, import_s, logger)</span><span class="type-signature"></span></h2>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-    
-        
-
-    
-
-    
-    <h4 class="name" id="MessagePattern"><span class="type-signature">(protected) </span>new MessagePattern<span class="signature">(input, import_s, logger)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Шаблон сообщения, на вход нужно подавать код вида: <br> <br><code> Not formatted text... <br> Not formatted text... <br> <?prefix> { <br> &nbsp;&nbsp;&nbsp;&nbsp;// You code here <br> } <br> Not formatted text... <br> Not formatted text... <br></code> <br>Т.е. код поадется туда в фигурных скобках, а все что не в них будет распознано как текст.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
     
 
         <tr>
             
-                <td class="name"><code>input</code></td>
+                <td class="name"><code>path</code></td>
             
 
             <td class="type">
             
                 
 <span class="param-type">String</span>
-|
-
-<span class="param-type"><a href="iInputData.html">iInputData</a></span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+                    &lt;nullable><br>
+                
+                </td>
+            
 
             
 
-            <td class="description last">Входящая строка с выражением</td>
+            <td class="description last">Путь к файлу(необязательно, если переданы сырые данные). Путь к файлу указывается относительно файла, из которого был импортирован poonya</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>import_s</code></td>
+                <td class="name"><code>charset</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;String></span>
+<span class="param-type">String</span>
 
 
             
             </td>
 
             
-
-            
-
-            <td class="description last">Массив с нативными библиотеками для импорта</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>logger</code></td>
-            
-
-            <td class="type">
-            
+                <td class="attributes">
                 
-<span class="param-type">Console</span>
 
-
-            
-            </td>
-
-            
-
+                
+                    &lt;nullable><br>
+                
+                </td>
             
 
-            <td class="description last">Логгер, за интерфейс нужно взять console, с функциями log, warn, error;</td>
+            
+
+            <td class="description last">кодировка файла, по умолчанию это utf-8</td>
         </tr>
 
     
     </tbody>
 </table>
-
-
 
 
 
@@ -416,7 +217,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="poonya.js.html">poonya.js</a>, <a href="poonya.js.html#line514">line 514</a>
+        <a href="classes_interfaces.js.html">classes/interfaces.js</a>, <a href="classes_interfaces.js.html#line65">line 65</a>
     </li></ul></dd>
     
 
