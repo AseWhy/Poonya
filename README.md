@@ -1,6 +1,6 @@
 ![poo](./data/header_document_image.png)
 
-# Poonya &middot; [![Commit activity](https://img.shields.io/github/commit-activity/w/AseWhy/Poonya)](https://github.com/AseWhy/Poonya) [![Version](https://img.shields.io/badge/version-0.4.7-green)](https://github.com/AseWhy/Poonya) [![Bundle size](https://img.shields.io/github/size/AseWhy/Poonya/dist/poonya.browser.var.bundle.min.js)](https://github.com/AseWhy/Poonya/blob/master/dist/poonya.browser.var.bundle.min.js) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AseWhy/Poonya/blob/master/LICENSE)
+# Poonya &middot; [![Version](https://img.shields.io/badge/version-0.4.8-green)](https://github.com/AseWhy/Poonya) [![Bundle size](https://img.shields.io/github/size/AseWhy/Poonya/dist/poonya.browser.var.bundle.min.js)](https://github.com/AseWhy/Poonya/blob/master/dist/poonya.browser.var.bundle.min.js) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AseWhy/Poonya/blob/master/LICENSE) [![CI](https://circleci.com/gh/AseWhy/Poonya.svg?style=shield)](https://app.circleci.com/pipelines/github/AseWhy/Poonya)
 
 Poonya (пунья) - это текстовый препроцессор, **не ставящий перед собой четкого предназначения**. Вы можете использовать *poonya* для вашего чат-бота проекта, или как систему генерации веб страниц.
 

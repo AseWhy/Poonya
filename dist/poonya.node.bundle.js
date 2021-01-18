@@ -2,7 +2,7 @@ module.exports = /******/ (() => {
     // webpackBootstrap
     /******/ 'use strict';
     /******/ var __webpack_modules__ = {
-        /***/ 62: /***/ (
+        /***/ 60: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -13,7 +13,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { OPERATOR } = __webpack_require__(635);
+            const { OPERATOR } = __webpack_require__(395);
             /**
              * @lends ParserData
              * @class
@@ -149,7 +149,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 492: /***/ (
+        /***/ 124: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -160,14 +160,14 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(62),
-                { SERVICE } = __webpack_require__(635),
-                { NativeFunctionExecutionError } = __webpack_require__(707),
+            const { Operand } = __webpack_require__(60),
+                { SERVICE } = __webpack_require__(395),
+                { NativeFunctionExecutionError } = __webpack_require__(710),
                 {
                     iPoonyaObject,
                     iPoonyaPrototype,
                     iCodeEmitter,
-                } = __webpack_require__(779);
+                } = __webpack_require__(11);
             /**
              * @lends NativeFunction
              * @class
@@ -371,7 +371,7 @@ module.exports = /******/ (() => {
                         }
 
                         if (data instanceof Promise) {
-                            data.catch((err) =>
+                            data.catch(err =>
                                 reject(
                                     call_pos,
                                     new NativeFunctionExecutionError(
@@ -389,12 +389,12 @@ module.exports = /******/ (() => {
 
                     if (argc != 0) {
                         (function next() {
-                            args[i].result(context, out, reject, (p_result) => {
+                            args[i].result(context, out, reject, p_result => {
                                 p_result.result(
                                     context,
                                     out,
                                     reject,
-                                    (d_result) => {
+                                    d_result => {
                                         args_f[i] = d_result;
 
                                         if (++i >= argc) {
@@ -417,7 +417,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 358: /***/ (
+        /***/ 547: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -428,9 +428,9 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { FIELDFLAGS } = __webpack_require__(635),
-                PoonyaObject = __webpack_require__(940),
-                NativeFunction = __webpack_require__(492);
+            const { FIELDFLAGS } = __webpack_require__(395),
+                PoonyaObject = __webpack_require__(932),
+                NativeFunction = __webpack_require__(124);
             /**
              * @lends PoonyaArray
              * @class
@@ -524,7 +524,7 @@ module.exports = /******/ (() => {
                                     context,
                                     out,
                                     reject,
-                                    (result) => (output[key] = result)
+                                    result => (output[key] = result)
                                 );
                     }
 
@@ -548,7 +548,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 221: /***/ (
+        /***/ 168: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -559,7 +559,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(940);
+            const PoonyaObject = __webpack_require__(932);
             /**
              * @lends PoonyaBoolean
              * @class
@@ -648,7 +648,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 159: /***/ (
+        /***/ 981: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -659,7 +659,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(940);
+            const PoonyaObject = __webpack_require__(932);
             /**
              * @lends PoonyaInteger
              * @class
@@ -748,7 +748,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 486: /***/ (
+        /***/ 368: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -759,7 +759,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(940);
+            const PoonyaObject = __webpack_require__(932);
             /**
              * @lends PoonyaNull
              * @class
@@ -844,7 +844,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 773: /***/ (
+        /***/ 585: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -855,7 +855,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(940);
+            const PoonyaObject = __webpack_require__(932);
             /**
              * @lends PoonyaNumber
              * @class
@@ -944,7 +944,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 940: /***/ (
+        /***/ 932: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -958,13 +958,13 @@ module.exports = /******/ (() => {
             const {
                     BadKeyInvalidTypeException,
                     BadKeyProtectedFieldException,
-                } = __webpack_require__(707),
+                } = __webpack_require__(710),
                 { SUPER_CALL, GET, FIELDFLAGS, CONFIG } = __webpack_require__(
-                    635
+                    395
                 ),
-                { Cast } = __webpack_require__(270),
-                { iPoonyaObject, iPoonyaPrototype } = __webpack_require__(779),
-                NativeFunction = __webpack_require__(492);
+                { Cast } = __webpack_require__(463),
+                { iPoonyaObject, iPoonyaPrototype } = __webpack_require__(11),
+                NativeFunction = __webpack_require__(124);
             /**
              * @lends PoonyaObject
              * @class
@@ -1205,7 +1205,7 @@ module.exports = /******/ (() => {
                                     context,
                                     out,
                                     reject,
-                                    (result) => (output[key] = result)
+                                    result => (output[key] = result)
                                 );
                     }
 
@@ -1229,7 +1229,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 293: /***/ (
+        /***/ 516: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -1240,9 +1240,9 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Cast } = __webpack_require__(270);
+            const { Cast } = __webpack_require__(463);
 
-            const PoonyaObject = __webpack_require__(940);
+            const PoonyaObject = __webpack_require__(932);
             /**
              * @lends PoonyaPattern
              * @class
@@ -1312,15 +1312,13 @@ module.exports = /******/ (() => {
                 result(context, out, reject, resolve) {
                     const result = this.data.result();
                     if (result instanceof Promise)
-                        result.then((d_result) =>
+                        result.then(d_result =>
                             resolve(Cast(d_result, context))
                         );
                     else
                         result
                             .complete()
-                            .then((d_result) =>
-                                resolve(Cast(d_result, context))
-                            );
+                            .then(d_result => resolve(Cast(d_result, context)));
                 }
                 /**
                  * Сериализует строку в javascript строку
@@ -1340,7 +1338,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 406: /***/ (
+        /***/ 743: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -1352,10 +1350,10 @@ module.exports = /******/ (() => {
              */
 
             const { IS, GET, FIELDFLAGS, SUPER_CALL } = __webpack_require__(
-                    635
+                    395
                 ),
-                { iPoonyaPrototype } = __webpack_require__(779),
-                { Cast } = __webpack_require__(270);
+                { iPoonyaPrototype } = __webpack_require__(11),
+                { Cast } = __webpack_require__(463);
             /**
              * @lends PoonyaPrototype
              * @class
@@ -1380,7 +1378,7 @@ module.exports = /******/ (() => {
                 constructor(parents = [], name) {
                     super();
                     if (
-                        parents.find((e) => !(e instanceof iPoonyaPrototype)) !=
+                        parents.find(e => !(e instanceof iPoonyaPrototype)) !=
                         null
                     )
                         throw new Error(
@@ -1536,7 +1534,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 718: /***/ (
+        /***/ 643: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -1547,7 +1545,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(940);
+            const PoonyaObject = __webpack_require__(932);
             /**
              * @lends PoonyaString
              * @class
@@ -1655,7 +1653,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 606: /***/ (
+        /***/ 605: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -1666,14 +1664,14 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand, Operator } = __webpack_require__(62),
-                { CHARTYPE, OPERATOR, SERVICE } = __webpack_require__(635),
+            const { Operand, Operator } = __webpack_require__(60),
+                { CHARTYPE, OPERATOR, SERVICE } = __webpack_require__(395),
                 {
                     UnableToRecognizeTypeException,
                     TheSequenceException,
-                } = __webpack_require__(707),
-                { Cast, Tick } = __webpack_require__(270),
-                ObjectContructorCall = __webpack_require__(552);
+                } = __webpack_require__(710),
+                { Cast, Tick } = __webpack_require__(463),
+                ObjectContructorCall = __webpack_require__(662);
             /**
              * @lends MessagePattern;
              */
@@ -1715,7 +1713,7 @@ module.exports = /******/ (() => {
                  */
 
                 toString(indent) {
-                    return this.data.map((e) => e.toString(indent)).join(' ');
+                    return this.data.map(e => e.toString(indent)).join(' ');
                 }
                 /**
                  * Добавляет вхождение в выражение
@@ -1840,7 +1838,7 @@ module.exports = /******/ (() => {
                     // Stage 1 => 2 + 2 * 2 => 2 + (2 * 2)
                     if (
                         this.data.filter(
-                            (e) =>
+                            e =>
                                 e.op_p === OPERATOR.MULT ||
                                 e.op_p === OPERATOR.DIVIDE
                         ).length > 0
@@ -1890,8 +1888,8 @@ module.exports = /******/ (() => {
                     } // Stage 2 => a & b => (a) & (b)
 
                     if (
-                        this.data.filter((e) => e.op_p === OPERATOR.AND)
-                            .length > 0
+                        this.data.filter(e => e.op_p === OPERATOR.AND).length >
+                        0
                     ) {
                         let dump = Array.from(this.data),
                             stack = new ExpressionGroup(dump[0].position);
@@ -1918,8 +1916,7 @@ module.exports = /******/ (() => {
                     } // Stage 3 => a | b => (a) | (b)
 
                     if (
-                        this.data.filter((e) => e.op_p === OPERATOR.OR).length >
-                        0
+                        this.data.filter(e => e.op_p === OPERATOR.OR).length > 0
                     ) {
                         let dump = Array.from(this.data),
                             stack = new ExpressionGroup(dump[0].position);
@@ -1970,7 +1967,7 @@ module.exports = /******/ (() => {
 
                     function tick() {
                         // Получем прромежуточное значение
-                        _.data[i + 1].result(context, out, reject, (cur) => {
+                        _.data[i + 1].result(context, out, reject, cur => {
                             switch (true) {
                                 case _.data[i].equals(OPERATOR.PLUS):
                                     result += cur.toRawData();
@@ -2031,8 +2028,8 @@ module.exports = /******/ (() => {
                         });
                     }
 
-                    _.data[0].result(context, out, reject, (p_result) => {
-                        p_result.result(context, out, reject, (d_result) => {
+                    _.data[0].result(context, out, reject, p_result => {
+                        p_result.result(context, out, reject, d_result => {
                             result = d_result;
                             if (_.data.length > 1) tick();
                             else resolve(Cast(result, context));
@@ -2046,7 +2043,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 584: /***/ (
+        /***/ 565: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2057,13 +2054,13 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(62),
+            const { Operand } = __webpack_require__(60),
                 {
                     UnableToCreateAnObjectException,
                     FieldNotAFunctionException,
-                } = __webpack_require__(707),
-                { iPoonyaPrototype } = __webpack_require__(779),
-                NativeFunction = __webpack_require__(492);
+                } = __webpack_require__(710),
+                { iPoonyaPrototype } = __webpack_require__(11),
+                NativeFunction = __webpack_require__(124);
             /**
              * @lends FunctionCall
              * @protected
@@ -2108,7 +2105,7 @@ module.exports = /******/ (() => {
                         null,
                         reject,
                         true,
-                        (result) => {
+                        result => {
                             if (result.instance instanceof NativeFunction)
                                 result.instance.result(
                                     result.parent,
@@ -2163,7 +2160,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 46: /***/ (
+        /***/ 383: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2174,9 +2171,9 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(62),
-                { SERVICE, FIELDFLAGS } = __webpack_require__(635),
-                NativeFunction = __webpack_require__(492);
+            const { Operand } = __webpack_require__(60),
+                { SERVICE, FIELDFLAGS } = __webpack_require__(395),
+                NativeFunction = __webpack_require__(124);
             /**
              * @lends GetOperator
              * @protected
@@ -2220,7 +2217,7 @@ module.exports = /******/ (() => {
                         null,
                         reject,
                         true,
-                        (result) => {
+                        result => {
                             if (result.instance != null) {
                                 if (result.instance instanceof NativeFunction) {
                                     if (
@@ -2276,7 +2273,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 552: /***/ (
+        /***/ 662: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2289,8 +2286,8 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(62),
-                { SERVICE } = __webpack_require__(635);
+            const { Operand } = __webpack_require__(60),
+                { SERVICE } = __webpack_require__(395);
             /**
              * @lends ObjectContructorCall
              * @protected
@@ -2333,7 +2330,7 @@ module.exports = /******/ (() => {
                         return (
                             'new (' +
                             this.query_stack
-                                .map((e) =>
+                                .map(e =>
                                     typeof e !== 'string'
                                         ? `[${e.toString()}]`
                                         : e.toString()
@@ -2372,7 +2369,7 @@ module.exports = /******/ (() => {
                         return `(${
                             this.initial
                         }) <- (${this.query_stack
-                            .map((e) =>
+                            .map(e =>
                                 typeof e !== 'string'
                                     ? `[${e.toString()}]`
                                     : e.toString()
@@ -2411,7 +2408,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 51: /***/ (
+        /***/ 670: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2422,7 +2419,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(62);
+            const { Operand } = __webpack_require__(60);
             /**
              * @lends TernarOperator
              * @protected
@@ -2482,7 +2479,7 @@ module.exports = /******/ (() => {
                 result(context, out, reject, resolve) {
                     const _ = this;
 
-                    _.condition.result(context, out, reject, (result) => {
+                    _.condition.result(context, out, reject, result => {
                         if (context.toBooleanResult(result))
                             _.v_o.result(context, out, reject, resolve);
                         else _.v_t.result(context, out, reject, resolve);
@@ -2495,7 +2492,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 350: /***/ (
+        /***/ 273: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2506,7 +2503,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(270);
+            const { Tick } = __webpack_require__(463);
             /**
              * @lends IfStatement
              * @protected
@@ -2566,7 +2563,7 @@ module.exports = /******/ (() => {
                 result(context, out, reject, resolve) {
                     const _ = this;
 
-                    _.condition.result(context, out, reject, (result) => {
+                    _.condition.result(context, out, reject, result => {
                         if (context.toBooleanResult(result))
                             _.body_true.result(context, out, reject, resolve);
                         else if (_.body_false != null)
@@ -2581,7 +2578,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 674: /***/ (
+        /***/ 27: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2592,7 +2589,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(270);
+            const { Tick } = __webpack_require__(463);
             /**
              * @lends OutStatement
              * @protected
@@ -2640,17 +2637,12 @@ module.exports = /******/ (() => {
                  */
 
                 result(context, out, reject, resolve) {
-                    this.expression.result(context, out, reject, (p_result) => {
+                    this.expression.result(context, out, reject, p_result => {
                         if (p_result != null)
-                            p_result.result(
-                                context,
-                                out,
-                                reject,
-                                (d_result) => {
-                                    out.write(d_result);
-                                    Tick(resolve, d_result);
-                                }
-                            );
+                            p_result.result(context, out, reject, d_result => {
+                                out.write(d_result);
+                                Tick(resolve, d_result);
+                            });
                         else Tick(resolve, null);
                     });
                 }
@@ -2661,7 +2653,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 834: /***/ (
+        /***/ 858: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2673,11 +2665,11 @@ module.exports = /******/ (() => {
              * @license MIT
              */
 
-            const PoonyaArray = __webpack_require__(358),
-                { Tick } = __webpack_require__(270),
+            const PoonyaArray = __webpack_require__(547),
+                { Tick } = __webpack_require__(463),
                 {
                     TheFieldMustBeAnArrayInstanceExceprion,
-                } = __webpack_require__(707);
+                } = __webpack_require__(710);
             /**
              * @lends PushStatement
              * @protected
@@ -2713,7 +2705,7 @@ module.exports = /******/ (() => {
                     return (
                         '(' +
                         this.query_stack
-                            .map((e) => (typeof e === 'number' ? `[${e}]` : e))
+                            .map(e => (typeof e === 'number' ? `[${e}]` : e))
                             .join(' => ') +
                         ') <- ' +
                         this.value.toString(indent + '\t')
@@ -2742,17 +2734,12 @@ module.exports = /******/ (() => {
                         PoonyaArray,
                         reject,
                         false,
-                        (array) => {
+                        array => {
                             if (array != null) {
-                                _.value.result(
-                                    context,
-                                    out,
-                                    reject,
-                                    (result) => {
-                                        array.push(context, result);
-                                        Tick(resolve, result);
-                                    }
-                                );
+                                _.value.result(context, out, reject, result => {
+                                    array.push(context, result);
+                                    Tick(resolve, result);
+                                });
                             } else {
                                 reject(
                                     _.position,
@@ -2771,7 +2758,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 511: /***/ (
+        /***/ 552: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2782,9 +2769,9 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { TheFieldMustBeNumberException } = __webpack_require__(707),
-                { Tick } = __webpack_require__(270),
-                PoonyaNumber = __webpack_require__(773);
+            const { TheFieldMustBeNumberException } = __webpack_require__(710),
+                { Tick } = __webpack_require__(463),
+                PoonyaNumber = __webpack_require__(585);
             /**
              * @lends RepeatStatement;
              * @protected
@@ -2844,8 +2831,8 @@ module.exports = /******/ (() => {
                     let _ = this,
                         difference;
 
-                    _.from.result(context, out, reject, (from_d) => {
-                        _.to.result(context, out, reject, (to_d) => {
+                    _.from.result(context, out, reject, from_d => {
+                        _.to.result(context, out, reject, to_d => {
                             if (!(from_d instanceof PoonyaNumber))
                                 reject(
                                     _.from.position,
@@ -2856,8 +2843,8 @@ module.exports = /******/ (() => {
                                     _.to.position,
                                     new TheFieldMustBeNumberException('To')
                                 );
-                            from_d.result(context, out, reject, (from) => {
-                                to_d.result(context, out, reject, (to) => {
+                            from_d.result(context, out, reject, from => {
+                                to_d.result(context, out, reject, to => {
                                     difference = from < to ? 1 : -1;
                                     from = Math.floor(from);
                                     to = Math.floor(to);
@@ -2899,7 +2886,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 436: /***/ (
+        /***/ 31: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2910,19 +2897,19 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const ExpressionGroup = __webpack_require__(606),
+            const ExpressionGroup = __webpack_require__(605),
                 {
                     iPoonyaObject,
                     iPoonyaPrototype,
                     iContext,
-                } = __webpack_require__(779),
+                } = __webpack_require__(11),
                 {
                     GetFieldOfNullException,
                     TheFieldNotHasDeclaredExceprion,
-                } = __webpack_require__(707),
-                { GET } = __webpack_require__(635),
-                { Tick } = __webpack_require__(270),
-                PoonyaObject = __webpack_require__(940);
+                } = __webpack_require__(710),
+                { GET } = __webpack_require__(395),
+                { Tick } = __webpack_require__(463),
+                PoonyaObject = __webpack_require__(932);
             /**
              * @lends ResetStatement
              * @protected
@@ -2958,7 +2945,7 @@ module.exports = /******/ (() => {
                     return (
                         '(' +
                         this.query_stack
-                            .map((e) => (typeof e === 'number' ? `[${e}]` : e))
+                            .map(e => (typeof e === 'number' ? `[${e}]` : e))
                             .join(' => ') +
                         ') = ' +
                         this.value.toString(indent + '\t')
@@ -3006,29 +2993,24 @@ module.exports = /******/ (() => {
                                 target instanceof iPoonyaObject ||
                                 target instanceof iContext
                             ) {
-                                _.value.result(
-                                    context,
-                                    out,
-                                    reject,
-                                    (value) => {
-                                        if (target instanceof iContext) {
-                                            if (target.has(of_p)) {
-                                                target.set(of_p, value);
-                                            } else {
-                                                reject(
-                                                    _.position,
-                                                    new TheFieldNotHasDeclaredExceprion(
-                                                        of_p
-                                                    )
-                                                );
-                                            }
+                                _.value.result(context, out, reject, value => {
+                                    if (target instanceof iContext) {
+                                        if (target.has(of_p)) {
+                                            target.set(of_p, value);
                                         } else {
-                                            target.set(context, of_p, value);
+                                            reject(
+                                                _.position,
+                                                new TheFieldNotHasDeclaredExceprion(
+                                                    of_p
+                                                )
+                                            );
                                         }
-
-                                        Tick(resolve, value);
+                                    } else {
+                                        target.set(context, of_p, value);
                                     }
-                                );
+
+                                    Tick(resolve, value);
+                                });
                             } else
                                 reject(
                                     _.position,
@@ -3045,7 +3027,7 @@ module.exports = /******/ (() => {
                                 context,
                                 null,
                                 reject,
-                                (result) => get(result.toRawData())
+                                result => get(result.toRawData())
                             );
                         else get(query_stack[index]);
                     }
@@ -3059,7 +3041,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 113: /***/ (
+        /***/ 247: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3070,7 +3052,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(270);
+            const { Tick } = __webpack_require__(463);
             /**
              * @lends SequenceGroup;
              * @protected
@@ -3142,7 +3124,7 @@ module.exports = /******/ (() => {
                  */
 
                 toString(indent = 0) {
-                    return `{\n${indent}${this.Sequence.map((e) =>
+                    return `{\n${indent}${this.Sequence.map(e =>
                         e.toString(indent + '\t')
                     ).join('\n\n' + indent)}\n${indent.substring(
                         0,
@@ -3156,7 +3138,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 998: /***/ (
+        /***/ 408: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3167,7 +3149,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(270);
+            const { Tick } = __webpack_require__(463);
             /**
              * @lends SequenceMainGroup;
              * @protected
@@ -3226,7 +3208,7 @@ module.exports = /******/ (() => {
                                     context,
                                     out,
                                     reject,
-                                    (p_result) => {
+                                    p_result => {
                                         Tick(resolve, p_result);
                                     }
                                 );
@@ -3250,7 +3232,7 @@ module.exports = /******/ (() => {
                  */
 
                 toString(indent = '\t') {
-                    return `{\n${indent}${this.Sequence.map((e) =>
+                    return `{\n${indent}${this.Sequence.map(e =>
                         e.toString(indent + '\t')
                     ).join('\n\n' + indent)}\n${indent.substring(
                         0,
@@ -3264,7 +3246,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 259: /***/ (
+        /***/ 49: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3277,8 +3259,8 @@ module.exports = /******/ (() => {
 
             const {
                     TheFieldAlreadyHasBeenDeclaredException,
-                } = __webpack_require__(707),
-                { Tick } = __webpack_require__(270);
+                } = __webpack_require__(710),
+                { Tick } = __webpack_require__(463);
             /**
              * @lends SetStatement
              * @protected
@@ -3334,7 +3316,7 @@ module.exports = /******/ (() => {
                     const _ = this;
 
                     if (!context.has(_.name, 'up')) {
-                        _.value.result(context, out, reject, (result) => {
+                        _.value.result(context, out, reject, result => {
                             context.set(_.name, result, 'up');
                             Tick(resolve, result);
                         });
@@ -3352,7 +3334,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 114: /***/ (
+        /***/ 292: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3363,7 +3345,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(270);
+            const { Tick } = __webpack_require__(463);
             /**
              * @lends WhileStatement
              * @protected
@@ -3420,7 +3402,7 @@ module.exports = /******/ (() => {
                     let _ = this;
 
                     (function tick(result) {
-                        _.condition.result(context, out, reject, (d_result) => {
+                        _.condition.result(context, out, reject, d_result => {
                             if (context.toBooleanResult(d_result)) {
                                 _.body.result(context, out, reject, tick);
                             } else {
@@ -3437,7 +3419,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 707: /***/ (
+        /***/ 710: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3448,7 +3430,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { SERVICE } = __webpack_require__(635),
+            const { SERVICE } = __webpack_require__(395),
                 { dirname } = __webpack_require__(622);
             /**
              * Класс ошибки шаблонизатора
@@ -4021,7 +4003,7 @@ module.exports = /******/ (() => {
                 constructor(path) {
                     super(
                         `${path
-                            .map((e) =>
+                            .map(e =>
                                 typeof e === 'number'
                                     ? '[' + e + ']'
                                     : e.toString()
@@ -4071,7 +4053,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 779: /***/ (module) => {
+        /***/ 11: /***/ module => {
             /**
              * @file src/interfaces.js
              * @description Тут собраны интерфейсы, для боллее удобного последующего сравнения объектов
@@ -4146,7 +4128,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 635: /***/ (
+        /***/ 395: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -4309,7 +4291,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 392: /***/ (
+        /***/ 305: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -4320,34 +4302,34 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaPattern = __webpack_require__(293);
+            const PoonyaPattern = __webpack_require__(516);
 
             const {
                     GetFieldOfNullException,
                     IsNotAConstructorException,
                     PoonyaException,
-                } = __webpack_require__(707),
-                { GET, SERVICE, IS } = __webpack_require__(635),
-                { Cast, toBytes } = __webpack_require__(270),
+                } = __webpack_require__(710),
+                { GET, SERVICE, IS } = __webpack_require__(395),
+                { Cast, toBytes } = __webpack_require__(463),
                 {
                     iContext,
                     iPoonyaPrototype,
                     iPathData,
                     iCodeEmitter,
                     iPoonyaObject,
-                } = __webpack_require__(779),
-                { PoonyaStaticLibrary } = __webpack_require__(239),
-                { parser } = __webpack_require__(909),
-                lexer = __webpack_require__(513),
-                NativeFunction = __webpack_require__(492),
-                ExpressionGroup = __webpack_require__(606),
-                PoonyaObject = __webpack_require__(940),
-                PoonyaArray = __webpack_require__(358),
-                PoonyaInteger = __webpack_require__(159),
-                PoonyaNumber = __webpack_require__(773),
-                PoonyaString = __webpack_require__(718),
-                PoonyaBoolean = __webpack_require__(221),
-                PoonyaNull = __webpack_require__(486);
+                } = __webpack_require__(11),
+                { PoonyaStaticLibrary } = __webpack_require__(740),
+                { parser } = __webpack_require__(693),
+                lexer = __webpack_require__(768),
+                NativeFunction = __webpack_require__(124),
+                ExpressionGroup = __webpack_require__(605),
+                PoonyaObject = __webpack_require__(932),
+                PoonyaArray = __webpack_require__(547),
+                PoonyaInteger = __webpack_require__(981),
+                PoonyaNumber = __webpack_require__(585),
+                PoonyaString = __webpack_require__(643),
+                PoonyaBoolean = __webpack_require__(168),
+                PoonyaNull = __webpack_require__(368);
             /**
              * @lends Heap
              * @class
@@ -4486,14 +4468,14 @@ module.exports = /******/ (() => {
                         ...initial
                             .map(
                                 // Есл это хип
-                                (e) =>
+                                e =>
                                     e instanceof Heap // То ничего не делаем
                                         ? e // Иначе, если это объект
                                         : typeof e === 'object' // Создаем новый хип с ним
                                         ? new Heap(this, e) // Если это не объект вставляем вместо него null
                                         : null // Удаляем все не объекты
                             )
-                            .filter((e) => e !== null)
+                            .filter(e => e !== null)
                     );
                 }
                 /**
@@ -4531,7 +4513,8 @@ module.exports = /******/ (() => {
                                         -1,
                                         SERVICE.CONSTRUCTORS.OBJECT,
                                         reject,
-                                        (p_target) => (target = p_target)
+                                        new Array(),
+                                        p_target => (target = p_target)
                                     );
                                     libraries[i].importTo(target, this, reject);
                                     this.levels[0].set(
@@ -4576,8 +4559,8 @@ module.exports = /******/ (() => {
                                     Math.random() * Number.MAX_SAFE_INTEGER
                                 ).toString(16)
                         )
-                            .catch((error) => rej(error))
-                            .then((result) => {
+                            .catch(error => rej(error))
+                            .then(result => {
                                 result.result(
                                     this,
                                     out,
@@ -4813,7 +4796,7 @@ module.exports = /******/ (() => {
                                 _,
                                 null,
                                 reject,
-                                (result) => {
+                                result => {
                                     get(result.toRawData());
                                 }
                             );
@@ -4890,7 +4873,7 @@ module.exports = /******/ (() => {
                         iPoonyaPrototype,
                         reject,
                         false,
-                        (prototype) => {
+                        prototype => {
                             let init = new Object(),
                                 cur = 0,
                                 from =
@@ -4979,8 +4962,7 @@ module.exports = /******/ (() => {
                                                 _,
                                                 null,
                                                 reject,
-                                                (result) =>
-                                                    set(entry[0], result)
+                                                result => set(entry[0], result)
                                             );
                                         else set(entry[0], entry[1]);
                                     } else next();
@@ -5022,7 +5004,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 239: /***/ (
+        /***/ 740: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -5036,10 +5018,10 @@ module.exports = /******/ (() => {
             const Module = __webpack_require__(282),
                 { readdirSync, readFile } = __webpack_require__(747),
                 { join, normalize, resolve } = __webpack_require__(622),
-                { NAMESPACE, SERVICE } = __webpack_require__(635),
-                { IOError } = __webpack_require__(707),
-                NativeFunction = __webpack_require__(492),
-                PoonyaPrototype = __webpack_require__(406); // Пространство модулей в глобальном контексте
+                { NAMESPACE, SERVICE } = __webpack_require__(395),
+                { IOError } = __webpack_require__(710),
+                NativeFunction = __webpack_require__(124),
+                PoonyaPrototype = __webpack_require__(743); // Пространство модулей в глобальном контексте
 
             const modules = Symbol.for('Modules');
 
@@ -5169,7 +5151,7 @@ module.exports = /******/ (() => {
                                         SERVICE.CONSTRUCTORS.NULL,
                                         reject,
                                         new Array(),
-                                        (result) =>
+                                        result =>
                                             parent.set(context, key, result)
                                     );
                                 // [1]
@@ -5180,7 +5162,7 @@ module.exports = /******/ (() => {
                                         SERVICE.CONSTRUCTORS.INTEGER,
                                         reject,
                                         new Array(),
-                                        (result) =>
+                                        result =>
                                             parent.set(context, key, result)
                                     );
                                 break;
@@ -5194,7 +5176,7 @@ module.exports = /******/ (() => {
                                         SERVICE.CONSTRUCTORS.NULL,
                                         reject,
                                         new Array(),
-                                        (result) =>
+                                        result =>
                                             parent.set(context, key, result)
                                     );
                                 // [1]
@@ -5205,7 +5187,7 @@ module.exports = /******/ (() => {
                                         SERVICE.CONSTRUCTORS.NUMBER,
                                         reject,
                                         new Array(),
-                                        (result) =>
+                                        result =>
                                             parent.set(context, key, result)
                                     );
                                 break;
@@ -5218,7 +5200,7 @@ module.exports = /******/ (() => {
                                     SERVICE.CONSTRUCTORS.STRING,
                                     reject,
                                     new Array(),
-                                    (result) => parent.set(context, key, result)
+                                    result => parent.set(context, key, result)
                                 );
                                 break;
 
@@ -5230,7 +5212,7 @@ module.exports = /******/ (() => {
                                     SERVICE.CONSTRUCTORS.STRING,
                                     reject,
                                     new Array(),
-                                    (result) => parent.set(context, key, result)
+                                    result => parent.set(context, key, result)
                                 );
                                 break;
 
@@ -5264,7 +5246,7 @@ module.exports = /******/ (() => {
                                     SERVICE.CONSTRUCTORS.BOOLEAN,
                                     reject,
                                     new Array(),
-                                    (result) => parent.set(context, key, result)
+                                    result => parent.set(context, key, result)
                                 );
                                 break;
 
@@ -5278,7 +5260,7 @@ module.exports = /******/ (() => {
                                         SERVICE.CONSTRUCTORS.NULL,
                                         reject,
                                         new Array(),
-                                        (result) =>
+                                        result =>
                                             parent.set(context, key, result)
                                     );
                                 else {
@@ -5290,7 +5272,7 @@ module.exports = /******/ (() => {
                                             SERVICE.CONSTRUCTORS.OBJECT,
                                             reject,
                                             new Array(),
-                                            (target) => {
+                                            target => {
                                                 value.importTo(
                                                     target,
                                                     context,
@@ -5311,7 +5293,7 @@ module.exports = /******/ (() => {
                                             SERVICE.CONSTRUCTORS.ARRAY,
                                             reject,
                                             new Array(),
-                                            (result) =>
+                                            result =>
                                                 parent.set(context, key, result)
                                         );
                                     } else {
@@ -5322,7 +5304,7 @@ module.exports = /******/ (() => {
                                             SERVICE.CONSTRUCTORS.OBJECT,
                                             reject,
                                             new Array(),
-                                            (result) =>
+                                            result =>
                                                 parent.set(context, key, result)
                                         );
                                     }
@@ -5370,7 +5352,7 @@ module.exports = /******/ (() => {
              * @protected
              */
 
-            let Import = (import_statements) => {
+            let Import = import_statements => {
                 if (!(import_statements instanceof Array))
                     throw new TypeError('import_statements must be Array');
                 const statements = new Array();
@@ -5410,7 +5392,7 @@ module.exports = /******/ (() => {
 
                 require(id) {
                     if (id === 'poonya') {
-                        return __webpack_require__(294);
+                        return __webpack_require__(110);
                     } else {
                         return super.require(id);
                     }
@@ -5444,7 +5426,7 @@ module.exports = /******/ (() => {
                 cur.paths = [];
                 cur.loaded = true;
                 cur.file = path;
-                return new Promise((res) => {
+                return new Promise(res => {
                     readFile(path, 'utf-8', (err, data) => {
                         if (err) throw new IOError(path);
 
@@ -5463,7 +5445,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 176: /***/ (
+        /***/ 642: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -5474,8 +5456,8 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { CHARTYPE } = __webpack_require__(635),
-                { fromBytes } = __webpack_require__(270);
+            const { CHARTYPE } = __webpack_require__(395),
+                { fromBytes } = __webpack_require__(463);
             /**
              * @lends Token
              * @class
@@ -5567,7 +5549,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 513: /***/ (
+        /***/ 768: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -5578,8 +5560,8 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { CHARTYPE } = __webpack_require__(635),
-                Token = __webpack_require__(176);
+            const { CHARTYPE } = __webpack_require__(395),
+                Token = __webpack_require__(642);
             /**
              * Лексер, который производит лексический разбор подаваемого текста в буффере
              *
@@ -5610,7 +5592,7 @@ module.exports = /******/ (() => {
                     buff.splice(0, buff.length);
                 };
 
-                const append = (index) => {
+                const append = index => {
                     buff.push(input[index - 1], input[index]);
                 };
 
@@ -5821,7 +5803,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 144: /***/ (
+        /***/ 513: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -5834,11 +5816,11 @@ module.exports = /******/ (() => {
 
             const { readFile } = __webpack_require__(747),
                 { join, dirname } = __webpack_require__(622),
-                { maybeEquals } = __webpack_require__(270),
-                { CHARTYPE } = __webpack_require__(635),
-                { IOError } = __webpack_require__(707),
-                Exceptions = __webpack_require__(707),
-                lexer = __webpack_require__(513);
+                { maybeEquals } = __webpack_require__(463),
+                { CHARTYPE } = __webpack_require__(395),
+                { IOError } = __webpack_require__(710),
+                Exceptions = __webpack_require__(710),
+                lexer = __webpack_require__(768);
             /**
              * Препроцессораня функция, линкует файлы.
              *
@@ -5865,7 +5847,7 @@ module.exports = /******/ (() => {
                                 dirname(parent_path),
                                 data[i + 1].data.toString()
                             );
-                            content = new Promise((res) => {
+                            content = new Promise(res => {
                                 readFile(path, (err, data) => {
                                     if (err) throw new IOError(path);
                                     res(data);
@@ -5906,7 +5888,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 909: /***/ (
+        /***/ 693: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -5935,24 +5917,24 @@ module.exports = /******/ (() => {
                     CriticalParserErrorNoRawDataTransmittedException,
                     CriticalParserErrorUnexpectedEndOfExpression,
                     ParserUnfinishedNotationException,
-                } = __webpack_require__(707),
-                { maybeEquals, countKeys } = __webpack_require__(270),
-                { CHARTYPE, SERVICE } = __webpack_require__(635),
-                FunctionCall = __webpack_require__(584),
-                ObjectContructorCall = __webpack_require__(552),
-                TernarOperator = __webpack_require__(51),
-                ExpressionGroup = __webpack_require__(606),
-                GetOperator = __webpack_require__(46),
-                IfStatement = __webpack_require__(350),
-                SequenceGroup = __webpack_require__(113),
-                OutStatement = __webpack_require__(674),
-                WhileStatement = __webpack_require__(114),
-                RepeatStatement = __webpack_require__(511),
-                SetStatement = __webpack_require__(259),
-                ResetStatement = __webpack_require__(436),
-                PushStatement = __webpack_require__(834),
-                SequenceMainGroup = __webpack_require__(998),
-                linker = __webpack_require__(144);
+                } = __webpack_require__(710),
+                { maybeEquals, countKeys } = __webpack_require__(463),
+                { CHARTYPE, SERVICE } = __webpack_require__(395),
+                FunctionCall = __webpack_require__(565),
+                ObjectContructorCall = __webpack_require__(662),
+                TernarOperator = __webpack_require__(670),
+                ExpressionGroup = __webpack_require__(605),
+                GetOperator = __webpack_require__(383),
+                IfStatement = __webpack_require__(273),
+                SequenceGroup = __webpack_require__(247),
+                OutStatement = __webpack_require__(27),
+                WhileStatement = __webpack_require__(292),
+                RepeatStatement = __webpack_require__(552),
+                SetStatement = __webpack_require__(49),
+                ResetStatement = __webpack_require__(31),
+                PushStatement = __webpack_require__(858),
+                SequenceMainGroup = __webpack_require__(408),
+                linker = __webpack_require__(513);
             /**
              * Парсит вызов функции, возвращает объект вызова функции, и позицию с которой можно продолжить прасинг
              *
@@ -5982,7 +5964,7 @@ module.exports = /******/ (() => {
                     ',',
                     Infinity,
                     `(${query_stack
-                        .map((e) => (typeof e === 'number' ? `[${e}]` : e))
+                        .map(e => (typeof e === 'number' ? `[${e}]` : e))
                         .join(' => ')})()`
                 );
                 return {
@@ -7362,7 +7344,7 @@ module.exports = /******/ (() => {
                                 0,
                                 await linker(
                                     buffer.filter(
-                                        (e) => e.type !== CHARTYPE.SPACE
+                                        e => e.type !== CHARTYPE.SPACE
                                     ),
                                     parent_path,
                                     reject
@@ -7397,7 +7379,7 @@ module.exports = /******/ (() => {
                                 0,
                                 await linker(
                                     buffer.filter(
-                                        (e) => e.type !== CHARTYPE.SPACE
+                                        e => e.type !== CHARTYPE.SPACE
                                     ),
                                     parent_path,
                                     reject
@@ -7438,7 +7420,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 174: /***/ (
+        /***/ 684: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -7516,23 +7498,23 @@ module.exports = /******/ (() => {
                 { readFile } = __webpack_require__(747),
                 { Stream } = __webpack_require__(413),
                 { normalize, extname, join } = __webpack_require__(622),
-                { IOError, PoonyaException } = __webpack_require__(707),
-                { Import, ImportDir, ImportFile } = __webpack_require__(239),
-                { Context, Heap } = __webpack_require__(392),
+                { IOError, PoonyaException } = __webpack_require__(710),
+                { Import, ImportDir, ImportFile } = __webpack_require__(740),
+                { Context, Heap } = __webpack_require__(305),
                 { parser, parseExpression, parserMP } = __webpack_require__(
-                    909
+                    693
                 ),
-                { SERVICE } = __webpack_require__(635),
+                { SERVICE } = __webpack_require__(395),
                 {
                     toFixed,
                     toBytes,
                     fromBytes,
                     setImmediate,
-                } = __webpack_require__(270),
+                } = __webpack_require__(463),
                 { iPoonyaConstructsData, iCodeEmitter } = __webpack_require__(
-                    779
+                    11
                 ),
-                lexer = __webpack_require__(513); // Private fields
+                lexer = __webpack_require__(768); // Private fields
 
             const RESULT = Symbol('RESULT'),
                 INIT = Symbol('INIT');
@@ -7627,7 +7609,7 @@ module.exports = /******/ (() => {
 
                 complete() {
                     if (!this._ended)
-                        return new Promise((res) =>
+                        return new Promise(res =>
                             this.on('end', () => res(this._data))
                         );
                     else return this._data;
@@ -8020,16 +8002,16 @@ module.exports = /******/ (() => {
                 }
 
                 [RESULT](data, error, c_clone) {
-                    return new Promise((res) => {
+                    return new Promise(res => {
                         if (data instanceof Context) {
                             if (c_clone) {
                                 const context = data.clone();
                                 context.import(this.libraries, error);
-                                this.data.result(context, [], error, (result) =>
+                                this.data.result(context, [], error, result =>
                                     result.result(context, null, null, res)
                                 );
                             } else {
-                                this.data.result(data, [], error, (result) =>
+                                this.data.result(data, [], error, result =>
                                     result.result(data, null, null, res)
                                 );
                             }
@@ -8040,7 +8022,7 @@ module.exports = /******/ (() => {
                                     error,
                                     ...data
                                 );
-                                this.data.result(context, [], error, (result) =>
+                                this.data.result(context, [], error, result =>
                                     result.result(context, null, null, res)
                                 );
                             } else {
@@ -8049,7 +8031,7 @@ module.exports = /******/ (() => {
                                     error,
                                     ...data
                                 );
-                                this.data.result(context, [], error, (result) =>
+                                this.data.result(context, [], error, result =>
                                     result.result(context, null, null, res)
                                 );
                             }
@@ -8073,7 +8055,7 @@ module.exports = /******/ (() => {
                 ) {
                     const _ = this;
 
-                    return new Promise((res) => {
+                    return new Promise(res => {
                         if (_.loaded) _[RESULT](data, error, c_clone).then(res);
                         else
                             _.on('load', () =>
@@ -8097,8 +8079,8 @@ module.exports = /******/ (() => {
                     throw new Error('Param "data" must be an object.');
                 libs = libs // Если передан массив с массивами
                     .flat(Infinity) // Фильтурем список библиотек целевых библиотек, если среди них есть не строки отбрасываем их.
-                    .filter((e) => typeof e != 'string');
-                return new Promise((res) => {
+                    .filter(e => typeof e != 'string');
+                return new Promise(res => {
                     if (SERVICE.LOADED) {
                         res(
                             new Context(
@@ -8193,7 +8175,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 294: /***/ (
+        /***/ 110: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -8204,17 +8186,17 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            module.exports.FIELDFLAGS = __webpack_require__(635).FIELDFLAGS;
-            module.exports.Exceptions = __webpack_require__(707);
+            module.exports.FIELDFLAGS = __webpack_require__(395).FIELDFLAGS;
+            module.exports.Exceptions = __webpack_require__(710);
             module.exports.PoonyaStaticLibrary = __webpack_require__(
-                239
+                740
             ).PoonyaStaticLibrary;
-            module.exports.PoonyaPrototype = __webpack_require__(406);
+            module.exports.PoonyaPrototype = __webpack_require__(743);
 
             /***/
         },
 
-        /***/ 270: /***/ (
+        /***/ 463: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -8225,15 +8207,15 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { SERVICE } = __webpack_require__(635),
-                { Operand } = __webpack_require__(62),
+            const { SERVICE } = __webpack_require__(395),
+                { Operand } = __webpack_require__(60),
                 {
                     iPoonyaObject,
                     iPoonyaPrototype,
                     iCodeEmitter,
-                } = __webpack_require__(779),
+                } = __webpack_require__(11),
                 { nextTick } = __webpack_require__(765),
-                NativeFunction = __webpack_require__(492);
+                NativeFunction = __webpack_require__(124);
             /**
              * Фукция которая преобразует нативное значение в значение Poonya
              *
@@ -8263,7 +8245,7 @@ module.exports = /******/ (() => {
                             SERVICE.CONSTRUCTORS.INTEGER,
                             null,
                             parents_three,
-                            (d_result) => (result = d_result)
+                            d_result => (result = d_result)
                         );
                         break;
 
@@ -8274,7 +8256,7 @@ module.exports = /******/ (() => {
                             SERVICE.CONSTRUCTORS.NUMBER,
                             null,
                             parents_three,
-                            (d_result) => (result = d_result)
+                            d_result => (result = d_result)
                         );
                         break;
 
@@ -8285,7 +8267,7 @@ module.exports = /******/ (() => {
                             SERVICE.CONSTRUCTORS.STRING,
                             null,
                             parents_three,
-                            (d_result) => (result = d_result)
+                            d_result => (result = d_result)
                         );
                         break;
 
@@ -8296,7 +8278,7 @@ module.exports = /******/ (() => {
                             SERVICE.CONSTRUCTORS.STRING,
                             null,
                             parents_three,
-                            (d_result) => (result = d_result)
+                            d_result => (result = d_result)
                         );
                         break;
 
@@ -8307,7 +8289,7 @@ module.exports = /******/ (() => {
                             SERVICE.CONSTRUCTORS.BOOLEAN,
                             null,
                             parents_three,
-                            (d_result) => (result = d_result)
+                            d_result => (result = d_result)
                         );
                         break;
 
@@ -8318,7 +8300,7 @@ module.exports = /******/ (() => {
                             SERVICE.CONSTRUCTORS.NULL,
                             null,
                             parents_three,
-                            (d_result) => (result = d_result)
+                            d_result => (result = d_result)
                         );
                         break;
 
@@ -8331,7 +8313,7 @@ module.exports = /******/ (() => {
                                     SERVICE.CONSTRUCTORS.NULL,
                                     null,
                                     parents_three,
-                                    (d_result) => (result = d_result)
+                                    d_result => (result = d_result)
                                 );
                                 break;
 
@@ -8349,7 +8331,7 @@ module.exports = /******/ (() => {
                                     SERVICE.CONSTRUCTORS.PATTERN,
                                     null,
                                     parents_three,
-                                    (d_result) => (result = d_result)
+                                    d_result => (result = d_result)
                                 );
                                 break;
 
@@ -8362,7 +8344,7 @@ module.exports = /******/ (() => {
                                         SERVICE.CONSTRUCTORS.ARRAY,
                                         null,
                                         parents_three,
-                                        (d_result) => (result = d_result)
+                                        d_result => (result = d_result)
                                     );
                                 else
                                     context.createObject(
@@ -8371,7 +8353,7 @@ module.exports = /******/ (() => {
                                         SERVICE.CONSTRUCTORS.OBJECT,
                                         null,
                                         parents_three,
-                                        (d_result) => (result = d_result)
+                                        d_result => (result = d_result)
                                     );
                                 break;
                         }
@@ -8509,37 +8491,37 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 614: /***/ (module) => {
+        /***/ 614: /***/ module => {
             module.exports = require('events');
 
             /***/
         },
 
-        /***/ 747: /***/ (module) => {
+        /***/ 747: /***/ module => {
             module.exports = require('fs');
 
             /***/
         },
 
-        /***/ 282: /***/ (module) => {
+        /***/ 282: /***/ module => {
             module.exports = require('module');
 
             /***/
         },
 
-        /***/ 622: /***/ (module) => {
+        /***/ 622: /***/ module => {
             module.exports = require('path');
 
             /***/
         },
 
-        /***/ 765: /***/ (module) => {
+        /***/ 765: /***/ module => {
             module.exports = require('process');
 
             /***/
         },
 
-        /***/ 413: /***/ (module) => {
+        /***/ 413: /***/ module => {
             module.exports = require('stream');
 
             /***/
@@ -8550,6 +8532,7 @@ module.exports = /******/ (() => {
     /************************************************************************/
     /******/ /******/ var __webpack_module_cache__ = {}; // The require function
     /******/
+
     /******/ /******/ function __webpack_require__(moduleId) {
         /******/ // Check if module is in cache
         /******/ if (__webpack_module_cache__[moduleId]) {
@@ -8563,21 +8546,25 @@ module.exports = /******/ (() => {
             /******/
         }); // Execute the module function
         /******/
+
         /******/ /******/ __webpack_modules__[moduleId](
             module,
             module.exports,
             __webpack_require__
         ); // Flag the module as loaded
         /******/
+
         /******/ /******/ module.loaded = true; // Return the exports of the module
         /******/
+
         /******/ /******/ return module.exports;
         /******/
     } /* webpack/runtime/node module decorator */
     /******/
+
     /************************************************************************/
     /******/ /******/ (() => {
-        /******/ __webpack_require__.nmd = (module) => {
+        /******/ __webpack_require__.nmd = module => {
             /******/ module.paths = [];
             /******/ if (!module.children) module.children = [];
             /******/ return module;
@@ -8586,7 +8573,8 @@ module.exports = /******/ (() => {
         /******/
     })(); // module exports must be returned from runtime so entry inlining is disabled // startup // Load entry module and return exports
     /******/
+
     /************************************************************************/
-    /******/ /******/ /******/ /******/ return __webpack_require__(174);
+    /******/ /******/ /******/ /******/ return __webpack_require__(684);
     /******/
 })();
