@@ -4,7 +4,7 @@
 
 Poonya is a text-based preprocessor **with no clear purpose**. You can use *poonya* for your project chatbot, or as a web page generation system.
 
-## Начиная
+## Get-started
 Punya can be used in both the browser and NodeJS. You can connect *poonya* using:
 
 ```
