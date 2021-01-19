@@ -1,5 +1,5 @@
 const { execSync } = require("child_process")
-    , { copyFileSync, rmdirSync, readdirSync, unlinkSync } = require('fs')
+    , { copyFileSync, readdirSync, unlinkSync } = require('fs')
     , { extname, join } = require("path")
     , readline = require("readline");
 
@@ -26,12 +26,6 @@ async function main(){
     console.log("running tests");
 
     console.log(execSync('mocha ./tests').toString('utf-8'));
-
-    console.log("building jsdoc");
-
-    rmdirSync('docs', { recursive: true, force: true });
-
-    execSync('jsdoc -c ./jsdoc.json');
 
     try {
         const old_conf = require(__dirname + '/build-data/package.json')

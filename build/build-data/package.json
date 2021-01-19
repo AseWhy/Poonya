@@ -1,32 +1,41 @@
 {
   "name": "poonya",
-  "version": "0.4.8",
+  "version": "0.5",
   "description": "Simple preprocessor for text",
   "main": "./dist/poonya.node.bundle.js",
+
   "directories": {
     "doc": "docs",
     "test": "tests"
   },
+
   "scripts": {
     "build": "node build/build-default.js",
     "sandbox": "node --trace-warnings ./sandbox/node/sandbox.js",
     "webpack": "webpack --env platform=node && webpack --env platform=browser",
     "test": "mocha ./tests"
   },
+
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AseWhy/Poonya.git"
   },
+
   "keywords": [
     "poonya",
     "poonya.js"
   ],
+
   "author": "Astecom",
+
   "license": "MIT",
+
   "bugs": {
     "url": "https://github.com/AseWhy/Poonya/issues"
   },
+
   "homepage": "https://github.com/AseWhy/Poonya#readme",
+
   "devDependencies": {
     "copy-webpack-plugin": "^7.0.0",
     "eslint": "^7.16.0",

@@ -9810,7 +9810,7 @@ define('poonya', [], () =>
                  * @async
                  */
 
-                function createContext(data, ...libs) {
+                function createContext(data = new Object(), ...libs) {
                     if (typeof data != 'object' || data == null)
                         throw new Error('Param "data" must be an object.');
                     libs = libs // Если передан массив с массивами

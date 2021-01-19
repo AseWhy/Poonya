@@ -200,4 +200,45 @@ describe("poonya-common-test", () => {
             assert.deepStrictEqual(await pattern.result().complete(), [{}]);
         });
     });
+
+    describe("#script-execution-test[eval]", () => {
+        it("Context test for execution of a string with an expression.", async () => {
+            const context = await poonya.createContext()
+                , out = new poonya.PoonyaOutputStream();
+
+            context.eval(`
+                > 2 + 2 * 2; // Basic mathematics
+            `, out);
+
+            // eval will never raise an end event, so the complete function is useless.
+            out.once('data', data => assert.strictEqual(data, 6));
+        });
+
+        it("Test for reuse context and execute string.", async () => {
+            const context = await poonya.createContext()
+                , out = new poonya.PoonyaOutputStream();
+
+            // Starting script execution in context
+            await context.eval(`
+                set s = 5;
+
+                > 2 + 2 * s; // Basic mathematics
+
+                s = 4;
+            `, out);
+
+            // Сontinue to execute the script in the given context
+            await context.eval(`
+                > 2 + 2 * s;
+            `, out);
+
+            assert.deepStrictEqual(out._data, [12, 10]);
+        });
+
+        it("Test for the return value when the eval script finishes executing.", async () => {
+            const context = await poonya.createContext();
+
+            assert.strictEqual(await context.eval(`2 + 2 * 2`), 6);
+        });
+    });
 });
