@@ -269,15 +269,30 @@ class CodeEmitter extends iCodeEmitter {
             _.charset = typeof input.charset === "string" ? input.charset : "utf-8";
 
             // #!if platform === 'node'
-            _.path = normalize(
-                typeof input.path === "string" ? 
-                    ['', '.'].includes(extname(input.path)) ?
-                        join((module.parent ? module.parent.path : module.path), input.path + '.po') :
-                        join((module.parent ? module.parent.path : module.path), input.path) :
-                    module.parent ?
-                        module.parent.filename :
-                        module.filename
-            );
+            if(typeof input.path === "string") {
+                _.path = '';
+
+                const is_relative = input.path[0] == '.';
+                const has_ext = !['', '.'].includes(extname(input.path));
+
+                if(has_ext) {
+                    if(is_relative) {
+                        _.path += join((module.parent ? module.parent.path : module.path), input.path)
+                    } else {
+                        _.path += input.path;
+                    }
+                } else {
+                    if(is_relative) {
+                        _.path += join((module.parent ? module.parent.path : module.path), input.path + '.po')
+                    } else {
+                        _.path += input.path + '.po';
+                    }
+                }
+            } else {
+                _.path = module.parent ?
+                            module.parent.filename :
+                            module.filename;
+            }
             // #!endif
 
             // Защищаю от выполнения браузерного кода в nodejs

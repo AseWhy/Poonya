@@ -2,14 +2,12 @@ var poonya;
 poonya = /******/ (() => {
     // webpackBootstrap
     /******/ var __webpack_modules__ = {
-        /***/ 533: /***/ (
+        /***/ 722: /***/ (
             __unused_webpack_module,
             __unused_webpack_exports,
             __webpack_require__
         ) => {
-            const { PoonyaStaticLibrary, FIELDFLAGS } = __webpack_require__(
-                110
-            );
+            const { PoonyaStaticLibrary, FIELDFLAGS } = __webpack_require__(40);
 
             const QUOTE_EXP = /"/g;
             const TAG_EXP = /<([aA-zZ0-9]+)/;
@@ -250,7 +248,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 465: /***/ (
+        /***/ 990: /***/ (
             __unused_webpack_module,
             __unused_webpack_exports,
             __webpack_require__
@@ -260,7 +258,7 @@ poonya = /******/ (() => {
                     PoonyaPrototype,
                     FIELDFLAGS,
                     Exceptions,
-                } = __webpack_require__(110),
+                } = __webpack_require__(40),
                 date = new Date();
 
             new (class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
@@ -713,7 +711,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 670: /***/ module => {
+        /***/ 138: /***/ (module) => {
             'use strict';
             // Copyright Joyent, Inc. and other Node contributors.
             //
@@ -799,10 +797,10 @@ poonya = /******/ (() => {
 
             Object.defineProperty(EventEmitter, 'defaultMaxListeners', {
                 enumerable: true,
-                get: function() {
+                get: function () {
                     return defaultMaxListeners;
                 },
-                set: function(arg) {
+                set: function (arg) {
                     if (
                         typeof arg !== 'number' ||
                         arg < 0 ||
@@ -819,7 +817,7 @@ poonya = /******/ (() => {
                 },
             });
 
-            EventEmitter.init = function() {
+            EventEmitter.init = function () {
                 if (
                     this._events === undefined ||
                     this._events === Object.getPrototypeOf(this)._events
@@ -1154,7 +1152,7 @@ poonya = /******/ (() => {
                 return _listeners(this, type, false);
             };
 
-            EventEmitter.listenerCount = function(emitter, type) {
+            EventEmitter.listenerCount = function (emitter, type) {
                 if (typeof emitter.listenerCount === 'function') {
                     return emitter.listenerCount(type);
                 } else {
@@ -1212,7 +1210,7 @@ poonya = /******/ (() => {
             }
 
             function once(emitter, name) {
-                return new Promise(function(resolve, reject) {
+                return new Promise(function (resolve, reject) {
                     function eventListener() {
                         if (errorListener !== undefined) {
                             emitter.removeListener('error', errorListener);
@@ -1244,7 +1242,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 60: /***/ (
+        /***/ 501: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -1256,7 +1254,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { OPERATOR } = __webpack_require__(395);
+            const { OPERATOR } = __webpack_require__(351);
             /**
              * @lends ParserData
              * @class
@@ -1392,7 +1390,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 124: /***/ (
+        /***/ 329: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -1404,14 +1402,14 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(60),
-                { SERVICE } = __webpack_require__(395),
-                { NativeFunctionExecutionError } = __webpack_require__(710),
+            const { Operand } = __webpack_require__(501),
+                { SERVICE } = __webpack_require__(351),
+                { NativeFunctionExecutionError } = __webpack_require__(943),
                 {
                     iPoonyaObject,
                     iPoonyaPrototype,
                     iCodeEmitter,
-                } = __webpack_require__(11);
+                } = __webpack_require__(161);
             /**
              * @lends NativeFunction
              * @class
@@ -1615,7 +1613,7 @@ poonya = /******/ (() => {
                         }
 
                         if (data instanceof Promise) {
-                            data.catch(err =>
+                            data.catch((err) =>
                                 reject(
                                     call_pos,
                                     new NativeFunctionExecutionError(
@@ -1633,12 +1631,12 @@ poonya = /******/ (() => {
 
                     if (argc != 0) {
                         (function next() {
-                            args[i].result(context, out, reject, p_result => {
+                            args[i].result(context, out, reject, (p_result) => {
                                 p_result.result(
                                     context,
                                     out,
                                     reject,
-                                    d_result => {
+                                    (d_result) => {
                                         args_f[i] = d_result;
 
                                         if (++i >= argc) {
@@ -1661,7 +1659,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 547: /***/ (
+        /***/ 36: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -1673,9 +1671,9 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { FIELDFLAGS } = __webpack_require__(395),
-                PoonyaObject = __webpack_require__(932),
-                NativeFunction = __webpack_require__(124);
+            const { FIELDFLAGS } = __webpack_require__(351),
+                PoonyaObject = __webpack_require__(753),
+                NativeFunction = __webpack_require__(329);
             /**
              * @lends PoonyaArray
              * @class
@@ -1769,7 +1767,7 @@ poonya = /******/ (() => {
                                     context,
                                     out,
                                     reject,
-                                    result => (output[key] = result)
+                                    (result) => (output[key] = result)
                                 );
                     }
 
@@ -1793,7 +1791,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 168: /***/ (
+        /***/ 839: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -1805,7 +1803,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(932);
+            const PoonyaObject = __webpack_require__(753);
             /**
              * @lends PoonyaBoolean
              * @class
@@ -1894,7 +1892,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 981: /***/ (
+        /***/ 550: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -1906,7 +1904,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(932);
+            const PoonyaObject = __webpack_require__(753);
             /**
              * @lends PoonyaInteger
              * @class
@@ -1995,7 +1993,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 368: /***/ (
+        /***/ 679: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2007,7 +2005,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(932);
+            const PoonyaObject = __webpack_require__(753);
             /**
              * @lends PoonyaNull
              * @class
@@ -2092,7 +2090,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 585: /***/ (
+        /***/ 220: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2104,7 +2102,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(932);
+            const PoonyaObject = __webpack_require__(753);
             /**
              * @lends PoonyaNumber
              * @class
@@ -2193,7 +2191,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 932: /***/ (
+        /***/ 753: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2208,13 +2206,13 @@ poonya = /******/ (() => {
             const {
                     BadKeyInvalidTypeException,
                     BadKeyProtectedFieldException,
-                } = __webpack_require__(710),
+                } = __webpack_require__(943),
                 { SUPER_CALL, GET, FIELDFLAGS, CONFIG } = __webpack_require__(
-                    395
+                    351
                 ),
-                { Cast } = __webpack_require__(463),
-                { iPoonyaObject, iPoonyaPrototype } = __webpack_require__(11),
-                NativeFunction = __webpack_require__(124);
+                { Cast } = __webpack_require__(88),
+                { iPoonyaObject, iPoonyaPrototype } = __webpack_require__(161),
+                NativeFunction = __webpack_require__(329);
             /**
              * @lends PoonyaObject
              * @class
@@ -2455,7 +2453,7 @@ poonya = /******/ (() => {
                                     context,
                                     out,
                                     reject,
-                                    result => (output[key] = result)
+                                    (result) => (output[key] = result)
                                 );
                     }
 
@@ -2479,7 +2477,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 516: /***/ (
+        /***/ 360: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2491,9 +2489,9 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { Cast } = __webpack_require__(463);
+            const { Cast } = __webpack_require__(88);
 
-            const PoonyaObject = __webpack_require__(932);
+            const PoonyaObject = __webpack_require__(753);
             /**
              * @lends PoonyaPattern
              * @class
@@ -2563,13 +2561,15 @@ poonya = /******/ (() => {
                 result(context, out, reject, resolve) {
                     const result = this.data.result();
                     if (result instanceof Promise)
-                        result.then(d_result =>
+                        result.then((d_result) =>
                             resolve(Cast(d_result, context))
                         );
                     else
                         result
                             .complete()
-                            .then(d_result => resolve(Cast(d_result, context)));
+                            .then((d_result) =>
+                                resolve(Cast(d_result, context))
+                            );
                 }
                 /**
                  * Сериализует строку в javascript строку
@@ -2589,7 +2589,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 743: /***/ (
+        /***/ 326: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2602,10 +2602,10 @@ poonya = /******/ (() => {
              */
 
             const { IS, GET, FIELDFLAGS, SUPER_CALL } = __webpack_require__(
-                    395
+                    351
                 ),
-                { iPoonyaPrototype } = __webpack_require__(11),
-                { Cast } = __webpack_require__(463);
+                { iPoonyaPrototype } = __webpack_require__(161),
+                { Cast } = __webpack_require__(88);
             /**
              * @lends PoonyaPrototype
              * @class
@@ -2630,7 +2630,7 @@ poonya = /******/ (() => {
                 constructor(parents = [], name) {
                     super();
                     if (
-                        parents.find(e => !(e instanceof iPoonyaPrototype)) !=
+                        parents.find((e) => !(e instanceof iPoonyaPrototype)) !=
                         null
                     )
                         throw new Error(
@@ -2786,7 +2786,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 643: /***/ (
+        /***/ 809: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2798,7 +2798,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(932);
+            const PoonyaObject = __webpack_require__(753);
             /**
              * @lends PoonyaString
              * @class
@@ -2906,7 +2906,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 605: /***/ (
+        /***/ 515: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2918,14 +2918,14 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand, Operator } = __webpack_require__(60),
-                { CHARTYPE, OPERATOR, SERVICE } = __webpack_require__(395),
+            const { Operand, Operator } = __webpack_require__(501),
+                { CHARTYPE, OPERATOR, SERVICE } = __webpack_require__(351),
                 {
                     UnableToRecognizeTypeException,
                     TheSequenceException,
-                } = __webpack_require__(710),
-                { Cast, Tick } = __webpack_require__(463),
-                ObjectContructorCall = __webpack_require__(662);
+                } = __webpack_require__(943),
+                { Cast, Tick } = __webpack_require__(88),
+                ObjectContructorCall = __webpack_require__(657);
             /**
              * @lends MessagePattern;
              */
@@ -2967,7 +2967,7 @@ poonya = /******/ (() => {
                  */
 
                 toString(indent) {
-                    return this.data.map(e => e.toString(indent)).join(' ');
+                    return this.data.map((e) => e.toString(indent)).join(' ');
                 }
                 /**
                  * Добавляет вхождение в выражение
@@ -3092,7 +3092,7 @@ poonya = /******/ (() => {
                     // Stage 1 => 2 + 2 * 2 => 2 + (2 * 2)
                     if (
                         this.data.filter(
-                            e =>
+                            (e) =>
                                 e.op_p === OPERATOR.MULT ||
                                 e.op_p === OPERATOR.DIVIDE
                         ).length > 0
@@ -3142,8 +3142,8 @@ poonya = /******/ (() => {
                     } // Stage 2 => a & b => (a) & (b)
 
                     if (
-                        this.data.filter(e => e.op_p === OPERATOR.AND).length >
-                        0
+                        this.data.filter((e) => e.op_p === OPERATOR.AND)
+                            .length > 0
                     ) {
                         let dump = Array.from(this.data),
                             stack = new ExpressionGroup(dump[0].position);
@@ -3170,7 +3170,8 @@ poonya = /******/ (() => {
                     } // Stage 3 => a | b => (a) | (b)
 
                     if (
-                        this.data.filter(e => e.op_p === OPERATOR.OR).length > 0
+                        this.data.filter((e) => e.op_p === OPERATOR.OR).length >
+                        0
                     ) {
                         let dump = Array.from(this.data),
                             stack = new ExpressionGroup(dump[0].position);
@@ -3221,7 +3222,7 @@ poonya = /******/ (() => {
 
                     function tick() {
                         // Получем прромежуточное значение
-                        _.data[i + 1].result(context, out, reject, cur => {
+                        _.data[i + 1].result(context, out, reject, (cur) => {
                             switch (true) {
                                 case _.data[i].equals(OPERATOR.PLUS):
                                     result += cur.toRawData();
@@ -3282,8 +3283,8 @@ poonya = /******/ (() => {
                         });
                     }
 
-                    _.data[0].result(context, out, reject, p_result => {
-                        p_result.result(context, out, reject, d_result => {
+                    _.data[0].result(context, out, reject, (p_result) => {
+                        p_result.result(context, out, reject, (d_result) => {
                             result = d_result;
                             if (_.data.length > 1) tick();
                             else resolve(Cast(result, context));
@@ -3297,7 +3298,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 565: /***/ (
+        /***/ 79: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3309,13 +3310,13 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(60),
+            const { Operand } = __webpack_require__(501),
                 {
                     UnableToCreateAnObjectException,
                     FieldNotAFunctionException,
-                } = __webpack_require__(710),
-                { iPoonyaPrototype } = __webpack_require__(11),
-                NativeFunction = __webpack_require__(124);
+                } = __webpack_require__(943),
+                { iPoonyaPrototype } = __webpack_require__(161),
+                NativeFunction = __webpack_require__(329);
             /**
              * @lends FunctionCall
              * @protected
@@ -3360,7 +3361,7 @@ poonya = /******/ (() => {
                         null,
                         reject,
                         true,
-                        result => {
+                        (result) => {
                             if (result.instance instanceof NativeFunction)
                                 result.instance.result(
                                     result.parent,
@@ -3415,7 +3416,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 383: /***/ (
+        /***/ 346: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3427,9 +3428,9 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(60),
-                { SERVICE, FIELDFLAGS } = __webpack_require__(395),
-                NativeFunction = __webpack_require__(124);
+            const { Operand } = __webpack_require__(501),
+                { SERVICE, FIELDFLAGS } = __webpack_require__(351),
+                NativeFunction = __webpack_require__(329);
             /**
              * @lends GetOperator
              * @protected
@@ -3473,7 +3474,7 @@ poonya = /******/ (() => {
                         null,
                         reject,
                         true,
-                        result => {
+                        (result) => {
                             if (result.instance != null) {
                                 if (result.instance instanceof NativeFunction) {
                                     if (
@@ -3529,7 +3530,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 662: /***/ (
+        /***/ 657: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3543,8 +3544,8 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(60),
-                { SERVICE } = __webpack_require__(395);
+            const { Operand } = __webpack_require__(501),
+                { SERVICE } = __webpack_require__(351);
             /**
              * @lends ObjectContructorCall
              * @protected
@@ -3587,7 +3588,7 @@ poonya = /******/ (() => {
                         return (
                             'new (' +
                             this.query_stack
-                                .map(e =>
+                                .map((e) =>
                                     typeof e !== 'string'
                                         ? `[${e.toString()}]`
                                         : e.toString()
@@ -3626,7 +3627,7 @@ poonya = /******/ (() => {
                         return `(${
                             this.initial
                         }) <- (${this.query_stack
-                            .map(e =>
+                            .map((e) =>
                                 typeof e !== 'string'
                                     ? `[${e.toString()}]`
                                     : e.toString()
@@ -3665,7 +3666,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 914: /***/ (
+        /***/ 923: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3677,7 +3678,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(60);
+            const { Operand } = __webpack_require__(501);
             /**
              * @lends TernarOperator
              * @protected
@@ -3737,7 +3738,7 @@ poonya = /******/ (() => {
                 result(context, out, reject, resolve) {
                     const _ = this;
 
-                    _.condition.result(context, out, reject, result => {
+                    _.condition.result(context, out, reject, (result) => {
                         if (context.toBooleanResult(result))
                             _.v_o.result(context, out, reject, resolve);
                         else _.v_t.result(context, out, reject, resolve);
@@ -3750,7 +3751,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 273: /***/ (
+        /***/ 602: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3762,7 +3763,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(463);
+            const { Tick } = __webpack_require__(88);
             /**
              * @lends IfStatement
              * @protected
@@ -3822,7 +3823,7 @@ poonya = /******/ (() => {
                 result(context, out, reject, resolve) {
                     const _ = this;
 
-                    _.condition.result(context, out, reject, result => {
+                    _.condition.result(context, out, reject, (result) => {
                         if (context.toBooleanResult(result))
                             _.body_true.result(context, out, reject, resolve);
                         else if (_.body_false != null)
@@ -3837,7 +3838,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 27: /***/ (
+        /***/ 254: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3849,7 +3850,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(463);
+            const { Tick } = __webpack_require__(88);
             /**
              * @lends OutStatement
              * @protected
@@ -3897,12 +3898,17 @@ poonya = /******/ (() => {
                  */
 
                 result(context, out, reject, resolve) {
-                    this.expression.result(context, out, reject, p_result => {
+                    this.expression.result(context, out, reject, (p_result) => {
                         if (p_result != null)
-                            p_result.result(context, out, reject, d_result => {
-                                out.write(d_result);
-                                Tick(resolve, d_result);
-                            });
+                            p_result.result(
+                                context,
+                                out,
+                                reject,
+                                (d_result) => {
+                                    out.write(d_result);
+                                    Tick(resolve, d_result);
+                                }
+                            );
                         else Tick(resolve, null);
                     });
                 }
@@ -3913,7 +3919,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 858: /***/ (
+        /***/ 505: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3926,11 +3932,11 @@ poonya = /******/ (() => {
              * @license MIT
              */
 
-            const PoonyaArray = __webpack_require__(547),
-                { Tick } = __webpack_require__(463),
+            const PoonyaArray = __webpack_require__(36),
+                { Tick } = __webpack_require__(88),
                 {
                     TheFieldMustBeAnArrayInstanceExceprion,
-                } = __webpack_require__(710);
+                } = __webpack_require__(943);
             /**
              * @lends PushStatement
              * @protected
@@ -3966,7 +3972,7 @@ poonya = /******/ (() => {
                     return (
                         '(' +
                         this.query_stack
-                            .map(e => (typeof e === 'number' ? `[${e}]` : e))
+                            .map((e) => (typeof e === 'number' ? `[${e}]` : e))
                             .join(' => ') +
                         ') <- ' +
                         this.value.toString(indent + '\t')
@@ -3995,12 +4001,17 @@ poonya = /******/ (() => {
                         PoonyaArray,
                         reject,
                         false,
-                        array => {
+                        (array) => {
                             if (array != null) {
-                                _.value.result(context, out, reject, result => {
-                                    array.push(context, result);
-                                    Tick(resolve, result);
-                                });
+                                _.value.result(
+                                    context,
+                                    out,
+                                    reject,
+                                    (result) => {
+                                        array.push(context, result);
+                                        Tick(resolve, result);
+                                    }
+                                );
                             } else {
                                 reject(
                                     _.position,
@@ -4019,7 +4030,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 552: /***/ (
+        /***/ 91: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -4031,9 +4042,9 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { TheFieldMustBeNumberException } = __webpack_require__(710),
-                { Tick } = __webpack_require__(463),
-                PoonyaNumber = __webpack_require__(585);
+            const { TheFieldMustBeNumberException } = __webpack_require__(943),
+                { Tick } = __webpack_require__(88),
+                PoonyaNumber = __webpack_require__(220);
             /**
              * @lends RepeatStatement;
              * @protected
@@ -4093,8 +4104,8 @@ poonya = /******/ (() => {
                     let _ = this,
                         difference;
 
-                    _.from.result(context, out, reject, from_d => {
-                        _.to.result(context, out, reject, to_d => {
+                    _.from.result(context, out, reject, (from_d) => {
+                        _.to.result(context, out, reject, (to_d) => {
                             if (!(from_d instanceof PoonyaNumber))
                                 reject(
                                     _.from.position,
@@ -4105,8 +4116,8 @@ poonya = /******/ (() => {
                                     _.to.position,
                                     new TheFieldMustBeNumberException('To')
                                 );
-                            from_d.result(context, out, reject, from => {
-                                to_d.result(context, out, reject, to => {
+                            from_d.result(context, out, reject, (from) => {
+                                to_d.result(context, out, reject, (to) => {
                                     difference = from < to ? 1 : -1;
                                     from = Math.floor(from);
                                     to = Math.floor(to);
@@ -4148,7 +4159,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 31: /***/ (
+        /***/ 498: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -4160,19 +4171,19 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const ExpressionGroup = __webpack_require__(605),
+            const ExpressionGroup = __webpack_require__(515),
                 {
                     iPoonyaObject,
                     iPoonyaPrototype,
                     iContext,
-                } = __webpack_require__(11),
+                } = __webpack_require__(161),
                 {
                     GetFieldOfNullException,
                     TheFieldNotHasDeclaredExceprion,
-                } = __webpack_require__(710),
-                { GET } = __webpack_require__(395),
-                { Tick } = __webpack_require__(463),
-                PoonyaObject = __webpack_require__(932);
+                } = __webpack_require__(943),
+                { GET } = __webpack_require__(351),
+                { Tick } = __webpack_require__(88),
+                PoonyaObject = __webpack_require__(753);
             /**
              * @lends ResetStatement
              * @protected
@@ -4208,7 +4219,7 @@ poonya = /******/ (() => {
                     return (
                         '(' +
                         this.query_stack
-                            .map(e => (typeof e === 'number' ? `[${e}]` : e))
+                            .map((e) => (typeof e === 'number' ? `[${e}]` : e))
                             .join(' => ') +
                         ') = ' +
                         this.value.toString(indent + '\t')
@@ -4256,24 +4267,29 @@ poonya = /******/ (() => {
                                 target instanceof iPoonyaObject ||
                                 target instanceof iContext
                             ) {
-                                _.value.result(context, out, reject, value => {
-                                    if (target instanceof iContext) {
-                                        if (target.has(of_p)) {
-                                            target.set(of_p, value);
+                                _.value.result(
+                                    context,
+                                    out,
+                                    reject,
+                                    (value) => {
+                                        if (target instanceof iContext) {
+                                            if (target.has(of_p)) {
+                                                target.set(of_p, value);
+                                            } else {
+                                                reject(
+                                                    _.position,
+                                                    new TheFieldNotHasDeclaredExceprion(
+                                                        of_p
+                                                    )
+                                                );
+                                            }
                                         } else {
-                                            reject(
-                                                _.position,
-                                                new TheFieldNotHasDeclaredExceprion(
-                                                    of_p
-                                                )
-                                            );
+                                            target.set(context, of_p, value);
                                         }
-                                    } else {
-                                        target.set(context, of_p, value);
-                                    }
 
-                                    Tick(resolve, value);
-                                });
+                                        Tick(resolve, value);
+                                    }
+                                );
                             } else
                                 reject(
                                     _.position,
@@ -4290,7 +4306,7 @@ poonya = /******/ (() => {
                                 context,
                                 null,
                                 reject,
-                                result => get(result.toRawData())
+                                (result) => get(result.toRawData())
                             );
                         else get(query_stack[index]);
                     }
@@ -4304,7 +4320,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 247: /***/ (
+        /***/ 938: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -4316,7 +4332,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(463);
+            const { Tick } = __webpack_require__(88);
             /**
              * @lends SequenceGroup;
              * @protected
@@ -4388,7 +4404,7 @@ poonya = /******/ (() => {
                  */
 
                 toString(indent = 0) {
-                    return `{\n${indent}${this.Sequence.map(e =>
+                    return `{\n${indent}${this.Sequence.map((e) =>
                         e.toString(indent + '\t')
                     ).join('\n\n' + indent)}\n${indent.substring(
                         0,
@@ -4402,7 +4418,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 408: /***/ (
+        /***/ 404: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -4414,7 +4430,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(463);
+            const { Tick } = __webpack_require__(88);
             /**
              * @lends SequenceMainGroup;
              * @protected
@@ -4473,7 +4489,7 @@ poonya = /******/ (() => {
                                     context,
                                     out,
                                     reject,
-                                    p_result => {
+                                    (p_result) => {
                                         Tick(resolve, p_result);
                                     }
                                 );
@@ -4497,7 +4513,7 @@ poonya = /******/ (() => {
                  */
 
                 toString(indent = '\t') {
-                    return `{\n${indent}${this.Sequence.map(e =>
+                    return `{\n${indent}${this.Sequence.map((e) =>
                         e.toString(indent + '\t')
                     ).join('\n\n' + indent)}\n${indent.substring(
                         0,
@@ -4511,7 +4527,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 49: /***/ (
+        /***/ 859: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -4525,8 +4541,8 @@ poonya = /******/ (() => {
 
             const {
                     TheFieldAlreadyHasBeenDeclaredException,
-                } = __webpack_require__(710),
-                { Tick } = __webpack_require__(463);
+                } = __webpack_require__(943),
+                { Tick } = __webpack_require__(88);
             /**
              * @lends SetStatement
              * @protected
@@ -4582,7 +4598,7 @@ poonya = /******/ (() => {
                     const _ = this;
 
                     if (!context.has(_.name, 'up')) {
-                        _.value.result(context, out, reject, result => {
+                        _.value.result(context, out, reject, (result) => {
                             context.set(_.name, result, 'up');
                             Tick(resolve, result);
                         });
@@ -4600,7 +4616,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 292: /***/ (
+        /***/ 267: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -4612,7 +4628,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(463);
+            const { Tick } = __webpack_require__(88);
             /**
              * @lends WhileStatement
              * @protected
@@ -4669,7 +4685,7 @@ poonya = /******/ (() => {
                     let _ = this;
 
                     (function tick(result) {
-                        _.condition.result(context, out, reject, d_result => {
+                        _.condition.result(context, out, reject, (d_result) => {
                             if (context.toBooleanResult(d_result)) {
                                 _.body.result(context, out, reject, tick);
                             } else {
@@ -4686,7 +4702,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 710: /***/ (
+        /***/ 943: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -4698,7 +4714,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { SERVICE } = __webpack_require__(395),
+            const { SERVICE } = __webpack_require__(351),
                 { dirname } = __webpack_require__(386);
             /**
              * Класс ошибки шаблонизатора
@@ -5271,7 +5287,7 @@ poonya = /******/ (() => {
                 constructor(path) {
                     super(
                         `${path
-                            .map(e =>
+                            .map((e) =>
                                 typeof e === 'number'
                                     ? '[' + e + ']'
                                     : e.toString()
@@ -5321,7 +5337,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 11: /***/ module => {
+        /***/ 161: /***/ (module) => {
             'use strict';
             /**
              * @file src/interfaces.js
@@ -5397,7 +5413,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 395: /***/ (
+        /***/ 351: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -5409,7 +5425,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { EventEmitter } = __webpack_require__(670); // Защищенные поля для PoonyaPrototype
+            const { EventEmitter } = __webpack_require__(138); // Защищенные поля для PoonyaPrototype
 
             const GET = Symbol('GET'),
                 IS = Symbol('IS'),
@@ -5565,7 +5581,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 305: /***/ (
+        /***/ 591: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -5577,34 +5593,34 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaPattern = __webpack_require__(516);
+            const PoonyaPattern = __webpack_require__(360);
 
             const {
                     GetFieldOfNullException,
                     IsNotAConstructorException,
                     PoonyaException,
-                } = __webpack_require__(710),
-                { GET, SERVICE, IS } = __webpack_require__(395),
-                { Cast, toBytes } = __webpack_require__(463),
+                } = __webpack_require__(943),
+                { GET, SERVICE, IS } = __webpack_require__(351),
+                { Cast, toBytes } = __webpack_require__(88),
                 {
                     iContext,
                     iPoonyaPrototype,
                     iPathData,
                     iCodeEmitter,
                     iPoonyaObject,
-                } = __webpack_require__(11),
-                { PoonyaStaticLibrary } = __webpack_require__(740),
-                { parser } = __webpack_require__(693),
-                lexer = __webpack_require__(768),
-                NativeFunction = __webpack_require__(124),
-                ExpressionGroup = __webpack_require__(605),
-                PoonyaObject = __webpack_require__(932),
-                PoonyaArray = __webpack_require__(547),
-                PoonyaInteger = __webpack_require__(981),
-                PoonyaNumber = __webpack_require__(585),
-                PoonyaString = __webpack_require__(643),
-                PoonyaBoolean = __webpack_require__(168),
-                PoonyaNull = __webpack_require__(368);
+                } = __webpack_require__(161),
+                { PoonyaStaticLibrary } = __webpack_require__(742),
+                { parser } = __webpack_require__(743),
+                lexer = __webpack_require__(94),
+                NativeFunction = __webpack_require__(329),
+                ExpressionGroup = __webpack_require__(515),
+                PoonyaObject = __webpack_require__(753),
+                PoonyaArray = __webpack_require__(36),
+                PoonyaInteger = __webpack_require__(550),
+                PoonyaNumber = __webpack_require__(220),
+                PoonyaString = __webpack_require__(809),
+                PoonyaBoolean = __webpack_require__(839),
+                PoonyaNull = __webpack_require__(679);
             /**
              * @lends Heap
              * @class
@@ -5743,14 +5759,14 @@ poonya = /******/ (() => {
                         ...initial
                             .map(
                                 // Есл это хип
-                                e =>
+                                (e) =>
                                     e instanceof Heap // То ничего не делаем
                                         ? e // Иначе, если это объект
                                         : typeof e === 'object' // Создаем новый хип с ним
                                         ? new Heap(this, e) // Если это не объект вставляем вместо него null
                                         : null // Удаляем все не объекты
                             )
-                            .filter(e => e !== null)
+                            .filter((e) => e !== null)
                     );
                 }
                 /**
@@ -5789,7 +5805,7 @@ poonya = /******/ (() => {
                                         SERVICE.CONSTRUCTORS.OBJECT,
                                         reject,
                                         new Array(),
-                                        p_target => (target = p_target)
+                                        (p_target) => (target = p_target)
                                     );
                                     libraries[i].importTo(target, this, reject);
                                     this.levels[0].set(
@@ -5834,8 +5850,8 @@ poonya = /******/ (() => {
                                     Math.random() * Number.MAX_SAFE_INTEGER
                                 ).toString(16)
                         )
-                            .catch(error => rej(error))
-                            .then(result => {
+                            .catch((error) => rej(error))
+                            .then((result) => {
                                 result.result(
                                     this,
                                     out,
@@ -6071,7 +6087,7 @@ poonya = /******/ (() => {
                                 _,
                                 null,
                                 reject,
-                                result => {
+                                (result) => {
                                     get(result.toRawData());
                                 }
                             );
@@ -6148,7 +6164,7 @@ poonya = /******/ (() => {
                         iPoonyaPrototype,
                         reject,
                         false,
-                        prototype => {
+                        (prototype) => {
                             let init = new Object(),
                                 cur = 0,
                                 from =
@@ -6237,7 +6253,8 @@ poonya = /******/ (() => {
                                                 _,
                                                 null,
                                                 reject,
-                                                result => set(entry[0], result)
+                                                (result) =>
+                                                    set(entry[0], result)
                                             );
                                         else set(entry[0], entry[1]);
                                     } else next();
@@ -6279,7 +6296,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 740: /***/ (
+        /***/ 742: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -6291,10 +6308,10 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { NAMESPACE, SERVICE } = __webpack_require__(395),
-                { IOError } = __webpack_require__(710),
-                NativeFunction = __webpack_require__(124),
-                PoonyaPrototype = __webpack_require__(743); // Пространство модулей в глобальном контексте
+            const { NAMESPACE, SERVICE } = __webpack_require__(351),
+                { IOError } = __webpack_require__(943),
+                NativeFunction = __webpack_require__(329),
+                PoonyaPrototype = __webpack_require__(326); // Пространство модулей в глобальном контексте
 
             const modules = Symbol.for('Modules');
 
@@ -6426,7 +6443,7 @@ poonya = /******/ (() => {
                                         SERVICE.CONSTRUCTORS.NULL,
                                         reject,
                                         new Array(),
-                                        result =>
+                                        (result) =>
                                             parent.set(context, key, result)
                                     );
                                 // [1]
@@ -6437,7 +6454,7 @@ poonya = /******/ (() => {
                                         SERVICE.CONSTRUCTORS.INTEGER,
                                         reject,
                                         new Array(),
-                                        result =>
+                                        (result) =>
                                             parent.set(context, key, result)
                                     );
                                 break;
@@ -6451,7 +6468,7 @@ poonya = /******/ (() => {
                                         SERVICE.CONSTRUCTORS.NULL,
                                         reject,
                                         new Array(),
-                                        result =>
+                                        (result) =>
                                             parent.set(context, key, result)
                                     );
                                 // [1]
@@ -6462,7 +6479,7 @@ poonya = /******/ (() => {
                                         SERVICE.CONSTRUCTORS.NUMBER,
                                         reject,
                                         new Array(),
-                                        result =>
+                                        (result) =>
                                             parent.set(context, key, result)
                                     );
                                 break;
@@ -6475,7 +6492,7 @@ poonya = /******/ (() => {
                                     SERVICE.CONSTRUCTORS.STRING,
                                     reject,
                                     new Array(),
-                                    result => parent.set(context, key, result)
+                                    (result) => parent.set(context, key, result)
                                 );
                                 break;
 
@@ -6487,7 +6504,7 @@ poonya = /******/ (() => {
                                     SERVICE.CONSTRUCTORS.STRING,
                                     reject,
                                     new Array(),
-                                    result => parent.set(context, key, result)
+                                    (result) => parent.set(context, key, result)
                                 );
                                 break;
 
@@ -6521,7 +6538,7 @@ poonya = /******/ (() => {
                                     SERVICE.CONSTRUCTORS.BOOLEAN,
                                     reject,
                                     new Array(),
-                                    result => parent.set(context, key, result)
+                                    (result) => parent.set(context, key, result)
                                 );
                                 break;
 
@@ -6535,7 +6552,7 @@ poonya = /******/ (() => {
                                         SERVICE.CONSTRUCTORS.NULL,
                                         reject,
                                         new Array(),
-                                        result =>
+                                        (result) =>
                                             parent.set(context, key, result)
                                     );
                                 else {
@@ -6547,7 +6564,7 @@ poonya = /******/ (() => {
                                             SERVICE.CONSTRUCTORS.OBJECT,
                                             reject,
                                             new Array(),
-                                            target => {
+                                            (target) => {
                                                 value.importTo(
                                                     target,
                                                     context,
@@ -6568,7 +6585,7 @@ poonya = /******/ (() => {
                                             SERVICE.CONSTRUCTORS.ARRAY,
                                             reject,
                                             new Array(),
-                                            result =>
+                                            (result) =>
                                                 parent.set(context, key, result)
                                         );
                                     } else {
@@ -6579,7 +6596,7 @@ poonya = /******/ (() => {
                                             SERVICE.CONSTRUCTORS.OBJECT,
                                             reject,
                                             new Array(),
-                                            result =>
+                                            (result) =>
                                                 parent.set(context, key, result)
                                         );
                                     }
@@ -6630,7 +6647,7 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            let Import = import_statements => {
+            let Import = (import_statements) => {
                 if (!(import_statements instanceof Array))
                     throw new TypeError('import_statements must be Array');
                 const statements = new Array();
@@ -6666,7 +6683,7 @@ poonya = /******/ (() => {
 
             function crequire(id) {
                 if (id === 'poonya') {
-                    return __webpack_require__(110);
+                    return __webpack_require__(40);
                 } else {
                     throw new Error('Unknown module ' + id);
                 }
@@ -6679,8 +6696,8 @@ poonya = /******/ (() => {
                         fetch(path, {
                             method: 'GET',
                         })
-                            .then(responce => responce.text())
-                            .then(responce =>
+                            .then((responce) => responce.text())
+                            .then((responce) =>
                                 res(
                                     new Function(
                                         'require',
@@ -6702,7 +6719,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 642: /***/ (
+        /***/ 359: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -6714,8 +6731,8 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { CHARTYPE } = __webpack_require__(395),
-                { fromBytes } = __webpack_require__(463);
+            const { CHARTYPE } = __webpack_require__(351),
+                { fromBytes } = __webpack_require__(88);
             /**
              * @lends Token
              * @class
@@ -6807,7 +6824,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 768: /***/ (
+        /***/ 94: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -6819,8 +6836,8 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { CHARTYPE } = __webpack_require__(395),
-                Token = __webpack_require__(642);
+            const { CHARTYPE } = __webpack_require__(351),
+                Token = __webpack_require__(359);
             /**
              * Лексер, который производит лексический разбор подаваемого текста в буффере
              *
@@ -6851,7 +6868,7 @@ poonya = /******/ (() => {
                     buff.splice(0, buff.length);
                 };
 
-                const append = index => {
+                const append = (index) => {
                     buff.push(input[index - 1], input[index]);
                 };
 
@@ -7062,7 +7079,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 513: /***/ (
+        /***/ 434: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -7074,11 +7091,11 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { maybeEquals } = __webpack_require__(463),
-                { CHARTYPE } = __webpack_require__(395),
-                { IOError } = __webpack_require__(710),
-                Exceptions = __webpack_require__(710),
-                lexer = __webpack_require__(768);
+            const { maybeEquals } = __webpack_require__(88),
+                { CHARTYPE } = __webpack_require__(351),
+                { IOError } = __webpack_require__(943),
+                Exceptions = __webpack_require__(943),
+                lexer = __webpack_require__(94);
             /**
              * Препроцессораня функция, линкует файлы.
              *
@@ -7106,15 +7123,12 @@ poonya = /******/ (() => {
                             path =
                                 window.location.origin +
                                 '/' +
-                                parent_path
-                                    .split('/')
-                                    .slice(0, -1)
-                                    .join('/') +
+                                parent_path.split('/').slice(0, -1).join('/') +
                                 '/' +
                                 data[i + 1].data.toString();
                             content = fetch(path, {
                                 method: 'GET',
-                            }).then(e => e.blob);
+                            }).then((e) => e.blob);
                             /*LIQUID-END*/
 
                             if (parent_path != null) {
@@ -7151,7 +7165,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 693: /***/ (
+        /***/ 743: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -7181,24 +7195,24 @@ poonya = /******/ (() => {
                     CriticalParserErrorNoRawDataTransmittedException,
                     CriticalParserErrorUnexpectedEndOfExpression,
                     ParserUnfinishedNotationException,
-                } = __webpack_require__(710),
-                { maybeEquals, countKeys } = __webpack_require__(463),
-                { CHARTYPE, SERVICE } = __webpack_require__(395),
-                FunctionCall = __webpack_require__(565),
-                ObjectContructorCall = __webpack_require__(662),
-                TernarOperator = __webpack_require__(914),
-                ExpressionGroup = __webpack_require__(605),
-                GetOperator = __webpack_require__(383),
-                IfStatement = __webpack_require__(273),
-                SequenceGroup = __webpack_require__(247),
-                OutStatement = __webpack_require__(27),
-                WhileStatement = __webpack_require__(292),
-                RepeatStatement = __webpack_require__(552),
-                SetStatement = __webpack_require__(49),
-                ResetStatement = __webpack_require__(31),
-                PushStatement = __webpack_require__(858),
-                SequenceMainGroup = __webpack_require__(408),
-                linker = __webpack_require__(513);
+                } = __webpack_require__(943),
+                { maybeEquals, countKeys } = __webpack_require__(88),
+                { CHARTYPE, SERVICE } = __webpack_require__(351),
+                FunctionCall = __webpack_require__(79),
+                ObjectContructorCall = __webpack_require__(657),
+                TernarOperator = __webpack_require__(923),
+                ExpressionGroup = __webpack_require__(515),
+                GetOperator = __webpack_require__(346),
+                IfStatement = __webpack_require__(602),
+                SequenceGroup = __webpack_require__(938),
+                OutStatement = __webpack_require__(254),
+                WhileStatement = __webpack_require__(267),
+                RepeatStatement = __webpack_require__(91),
+                SetStatement = __webpack_require__(859),
+                ResetStatement = __webpack_require__(498),
+                PushStatement = __webpack_require__(505),
+                SequenceMainGroup = __webpack_require__(404),
+                linker = __webpack_require__(434);
             /**
              * Парсит вызов функции, возвращает объект вызова функции, и позицию с которой можно продолжить прасинг
              *
@@ -7228,7 +7242,7 @@ poonya = /******/ (() => {
                     ',',
                     Infinity,
                     `(${query_stack
-                        .map(e => (typeof e === 'number' ? `[${e}]` : e))
+                        .map((e) => (typeof e === 'number' ? `[${e}]` : e))
                         .join(' => ')})()`
                 );
                 return {
@@ -8608,7 +8622,7 @@ poonya = /******/ (() => {
                                 0,
                                 await linker(
                                     buffer.filter(
-                                        e => e.type !== CHARTYPE.SPACE
+                                        (e) => e.type !== CHARTYPE.SPACE
                                     ),
                                     parent_path,
                                     reject
@@ -8643,7 +8657,7 @@ poonya = /******/ (() => {
                                 0,
                                 await linker(
                                     buffer.filter(
-                                        e => e.type !== CHARTYPE.SPACE
+                                        (e) => e.type !== CHARTYPE.SPACE
                                     ),
                                     parent_path,
                                     reject
@@ -8684,7 +8698,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 684: /***/ (
+        /***/ 216: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -8759,24 +8773,24 @@ poonya = /******/ (() => {
              */
             // This file is compiled specifically for the browser, if you need a node.js version use poonya.node.bundle.js
 
-            const { EventEmitter } = __webpack_require__(670),
-                { IOError, PoonyaException } = __webpack_require__(710),
-                { Import, ImportDir, ImportFile } = __webpack_require__(740),
-                { Context, Heap } = __webpack_require__(305),
+            const { EventEmitter } = __webpack_require__(138),
+                { IOError, PoonyaException } = __webpack_require__(943),
+                { Import, ImportDir, ImportFile } = __webpack_require__(742),
+                { Context, Heap } = __webpack_require__(591),
                 { parser, parseExpression, parserMP } = __webpack_require__(
-                    693
+                    743
                 ),
-                { SERVICE } = __webpack_require__(395),
+                { SERVICE } = __webpack_require__(351),
                 {
                     toFixed,
                     toBytes,
                     fromBytes,
                     setImmediate,
-                } = __webpack_require__(463),
+                } = __webpack_require__(88),
                 { iPoonyaConstructsData, iCodeEmitter } = __webpack_require__(
-                    11
+                    161
                 ),
-                lexer = __webpack_require__(768); // Private fields
+                lexer = __webpack_require__(94); // Private fields
 
             const RESULT = Symbol('RESULT'),
                 INIT = Symbol('INIT');
@@ -8873,7 +8887,7 @@ poonya = /******/ (() => {
 
                 complete() {
                     if (!this._ended)
-                        return new Promise(res =>
+                        return new Promise((res) =>
                             this.on('end', () => res(this._data))
                         );
                     else return this._data;
@@ -8940,10 +8954,8 @@ poonya = /******/ (() => {
 
                         _.path =
                             typeof input.path === 'string'
-                                ? input.path
-                                      .split('/')
-                                      .pop()
-                                      .split('.').length > 0
+                                ? input.path.split('/').pop().split('.')
+                                      .length > 0
                                     ? input.path
                                     : input.path + '.po'
                                 : 'anonymous.po';
@@ -8959,17 +8971,17 @@ poonya = /******/ (() => {
                                     /*LIQUID-END*/
 
                                     /*LIQUID*/
-                                    .catch(e => {
+                                    .catch((e) => {
                                         throw e;
                                     })
                                     /*LIQUID-END*/
 
                                     /*LIQUID*/
-                                    .then(e => e.text())
+                                    .then((e) => e.text())
                                     /*LIQUID-END*/
 
                                     /*LIQUID*/
-                                    .then(e => {
+                                    .then((e) => {
                                         /*LIQUID-END*/
 
                                         /*LIQUID*/
@@ -9323,16 +9335,16 @@ poonya = /******/ (() => {
                 }
 
                 [RESULT](data, error, c_clone) {
-                    return new Promise(res => {
+                    return new Promise((res) => {
                         if (data instanceof Context) {
                             if (c_clone) {
                                 const context = data.clone();
                                 context.import(this.libraries, error);
-                                this.data.result(context, [], error, result =>
+                                this.data.result(context, [], error, (result) =>
                                     result.result(context, null, null, res)
                                 );
                             } else {
-                                this.data.result(data, [], error, result =>
+                                this.data.result(data, [], error, (result) =>
                                     result.result(data, null, null, res)
                                 );
                             }
@@ -9343,7 +9355,7 @@ poonya = /******/ (() => {
                                     error,
                                     ...data
                                 );
-                                this.data.result(context, [], error, result =>
+                                this.data.result(context, [], error, (result) =>
                                     result.result(context, null, null, res)
                                 );
                             } else {
@@ -9352,7 +9364,7 @@ poonya = /******/ (() => {
                                     error,
                                     ...data
                                 );
-                                this.data.result(context, [], error, result =>
+                                this.data.result(context, [], error, (result) =>
                                     result.result(context, null, null, res)
                                 );
                             }
@@ -9376,7 +9388,7 @@ poonya = /******/ (() => {
                 ) {
                     const _ = this;
 
-                    return new Promise(res => {
+                    return new Promise((res) => {
                         if (_.loaded) _[RESULT](data, error, c_clone).then(res);
                         else
                             _.on('load', () =>
@@ -9400,8 +9412,8 @@ poonya = /******/ (() => {
                     throw new Error('Param "data" must be an object.');
                 libs = libs // Если передан массив с массивами
                     .flat(Infinity) // Фильтурем список библиотек целевых библиотек, если среди них есть не строки отбрасываем их.
-                    .filter(e => typeof e != 'string');
-                return new Promise(res => {
+                    .filter((e) => typeof e != 'string');
+                return new Promise((res) => {
                     if (SERVICE.LOADED) {
                         res(
                             new Context(
@@ -9473,12 +9485,12 @@ poonya = /******/ (() => {
 
             (async () => {
                 /*LIQUID*/
-                __webpack_require__(465);
+                __webpack_require__(990);
                 /*LIQUID-END*/
 
                 /*LIQUID*/
 
-                __webpack_require__(533);
+                __webpack_require__(722);
                 /*LIQUID-END*/
 
                 SERVICE.ACTIONS.emit('load');
@@ -9542,12 +9554,12 @@ poonya = /******/ (() => {
                                 entries[i].replaceWith(
                                     ...(
                                         await pattern.result().complete()
-                                    ).map(e => parseHTML(e))
+                                    ).map((e) => parseHTML(e))
                                 );
                                 window.dispatchEvent(block_load);
                                 res();
                             });
-                            pattern.on('error', e => {
+                            pattern.on('error', (e) => {
                                 window.dispatchEvent(block_error);
                                 res();
                             });
@@ -9574,7 +9586,7 @@ poonya = /******/ (() => {
             /***/
         },
 
-        /***/ 110: /***/ (
+        /***/ 40: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -9586,17 +9598,17 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            module.exports.FIELDFLAGS = __webpack_require__(395).FIELDFLAGS;
-            module.exports.Exceptions = __webpack_require__(710);
+            module.exports.FIELDFLAGS = __webpack_require__(351).FIELDFLAGS;
+            module.exports.Exceptions = __webpack_require__(943);
             module.exports.PoonyaStaticLibrary = __webpack_require__(
-                740
+                742
             ).PoonyaStaticLibrary;
-            module.exports.PoonyaPrototype = __webpack_require__(743);
+            module.exports.PoonyaPrototype = __webpack_require__(326);
 
             /***/
         },
 
-        /***/ 463: /***/ (
+        /***/ 88: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -9608,14 +9620,14 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { SERVICE } = __webpack_require__(395),
-                { Operand } = __webpack_require__(60),
+            const { SERVICE } = __webpack_require__(351),
+                { Operand } = __webpack_require__(501),
                 {
                     iPoonyaObject,
                     iPoonyaPrototype,
                     iCodeEmitter,
-                } = __webpack_require__(11),
-                NativeFunction = __webpack_require__(124);
+                } = __webpack_require__(161),
+                NativeFunction = __webpack_require__(329);
             /**
              * Фукция которая преобразует нативное значение в значение Poonya
              *
@@ -9645,7 +9657,7 @@ poonya = /******/ (() => {
                             SERVICE.CONSTRUCTORS.INTEGER,
                             null,
                             parents_three,
-                            d_result => (result = d_result)
+                            (d_result) => (result = d_result)
                         );
                         break;
 
@@ -9656,7 +9668,7 @@ poonya = /******/ (() => {
                             SERVICE.CONSTRUCTORS.NUMBER,
                             null,
                             parents_three,
-                            d_result => (result = d_result)
+                            (d_result) => (result = d_result)
                         );
                         break;
 
@@ -9667,7 +9679,7 @@ poonya = /******/ (() => {
                             SERVICE.CONSTRUCTORS.STRING,
                             null,
                             parents_three,
-                            d_result => (result = d_result)
+                            (d_result) => (result = d_result)
                         );
                         break;
 
@@ -9678,7 +9690,7 @@ poonya = /******/ (() => {
                             SERVICE.CONSTRUCTORS.STRING,
                             null,
                             parents_three,
-                            d_result => (result = d_result)
+                            (d_result) => (result = d_result)
                         );
                         break;
 
@@ -9689,7 +9701,7 @@ poonya = /******/ (() => {
                             SERVICE.CONSTRUCTORS.BOOLEAN,
                             null,
                             parents_three,
-                            d_result => (result = d_result)
+                            (d_result) => (result = d_result)
                         );
                         break;
 
@@ -9700,7 +9712,7 @@ poonya = /******/ (() => {
                             SERVICE.CONSTRUCTORS.NULL,
                             null,
                             parents_three,
-                            d_result => (result = d_result)
+                            (d_result) => (result = d_result)
                         );
                         break;
 
@@ -9713,7 +9725,7 @@ poonya = /******/ (() => {
                                     SERVICE.CONSTRUCTORS.NULL,
                                     null,
                                     parents_three,
-                                    d_result => (result = d_result)
+                                    (d_result) => (result = d_result)
                                 );
                                 break;
 
@@ -9731,7 +9743,7 @@ poonya = /******/ (() => {
                                     SERVICE.CONSTRUCTORS.PATTERN,
                                     null,
                                     parents_three,
-                                    d_result => (result = d_result)
+                                    (d_result) => (result = d_result)
                                 );
                                 break;
 
@@ -9744,7 +9756,7 @@ poonya = /******/ (() => {
                                         SERVICE.CONSTRUCTORS.ARRAY,
                                         null,
                                         parents_three,
-                                        d_result => (result = d_result)
+                                        (d_result) => (result = d_result)
                                     );
                                 else
                                     context.createObject(
@@ -9753,7 +9765,7 @@ poonya = /******/ (() => {
                                         SERVICE.CONSTRUCTORS.OBJECT,
                                         null,
                                         parents_three,
-                                        d_result => (result = d_result)
+                                        (d_result) => (result = d_result)
                                     );
                                 break;
                         }
@@ -9878,7 +9890,7 @@ poonya = /******/ (() => {
             }
             /*LIQUID*/
 
-            const setImmediate = (function() {
+            const setImmediate = (function () {
                 let head = new Object(),
                     tail = head;
                 const ID = Math.random();
@@ -9899,7 +9911,7 @@ poonya = /******/ (() => {
                     window.attachEvent('onmessage', onmessage);
                 }
 
-                return function(func, ...args) {
+                return function (func, ...args) {
                     tail = tail.next = {
                         func: func,
                         args,
@@ -9936,7 +9948,6 @@ poonya = /******/ (() => {
     /************************************************************************/
     /******/ /******/ var __webpack_module_cache__ = {}; // The require function
     /******/
-
     /******/ /******/ function __webpack_require__(moduleId) {
         /******/ // Check if module is in cache
         /******/ if (__webpack_module_cache__[moduleId]) {
@@ -9950,25 +9961,21 @@ poonya = /******/ (() => {
             /******/
         }); // Execute the module function
         /******/
-
         /******/ /******/ __webpack_modules__[moduleId](
             module,
             module.exports,
             __webpack_require__
         ); // Flag the module as loaded
         /******/
-
         /******/ /******/ module.loaded = true; // Return the exports of the module
         /******/
-
         /******/ /******/ return module.exports;
         /******/
     } /* webpack/runtime/global */
     /******/
-
     /************************************************************************/
     /******/ /******/ (() => {
-        /******/ __webpack_require__.g = (function() {
+        /******/ __webpack_require__.g = (function () {
             /******/ if (typeof globalThis === 'object') return globalThis;
             /******/ try {
                 /******/ return this || new Function('return this')();
@@ -9982,9 +9989,8 @@ poonya = /******/ (() => {
         /******/
     })(); /* webpack/runtime/node module decorator */
     /******/
-
     /******/ /******/ (() => {
-        /******/ __webpack_require__.nmd = module => {
+        /******/ __webpack_require__.nmd = (module) => {
             /******/ module.paths = [];
             /******/ if (!module.children) module.children = [];
             /******/ return module;
@@ -9993,8 +9999,7 @@ poonya = /******/ (() => {
         /******/
     })(); // module exports must be returned from runtime so entry inlining is disabled // startup // Load entry module and return exports
     /******/
-
     /************************************************************************/
-    /******/ /******/ /******/ /******/ return __webpack_require__(684);
+    /******/ /******/ /******/ /******/ return __webpack_require__(216);
     /******/
 })();

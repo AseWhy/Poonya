@@ -5,9 +5,9 @@ import { iPoonyaConstructsData } from '../src/classes/interfaces';
 import { Heap, Context } from '../src/classes/storage';
 
 export interface iInputData {
-    raw: String;
-    path: String;
-    charset: String;
+    raw?: String;
+    path?: String;
+    charset?: String;
 }
 
 export class PoonyaOutputStream extends EventEmitter {
@@ -22,26 +22,26 @@ export class PoonyaOutputStream extends EventEmitter {
     complete() : Promise<Array<any>> | Array<any> { return new Promise(res => {}) };
 }
 
-export class CodeEmitter {
-    constructor(input: iInputData | String, import_s: Array<String>, logger: Console, onload: Function){}
+export class CodeEmitter extends EventEmitter {
+    constructor(input: iInputData | String, import_s: Array<String>, logger: Console, onload: Function){super();}
     throwError(pos: Number, error: Function, {rad_of = 5} : {rad_of: Number}) : void {}
-    result(data: Object | Heap | Context, {error = this.throwError.bind(this)} : {error: Function}) : PoonyaOutputStream { return new PoonyaOutputStream() };
+    result(data?: Object | Heap | Context, error?: Function) : PoonyaOutputStream { return new PoonyaOutputStream() };
 }
 
 export class MessagePattern extends CodeEmitter{
-    constructor(input: iInputData | String, {block_prefix = 'poonya'} : {block_prefix: String}, import_s: Array<String>, logger: Console, onload: Function){
+    constructor(input: iInputData | String, {block_prefix = 'poonya'} : {block_prefix: String}, import_s?: Array<String>, logger?: Console){
         super(null, null, null, null);
     }
 }
 
 export class ExecutionPattern extends CodeEmitter{
-    constructor(input: iInputData | String, import_s: Array<String>, logger: Console, onload: Function){
+    constructor(input: iInputData | String, import_s?: Array<String>, logger?: Console){
         super(null, null, null, null);
     }
 }
 
 export class ExpressionPattern extends CodeEmitter{
-    constructor(input: iInputData | String, import_s: Array<String>, logger: Console, onload: Function){
+    constructor(input: iInputData | String, import_s?: Array<String>, logger?: Console){
         super(null, null, null, null);
     }
 }
