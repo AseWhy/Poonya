@@ -7351,7 +7351,7 @@ define('poonya', [], () =>
                         }
                     }
 
-                    if (allow_spaces || cur !== CHARTYPE.SPACE)
+                    if (!is_comment && (allow_spaces || cur !== CHARTYPE.SPACE))
                         Export.push(
                             new Token(
                                 cur,
