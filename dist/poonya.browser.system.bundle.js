@@ -8976,7 +8976,7 @@ System.register(
                                                         : path + '.po';
                                                 content = fetch(path, {
                                                     method: 'GET',
-                                                }).then((e) => e.blob);
+                                                }).then((e) => e.text());
                                                 /*LIQUID-END*/
 
                                                 if (parent_path != null) {

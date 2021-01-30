@@ -47,7 +47,7 @@ async function linker(data, parent_path, reject) {
                             if(err)
                                 throw new IOError(path);
 
-                            res(data);
+                            res(data.toString());
                         });
                     });
                 // #!endif
@@ -58,7 +58,7 @@ async function linker(data, parent_path, reject) {
 
                     path = path.split('/').pop().split('.').length > 0 ? path : path + '.po'
                     
-                    content = fetch(path, { method: 'GET' }).then(e => e.blob);
+                    content = fetch(path, { method: 'GET' }).then(e => e.text());
                 */
                 // #!endif
 

@@ -5870,7 +5870,7 @@ module.exports = /******/ (() => {
                             content = new Promise((res) => {
                                 readFile(path, (err, data) => {
                                     if (err) throw new IOError(path);
-                                    res(data);
+                                    res(data.toString());
                                 });
                             });
 
