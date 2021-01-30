@@ -273,7 +273,7 @@ class CodeEmitter extends iCodeEmitter {
                 _.path = '';
 
                 const is_relative = input.path[0] == '.';
-                const has_ext = !['', '.'].includes(extname(input.path));
+                const has_ext = extname(input.path) != '';
 
                 if(has_ext) {
                     if(is_relative) {

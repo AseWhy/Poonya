@@ -7091,7 +7091,7 @@ poonya = /******/ (() => {
              * @author Astecom
              */
 
-            const { maybeEquals } = __webpack_require__(88),
+            const { maybeEquals, toBytes } = __webpack_require__(88),
                 { CHARTYPE } = __webpack_require__(351),
                 { IOError } = __webpack_require__(943),
                 Exceptions = __webpack_require__(943),
@@ -7126,6 +7126,10 @@ poonya = /******/ (() => {
                                 parent_path.split('/').slice(0, -1).join('/') +
                                 '/' +
                                 data[i + 1].data.toString();
+                            path =
+                                path.split('/').pop().split('.').length > 0
+                                    ? path
+                                    : path + '.po';
                             content = fetch(path, {
                                 method: 'GET',
                             }).then((e) => e.blob);
@@ -7141,7 +7145,7 @@ poonya = /******/ (() => {
                                         )
                                             ? 3
                                             : 2,
-                                        ...lexer(await content, false)
+                                        ...lexer(toBytes(await content), false)
                                     );
                                 } catch (e) {
                                     reject(

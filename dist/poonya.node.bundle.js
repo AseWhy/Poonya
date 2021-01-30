@@ -5834,8 +5834,8 @@ module.exports = /******/ (() => {
              */
 
             const { readFile } = __webpack_require__(747),
-                { join, dirname } = __webpack_require__(622),
-                { maybeEquals } = __webpack_require__(88),
+                { join, dirname, extname } = __webpack_require__(622),
+                { maybeEquals, toBytes } = __webpack_require__(88),
                 { CHARTYPE } = __webpack_require__(351),
                 { IOError } = __webpack_require__(943),
                 Exceptions = __webpack_require__(943),
@@ -5866,6 +5866,7 @@ module.exports = /******/ (() => {
                                 dirname(parent_path),
                                 data[i + 1].data.toString()
                             );
+                            path = extname(path) == '' ? path + '.po' : path;
                             content = new Promise((res) => {
                                 readFile(path, (err, data) => {
                                     if (err) throw new IOError(path);
@@ -5883,7 +5884,7 @@ module.exports = /******/ (() => {
                                         )
                                             ? 3
                                             : 2,
-                                        ...lexer(await content, false)
+                                        ...lexer(toBytes(await content), false)
                                     );
                                 } catch (e) {
                                     reject(
@@ -7693,9 +7694,7 @@ module.exports = /******/ (() => {
                         if (typeof input.path === 'string') {
                             _.path = '';
                             const is_relative = input.path[0] == '.';
-                            const has_ext = !['', '.'].includes(
-                                extname(input.path)
-                            );
+                            const has_ext = extname(input.path) != '';
 
                             if (has_ext) {
                                 if (is_relative) {

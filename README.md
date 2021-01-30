@@ -1,6 +1,6 @@
 ![poo](./data/header_document_image.png)
 
-# Poonya &middot; [![Version](https://img.shields.io/badge/version-0.5.3-green)](https://github.com/AseWhy/Poonya) [![Bundle size](https://img.shields.io/github/size/AseWhy/Poonya/dist/poonya.browser.var.bundle.min.js)](https://github.com/AseWhy/Poonya/blob/master/dist/poonya.browser.var.bundle.min.js) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AseWhy/Poonya/blob/master/LICENSE) [![CI](https://circleci.com/gh/AseWhy/Poonya.svg?style=shield)](https://app.circleci.com/pipelines/github/AseWhy/Poonya)
+# Poonya &middot; [![Version](https://img.shields.io/badge/version-0.5.4-green)](https://github.com/AseWhy/Poonya) [![Bundle size](https://img.shields.io/github/size/AseWhy/Poonya/dist/poonya.browser.var.bundle.min.js)](https://github.com/AseWhy/Poonya/blob/master/dist/poonya.browser.var.bundle.min.js) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AseWhy/Poonya/blob/master/LICENSE) [![CI](https://circleci.com/gh/AseWhy/Poonya.svg?style=shield)](https://app.circleci.com/pipelines/github/AseWhy/Poonya)
 
 Poonya is a text-based preprocessor **with no clear purpose**. You can use *poonya* for your project chatbot, or as a web page generation system.
 
