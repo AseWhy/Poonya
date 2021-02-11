@@ -6,8 +6,8 @@
 
 "use strict";
 
-const PoonyaPattern = require('./data/PoonyaPattern');
-const { GetFieldOfNullException, IsNotAConstructorException, PoonyaException } = require('./exceptions')
+const PoonyaPattern = require('./data/PoonyaPattern')
+    , { GetFieldOfNullException, IsNotAConstructorException, PoonyaException } = require('./exceptions')
     , { GET, SERVICE, IS } = require('./static')
     , { Cast, toBytes } = require('../utils.js')
     , { iContext, iPoonyaPrototype, iPathData, iCodeEmitter, iPoonyaObject } = require('./interfaces')
@@ -239,7 +239,11 @@ class Context extends iContext {
                 )
                 .then(
                     result => {
-                        result.result(this, out, (symbol, message) => rej(new PoonyaException(message + ', at symbol ' + symbol)), res);
+                        result && result.result(this, out, 
+                            (symbol, message) => rej(
+                                new PoonyaException(message + ', at symbol ' + symbol)
+                            ),
+                        res, console.error);
                     }
                 );
         });
