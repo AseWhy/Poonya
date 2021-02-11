@@ -28,6 +28,7 @@ function lexer(input, allow_spaces = true) {
         is_comment = false,
         is_multiline = false,
         string_entry = null,
+        last_token = null,
         cur = null,
         last = null;
 
@@ -117,14 +118,20 @@ function lexer(input, allow_spaces = true) {
         }
 
         // Префиксы чисел
-        if(cur === CHARTYPE.NUMBER && last === CHARTYPE.OPERATOR) {
-            if (firstIs(43, 45)) {
-                last = cur;
+        if(
+            cur === CHARTYPE.NUMBER &&
+            last === CHARTYPE.OPERATOR &&
+            firstIs(43, 45) &&
+            (
+                last_token == null ||
+                last_token.type != CHARTYPE.NUMBER
+            )
+        ) {
+            last = cur;
 
-                append(i);
+            append(i);
 
-                continue;
-            }
+            continue;
         }
 
         // Если предыдущий и текущий тип символов это операторы
@@ -137,7 +144,7 @@ function lexer(input, allow_spaces = true) {
                 append(i);
 
                 if (allow_spaces || last !== CHARTYPE.SPACE)
-                    Export.push(new Token(last, buff, i, string_entry));
+                    Export.push(last_token = new Token(last, buff, i, string_entry));
 
                 string_entry = null;
 
@@ -177,7 +184,7 @@ function lexer(input, allow_spaces = true) {
                 (cur !== last || last === CHARTYPE.STRING || last === CHARTYPE.OPERATOR) && last != null
             ) {
                 if (allow_spaces || last !== CHARTYPE.SPACE)
-                    Export.push(new Token(last, buff, i, string_entry));
+                    Export.push(last_token = new Token(last, buff, i, string_entry));
 
                 string_entry = null;
 
