@@ -7075,9 +7075,8 @@ System.register(
                                  * @author Astecom
                                  */
 
-                                const PoonyaPattern = __webpack_require__(360);
-
-                                const {
+                                const PoonyaPattern = __webpack_require__(360),
+                                    {
                                         GetFieldOfNullException,
                                         IsNotAConstructorException,
                                         PoonyaException,
@@ -7409,19 +7408,21 @@ System.register(
                                             )
                                                 .catch((error) => rej(error))
                                                 .then((result) => {
-                                                    result.result(
-                                                        this,
-                                                        out,
-                                                        (symbol, message) =>
-                                                            rej(
-                                                                new PoonyaException(
-                                                                    message +
-                                                                        ', at symbol ' +
-                                                                        symbol
-                                                                )
-                                                            ),
-                                                        res
-                                                    );
+                                                    result &&
+                                                        result.result(
+                                                            this,
+                                                            out,
+                                                            (symbol, message) =>
+                                                                rej(
+                                                                    new PoonyaException(
+                                                                        message +
+                                                                            ', at symbol ' +
+                                                                            symbol
+                                                                    )
+                                                                ),
+                                                            res,
+                                                            console.error
+                                                        );
                                                 });
                                         });
                                     }
@@ -8007,6 +8008,15 @@ System.register(
                                         modules
                                     ] = new Map();
                                 }
+
+                                if (
+                                    __webpack_require__.g[NAMESPACE].modules ==
+                                    null
+                                ) {
+                                    __webpack_require__.g[
+                                        NAMESPACE
+                                    ].modules = 0;
+                                }
                                 /**
                                  * @lends PoonyaStaticLibrary
                                  * @class
@@ -8032,9 +8042,9 @@ System.register(
                                             namespace != null
                                                 ? namespace
                                                 : 'space-' +
-                                                  __webpack_require__.g[
+                                                  (++__webpack_require__.g[
                                                       NAMESPACE
-                                                  ][modules].size.toString(16) +
+                                                  ].modules).toString(16) +
                                                   (l_global ? '-global' : '');
                                         this.global = Boolean(l_global);
                                         this._fields = new Map();
@@ -8391,15 +8401,28 @@ System.register(
                                     lib_object,
                                     override = false
                                 ) => {
+                                    lib_id = Symbol.for(lib_id);
+
                                     if (
-                                        override ||
                                         __webpack_require__.g[NAMESPACE][
                                             modules
-                                        ][(lib_id = Symbol.for(lib_id))] == null
+                                        ][lib_id] == null
                                     ) {
                                         __webpack_require__.g[NAMESPACE][
                                             modules
                                         ][lib_id] = lib_object;
+                                    } else if (
+                                        override &&
+                                        __webpack_require__.g[NAMESPACE][
+                                            modules
+                                        ][lib_id] != null
+                                    ) {
+                                        Object.assign(
+                                            __webpack_require__.g[NAMESPACE][
+                                                modules
+                                            ][lib_id],
+                                            lib_object
+                                        );
                                     } else {
                                         throw new TypeError(
                                             'Library, with this id already imported. For ' +
@@ -8645,6 +8668,7 @@ System.register(
                                         is_comment = false,
                                         is_multiline = false,
                                         string_entry = null,
+                                        last_token = null,
                                         cur = null,
                                         last = null;
                                     const Export = new Array();
@@ -8751,13 +8775,15 @@ System.register(
 
                                         if (
                                             cur === CHARTYPE.NUMBER &&
-                                            last === CHARTYPE.OPERATOR
+                                            last === CHARTYPE.OPERATOR &&
+                                            firstIs(43, 45) &&
+                                            (last_token == null ||
+                                                last_token.type !=
+                                                    CHARTYPE.NUMBER)
                                         ) {
-                                            if (firstIs(43, 45)) {
-                                                last = cur;
-                                                append(i);
-                                                continue;
-                                            }
+                                            last = cur;
+                                            append(i);
+                                            continue;
                                         } // Если предыдущий и текущий тип символов это операторы
 
                                         if (
@@ -8775,12 +8801,12 @@ System.register(
                                                     last !== CHARTYPE.SPACE
                                                 )
                                                     Export.push(
-                                                        new Token(
+                                                        (last_token = new Token(
                                                             last,
                                                             buff,
                                                             i,
                                                             string_entry
-                                                        )
+                                                        ))
                                                     );
                                                 string_entry = null;
                                                 clear(i);
@@ -8823,12 +8849,12 @@ System.register(
                                                     last !== CHARTYPE.SPACE
                                                 )
                                                     Export.push(
-                                                        new Token(
+                                                        (last_token = new Token(
                                                             last,
                                                             buff,
                                                             i,
                                                             string_entry
-                                                        )
+                                                        ))
                                                     );
                                                 string_entry = null;
                                                 clear(i);
@@ -8881,7 +8907,9 @@ System.register(
 
                                     if (
                                         !is_comment &&
-                                        (allow_spaces || cur !== CHARTYPE.SPACE)
+                                        (allow_spaces ||
+                                            cur !== CHARTYPE.SPACE) &&
+                                        buff.length != 0
                                     )
                                         Export.push(
                                             new Token(
@@ -11148,6 +11176,7 @@ System.register(
                                 class PoonyaOutputStream extends EventEmitter {
                                     /**
                                      * Класс вывода шаблонов, за счет этого интерфейса производится
+                                     * Template output class, due to this interface is created
                                      *
                                      * @param {Object} data
                                      * @param {Context} context
@@ -11165,8 +11194,10 @@ System.register(
                                     }
                                     /**
                                      * Преобразует поток в ReadableStream или в Stream.Writable для nodejs
+                                     * Converts stream to ReadableStream or Stream.Writable for nodejs
                                      *
-                                     * @returns {ReadableStream|Stream.Writable} поток чтения, если это браузер, или поток записи если это nodejs
+                                     * @returns {ReadableStream|Stream.Writable} a read stream if it's a browser, or a write stream if it's nodejs
+                                     *                                           поток чтения, если это браузер, или поток записи если это nodejs
                                      * @method
                                      * @public
                                      */
@@ -11195,10 +11226,13 @@ System.register(
                                         /*LIQUID-END*/
                                     }
                                     /**
+                                     * Redirects the data stream to `stream` passed as the first argument
                                      * Перенаправляет поток данных в `stream` переданный первым аргументом
                                      *
                                      * @param {PoonyaOutputStream|Stream} stream поток которому необходимо передавать данные помимо этого
-                                     * @returns`stream` Поток который был передан.
+                                     *                                           the stream to which you need to transfer data in addition to this
+                                     * @returns `stream` Поток который был передан.
+                                     * @returns `stream` The stream that was sent.
                                      * @method
                                      * @public
                                      */
@@ -11220,8 +11254,10 @@ System.register(
                                     }
                                     /**
                                      * Выводит данные
+                                     * Outputs data
                                      *
                                      * @param {Any} data данные которые необходимо вывести
+                                     *                   data to be displayed
                                      * @method
                                      * @public
                                      */
@@ -11231,9 +11267,6 @@ System.register(
 
                                         this.emit('data', data);
                                     }
-                                    /**
-                                     * Завершает поток, посылает событие, после готоро
-                                     */
 
                                     end() {
                                         this._ended = true;
@@ -11241,11 +11274,13 @@ System.register(
                                     }
                                     /**
                                      * Ожидает завершения записи потока, после чего возвращает массив с буффером данных
+                                     * Waits for the stream to finish writing, then returns an array with a data buffer
                                      *
                                      * @async
                                      * @public
                                      * @method
                                      * @returns {Array<Any>} массив с переданными данными
+                                     *                       array with passed data
                                      */
 
                                     complete() {
@@ -11265,10 +11300,14 @@ System.register(
                                 class CodeEmitter extends iCodeEmitter {
                                     /**
                                      * Абстрактный класс который предназначен для подготовке всех наследуемых эмитттеров.
+                                     * An abstract class that prepares all inherited emitters.
                                      *
                                      * @param {String | iInputData} input Входящая строка с выражением
+                                     *                                    Input string with expression
                                      * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
+                                     *                                 Array with native import libraries
                                      * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
+                                     *                         Logger, you need to take console as the interface, with the functions log, warn, error;
                                      *
                                      * @memberof Poonya
                                      * @constructs CodeEmitter
@@ -11328,6 +11367,7 @@ System.register(
                                                 'string'
                                                     ? input.charset
                                                     : 'utf-8'; // Защищаю от выполнения браузерного кода в nodejs
+                                            // Protecting against execution of browser code in nodejs
 
                                             /*LIQUID*/
 
@@ -11454,10 +11494,16 @@ System.register(
                                     }
                                     /**
                                      * Выводит сообщение об ошибке, прекращает выполнения текущего шаблона.
+                                     * Displays an error message, terminates the execution of the current template.
                                      *
                                      * @param {Number} pos Позиция в которой произшла ошибка
+                                     *                     The position at which the error occurred
+                                     *
                                      * @param {String} error Сообщение с ошибкой
+                                     *                       Error message
+                                     *
                                      * @param {Number} rad_of Радиус печати, т.е. количество строк которое будет печатать в вывод по мимо строки на которой произошла ошибка
+                                     *                        The radius of the seal, i.e. the number of lines that will print to the output next to the line on which the error occurred
                                      * @method
                                      * @public
                                      */
@@ -11543,10 +11589,13 @@ System.register(
                                             );
                                     }
                                     /**
-                                     * Инициалзирует блок инструкций/
+                                     * Инициалзирует блок инструкций
+                                     * Initializes a block of instructions
                                      *
                                      * @param {String|Heap} import_s названия нативных библиотек для импорта
+                                     *                               names of native libraries for import
                                      * @param {Console} logger интерфейс логгинга, Console like
+                                     *                         logging interface, Console like
                                      *
                                      * @method
                                      * @private
@@ -11562,10 +11611,14 @@ System.register(
                                     }
                                     /**
                                      * Выполняет заданную блоку последовательность инструкций
+                                     * Executes a sequence of instructions given to a block
                                      *
                                      * @param {String|Heap} data данные преданые в исполнитель
+                                     *                           data committed to performer
                                      * @param {Function} error функция вывода ошибок, опциаонально
+                                     *                         error output function, optional
                                      * @param {PoonyaOutputStream} out поток вывода из poonya
+                                     *                                 output stream from poonya
                                      *
                                      * @method
                                      * @private
@@ -11618,13 +11671,18 @@ System.register(
                                         }
                                     }
                                     /**
+                                     * Returns the result of block execution
                                      * Возвращает результат выполенения блока
                                      *
                                      * @param {Object|Heap|Context} data данные преданые в исполнитель
+                                     *                                   data committed to performer
                                      * @param {Function} error функция вывода ошибок, опциаонально
+                                     *                         error output function, optional
                                      * @param {Boolean} c_clone если в `data` передан контекст, то при true, он будет склонирован, при false будет использован переданный контекст.
+                                     *                          if a context is passed to `data`, then if true, it will be cloned, if false, the transferred context will be used.
                                      *
                                      * @returns {Array<Any>} результат выполнения блока
+                                     *                       block execution result
                                      * @method
                                      * @public
                                      */
@@ -11635,6 +11693,7 @@ System.register(
                                         c_clone = false
                                     ) {
                                         const out = new PoonyaOutputStream(); // Если вхождения уже загружены, выполняем последовательность
+                                        // If the entries have already been loaded, execute the sequence
 
                                         if (this.loaded) {
                                             setImmediate(() =>
@@ -11647,6 +11706,7 @@ System.register(
                                             );
                                         } else {
                                             // Иначе, ждем окончания загрузки и выполняем последовательность
+                                            // Otherwise, wait for the download to finish and execute the sequence
                                             this.on('load', () =>
                                                 this[RESULT](
                                                     data,
@@ -11951,7 +12011,7 @@ System.register(
                                         );
                                     libs = libs // Если передан массив с массивами
                                         .flat(Infinity) // Фильтурем список библиотек целевых библиотек, если среди них есть не строки отбрасываем их.
-                                        .filter((e) => typeof e != 'string');
+                                        .filter((e) => typeof e == 'string');
                                     return new Promise((res) => {
                                         if (SERVICE.LOADED) {
                                             res(
@@ -12183,6 +12243,15 @@ System.register(
                                         ? module.parent.path
                                         : module.path
                                 );
+
+                                const presset = __webpack_require__(40);
+
+                                module.exports.PoonyaPrototype =
+                                    presset.PoonyaPrototype;
+                                module.exports.PoonyaStaticLibrary =
+                                    presset.PoonyaStaticLibrary;
+                                module.exports.Exceptions = presset.Exceptions;
+                                module.exports.FIELDFLAGS = presset.FIELDFLAGS;
 
                                 /***/
                             },
