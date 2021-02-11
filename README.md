@@ -1,27 +1,27 @@
 ![poo](./data/header_document_image.png)
 
-# Poonya &middot; [![Version](https://img.shields.io/badge/version-0.4.8-green)](https://github.com/AseWhy/Poonya) [![Bundle size](https://img.shields.io/github/size/AseWhy/Poonya/dist/poonya.browser.var.bundle.min.js)](https://github.com/AseWhy/Poonya/blob/master/dist/poonya.browser.var.bundle.min.js) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AseWhy/Poonya/blob/master/LICENSE) [![CI](https://circleci.com/gh/AseWhy/Poonya.svg?style=shield)](https://app.circleci.com/pipelines/github/AseWhy/Poonya)
+# Poonya &middot; [![Version](https://img.shields.io/badge/version-0.5.5-green)](https://github.com/AseWhy/Poonya) [![Bundle size](https://img.shields.io/github/size/AseWhy/Poonya/dist/poonya.browser.var.bundle.min.js)](https://github.com/AseWhy/Poonya/blob/master/dist/poonya.browser.var.bundle.min.js) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AseWhy/Poonya/blob/master/LICENSE) [![CI](https://circleci.com/gh/AseWhy/Poonya.svg?style=shield)](https://app.circleci.com/pipelines/github/AseWhy/Poonya)
 
-Poonya (пунья) - это текстовый препроцессор, **не ставящий перед собой четкого предназначения**. Вы можете использовать *poonya* для вашего чат-бота проекта, или как систему генерации веб страниц.
+Poonya is a text-based preprocessor **with no clear purpose**. You can use *poonya* for your project chatbot, or as a web page generation system.
 
-## Начиная
-Пунью возможно использовать и в браузере и в NodeJS. Вы можете подключить *poonya* используя:
+## Get-started
+Punya can be used in both the browser and NodeJS. You can connect *poonya* using:
 
 ```
 npm install --save github:AseWhy/Poonya
 ```
 
-после чего poonya будет добавлена к пакетам, которые вы можете использовать в вашем проекте.
+after which poonya will be added to packages that you can use in your project.
 
 ### NodeJS
-Для использования в NodeJS, пунью нужно сначала импортировать. Тут я импортирую конкретно класс ExcecutionPattern, который позволяет создать только исполняемые блоки poonya.
+For use in NodeJS, punya must first be imported. Here I import specifically the ExcecutionPattern class, which allows you to create only executable poonya blocks.
 ```js
 const { ExcecutionPattern, MessagePattern, ExpressionPattern } = require('poonya');
 ```
 
-#### Как это можно использовать?
+#### How can this be used?
 
-Для создания объекта исполнителя `ExcecutionPattern` можно сделать так:
+To create an executor object `ExcecutionPattern`, you can do this:
 
 ```js
 const pattern = new ExcecutionPattern(`
@@ -30,14 +30,14 @@ const pattern = new ExcecutionPattern(`
     > poonya;
 `);
 
-// Шаблоны загружкаются асинхронно
+// Templates are loaded asynchronously
 pattern.on('load', async () => {
-    // Выведет ['greet!']
+    // Will write ['greet!']
     console.log(await pattern.result().complete());
 })
 ```
 
-Пример кода выше, это пример создания шаблона прямо из текста. Так-же есть возможность создавать шаблон из файла:
+The example code above is an example of creating a template directly from text. It is also possible to create a template from a file:
 
 ```js
 const pattern = new ExcecutionPattern({ path: __dirname + "/path/to/your/file" });
@@ -47,21 +47,21 @@ pattern.on('load', async () => {
 })
 ```
 
-> Если указан только путь но не передан input, то *poonya* попытается получить этот файл асинхронно, с помощью стандартного модуля файловой системы.
+> If only the path is specified and not passed to input, then  *poonya* will try to get this file asynchronously using the standard file system module.
 
-Помимо `ExcecutionPattern`, *poonya* предоставляет ещё два интерфейса взаимодействия: `MessagePattern`, `ExpressionPattern`;
+In addition to `ExcecutionPattern`, *poonya* provides two more interaction interfaces:` MessagePattern`, `ExpressionPattern`;
 
-`MessagePattern` можно использовать для разделения кода *poonya* и обычного текста паркерами с фигурными скобками:
+`MessagePattern` can be used to separate *poonya* code from normal text with curly brace parkers:
 
 ```js
 const pattern = new MessagePattern(`
-    Например вот это будет выведено как чистый текст, и будет проигноривоно парсером
+    For example, this will be displayed as clear text, and will be ignored by the parser
 
     poonya {
-        // А тут уже необходимо следовать синтаксису poonya
+        // And here it is already necessary to follow the poonya syntax
 
         repeat(0; 10) {
-            > 'Сообщение будет повторено ещё ' + (10 - current) + ' раз';
+            > 'The message will be repeated more ' + (10 - current) + ' times';
         }
     }
 `);
@@ -71,20 +71,20 @@ pattern.on('load', async () => {
 })
 ```
 
-`ExpressionPattern` можно использовать для создания статического выражения, которое необходимо периодически решать.
+`ExpressionPattern` can be used to create a static expression that needs to be resolved periodically.
 
 ```js
 const pattern = new ExpressionPattern(`2 + 2 * 2`);
 
 pattern.on('load', async () => {
-    // Выведет 6
+    // Will write 6
     console.log(await pattern.result().complete());
 })
 ```
 
-#### Для чего это можно использовать?
+#### What can it be used for?
 
-Самый простой, но не единственный, пример это генерация Web страниц.
+The simplest, but not the only, example is the generation of Web pages.
 
 ```js
 const pattern = new MessagePattern(`
@@ -92,15 +92,15 @@ const pattern = new MessagePattern(`
     <html>
         <head>
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-            <title>Пример веб-страницы</title>
+            <title>Sample web page</title>
         </head>
         <body>
             <h1>Заголовок</h1>
-            <!-- Комментарий -->
+            <!-- Comment -->
 
             poonya {
                 repeat(0; 5) {
-                    > '<p>' + current + ' абзац</p>';
+                    > '<p>' + current + ' paragraph</p>';
                 }
             }
         </body>
@@ -108,63 +108,63 @@ const pattern = new MessagePattern(`
 `, 'poonya');
 
 pattern.on('load', async () => {
-    // Это выведет:
+    // This will write:
     //
     // <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
     // <html>
     //    <head>
     //        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    //        <title>Пример веб-страницы</title>
+    //        <title>Sample web page</title>
     //    </head>
     //    <body>
     //        <h1>Заголовок</h1>
-    //        <!-- Комментарий -->
+    //        <!-- Comment -->
     //
-    //        <p>0 абзац</p><p>1 абзац</p><p>2 абзац</p><p>3 абзац</p><p>4 абзац</p>
+    //        <p>0 paragraph</p><p>1 paragraph</p><p>2 paragraph</p><p>3 paragraph</p><p>4 paragraph</p>
     //    </body>
     // </html>
     console.log(await pattern.result().complete().join(''));
 })
 ```
 
-В этом случае использовался MessagePattern который допускает не следование синтаксису poonya вне исполняемых блоков.
+In this case, the MessagePattern was used which allows not following the poonya syntax outside of the executable blocks.
 
-> Вы можете так-же поменять префикс перед {} - круглыми скобками, передав его вторым параметром при создании шаблона
+> You can also change the prefix before {} - parentheses by passing it as the second parameter when creating a template
 
-Вы так-же можете использовать `ExpressionPattern` для создания статических выражений, допустим если вам необходимо использовать калькулятор, в котором необходим контекст.
+You can also use `ExpressionPattern` to create static expressions, for example if you need to use a calculator that requires context.
 
 ```js
 const pattern = new ExpressionPattern('5 > 3 & 3 > 2 & 2 > 1 & a > 5');
 
 pattern.on('load', async () => {
-    // Результатом будет true
+    // The result will be true
     console.log(await pattern.result({ a: 10 }).complete());
 })
 ```
 
-### Браузер
-Для браузера доступны несколько видов испорта, переменной `var`, `System`, `define`. Все они предоставлены как бандлы poonya в папке dist. Тут я буду использовать переменную poonya как способ импорта, таким образом poonya будет содержать все тоже самое что и ``require('poonya')``.
+### Browser
+Several types of spoilage are available for the browser, the variable `var`,` System`, `define`. They are all provided as poonya bundles in the dist folder. Here I will use the variable poonya as the import method, so poonya will contain everything the same as require ('poonya').
 
-Для начала необходимо подключить poonya.
+First you need to connect poonya.
 
 ```html
 <script src='./js/poonya.browser.var.bundle.min.js'></script>
 ```
 
-Таким образом, в глобальном контексте появилась переменная poonya, которую можно использовать вместо ``require('poonya')`` в **nodejs**. Браузерная версия ни чуть не уступает версии **nodejs**, за исключением некоторых моментов:
-* Нельзя импортировать папки
-* Для импорта и include используется fetch.
+Thus, the poonya variable appeared in the global context, which can be used instead of `require('poonya')` in **nodejs**. The browser version is not nearly inferior to the **nodejs** version, except for some points:
+* Can't import folders
+* For import and include use fetch.
 
-Аналогом для браузера, в импорте классов poonya является:
+The analogue for the browser, in the import of poonya classes is:
 
 ```js
 (({ ExcecutionPattern, MessagePattern, ExpressionPattern }) => {
-    // Используйте пунью тут...
+    // Use poonya here...
 })(poonya);
 ```
 
-#### Дополнительные возможности
-Для браузера доступны дополнительные возможности, вида исполнения блоков `script`, где в type передан параметр `"text/poonya"`. При этом, после выполнения шаблона тег будет удален, а на его место вставлен вывод шаблона. Пример:
+#### Additional features
+Additional features are available for the browser, the type of execution of `script` blocks, where the` "text / poonya" `parameter is passed to type. In this case, after executing the template, the tag will be deleted, and the template output will be inserted in its place. Example:
 
 ```html
 <!DOCTYPE html>
@@ -177,7 +177,7 @@ pattern.on('load', async () => {
     <body>
         <script type="text/poonya" import='default.html'>
             > html.createElement(html.TAGS.P, 
-                'Таким образом можно создать абзац' + html.createElement(html.TAGS.B, ', а тут уже жирный текст.')
+                'This way you can create a paragraph' + html.createElement(html.TAGS.B, ', and here is bold text.')
                 (
                     ->
                         class -> 'element...',
@@ -189,18 +189,18 @@ pattern.on('load', async () => {
 </html>
 ```
 
-В результате выполнения этого шаблона, тег `script` будет заменен на на тег `p`, в котором будет текст `Таким образом можно создать абзац` и тег `b` с текстом `, а тут уже жирный текст.`;
+As a result of executing this template, the `script` tag will be replaced with the` p` tag, which will contain the text `Thus, you can create a paragraph` and a `b` tag with the text `, and here we have bold text.`;
 
-Вы также можете использовать атрибуты `import` `handler` и `name`. `import` позволяет указать нативные библиотеки для импорта, в примере выше была импортирована библиотека `default.html`, но можно указать и больше одной, разделив нужные вам библиотеки `|` - прямой чертой. `handler` позволяет указать обработчик для учатка кода в `script`, по стандарту используется `exec`, но вы можете указать `message`, для использования шаблона `MessagePattern`. `name` можно указать, для прослушивания конкретного события window, например при name равным `some`, прослушать окончание разбора тега можно событием `poonya:load:some`.
+You can also use the `import` attributes `handler` and `name`. `import` allows you to specify native libraries for import, in the example above the` default.html` library was imported, but you can specify more than one, separating the libraries you need `|` - with a straight line. `handler` allows you to specify a handler for a code path in a `script`, the default is `exec`, but you can specify `message` to use the `MessagePattern` pattern. `name` can be specified, to listen for a specific window event, for example, when name is equal to` some`, you can listen to the end of parsing the tag with the event `poonya: load: some`.
 
-#### События
-Все события в poonya нацелены на объект window, и помечены префиксом poonya. Ниже будет приведен список событий (возможно будет дополнен):
+#### Events
+All events in poonya target the window object and are prefixed with poonya. Below is a list of events (may be supplemented):
 * poonya:load
 * poonya:load:**blockname**
 * poonya:error:**blockname**
 
 ##### poonya:load
-Это событие окончания загрузки всех участков кода помеченных как `type='text/poonya'`, его можно прослушать в объекте window.
+This event is the end of loading all code sections marked as `type='text/poonya'`, it can be listened to in the object `window`.
 ```js
 window.addEventListener('poonya:load', () => {
     console.log('All blocks have been successfully loaded.')
@@ -208,7 +208,7 @@ window.addEventListener('poonya:load', () => {
 ```
 
 ##### poonya:load:*blockname*
-Это событие окончания загрузки конкретного блока, если вам необходимо выполнить какие либо действия по завершении загрузки какого либо блока, их можно разместить в слушателе глобального объекта window poonya:load:**blockname**.
+This event is the end of loading a specific block, if you need to perform any actions after the loading of any block is complete, they can be placed in the listener of the global window poonya object: load: **blockname**.
 ```js
 window.addEventListener('poonya:load:some', () => {
     console.log('Some - block has been loaded.')
@@ -216,12 +216,12 @@ window.addEventListener('poonya:load:some', () => {
 ```
 
 ##### poonya:error:*blockname*
-Это событие, которое говорит об ошибке в конкретном блоке, вы можете использовать его для обработки возникшей ошибки.
+This is an event that indicates an error in a specific block, you can use it to handle the error that occurred.
 ```js
 window.addEventListener('poonya:error:some', () => {
     console.log('An error occurred in the `some` block')
 })
 ```
 
-## Вики
-Смотрите [wiki](https://asewhy.github.io/#poonya/main-poonya) для помощи по синтаксису
+## Wiki
+See [wiki](https://asewhy.github.io/#!poonya/main-poonya?lang=us) for syntax help

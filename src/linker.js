@@ -9,9 +9,9 @@
 const 
     // #!if platform === 'node'
     { readFile } = require('fs'),
-    { join, dirname } = require('path'),
+    { join, dirname, extname } = require('path'),
     // #!endif
-    { maybeEquals } = require('./utils'),
+    { maybeEquals, toBytes } = require('./utils'),
     { CHARTYPE } = require('./classes/static'),
     { IOError } = require('./classes/exceptions'),
     Exceptions = require('./classes/exceptions'),
@@ -40,12 +40,14 @@ async function linker(data, parent_path, reject) {
                 // #!if platform === 'node'
                     path = join(dirname(parent_path), data[i + 1].data.toString());
 
+                    path = extname(path) == '' ? path + '.po' : path;
+
                     content = new Promise(res => {
                         readFile(path, (err, data) => {
                             if(err)
                                 throw new IOError(path);
 
-                            res(data);
+                            res(data.toString());
                         });
                     });
                 // #!endif
@@ -53,8 +55,10 @@ async function linker(data, parent_path, reject) {
                 // #!if platform === 'browser'
                 /*~
                     path = window.location.origin + '/' + parent_path.split('/').slice(0, -1).join('/') + '/' + data[i + 1].data.toString();
+
+                    path = path.split('/').pop().split('.').length > 0 ? path : path + '.po'
                     
-                    content = fetch(path, { method: 'GET' }).then(e => e.blob);
+                    content = fetch(path, { method: 'GET' }).then(e => e.text());
                 */
                 // #!endif
 
@@ -63,7 +67,10 @@ async function linker(data, parent_path, reject) {
                         data.splice(
                             i,
                             data[i + 2].equals(CHARTYPE.OPERATOR, ';') ? 3 : 2,
-                            ...lexer(await content, false)
+                            ...lexer(
+                                toBytes(await content),
+                                false
+                            )
                         );
                     } catch (e) {
                         reject(data[i].position, new Exceptions.LinkerIOError(path));

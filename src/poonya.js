@@ -103,6 +103,7 @@ const RESULT = Symbol('RESULT')
 class PoonyaOutputStream extends EventEmitter {
     /**
      * Класс вывода шаблонов, за счет этого интерфейса производится
+     * Template output class, due to this interface is created
      *
      * @param {Object} data
      * @param {Context} context
@@ -122,8 +123,10 @@ class PoonyaOutputStream extends EventEmitter {
 
     /**
      * Преобразует поток в ReadableStream или в Stream.Writable для nodejs
+     * Converts stream to ReadableStream or Stream.Writable for nodejs
      * 
-     * @returns {ReadableStream|Stream.Writable} поток чтения, если это браузер, или поток записи если это nodejs
+     * @returns {ReadableStream|Stream.Writable} a read stream if it's a browser, or a write stream if it's nodejs
+     *                                           поток чтения, если это браузер, или поток записи если это nodejs
      * @method
      * @public
      */
@@ -152,10 +155,13 @@ class PoonyaOutputStream extends EventEmitter {
     }
 
     /**
+     * Redirects the data stream to `stream` passed as the first argument
      * Перенаправляет поток данных в `stream` переданный первым аргументом
      * 
      * @param {PoonyaOutputStream|Stream} stream поток которому необходимо передавать данные помимо этого
-     * @returns`stream` Поток который был передан.
+     *                                           the stream to which you need to transfer data in addition to this
+     * @returns `stream` Поток который был передан.
+     * @returns `stream` The stream that was sent.
      * @method
      * @public
      */
@@ -171,8 +177,10 @@ class PoonyaOutputStream extends EventEmitter {
 
     /**
      * Выводит данные
+     * Outputs data
      * 
      * @param {Any} data данные которые необходимо вывести
+     *                   data to be displayed
      * @method
      * @public
      */
@@ -182,9 +190,6 @@ class PoonyaOutputStream extends EventEmitter {
         this.emit('data', data);
     }
 
-    /**
-     * Завершает поток, посылает событие, после готоро
-     */
     end(){
         this._ended = true;
 
@@ -193,11 +198,13 @@ class PoonyaOutputStream extends EventEmitter {
 
     /**
      * Ожидает завершения записи потока, после чего возвращает массив с буффером данных
+     * Waits for the stream to finish writing, then returns an array with a data buffer
      * 
      * @async
      * @public
      * @method
      * @returns {Array<Any>} массив с переданными данными
+     *                       array with passed data
      */
     complete(){
         if(!this._ended)
@@ -213,10 +220,14 @@ class PoonyaOutputStream extends EventEmitter {
 class CodeEmitter extends iCodeEmitter {
     /**
      * Абстрактный класс который предназначен для подготовке всех наследуемых эмитттеров.
+     * An abstract class that prepares all inherited emitters.
      *
      * @param {String | iInputData} input Входящая строка с выражением
+     *                                    Input string with expression
      * @param {Array<String>} import_s Массив с нативными библиотеками для импорта
+     *                                 Array with native import libraries
      * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
+     *                         Logger, you need to take console as the interface, with the functions log, warn, error;
      *
      * @memberof Poonya
      * @constructs CodeEmitter
@@ -269,18 +280,34 @@ class CodeEmitter extends iCodeEmitter {
             _.charset = typeof input.charset === "string" ? input.charset : "utf-8";
 
             // #!if platform === 'node'
-            _.path = normalize(
-                typeof input.path === "string" ? 
-                    ['', '.'].includes(extname(input.path)) ?
-                        join((module.parent ? module.parent.path : module.path), input.path + '.po') :
-                        join((module.parent ? module.parent.path : module.path), input.path) :
-                    module.parent ?
-                        module.parent.filename :
-                        module.filename
-            );
+            if(typeof input.path === "string") {
+                _.path = '';
+
+                const is_relative = input.path[0] == '.';
+                const has_ext = extname(input.path) != '';
+
+                if(has_ext) {
+                    if(is_relative) {
+                        _.path += join((module.parent ? module.parent.path : module.path), input.path)
+                    } else {
+                        _.path += input.path;
+                    }
+                } else {
+                    if(is_relative) {
+                        _.path += join((module.parent ? module.parent.path : module.path), input.path + '.po')
+                    } else {
+                        _.path += input.path + '.po';
+                    }
+                }
+            } else {
+                _.path = module.parent ?
+                            module.parent.filename :
+                            module.filename;
+            }
             // #!endif
 
             // Защищаю от выполнения браузерного кода в nodejs
+            // Protecting against execution of browser code in nodejs
             // #!if platform === 'browser'
             // ~ _.path = typeof input.path === 'string' ? input.path.split('/').pop().split('.').length > 0 ? input.path : input.path + '.po' : 'anonymous.po';
             // #!endif
@@ -345,10 +372,16 @@ class CodeEmitter extends iCodeEmitter {
 
     /**
      * Выводит сообщение об ошибке, прекращает выполнения текущего шаблона.
+     * Displays an error message, terminates the execution of the current template.
      *
      * @param {Number} pos Позиция в которой произшла ошибка
+     *                     The position at which the error occurred
+     * 
      * @param {String} error Сообщение с ошибкой
+     *                       Error message
+     * 
      * @param {Number} rad_of Радиус печати, т.е. количество строк которое будет печатать в вывод по мимо строки на которой произошла ошибка
+     *                        The radius of the seal, i.e. the number of lines that will print to the output next to the line on which the error occurred
      * @method
      * @public
      */
@@ -416,10 +449,13 @@ class CodeEmitter extends iCodeEmitter {
     }
 
     /**
-     * Инициалзирует блок инструкций/
+     * Инициалзирует блок инструкций
+     * Initializes a block of instructions
      *
      * @param {String|Heap} import_s названия нативных библиотек для импорта
+     *                               names of native libraries for import
      * @param {Console} logger интерфейс логгинга, Console like
+     *                         logging interface, Console like
      * 
      * @method
      * @private
@@ -434,10 +470,14 @@ class CodeEmitter extends iCodeEmitter {
 
     /**
      * Выполняет заданную блоку последовательность инструкций
+     * Executes a sequence of instructions given to a block
      *
      * @param {String|Heap} data данные преданые в исполнитель
+     *                           data committed to performer
      * @param {Function} error функция вывода ошибок, опциаонально
+     *                         error output function, optional
      * @param {PoonyaOutputStream} out поток вывода из poonya
+     *                                 output stream from poonya
      * 
      * @method
      * @private
@@ -461,13 +501,18 @@ class CodeEmitter extends iCodeEmitter {
     }
 
     /**
+     * Returns the result of block execution
      * Возвращает результат выполенения блока
      *
      * @param {Object|Heap|Context} data данные преданые в исполнитель
+     *                                   data committed to performer
      * @param {Function} error функция вывода ошибок, опциаонально
+     *                         error output function, optional
      * @param {Boolean} c_clone если в `data` передан контекст, то при true, он будет склонирован, при false будет использован переданный контекст.
+     *                          if a context is passed to `data`, then if true, it will be cloned, if false, the transferred context will be used.
      * 
      * @returns {Array<Any>} результат выполнения блока
+     *                       block execution result
      * @method
      * @public
      */
@@ -475,10 +520,12 @@ class CodeEmitter extends iCodeEmitter {
         const out = new PoonyaOutputStream();
 
         // Если вхождения уже загружены, выполняем последовательность
+        // If the entries have already been loaded, execute the sequence
         if(this.loaded) {
             setImmediate(() => this[RESULT](data, error, out, c_clone));
         } else {
             // Иначе, ждем окончания загрузки и выполняем последовательность
+            // Otherwise, wait for the download to finish and execute the sequence
             this.on('load', () => this[RESULT](data, error, out, c_clone));
         }
 
@@ -666,7 +713,7 @@ class ExpressionPattern extends CodeEmitter {
  * @memberof Poonya
  * @async
  */
-function createContext(data, ...libs) {
+function createContext(data = new Object, ...libs) {
     if(typeof data != 'object' || data == null)
         throw new Error('Param "data" must be an object.');
 
@@ -674,7 +721,7 @@ function createContext(data, ...libs) {
         // Если передан массив с массивами
         .flat(Infinity)
         // Фильтурем список библиотек целевых библиотек, если среди них есть не строки отбрасываем их.
-        .filter(e => typeof e != 'string');
+        .filter(e => typeof e == 'string');
 
     return new Promise(res => {
         if(SERVICE.LOADED) {        
@@ -821,3 +868,10 @@ module.exports.ImportFile = ImportFile.bind(null, module.parent != null ? module
 // #!if platform === 'node'
 module.exports.ImportDir = ImportDir.bind(null, module.parent != null ? module.parent.path : module.path);
 // #!endif
+
+const presset = require('./preset');
+
+module.exports.PoonyaPrototype = presset.PoonyaPrototype;
+module.exports.PoonyaStaticLibrary = presset.PoonyaStaticLibrary;
+module.exports.Exceptions = presset.Exceptions;
+module.exports.FIELDFLAGS = presset.FIELDFLAGS;

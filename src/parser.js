@@ -842,8 +842,8 @@ function ifStatementParser(start, entries, reject) {
  * @protected
  */
 function codeBlockParser(start, entries, reject) {
-    const buffer = new SequenceGroup(),
-        result = new Array();
+    const buffer = new SequenceGroup()
+        , result = new Array();
 
     for (let i = start, leng = entries.length;; i++) {
         try {

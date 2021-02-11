@@ -1,5 +1,0 @@
-/>
-    Multilevel object notation
-</
-
-> pattern;
