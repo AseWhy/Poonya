@@ -1,6 +1,6 @@
 ![poo](./data/header_document_image.png)
 
-# Poonya &middot; [![Version](https://img.shields.io/badge/version-0.5.4-green)](https://github.com/AseWhy/Poonya) [![Bundle size](https://img.shields.io/github/size/AseWhy/Poonya/dist/poonya.browser.var.bundle.min.js)](https://github.com/AseWhy/Poonya/blob/master/dist/poonya.browser.var.bundle.min.js) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AseWhy/Poonya/blob/master/LICENSE) [![CI](https://circleci.com/gh/AseWhy/Poonya.svg?style=shield)](https://app.circleci.com/pipelines/github/AseWhy/Poonya)
+# Poonya &middot; [![Version](https://img.shields.io/badge/version-0.5.5-green)](https://github.com/AseWhy/Poonya) [![Bundle size](https://img.shields.io/github/size/AseWhy/Poonya/dist/poonya.browser.var.bundle.min.js)](https://github.com/AseWhy/Poonya/blob/master/dist/poonya.browser.var.bundle.min.js) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AseWhy/Poonya/blob/master/LICENSE) [![CI](https://circleci.com/gh/AseWhy/Poonya.svg?style=shield)](https://app.circleci.com/pipelines/github/AseWhy/Poonya)
 
 Poonya is a text-based preprocessor **with no clear purpose**. You can use *poonya* for your project chatbot, or as a web page generation system.
 
@@ -47,11 +47,11 @@ pattern.on('load', async () => {
 })
 ```
 
-> If only the path is specified and not passed to input, then * poonya * will try to get this file asynchronously using the standard file system module.
+> If only the path is specified and not passed to input, then  *poonya* will try to get this file asynchronously using the standard file system module.
 
-In addition to `ExcecutionPattern`, * poonya * provides two more interaction interfaces:` MessagePattern`, `ExpressionPattern`;
+In addition to `ExcecutionPattern`, *poonya* provides two more interaction interfaces:` MessagePattern`, `ExpressionPattern`;
 
-`MessagePattern` can be used to separate * poonya * code from normal text with curly brace parkers:
+`MessagePattern` can be used to separate *poonya* code from normal text with curly brace parkers:
 
 ```js
 const pattern = new MessagePattern(`
@@ -189,9 +189,9 @@ Additional features are available for the browser, the type of execution of `scr
 </html>
 ```
 
-As a result of executing this template, the `script` tag will be replaced with the` p` tag, which will contain the text `Thus, you can create a paragraph` and a` b` tag with the text `, and here we have bold text.`;
+As a result of executing this template, the `script` tag will be replaced with the` p` tag, which will contain the text `Thus, you can create a paragraph` and a `b` tag with the text `, and here we have bold text.`;
 
-You can also use the `import` attributes` handler` and `name`. `import` allows you to specify native libraries for import, in the example above the` default.html` library was imported, but you can specify more than one, separating the libraries you need `|` - with a straight line. `handler` allows you to specify a handler for a code path in a` script`, the default is `exec`, but you can specify` message` to use the `MessagePattern` pattern. `name` can be specified, to listen for a specific window event, for example, when name is equal to` some`, you can listen to the end of parsing the tag with the event `poonya: load: some`.
+You can also use the `import` attributes `handler` and `name`. `import` allows you to specify native libraries for import, in the example above the` default.html` library was imported, but you can specify more than one, separating the libraries you need `|` - with a straight line. `handler` allows you to specify a handler for a code path in a `script`, the default is `exec`, but you can specify `message` to use the `MessagePattern` pattern. `name` can be specified, to listen for a specific window event, for example, when name is equal to` some`, you can listen to the end of parsing the tag with the event `poonya: load: some`.
 
 #### Events
 All events in poonya target the window object and are prefixed with poonya. Below is a list of events (may be supplemented):

@@ -28,6 +28,10 @@ if(global[NAMESPACE][modules] == null) {
     global[NAMESPACE][modules] = new Map();
 }
 
+if(global[NAMESPACE].modules == null) {
+    global[NAMESPACE].modules = 0;
+}
+
 /**
  * @lends PoonyaStaticLibrary
  * @class
@@ -44,7 +48,7 @@ class PoonyaStaticLibrary {
     constructor(id, l_global = false, override = false, namespace) {
         AddLibrary(id, this, override);
 
-        this.namespace = namespace != null ? namespace : 'space-' + (global[NAMESPACE][modules].size).toString(16) + (l_global ? '-global' : '');
+        this.namespace = namespace != null ? namespace : 'space-' + (++global[NAMESPACE].modules).toString(16) + (l_global ? '-global' : '');
         this.global = Boolean(l_global);
 
         this._fields = new Map();
@@ -255,8 +259,12 @@ class PoonyaStaticLibrary {
  * @protected
  */
 let AddLibrary = (lib_id, lib_object, override = false) => {
-    if (override || global[NAMESPACE][modules][(lib_id = Symbol.for(lib_id))] == null) {
+    lib_id = Symbol.for(lib_id)
+
+    if (global[NAMESPACE][modules][lib_id] == null) {
         global[NAMESPACE][modules][lib_id] = lib_object;
+    } else if(override && global[NAMESPACE][modules][lib_id] != null) {
+        Object.assign(global[NAMESPACE][modules][lib_id], lib_object);
     } else {
         throw new TypeError('Library, with this id already imported. For ' + lib_id.toString());
     }
@@ -354,6 +362,7 @@ ImportFile = (lib_dir, file) => {
         });
     });
 };
+
 // Для node есть специальная функция для импорта каталога
 module.exports.ImportDir = ImportDir;
 // #!endif

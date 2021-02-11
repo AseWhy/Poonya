@@ -239,7 +239,7 @@ function lexer(input, allow_spaces = true) {
         }
     }
 
-    if (!is_comment && (allow_spaces || cur !== CHARTYPE.SPACE))
+    if (!is_comment && (allow_spaces || cur !== CHARTYPE.SPACE) && buff.length != 0)
         Export.push(
             new Token(
                 cur,
