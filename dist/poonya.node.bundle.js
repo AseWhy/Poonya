@@ -1736,7 +1736,7 @@ module.exports = /******/ (() => {
                         case CHARTYPE.NUMBER:
                             current = new ObjectContructorCall(
                                 SERVICE.CONSTRUCTORS.NUMBER,
-                                parseInt(entry.data.toString()),
+                                parseFloat(entry.data.toString()),
                                 entry.position
                             );
                             break;
@@ -6102,7 +6102,9 @@ module.exports = /******/ (() => {
                                     ) {
                                         entries[
                                             entries.length - 1
-                                        ][0] = parseInt(data[i].toRawString());
+                                        ][0] = parseFloat(
+                                            data[i].toRawString()
+                                        );
                                     } else {
                                         reject(
                                             data[i].position,
@@ -7274,6 +7276,8 @@ module.exports = /******/ (() => {
                                 );
                         }
                     } catch (e) {
+                        console.trace(e);
+
                         if (e instanceof PoonyaException) {
                             throw e;
                         } else {

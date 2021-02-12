@@ -3135,7 +3135,7 @@ define('poonya', [], () =>
                             case CHARTYPE.NUMBER:
                                 current = new ObjectContructorCall(
                                     SERVICE.CONSTRUCTORS.NUMBER,
-                                    parseInt(entry.data.toString()),
+                                    parseFloat(entry.data.toString()),
                                     entry.position
                                 );
                                 break;
@@ -7668,7 +7668,7 @@ define('poonya', [], () =>
                                         ) {
                                             entries[
                                                 entries.length - 1
-                                            ][0] = parseInt(
+                                            ][0] = parseFloat(
                                                 data[i].toRawString()
                                             );
                                         } else {
@@ -8887,6 +8887,8 @@ define('poonya', [], () =>
                                     );
                             }
                         } catch (e) {
+                            console.trace(e);
+
                             if (e instanceof PoonyaException) {
                                 throw e;
                             } else {
