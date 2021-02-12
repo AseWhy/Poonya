@@ -132,7 +132,7 @@ function parseObject(query_stack, start, data, reject, level = 0) {
                         if (data[i].equals(CHARTYPE.WORD) || data[i].equals(CHARTYPE.STRING)) {
                             entries[entries.length - 1][0] = data[i].toRawString();
                         } else if (data[i].equals(CHARTYPE.NUMBER)) {
-                            entries[entries.length - 1][0] = parseInt(data[i].toRawString());
+                            entries[entries.length - 1][0] = parseFloat(data[i].toRawString());
                         } else {
                             reject(data[i].position, new UnexpectedTokenException(data[i], '[Word]'));
                         }
@@ -1117,6 +1117,9 @@ function codeBlockParser(start, entries, reject) {
                     );
             }
         } catch (e) {
+            if(SERVICE.CONFIG.DEBUG)
+                console.trace(e);
+
             if (e instanceof PoonyaException) {
                 throw e;
             } else {

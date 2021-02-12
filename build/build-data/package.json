@@ -1,6 +1,6 @@
 {
   "name": "poonya",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "Simple preprocessor for text",
   "main": "./dist/poonya.node.bundle.js",
   "directories": {

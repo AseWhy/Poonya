@@ -74,7 +74,7 @@ class ExpressionGroup extends Operand {
             case CHARTYPE.NUMBER:
                 current = new ObjectContructorCall(
                     SERVICE.CONSTRUCTORS.NUMBER,
-                    parseInt(entry.data.toString()),
+                    parseFloat(entry.data.toString()),
                     entry.position
                 );
                 break;

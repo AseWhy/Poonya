@@ -4012,7 +4012,7 @@ System.register(
                                             case CHARTYPE.NUMBER:
                                                 current = new ObjectContructorCall(
                                                     SERVICE.CONSTRUCTORS.NUMBER,
-                                                    parseInt(
+                                                    parseFloat(
                                                         entry.data.toString()
                                                     ),
                                                     entry.position
@@ -9261,7 +9261,7 @@ System.register(
                                                             entries[
                                                                 entries.length -
                                                                     1
-                                                            ][0] = parseInt(
+                                                            ][0] = parseFloat(
                                                                 data[
                                                                     i
                                                                 ].toRawString()
@@ -10820,6 +10820,8 @@ System.register(
                                                     );
                                             }
                                         } catch (e) {
+                                            console.trace(e);
+
                                             if (e instanceof PoonyaException) {
                                                 throw e;
                                             } else {
