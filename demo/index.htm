@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" style='--h-height: 3rem; --c-height: min(200px, var(--h-height));'>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../dist/poonya.browser.var.bundle.min.js"></script>
+    <script src="./js/highlight.pack.js"></script>
+    <script src="./js/codemirror.js"></script>
+    <script src="./js/placeholder.js"></script>
+    <script src="./js/javascript.min.js"></script>
+    <title>Document</title>
+
+    <link rel="stylesheet" href="./css/stackoverflow-light.css">
+    <link rel="stylesheet" href="./css/codemirror.css">
+    <link rel="stylesheet" href="./css/monokai.min.css">
+    <style>
+        html {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            margin: 0;
+            background-color: transparent;
+            color: wheat;
+        }
+
+        .center {
+            width: min(700pt, 100%);
+            height: 500pt;
+            margin: auto;
+            display: grid;
+            grid-template-areas: '. .';
+            grid-template-columns: 50% 50%;
+            border: 1pt solid black;
+        }
+
+        .leftside {
+            display: grid;
+            grid-template-areas: 
+                                '.',
+                                '.';
+            grid-template-rows: calc(100% - var(--c-height)) var(--c-height);
+            height: 100%;
+            max-height: 100%;
+            overflow: hidden;
+        }
+
+        .rightside {
+            height: 100%;
+            overflow: auto;
+        }
+
+        .input {
+            width: 100%;
+            height: var(--c-height);
+            display: grid;
+            grid-template-areas:  '. .';
+            grid-template-columns: auto 2.5rem;
+        }
+
+        .input-wr {
+            resize: none;
+            border: none;
+            outline: none;
+            padding: 1rem;
+            line-height: 1.5rem;
+        }
+
+        .input-bt {
+            border: none;
+            height: 3rem;
+        }
+
+        .o_mask {
+            width: 100%;
+            height: 100%;
+            max-height: 100%;
+            overflow: auto;
+        }
+
+        .output {
+            padding: 1.5rem;
+        }
+
+        pre.CodeMirror-line {
+            line-height: 1.5rem !important;
+        }
+
+        .CodeMirror {
+            height: auto;
+        }
+
+        .CodeMirror-scroll {
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .CodeMirror-linenumber {
+            background-color: #222220;
+            color: wheat;
+        }
+
+        button {
+            background-color: #222220;
+            color: wheat;
+            cursor: pointer;
+        }
+
+        pre {
+            word-break: break-all;
+            white-space: break-spaces;
+        }
+
+        .console-formatted.input {
+            padding: 0.5rem;
+            background-color: #222220;
+            margin: 0.25rem 0;
+            line-height: 1rem;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="center">
+        <div class="leftside side">
+            <div class="o_mask">
+                <div class="output l-output" id='l-output'>
+                    Результат
+                </div>
+            </div>
+            <div class="input">
+                <textarea class='input-wr' id='raw-poonya' placeholder='Code here...'></textarea>
+                <button class='input-bt' type='submit' id='submit-code'> > </button>
+            </div>
+        </div>
+        <div class="rightside">
+            <div class="wrapper side output" id='r-output'>
+                Вывод
+            </div>
+        </div>
+    </div>
+    <script>
+        const input = document.getElementById('raw-poonya')
+            , l_output = document.getElementById('l-output')
+            , r_output =  document.getElementById('r-output');
+
+        function toString(val){
+            return JSON.stringify(val);
+        }
+
+        function l_in(raw) {
+            const p_in = document.createElement('pre')
+                , p_in_cont = document.createElement('pre');
+
+            p_in_cont.classList = 'console-formatted input';
+
+            p_in.innerText = '❮❮ [' + (new Date().toLocaleTimeString()) + '] ';
+            
+            p_in_cont.innerText = raw;
+
+            p_in.append(p_in_cont);
+            
+            l_output.append(p_in);
+
+            l_output.scrollIntoView(false);
+        }
+
+        function l_out(raw) {
+            const p_out = document.createElement('pre')
+                , p_out_cont = document.createElement('pre');
+
+            p_out_cont.classList = 'console-formatted';
+
+            p_out.innerText = '❯❯ [' + (new Date().toLocaleTimeString()) + '] ';
+            
+            p_out_cont.innerHTML = hljs.highlight('json', toString(raw)).value;
+
+            p_out.append(p_out_cont);
+            
+            l_output.append(p_out);
+
+            l_output.scrollIntoView(false);
+        }
+
+        function r_out(raw) {
+            const p_out = document.createElement('pre')
+                , p_out_cont = document.createElement('pre');
+
+            p_out_cont.classList = 'console-formatted';
+
+            p_out.innerText = '❯❯ [' + (new Date().toLocaleTimeString()) + '] ';
+            
+            p_out_cont.innerHTML = hljs.highlight('json', toString(raw)).value;
+
+            p_out.append(p_out_cont);
+            
+            r_output.append(p_out);
+
+            r_output.scrollIntoView(false);
+        }
+
+        (async ({ createContext, PoonyaOutputStream }) => {
+            const context = await createContext();
+            const out_p = new PoonyaOutputStream();
+            const subm = document.getElementById('submit-code');
+
+            subm.addEventListener('click', async () => {
+                input.disabled = true;
+                
+                l_in(input.value);
+
+                try {
+                    l_out(await context.eval(input.value, out_p));
+                } catch (e) {
+                    l_out(e.message);
+                }
+
+                input.value = '';
+
+                editor.setValue("");
+
+                editor.disabled
+
+                input.disabled = false;
+
+                input.focus();
+            })
+
+            var editor = CodeMirror.fromTextArea(input, {
+                autoCloseTags: true,
+                tabSize: 4,
+                mode: 'javascript',
+                lineWrapping: true,
+                styleActiveLine: true,
+                lineNumbers: true,
+                theme: 'monokai',
+                tabMode: "indent"
+            });
+
+            editor.on('change', function (cm) {
+                input.value = cm.getValue();
+
+                const size = (1.5 + input.value.split('\n').length * 1.5) + 'rem';
+
+                document.documentElement.style.setProperty('--h-height', size);
+            });
+
+            editor.addKeyMap({
+                'Enter': () => subm.click()
+            });
+
+            out_p.on('data', r_out);
+        })(poonya)
+    </script>
+</body>
+</html>
