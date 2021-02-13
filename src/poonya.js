@@ -438,9 +438,6 @@ class CodeEmitter extends iCodeEmitter {
         }
         
         if(error instanceof PoonyaException) {
-            if(SERVICE.CONFIG.DEBUG)
-                console.trace(error);
-
             error.message += '\n' + buffer.join('');
 
             throw error;
