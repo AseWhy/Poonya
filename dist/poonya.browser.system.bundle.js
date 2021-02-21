@@ -1136,7 +1136,8 @@ System.register(
                                         this.addField(
                                             'length',
                                             this.length,
-                                            FIELDFLAGS.CONSTANT,
+                                            FIELDFLAGS.CONSTANT |
+                                                FIELDFLAGS.PROPERTY,
                                             context
                                         );
                                         this.addField(
@@ -10516,7 +10517,18 @@ System.register(
                                                             2,
                                                             'repeat'
                                                         );
-                                                        i += result[0].jump + 3; // { expression }
+                                                        i += result[0].jump + 3;
+
+                                                        if (
+                                                            result[0].data
+                                                                .length < 2
+                                                        ) {
+                                                            reject(
+                                                                entries[i]
+                                                                    .position,
+                                                                new ParserEmtyArgumentException()
+                                                            );
+                                                        } // { expression }
 
                                                         if (
                                                             maybeEquals(
