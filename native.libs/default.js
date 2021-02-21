@@ -233,7 +233,7 @@ class PoonyaArrayPrototype extends PoonyaPrototype {
         this.addField('indexOf', this.indexOf, FIELDFLAGS.CONSTANT, context);
         this.addField('concat', this.concat, FIELDFLAGS.CONSTANT, context);
         this.addField('append', this.append, FIELDFLAGS.CONSTANT, context);
-        this.addField('length', this.length, FIELDFLAGS.CONSTANT, context);
+        this.addField('length', this.length, FIELDFLAGS.CONSTANT | FIELDFLAGS.PROPERTY, context);
         this.addField('remove', this.remove, FIELDFLAGS.CONSTANT, context);
         this.addField('slice', this.slice, FIELDFLAGS.CONSTANT, context);
         this.addField('pop', this.pop, FIELDFLAGS.CONSTANT, context);
