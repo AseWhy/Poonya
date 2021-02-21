@@ -4013,7 +4013,7 @@ System.register(
                                             case CHARTYPE.NUMBER:
                                                 current = new ObjectContructorCall(
                                                     SERVICE.CONSTRUCTORS.NUMBER,
-                                                    parseInt(
+                                                    parseFloat(
                                                         entry.data.toString()
                                                     ),
                                                     entry.position
@@ -8669,6 +8669,7 @@ System.register(
                                         is_comment = false,
                                         is_multiline = false,
                                         string_entry = null,
+                                        last_token = null,
                                         cur = null,
                                         last = null;
                                     const Export = new Array();
@@ -8775,13 +8776,15 @@ System.register(
 
                                         if (
                                             cur === CHARTYPE.NUMBER &&
-                                            last === CHARTYPE.OPERATOR
+                                            last === CHARTYPE.OPERATOR &&
+                                            firstIs(43, 45) &&
+                                            (last_token == null ||
+                                                last_token.type !=
+                                                    CHARTYPE.NUMBER)
                                         ) {
-                                            if (firstIs(43, 45)) {
-                                                last = cur;
-                                                append(i);
-                                                continue;
-                                            }
+                                            last = cur;
+                                            append(i);
+                                            continue;
                                         } // Если предыдущий и текущий тип символов это операторы
 
                                         if (
@@ -8799,12 +8802,12 @@ System.register(
                                                     last !== CHARTYPE.SPACE
                                                 )
                                                     Export.push(
-                                                        new Token(
+                                                        (last_token = new Token(
                                                             last,
                                                             buff,
                                                             i,
                                                             string_entry
-                                                        )
+                                                        ))
                                                     );
                                                 string_entry = null;
                                                 clear(i);
@@ -8847,12 +8850,12 @@ System.register(
                                                     last !== CHARTYPE.SPACE
                                                 )
                                                     Export.push(
-                                                        new Token(
+                                                        (last_token = new Token(
                                                             last,
                                                             buff,
                                                             i,
                                                             string_entry
-                                                        )
+                                                        ))
                                                     );
                                                 string_entry = null;
                                                 clear(i);
@@ -9259,7 +9262,7 @@ System.register(
                                                             entries[
                                                                 entries.length -
                                                                     1
-                                                            ][0] = parseInt(
+                                                            ][0] = parseFloat(
                                                                 data[
                                                                     i
                                                                 ].toRawString()
@@ -10829,6 +10832,8 @@ System.register(
                                                     );
                                             }
                                         } catch (e) {
+                                            console.trace(e);
+
                                             if (e instanceof PoonyaException) {
                                                 throw e;
                                             } else {

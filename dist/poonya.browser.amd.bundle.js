@@ -3135,7 +3135,7 @@ define('poonya', [], () =>
                             case CHARTYPE.NUMBER:
                                 current = new ObjectContructorCall(
                                     SERVICE.CONSTRUCTORS.NUMBER,
-                                    parseInt(entry.data.toString()),
+                                    parseFloat(entry.data.toString()),
                                     entry.position
                                 );
                                 break;
@@ -7158,6 +7158,7 @@ define('poonya', [], () =>
                         is_comment = false,
                         is_multiline = false,
                         string_entry = null,
+                        last_token = null,
                         cur = null,
                         last = null;
                     const Export = new Array();
@@ -7254,13 +7255,14 @@ define('poonya', [], () =>
 
                         if (
                             cur === CHARTYPE.NUMBER &&
-                            last === CHARTYPE.OPERATOR
+                            last === CHARTYPE.OPERATOR &&
+                            firstIs(43, 45) &&
+                            (last_token == null ||
+                                last_token.type != CHARTYPE.NUMBER)
                         ) {
-                            if (firstIs(43, 45)) {
-                                last = cur;
-                                append(i);
-                                continue;
-                            }
+                            last = cur;
+                            append(i);
+                            continue;
                         } // Если предыдущий и текущий тип символов это операторы
 
                         if (
@@ -7275,7 +7277,12 @@ define('poonya', [], () =>
                                 append(i);
                                 if (allow_spaces || last !== CHARTYPE.SPACE)
                                     Export.push(
-                                        new Token(last, buff, i, string_entry)
+                                        (last_token = new Token(
+                                            last,
+                                            buff,
+                                            i,
+                                            string_entry
+                                        ))
                                     );
                                 string_entry = null;
                                 clear(i);
@@ -7313,7 +7320,12 @@ define('poonya', [], () =>
                             ) {
                                 if (allow_spaces || last !== CHARTYPE.SPACE)
                                     Export.push(
-                                        new Token(last, buff, i, string_entry)
+                                        (last_token = new Token(
+                                            last,
+                                            buff,
+                                            i,
+                                            string_entry
+                                        ))
                                     );
                                 string_entry = null;
                                 clear(i);
@@ -7656,7 +7668,7 @@ define('poonya', [], () =>
                                         ) {
                                             entries[
                                                 entries.length - 1
-                                            ][0] = parseInt(
+                                            ][0] = parseFloat(
                                                 data[i].toRawString()
                                             );
                                         } else {
@@ -8882,6 +8894,8 @@ define('poonya', [], () =>
                                     );
                             }
                         } catch (e) {
+                            console.trace(e);
+
                             if (e instanceof PoonyaException) {
                                 throw e;
                             } else {

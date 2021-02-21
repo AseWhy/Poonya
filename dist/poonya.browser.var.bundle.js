@@ -2988,7 +2988,7 @@ poonya = /******/ (() => {
                         case CHARTYPE.NUMBER:
                             current = new ObjectContructorCall(
                                 SERVICE.CONSTRUCTORS.NUMBER,
-                                parseInt(entry.data.toString()),
+                                parseFloat(entry.data.toString()),
                                 entry.position
                             );
                             break;
@@ -6869,6 +6869,7 @@ poonya = /******/ (() => {
                     is_comment = false,
                     is_multiline = false,
                     string_entry = null,
+                    last_token = null,
                     cur = null,
                     last = null;
                 const Export = new Array();
@@ -6962,12 +6963,16 @@ poonya = /******/ (() => {
                         continue;
                     } // Префиксы чисел
 
-                    if (cur === CHARTYPE.NUMBER && last === CHARTYPE.OPERATOR) {
-                        if (firstIs(43, 45)) {
-                            last = cur;
-                            append(i);
-                            continue;
-                        }
+                    if (
+                        cur === CHARTYPE.NUMBER &&
+                        last === CHARTYPE.OPERATOR &&
+                        firstIs(43, 45) &&
+                        (last_token == null ||
+                            last_token.type != CHARTYPE.NUMBER)
+                    ) {
+                        last = cur;
+                        append(i);
+                        continue;
                     } // Если предыдущий и текущий тип символов это операторы
 
                     if (
@@ -6982,7 +6987,12 @@ poonya = /******/ (() => {
                             append(i);
                             if (allow_spaces || last !== CHARTYPE.SPACE)
                                 Export.push(
-                                    new Token(last, buff, i, string_entry)
+                                    (last_token = new Token(
+                                        last,
+                                        buff,
+                                        i,
+                                        string_entry
+                                    ))
                                 );
                             string_entry = null;
                             clear(i);
@@ -7020,7 +7030,12 @@ poonya = /******/ (() => {
                         ) {
                             if (allow_spaces || last !== CHARTYPE.SPACE)
                                 Export.push(
-                                    new Token(last, buff, i, string_entry)
+                                    (last_token = new Token(
+                                        last,
+                                        buff,
+                                        i,
+                                        string_entry
+                                    ))
                                 );
                             string_entry = null;
                             clear(i);
@@ -7347,7 +7362,9 @@ poonya = /******/ (() => {
                                     ) {
                                         entries[
                                             entries.length - 1
-                                        ][0] = parseInt(data[i].toRawString());
+                                        ][0] = parseFloat(
+                                            data[i].toRawString()
+                                        );
                                     } else {
                                         reject(
                                             data[i].position,
@@ -8526,6 +8543,8 @@ poonya = /******/ (() => {
                                 );
                         }
                     } catch (e) {
+                        console.trace(e);
+
                         if (e instanceof PoonyaException) {
                             throw e;
                         } else {
