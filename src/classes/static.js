@@ -160,6 +160,7 @@ const SERVICE = {
 };
 
 SERVICE.ACTIONS.on('load', () => SERVICE.LOADED = true);
+SERVICE.ACTIONS.setMaxListeners(Infinity);
 
 module.exports.FIELDFLAGS = FIELDFLAGS;
 module.exports.SUPER_CALL = SUPER_CALL;
