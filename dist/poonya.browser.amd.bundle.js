@@ -7168,79 +7168,94 @@ define('poonya', [], () =>
                     };
 
                     const append = (index) => {
-                        buff.push(input[index - 1], input[index]);
-                    };
+                        buff.push(input[index], input[index + 1]);
+                    }; //
+                    // Проверяет первый записанный символ текущего токена
+                    //
 
                     const firstIs = (...is) => {
                         return is.includes(buff[1]);
-                    };
+                    }; //
+                    // Проверяет последний записанный символ текущего токена
+                    //
 
                     const lastIs = (...is) => {
                         return is.includes(buff[buff.length - 1]);
                     };
 
-                    for (let i = 1, leng = input.length; i < leng; i += 2) {
-                        switch (input[i]) {
-                            case 32:
-                            case 9:
-                                cur = CHARTYPE.SPACE;
-                                break;
+                    for (let i = 0, leng = input.length; i < leng; i += 2) {
+                        //
+                        // Строка кодируется по 2 байта, если первый байт не 0, значит символ выходит за пределы ascii,
+                        // а значит не может является ничем кроме вхождения типа слова
+                        //
+                        if (input[i] != 0) cur = CHARTYPE.WORD;
+                        else
+                            switch (input[i + 1]) {
+                                case 32:
+                                case 9:
+                                    cur = CHARTYPE.SPACE;
+                                    break;
 
-                            case 46:
-                                cur = CHARTYPE.POINT;
-                                break;
+                                case 46:
+                                    cur = CHARTYPE.POINT;
+                                    break;
 
-                            case 10:
-                            case 13:
-                                cur = CHARTYPE.NEWLINE;
-                                break;
+                                case 10:
+                                case 13:
+                                    cur = CHARTYPE.NEWLINE;
+                                    break;
 
-                            case 48:
-                            case 49:
-                            case 50:
-                            case 51:
-                            case 52:
-                            case 53:
-                            case 54:
-                            case 55:
-                            case 56:
-                            case 57:
-                                cur = CHARTYPE.NUMBER;
-                                break;
+                                case 48:
+                                case 49:
+                                case 50:
+                                case 51:
+                                case 52:
+                                case 53:
+                                case 54:
+                                case 55:
+                                case 56:
+                                case 57:
+                                    cur = CHARTYPE.NUMBER;
+                                    break;
 
-                            case 34:
-                            case 39:
-                            case 96:
-                                cur = CHARTYPE.STRING;
-                                break;
+                                case 34:
+                                case 39:
+                                case 96:
+                                    cur = CHARTYPE.STRING;
+                                    break;
 
-                            case 60:
-                            case 61:
-                            case 62:
-                            case 63:
-                            case 43:
-                            case 44:
-                            case 45:
-                            case 47:
-                            case 40:
-                            case 41:
-                            case 42:
-                            case 59:
-                            case 58:
-                            case 38:
-                            case 123:
-                            case 124:
-                            case 125:
-                            case 91:
-                            case 93:
-                            case 33:
-                                cur = CHARTYPE.OPERATOR;
-                                break;
+                                case 60:
+                                case 61:
+                                case 62:
+                                case 63:
+                                case 43:
+                                case 44:
+                                case 45:
+                                case 47:
+                                case 40:
+                                case 41:
+                                case 42:
+                                case 59:
+                                case 58:
+                                case 38:
+                                case 123:
+                                case 124:
+                                case 125:
+                                case 91:
+                                case 93:
+                                case 33:
+                                    cur = CHARTYPE.OPERATOR;
+                                    break;
 
-                            default:
-                                cur = CHARTYPE.WORD;
-                                break;
-                        }
+                                default:
+                                    cur = CHARTYPE.WORD;
+                                    break;
+                            } //
+                        // Тут обрабатываю все на типа
+                        // 5. - цифра и точка
+                        // \n\n - два переноса объединяем в один
+                        // d4 - если сначала идет слово а потом цифра объединяем все это в слово
+                        //
 
                         if (
                             (cur === CHARTYPE.NEWLINE &&
@@ -7272,7 +7287,8 @@ define('poonya', [], () =>
                             if (
                                 buff.length === 2 && // В буффере не больше одного символа
                                 firstIs(33, 60, 62) &&
-                                input[i] === 61 // текущий символ '='
+                                input[i] === 0 &&
+                                input[i + 1] === 61 // текущий символ '='
                             ) {
                                 append(i);
                                 if (allow_spaces || last !== CHARTYPE.SPACE)
@@ -7292,17 +7308,18 @@ define('poonya', [], () =>
                             }
 
                             if (
+                                input[i] === 0 &&
                                 buff.length === 2 && // В буффере не больше одного символа
                                 firstIs(47) // Предыдущий символ это /
                             ) {
                                 if (
-                                    input[i] === 47 // Текущий символ это /
+                                    input[i + 1] === 47 // Текущий символ это /
                                 ) {
                                     is_comment = true;
                                     is_multiline = false;
                                     continue;
                                 } else if (
-                                    input[i] === 62 // Текущий символ это >
+                                    input[i + 1] === 62 // Текущий символ это >
                                 ) {
                                     is_comment = true;
                                     is_multiline = true;
@@ -7333,7 +7350,7 @@ define('poonya', [], () =>
 
                             if (cur === CHARTYPE.STRING) {
                                 is_string = true;
-                                string_entry = input[i];
+                                string_entry = input[i + 1];
                                 last = cur;
                                 continue;
                             }
@@ -7343,7 +7360,8 @@ define('poonya', [], () =>
                         } else if (is_comment) {
                             if (is_multiline) {
                                 if (
-                                    input[i] === 47 && // Текущий символ это /
+                                    input[i] === 0 &&
+                                    input[i + 1] === 47 && // Текущий символ это /
                                     lastIs(60) // Предыдущий символ это <
                                 ) {
                                     is_comment = false;
@@ -7364,7 +7382,8 @@ define('poonya', [], () =>
                         } else {
                             if (
                                 cur === CHARTYPE.STRING &&
-                                input[i] === string_entry
+                                input[i + 1] === string_entry &&
+                                input[i] === 0
                             ) {
                                 is_string = false;
                                 last = cur;
