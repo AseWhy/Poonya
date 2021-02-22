@@ -8894,7 +8894,7 @@ define('poonya', [], () =>
                                     );
                             }
                         } catch (e) {
-                            console.trace(e);
+                            if (SERVICE.CONFIG.DEBUG) console.trace(e);
 
                             if (e instanceof PoonyaException) {
                                 throw e;
@@ -9555,7 +9555,6 @@ define('poonya', [], () =>
                         }
 
                         if (error instanceof PoonyaException) {
-                            if (SERVICE.CONFIG.DEBUG) console.trace(error);
                             error.message += '\n' + buffer.join('');
                             throw error;
                         } else
