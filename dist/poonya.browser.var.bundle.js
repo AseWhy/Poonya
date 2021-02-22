@@ -8543,7 +8543,7 @@ poonya = /******/ (() => {
                                 );
                         }
                     } catch (e) {
-                        console.trace(e);
+                        if (SERVICE.CONFIG.DEBUG) console.trace(e);
 
                         if (e instanceof PoonyaException) {
                             throw e;
@@ -9174,7 +9174,6 @@ poonya = /******/ (() => {
                     }
 
                     if (error instanceof PoonyaException) {
-                        if (SERVICE.CONFIG.DEBUG) console.trace(error);
                         error.message += '\n' + buffer.join('');
                         throw error;
                     } else throw new PoonyaException(error, buffer.join(''));
