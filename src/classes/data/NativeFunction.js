@@ -110,12 +110,30 @@ class NativeFunction {
                     ...args_f
                 );
             } catch (err) {
-                reject(call_pos, new NativeFunctionExecutionError(_.target.name, err instanceof Error ? err.stack : new Error().stack));
+                reject(
+                    call_pos,
+                    new NativeFunctionExecutionError(
+                        _.target.name, 
+                        err instanceof Error ? 
+                            err.stack : 
+                            new Error().stack
+                    )
+                );
             }
 
             if(data instanceof Promise) {
                 data
-                    .catch(err => reject(call_pos, new NativeFunctionExecutionError(_.target.name, err instanceof Error ? err.stack : new Error().stack)))
+                    .catch(err => 
+                        reject(
+                            call_pos, 
+                            new NativeFunctionExecutionError(
+                                _.target.name,
+                                err instanceof Error ? 
+                                    err.stack : 
+                                    new Error().stack
+                            )
+                        )
+                    )
                     .then(c_resolve);
             } else if(data !== undefined) {
                 c_resolve(data);
@@ -124,17 +142,27 @@ class NativeFunction {
 
         if(argc != 0){
             (function next() {
-                args[i].result(context, out, reject, p_result => {
-                    p_result.result(context, out, reject, d_result => {
-                        args_f[i] = d_result;
+                if(args[i] instanceof Operand) {
+                    args[i].result(context, out, reject, p_result => {
+                        p_result.result(context, out, reject, d_result => {
+                            args_f[i] = d_result;
 
-                        if(++i >= argc) {
-                            start();
-                        } else {
-                            next();
-                        }
+                            if(++i >= argc) {
+                                start();
+                            } else {
+                                next();
+                            }
+                        });
                     });
-                });
+                } else {
+                    args_f[i] = args[i];
+
+                    if(++i >= argc) {
+                        start();
+                    } else {
+                        next();
+                    }
+                }
             })();
         } else {
             start();

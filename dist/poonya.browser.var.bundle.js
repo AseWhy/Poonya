@@ -254,13 +254,27 @@ poonya = /******/ (() => {
             __webpack_require__
         ) => {
             const {
-                    PoonyaStaticLibrary,
-                    PoonyaPrototype,
-                    FIELDFLAGS,
-                    Exceptions,
-                } = __webpack_require__(40),
-                date = new Date();
+                PoonyaStaticLibrary,
+                PoonyaPrototype,
+                FIELDFLAGS,
+                Exceptions,
+            } = __webpack_require__(40);
 
+            new (class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
+                constructor() {
+                    super('default.joiners', false, false, 'joiners');
+                    this.addField('concat', this.concat, FIELDFLAGS.CONSTANT);
+                    this.addField('array', this.array, FIELDFLAGS.CONSTANT);
+                }
+
+                concat(service, ...data) {
+                    return Array.prototype.join.call(data, '');
+                }
+
+                array(service, ...data) {
+                    return Array.prototype.join.call(data, '');
+                }
+            })();
             new (class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
                 constructor() {
                     super('default.math', false, false, 'math');
@@ -323,34 +337,35 @@ poonya = /******/ (() => {
                     this.addField('year', this.year, FIELDFLAGS.CONSTANT);
                     this.addField('day', this.day, FIELDFLAGS.CONSTANT);
                     this.addField('now', this.now, FIELDFLAGS.CONSTANT);
+                    this.date = new Date();
                 }
 
                 year() {
-                    return date.getUTCFullYear();
+                    return this.date.getUTCFullYear();
                 }
 
                 month() {
-                    return date.getUTCMonth();
+                    return this.date.getUTCMonth();
                 }
 
                 day() {
-                    return date.getUTCDay();
+                    return this.date.getUTCDay();
                 }
 
                 hours() {
-                    return date.getUTCHours();
+                    return this.date.getUTCHours();
                 }
 
                 minutes() {
-                    return date.getUTCMinutes();
+                    return this.date.getUTCMinutes();
                 }
 
                 seconds() {
-                    return date.getUTCSeconds();
+                    return this.date.getUTCSeconds();
                 }
 
                 now() {
-                    return Date.now();
+                    return this.date.getTime();
                 }
             })();
             new (class DefaultNumbersStaticLibrary extends PoonyaStaticLibrary {
@@ -406,14 +421,6 @@ poonya = /******/ (() => {
                     this.addField('get', this.get, FIELDFLAGS.CONSTANT);
                 }
 
-                keys() {
-                    return this.keys();
-                }
-
-                values() {
-                    return this.values();
-                }
-
                 assign(service, ...args) {
                     for (let i = 0, leng = args.length; i < leng; i++)
                         this.append(args[i]);
@@ -424,6 +431,14 @@ poonya = /******/ (() => {
                 set(service, key, value) {
                     this.set(service.context, key, value);
                     return null;
+                }
+
+                keys() {
+                    return this.keys();
+                }
+
+                values() {
+                    return this.values();
                 }
 
                 has(service, key) {
@@ -492,6 +507,12 @@ poonya = /******/ (() => {
                 }
 
                 charAt(service, index) {
+                    if (index != null) {
+                        return this.data.charAt(index);
+                    } else return null;
+                }
+
+                charCodeAt(service, index) {
                     if (index != null) {
                         return this.data.charAt(index);
                     } else return null;
@@ -692,10 +713,16 @@ poonya = /******/ (() => {
                     this.addField('tab', '\t', FIELDFLAGS.CONSTANT);
                     this.addField('log', this.log, FIELDFLAGS.CONSTANT);
                     this.addField('wait', this.wait, FIELDFLAGS.CONSTANT);
+                    this.addField('eval', this.eval, FIELDFLAGS.CONSTANT);
                     this.addLib('default.numbers');
+                    this.addLib('default.joiners');
                     this.addLib('default.regexp');
                     this.addLib('default.dates');
                     this.addLib('default.math');
+                }
+
+                eval(service, string) {
+                    service.context.eval(string).then(service.resolve);
                 }
 
                 wait(service, milis) {
@@ -1390,6 +1417,131 @@ poonya = /******/ (() => {
             /***/
         },
 
+        /***/ 580: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
+            'use strict';
+            /**
+             * @file src/classes/common/PoonyaOutputStream.js
+             * @description Cодержит поток вывода данных poonya
+             * @author Astecom
+             */
+
+            const { EventEmitter } = __webpack_require__(138);
+            /**
+             * @lends PoonyaOutputStream
+             * @class
+             */
+
+            class PoonyaOutputStream extends EventEmitter {
+                /**
+                 * Класс вывода шаблонов, за счет этого интерфейса производится
+                 * Template output class, due to this interface is created
+                 *
+                 * @param {Object} data
+                 * @param {Context} context
+                 *
+                 * @property {Context} data данные которые уже были выведены
+                 *
+                 * @memberof Poonya
+                 * @constructs Heap
+                 * @public
+                 */
+                constructor() {
+                    super();
+                    this._data = new Array();
+                    this._ended = false;
+                }
+                /**
+                 * Преобразует поток в ReadableStream или в Stream.Writable для nodejs
+                 * Converts stream to ReadableStream or Stream.Writable for nodejs
+                 *
+                 * @returns {ReadableStream|Stream.Writable} a read stream if it's a browser, or a write stream if it's nodejs
+                 *                                           поток чтения, если это браузер, или поток записи если это nodejs
+                 * @method
+                 * @public
+                 */
+
+                toReadable() {
+                    const _ = this;
+                    /*LIQUID*/
+
+                    return new ReadableStream({
+                        start(controller) {
+                            _.on('data', controller.enqueue.bind(controller));
+
+                            _.on('end', controller.close.bind(controller));
+                        },
+                    });
+                    /*LIQUID-END*/
+                }
+                /**
+                 * Redirects the data stream to `stream` passed as the first argument
+                 * Перенаправляет поток данных в `stream` переданный первым аргументом
+                 *
+                 * @param {PoonyaOutputStream|Stream} stream поток которому необходимо передавать данные помимо этого
+                 *                                           the stream to which you need to transfer data in addition to this
+                 * @returns `stream` Поток который был передан.
+                 * @returns `stream` The stream that was sent.
+                 * @method
+                 * @public
+                 */
+
+                pipe(stream) {
+                    if (typeof stream.write === 'function') {
+                        this.on('data', stream.write.bind(stream));
+                        return stream;
+                    } else {
+                        throw new TypeError('Is not a WriteStream');
+                    }
+                }
+                /**
+                 * Выводит данные
+                 * Outputs data
+                 *
+                 * @param {Any} data данные которые необходимо вывести
+                 *                   data to be displayed
+                 * @method
+                 * @public
+                 */
+
+                write(data) {
+                    this._data.push(data);
+
+                    this.emit('data', data);
+                }
+
+                end() {
+                    this._ended = true;
+                    this.emit('end');
+                }
+                /**
+                 * Ожидает завершения записи потока, после чего возвращает массив с буффером данных
+                 * Waits for the stream to finish writing, then returns an array with a data buffer
+                 *
+                 * @async
+                 * @public
+                 * @method
+                 * @returns {Array<Any>} массив с переданными данными
+                 *                       array with passed data
+                 */
+
+                complete() {
+                    if (!this._ended)
+                        return new Promise((res) =>
+                            this.on('end', () => res(this._data))
+                        );
+                    else return this._data;
+                }
+            }
+
+            module.exports = PoonyaOutputStream;
+
+            /***/
+        },
+
         /***/ 329: /***/ (
             module,
             __unused_webpack_exports,
@@ -1631,22 +1783,37 @@ poonya = /******/ (() => {
 
                     if (argc != 0) {
                         (function next() {
-                            args[i].result(context, out, reject, (p_result) => {
-                                p_result.result(
+                            if (args[i] instanceof Operand) {
+                                args[i].result(
                                     context,
                                     out,
                                     reject,
-                                    (d_result) => {
-                                        args_f[i] = d_result;
+                                    (p_result) => {
+                                        p_result.result(
+                                            context,
+                                            out,
+                                            reject,
+                                            (d_result) => {
+                                                args_f[i] = d_result;
 
-                                        if (++i >= argc) {
-                                            start();
-                                        } else {
-                                            next();
-                                        }
+                                                if (++i >= argc) {
+                                                    start();
+                                                } else {
+                                                    next();
+                                                }
+                                            }
+                                        );
                                     }
                                 );
-                            });
+                            } else {
+                                args_f[i] = args[i];
+
+                                if (++i >= argc) {
+                                    start();
+                                } else {
+                                    next();
+                                }
+                            }
                         })();
                     } else {
                         start();
@@ -3530,6 +3697,136 @@ poonya = /******/ (() => {
             /***/
         },
 
+        /***/ 281: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
+            'use strict';
+            /**
+             * @file src/classes/excecution/expression/GroupOutStatement.js
+             * @description Содержит в себе оператор группового вывода {}
+             * @author Astecom
+             */
+
+            const { Operand } = __webpack_require__(501),
+                { Tick, Cast } = __webpack_require__(88),
+                { iPoonyaPrototype } = __webpack_require__(161),
+                PoonyaOutputStream = __webpack_require__(580),
+                NativeFunction = __webpack_require__(329);
+            /**
+             * @lends GroupOutStatement
+             * @protected
+             */
+
+            class GroupOutStatement extends Operand {
+                /**
+                 * Литеральный блок группового вывода
+                 *
+                 * @param {SequenceGroup} body Основная исполняемая последовательность
+                 * @param {Function} query_stack путь к функции форматтера (функция которая будет форматировать вывод)
+                 * @param {Number} position позиция вызова
+                 *
+                 * @constructs GroupOutStatement
+                 * @extends Operand
+                 * @memberof Poonya.Expression
+                 * @protected
+                 */
+                constructor(body, query_stack, position) {
+                    super('group-output');
+                    this.body = body;
+                    this.query_stack =
+                        query_stack != null ? [...query_stack] : null;
+                    this.position = position;
+                }
+                /**
+                 * Сериализует текущий объект в строку
+                 *
+                 * @param {String} indent отступ слева, для более понятного отображения кода
+                 * @returns {String} Строковое представление выражения if
+                 * @public
+                 * @method
+                 */
+
+                toString(indent) {
+                    return (
+                        (this.query_stack
+                            ? '(' + this.query_stack.join(' => ') + ') <- '
+                            : '') + this.body.toString(indent)
+                    );
+                }
+                /**
+                 * Начинает вывод файл
+                 *
+                 * @param {iContext} context Контекст выполнения
+                 * @param {PoonyaOutputStream} out вывод шаблонизатора
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve функция возврата результата
+                 *
+                 * @throws {ParserException}
+                 *
+                 * @public
+                 * @method
+                 */
+
+                result(context, out, reject, resolve) {
+                    const _ = this,
+                        stream_mask = new PoonyaOutputStream();
+
+                    _.body.result(context, stream_mask, reject, () => {
+                        if (_.query_stack == null) {
+                            Tick(resolve, Cast(stream_mask._data, context));
+                        } else {
+                            context.getByPath(
+                                _.query_stack,
+                                _.position,
+                                null,
+                                reject,
+                                true,
+                                (result) => {
+                                    if (
+                                        result.instance instanceof
+                                        NativeFunction
+                                    ) {
+                                        result.instance.result(
+                                            result.parent,
+                                            stream_mask._data,
+                                            context,
+                                            out,
+                                            _.position,
+                                            reject,
+                                            resolve
+                                        );
+                                    } else if (
+                                        result.instance instanceof
+                                        iPoonyaPrototype
+                                    )
+                                        reject(
+                                            _.position,
+                                            new UnableToCreateAnObjectException()
+                                        );
+                                    else {
+                                        reject(
+                                            _.position,
+                                            new FieldNotAFunctionException(
+                                                _.query_stack[
+                                                    _.query_stack.length - 1
+                                                ]
+                                            )
+                                        );
+                                    }
+                                }
+                            );
+                        }
+                    });
+                }
+            }
+
+            module.exports = GroupOutStatement;
+
+            /***/
+        },
+
         /***/ 657: /***/ (
             module,
             __unused_webpack_exports,
@@ -3880,8 +4177,8 @@ poonya = /******/ (() => {
                  * @method
                  */
 
-                toString() {
-                    return '> ' + this.expression.toString();
+                toString(indent) {
+                    return '> ' + this.expression.toString(indent);
                 }
                 /**
                  * Выполняет вывод информации из шаблона
@@ -7264,7 +7561,10 @@ poonya = /******/ (() => {
                 ResetStatement = __webpack_require__(498),
                 PushStatement = __webpack_require__(505),
                 SequenceMainGroup = __webpack_require__(404),
+                GroupOutStatement = __webpack_require__(281),
                 linker = __webpack_require__(434);
+
+            const KEYWORDS = ['true', 'false', 'null'];
             /**
              * Парсит вызов функции, возвращает объект вызова функции, и позицию с которой можно продолжить прасинг
              *
@@ -7551,11 +7851,12 @@ poonya = /******/ (() => {
                     if (buffer.length !== 0) {
                         args.push(parseExpression(0, buffer, reject).data);
                         buffer.splice(0, buffer.length);
-                    } else
+                    } else {
                         reject(
                             token != undefined ? token.position : data[start],
                             new ParserEmtyArgumentException()
                         );
+                    }
                 }
 
                 for (let i = start; ; i++) {
@@ -7618,6 +7919,27 @@ poonya = /******/ (() => {
                 }
             }
             /**
+             * Парсит групповой вывод <formatter?> <-? {  }
+             *
+             * @param {Number} start Начальная позиция разбора, для выражения
+             * @param {Array<Token>} data Вхождения которые будут обработаны парсером
+             * @param {?Array<String | ExpressionGroup>} path путь к обработчику, опционально
+             * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             *
+             * @returns {{data: GroupOutStatement, jump: Number}} массив со стэком запроса, по которому можно получит доступ к переменной, и позиция с которой можно продолжить парсинг
+             *
+             * @memberof Poonya.Parser
+             * @protected
+             */
+
+            function parseGroupOut(entries, start, path, reject) {
+                const segments = segmentCutter(start, entries, reject);
+                return {
+                    data: new GroupOutStatement(segments.data, path, start),
+                    jump: segments.jump,
+                };
+            }
+            /**
              * Парсит название, позвращает массив со стэком запроса, по которому можно получит доступ к переменной, и позицию с которой можно продолжить парсинг
              *
              * @param {Number} start Начальная позиция разбора, для выражения
@@ -7671,7 +7993,8 @@ poonya = /******/ (() => {
 
                             hook_index = 0; // Позиция начала парсинга
 
-                            hook_start = i; // ...[3 + 4 + 5]...
+                            hook_start = i; //
+                            // ...[3 + 4 + 5]...
                             //    ^^^^^^^^^^
 
                             while (
@@ -7692,7 +8015,9 @@ poonya = /******/ (() => {
                                 reject(
                                     data[i].position,
                                     new ParserLogicException()
-                                ); // Вставляем выражение как оператор доступа
+                                ); //
+                            // Вставляем выражение как оператор доступа
+                            //
 
                             buffer.push(
                                 parseExpression(
@@ -7716,7 +8041,7 @@ poonya = /******/ (() => {
              * Парсит выражение, позвращает выражение и позицию, с которой можно продолжить парсинг
              *
              * @param {Number} start Начальная позиция разбора, для выражения
-             * @param {Array<Token>} data Вхождения которые будут обработаны парсером
+             * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
              * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
              * @param {String} end_marker Маркер конца выражения
              *
@@ -7726,25 +8051,25 @@ poonya = /******/ (() => {
              * @protected
              */
 
-            function parseExpression(start, data, reject, end_marker = ';') {
-                if (data.length === 0)
+            function parseExpression(start, entries, reject, end_marker = ';') {
+                if (entries.length === 0)
                     return {
                         data: new ExpressionGroup(0),
                         jump: 0,
                     };
-                const buffer = new ExpressionGroup(data[0].position),
+                const buffer = new ExpressionGroup(entries[0].position),
                     result = new Array();
 
                 for (let i = start; ; i++) {
                     if (
-                        data[i] == undefined ||
-                        data[i].equals(CHARTYPE.OPERATOR, ')') ||
-                        data[i].contentEquals(end_marker)
+                        entries[i] == undefined ||
+                        entries[i].equals(CHARTYPE.OPERATOR, ')') ||
+                        entries[i].contentEquals(end_marker)
                     ) {
                         if (buffer.isNotDone())
                             reject(
-                                data[i - 1].position,
-                                data[i] == undefined
+                                entries[i - 1].position,
+                                entries[i] == undefined
                                     ? new CriticalParserErrorUnexpectedEndOfInputException()
                                     : new CriticalParserErrorUnexpectedEndOfExpression()
                             );
@@ -7755,25 +8080,26 @@ poonya = /******/ (() => {
                         };
                     }
 
-                    if (data[i].equals(CHARTYPE.NEWLINE)) continue;
+                    if (entries[i].equals(CHARTYPE.NEWLINE)) continue;
 
                     switch (true) {
                         // Какое-то слово
-                        case data[i].equals(CHARTYPE.WORD):
+                        case entries[i].equals(CHARTYPE.WORD):
                             // Ключевые слова
-                            switch (data[i].toString()) {
-                                case 'true':
-                                case 'false':
-                                case 'null':
-                                    buffer.append(data[i], reject);
-                                    continue;
-                            }
+                            if (KEYWORDS.includes(entries[i].toString())) {
+                                buffer.append(entries[i], reject);
+                                continue;
+                            } //
+                            // Если не ключевое слово, то разбираем как название перемнной
+                            //
 
-                            result[0] = parseVarName(i, data, reject);
+                            result[0] = parseVarName(i, entries, reject); //
+                            // Проверяю следующий токен, если это (, значит впереди функция
+                            //
 
                             if (
-                                data[i + result[0].jump] != null &&
-                                data[i + result[0].jump].equals(
+                                entries[i + result[0].jump] != null &&
+                                entries[i + result[0].jump].equals(
                                     CHARTYPE.OPERATOR,
                                     '('
                                 )
@@ -7782,95 +8108,192 @@ poonya = /******/ (() => {
                                 result[1] = parseFunctionCall(
                                     result[0].data,
                                     i + result[0].jump + 1,
-                                    data,
+                                    entries,
                                     reject,
-                                    data[i].position
+                                    entries[i].position
                                 );
                                 i += result[0].jump + result[1].jump + 1;
-                                buffer.append(result[1].data, reject);
-                            } else if (
-                                data[i + result[0].jump + 1] != null &&
-                                data[i + result[0].jump].equals(
-                                    CHARTYPE.OPERATOR,
-                                    '-'
-                                ) &&
-                                data[i + result[0].jump + 1].equals(
-                                    CHARTYPE.OPERATOR,
-                                    '>'
-                                )
-                            ) {
-                                // Конструктор объекта
-                                result[1] = parseObject(
-                                    result[0].data,
-                                    i + result[0].jump + 2,
-                                    data,
-                                    reject,
-                                    0
-                                );
-                                i += result[0].jump + result[1].jump + 1;
-                                if (
-                                    data[i + 1].equals(CHARTYPE.OPERATOR, ['*'])
-                                )
-                                    i += 1;
                                 buffer.append(result[1].data, reject);
                             } else {
-                                // Получение значения переменной
-                                buffer.append(
-                                    new GetOperator(
-                                        data[i].position,
-                                        result[0].data
-                                    ),
-                                    reject
-                                );
-                                i += result[0].jump - 1;
+                                //
+                                // Если ->, значит конструктор объектта
+                                //
+                                if (entries[i + result[0].jump + 1] != null) {
+                                    if (
+                                        entries[i + result[0].jump].equals(
+                                            CHARTYPE.OPERATOR,
+                                            '-'
+                                        )
+                                    ) {
+                                        if (
+                                            entries[
+                                                i + result[0].jump + 1
+                                            ].equals(CHARTYPE.OPERATOR, '>')
+                                        ) {
+                                            // Конструктор объекта
+                                            result[1] = parseObject(
+                                                result[0].data,
+                                                i + result[0].jump + 2,
+                                                entries,
+                                                reject,
+                                                0
+                                            );
+                                            i +=
+                                                result[0].jump +
+                                                result[1].jump +
+                                                1; //
+                                            // Если недопрыгнул
+                                            //
+
+                                            if (
+                                                entries[
+                                                    i + 1
+                                                ].equals(CHARTYPE.OPERATOR, [
+                                                    '*',
+                                                ])
+                                            )
+                                                i += 1;
+                                            buffer.append(
+                                                result[1].data,
+                                                reject
+                                            );
+                                        } else {
+                                            reject(
+                                                new UnexpectedTokenException(
+                                                    entries[
+                                                        i + result[0].jump + 1
+                                                    ].toString(),
+                                                    '>'
+                                                )
+                                            );
+                                        } //
+                                        // Если <-, значит групповой вывод
+                                        //
+                                    } else if (
+                                        entries[i + result[0].jump].equals(
+                                            CHARTYPE.OPERATOR,
+                                            '<'
+                                        )
+                                    ) {
+                                        if (
+                                            entries[
+                                                i + result[0].jump + 1
+                                            ].equals(CHARTYPE.OPERATOR, '-')
+                                        ) {
+                                            result[1] = parseGroupOut(
+                                                entries,
+                                                i + result[0].jump + 3,
+                                                result[0].data,
+                                                reject
+                                            );
+                                            i +=
+                                                result[0].jump +
+                                                result[1].jump +
+                                                1;
+                                            buffer.append(
+                                                result[1].data,
+                                                reject
+                                            );
+                                        } else {
+                                            reject(
+                                                new UnexpectedTokenException(
+                                                    entries[
+                                                        i + result[0].jump + 1
+                                                    ].toString(),
+                                                    '-'
+                                                )
+                                            );
+                                        }
+                                    } else {
+                                        buffer.append(
+                                            new GetOperator(
+                                                entries[i].position,
+                                                result[0].data
+                                            ),
+                                            reject
+                                        );
+                                        i += result[0].jump - 1;
+                                    }
+                                } else {
+                                    buffer.append(
+                                        new GetOperator(
+                                            entries[i].position,
+                                            result[0].data
+                                        ),
+                                        reject
+                                    );
+                                    i += result[0].jump - 1;
+                                }
                             }
 
                             continue;
+                        //
                         // Конструктор объекта
+                        //
 
-                        case data[i + 1] != null &&
-                            data[i].equals(CHARTYPE.OPERATOR, '-') &&
-                            data[i + 1].equals(CHARTYPE.OPERATOR, '>'):
-                            // Конструктор объекта
+                        case entries[i + 1] != null &&
+                            entries[i + 1].equals(CHARTYPE.OPERATOR, '>') &&
+                            maybeEquals(entries, i + 2, CHARTYPE.NEWLINE) &&
+                            entries[i].equals(CHARTYPE.OPERATOR, '-'):
                             result[0] = parseObject(
                                 SERVICE.CONSTRUCTORS.OBJECT,
                                 i + 2,
-                                data,
+                                entries,
                                 reject,
                                 0
                             );
                             i += result[0].jump + 2;
                             buffer.append(result[0].data, reject);
                             continue;
-                        // Другая группа выражений
+                        //
+                        // Групповой вывод (без обработчика)
+                        //
 
-                        case data[i].equals(CHARTYPE.OPERATOR, '('):
-                            result[0] = parseExpression(i + 1, data, reject);
+                        case entries[i].equals(CHARTYPE.OPERATOR, '{'):
+                            result[0] = parseGroupOut(
+                                entries,
+                                i + 1,
+                                null,
+                                reject
+                            );
                             i += result[0].jump + 1;
                             buffer.append(result[0].data, reject);
                             continue;
-                        // Тернарное выражение
+                        //
+                        // Другая группа выражений
+                        //
 
-                        case data[i].equals(CHARTYPE.OPERATOR, '?'):
+                        case entries[i].equals(CHARTYPE.OPERATOR, '('):
+                            result[0] = parseExpression(i + 1, entries, reject);
+                            i += result[0].jump + 1;
+                            buffer.append(result[0].data, reject);
+                            continue;
+                        //
+                        // Тернарное выражение
+                        //
+
+                        case entries[i].equals(CHARTYPE.OPERATOR, '?'):
                             buffer.complete(reject);
                             result[0] = parseTernar(
                                 new ExpressionGroup(
-                                    data[i].position,
+                                    entries[i].position,
                                     buffer.data
                                 ),
                                 i + 1,
-                                data,
+                                entries,
                                 reject
                             );
                             return {
                                 data: result[0].data,
                                 jump: i - start + result[0].jump + 2,
                             };
+                        //
                         // Операторы строки числа и т.д
+                        //
 
-                        case data[i].equals(CHARTYPE.STRING) ||
-                            data[i].equals(CHARTYPE.NUMBER) ||
-                            data[i].equals(CHARTYPE.OPERATOR, [
+                        case entries[i].equals(CHARTYPE.STRING) ||
+                            entries[i].equals(CHARTYPE.NUMBER) ||
+                            entries[i].equals(CHARTYPE.OPERATOR, [
                                 '/',
                                 '*',
                                 '+',
@@ -7884,14 +8307,16 @@ poonya = /******/ (() => {
                                 '|',
                                 '&',
                             ]):
-                            buffer.append(data[i], reject);
+                            buffer.append(entries[i], reject);
                             continue;
+                        //
                         // Неизвестно что это, завершаем парсинг выражения на этом
+                        //
 
                         default:
                             if (buffer.isNotDone())
                                 reject(
-                                    data[i - 1].position,
+                                    entries[i - 1].position,
                                     new CriticalParserErrorUnexpectedEndOfExpression()
                                 );
                             buffer.complete(reject);
@@ -8015,6 +8440,8 @@ poonya = /******/ (() => {
             /**
              * Используется для того, чтобы вырезать исполняемые сегменты из исполняемых блоков `{}`
              *
+             * ***Данные туда подаются исключая первую фигурную скобку - ...}***
+             *
              * @param {Number} start Начальная позиция разбора, для выражения
              * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
              * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
@@ -8050,11 +8477,12 @@ poonya = /******/ (() => {
                             if (hook_index > 0) {
                                 hook_index--;
                                 body.push(entries[i]);
-                            } else
+                            } else {
                                 reject(
                                     entries[i].position,
                                     new ParserLogicException()
                                 );
+                            }
 
                             continue;
 
@@ -8132,7 +8560,9 @@ poonya = /******/ (() => {
                                         result[2].data
                                     ),
                                     jump: index - start,
-                                };
+                                }; //
+                                // else if...
+                                //
                             } else if (
                                 maybeEquals(
                                     entries,
@@ -8262,7 +8692,9 @@ poonya = /******/ (() => {
                                         '('
                                     )
                                 ) {
+                                    //
                                     // statement ( ...parse... )
+                                    //
                                     result[0] = segmentationParser(
                                         i + 2,
                                         entries,
@@ -8332,23 +8764,23 @@ poonya = /******/ (() => {
                                         '('
                                     )
                                 ) {
+                                    //
                                     // statement ( ...parse... )
+                                    //
                                     result[0] = segmentationParser(
                                         i + 2,
                                         entries,
                                         reject,
-                                        ';',
+                                        [';', ','],
                                         2,
                                         'repeat'
                                     );
                                     i += result[0].jump + 3;
-
-                                    if (result[0].data.length < 2) {
+                                    if (result[0].data.length < 2)
                                         reject(
                                             entries[i].position,
                                             new ParserEmtyArgumentException()
-                                        );
-                                    } // { expression }
+                                        ); // { expression }
 
                                     if (
                                         maybeEquals(
@@ -8452,12 +8884,19 @@ poonya = /******/ (() => {
                                 }
 
                                 break;
+                            //
+                            // Текущий - слово
+                            //
 
                             case entries[i].equals(CHARTYPE.WORD):
-                                result[0] = parseVarName(i, entries, reject); // Если следующий символ доступен
+                                result[0] = parseVarName(i, entries, reject); //
+                                // Если следующий символ доступен
+                                //
 
                                 if (i + result[0].jump < leng) {
+                                    //
                                     // Переопределение
+                                    //
                                     if (
                                         entries[i + result[0].jump].equals(
                                             CHARTYPE.OPERATOR,
@@ -8479,7 +8918,9 @@ poonya = /******/ (() => {
                                             )
                                         );
                                         i +=
-                                            result[0].jump + result[1].jump + 1; // Добавление
+                                            result[0].jump + result[1].jump + 1; //
+                                        // Добавление <-
+                                        //
                                     } else if (
                                         entries[i + result[0].jump].equals(
                                             CHARTYPE.OPERATOR,
@@ -8533,7 +8974,9 @@ poonya = /******/ (() => {
                                             reject
                                         );
                                         buffer.push(result[1].data);
-                                        i += result[1].jump; // Ошибка
+                                        i += result[1].jump; //
+                                        // Ошибка
+                                        //
                                     } else {
                                         reject(
                                             entries[i].position,
@@ -8853,116 +9296,11 @@ poonya = /******/ (() => {
                 { iPoonyaConstructsData, iCodeEmitter } = __webpack_require__(
                     161
                 ),
+                PoonyaOutputStream = __webpack_require__(580),
                 lexer = __webpack_require__(94); // Private fields
 
             const RESULT = Symbol('RESULT'),
                 INIT = Symbol('INIT');
-            /**
-             * @lends PoonyaOutputStream
-             * @class
-             */
-
-            class PoonyaOutputStream extends EventEmitter {
-                /**
-                 * Класс вывода шаблонов, за счет этого интерфейса производится
-                 * Template output class, due to this interface is created
-                 *
-                 * @param {Object} data
-                 * @param {Context} context
-                 *
-                 * @property {Context} data данные которые уже были выведены
-                 *
-                 * @memberof Poonya
-                 * @constructs Heap
-                 * @public
-                 */
-                constructor() {
-                    super();
-                    this._data = new Array();
-                    this._ended = false;
-                }
-                /**
-                 * Преобразует поток в ReadableStream или в Stream.Writable для nodejs
-                 * Converts stream to ReadableStream or Stream.Writable for nodejs
-                 *
-                 * @returns {ReadableStream|Stream.Writable} a read stream if it's a browser, or a write stream if it's nodejs
-                 *                                           поток чтения, если это браузер, или поток записи если это nodejs
-                 * @method
-                 * @public
-                 */
-
-                toReadable() {
-                    const _ = this;
-                    /*LIQUID*/
-
-                    return new ReadableStream({
-                        start(controller) {
-                            _.on('data', controller.enqueue.bind(controller));
-
-                            _.on('end', controller.close.bind(controller));
-                        },
-                    });
-                    /*LIQUID-END*/
-                }
-                /**
-                 * Redirects the data stream to `stream` passed as the first argument
-                 * Перенаправляет поток данных в `stream` переданный первым аргументом
-                 *
-                 * @param {PoonyaOutputStream|Stream} stream поток которому необходимо передавать данные помимо этого
-                 *                                           the stream to which you need to transfer data in addition to this
-                 * @returns `stream` Поток который был передан.
-                 * @returns `stream` The stream that was sent.
-                 * @method
-                 * @public
-                 */
-
-                pipe(stream) {
-                    if (typeof stream.write === 'function') {
-                        this.on('data', stream.write.bind(stream));
-                        return stream;
-                    } else {
-                        throw new TypeError('Is not a WriteStream');
-                    }
-                }
-                /**
-                 * Выводит данные
-                 * Outputs data
-                 *
-                 * @param {Any} data данные которые необходимо вывести
-                 *                   data to be displayed
-                 * @method
-                 * @public
-                 */
-
-                write(data) {
-                    this._data.push(data);
-
-                    this.emit('data', data);
-                }
-
-                end() {
-                    this._ended = true;
-                    this.emit('end');
-                }
-                /**
-                 * Ожидает завершения записи потока, после чего возвращает массив с буффером данных
-                 * Waits for the stream to finish writing, then returns an array with a data buffer
-                 *
-                 * @async
-                 * @public
-                 * @method
-                 * @returns {Array<Any>} массив с переданными данными
-                 *                       array with passed data
-                 */
-
-                complete() {
-                    if (!this._ended)
-                        return new Promise((res) =>
-                            this.on('end', () => res(this._data))
-                        );
-                    else return this._data;
-                }
-            }
             /**
              * @lends CodeEmitter;
              */
@@ -9677,7 +10015,9 @@ poonya = /******/ (() => {
                 module.parent != null ? module.parent.path : module.path
             );
 
-            const presset = __webpack_require__(40);
+            const presset = __webpack_require__(40); //
+            // Static library
+            //
 
             module.exports.PoonyaPrototype = presset.PoonyaPrototype;
             module.exports.PoonyaStaticLibrary = presset.PoonyaStaticLibrary;
@@ -9991,35 +10331,9 @@ poonya = /******/ (() => {
             }
             /*LIQUID*/
 
-            const setImmediate = (function () {
-                let head = new Object(),
-                    tail = head;
-                const ID = Math.random();
-
-                function onmessage(e) {
-                    if (e.data != ID) return;
-                    head = head.next;
-                    const func = head.func;
-                    const args = head.args;
-                    delete head.func;
-                    delete head.args;
-                    func(...args);
-                }
-
-                if (window.addEventListener) {
-                    window.addEventListener('message', onmessage);
-                } else {
-                    window.attachEvent('onmessage', onmessage);
-                }
-
-                return function (func, ...args) {
-                    tail = tail.next = {
-                        func: func,
-                        args,
-                    };
-                    window.postMessage(ID, '*');
-                };
-            })();
+            const setImmediate = function (func, ...args) {
+                Promise.resolve().then(() => func(...args));
+            };
             /*LIQUID-END*/
 
             /*LIQUID*/

@@ -1,5 +1,21 @@
-const { PoonyaStaticLibrary, PoonyaPrototype, FIELDFLAGS, Exceptions } = require('poonya')
-    ,   date = new Date();
+const { PoonyaStaticLibrary, PoonyaPrototype, FIELDFLAGS, Exceptions } = require('poonya');
+
+new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
+    constructor(){
+        super('default.joiners', false, false, 'joiners');
+
+        this.addField('concat', this.concat, FIELDFLAGS.CONSTANT);
+        this.addField('array', this.array, FIELDFLAGS.CONSTANT);
+    }
+
+    concat(service, ...data) {
+        return Array.prototype.join.call(data, '');
+    }
+
+    array(service, ...data) {
+        return Array.prototype.join.call(data, '');
+    }
+};
 
 new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
@@ -64,34 +80,36 @@ new class DefaultDatesStaticLibrary extends PoonyaStaticLibrary {
         this.addField('year', this.year, FIELDFLAGS.CONSTANT);
         this.addField('day', this.day, FIELDFLAGS.CONSTANT);
         this.addField('now', this.now, FIELDFLAGS.CONSTANT);
+
+        this.date = new Date();
     }
 
     year(){
-        return date.getUTCFullYear();
+        return this.date.getUTCFullYear();
     }
 
     month(){
-        return date.getUTCMonth();
+        return this.date.getUTCMonth();
     }
 
     day(){
-        return date.getUTCDay();
+        return this.date.getUTCDay();
     }
 
     hours(){
-        return date.getUTCHours();
+        return this.date.getUTCHours();
     }
 
     minutes(){
-        return date.getUTCMinutes();
+        return this.date.getUTCMinutes();
     }
 
     seconds(){
-        return date.getUTCSeconds();
+        return this.date.getUTCSeconds();
     }
 
     now(){
-        return Date.now();
+        return this.date.getTime();
     }
 };
 
@@ -134,14 +152,6 @@ class PoonyaObjectPrototype extends PoonyaPrototype {
         this.addField('get', this.get, FIELDFLAGS.CONSTANT);
     }
 
-    keys(){
-        return this.keys();
-    }
-
-    values(){
-        return this.values();
-    }
-
     assign(service, ...args){
         for(let i = 0, leng = args.length; i < leng; i++)
             this.append(args[i]);
@@ -153,6 +163,14 @@ class PoonyaObjectPrototype extends PoonyaPrototype {
         this.set(service.context, key, value);
 
         return null;
+    }
+
+    keys(){
+        return this.keys();
+    }
+
+    values(){
+        return this.values();
     }
 
     has(service, key){
@@ -213,6 +231,13 @@ class PoonyaStringPrototype extends PoonyaPrototype {
     }
 
     charAt(service, index){
+        if(index != null) {
+            return this.data.charAt(index);
+        } else
+            return null;
+    }
+
+    charCodeAt(service, index){
         if(index != null) {
             return this.data.charAt(index);
         } else
@@ -346,11 +371,17 @@ new class DefaultStaticLibrary extends PoonyaStaticLibrary {
 
         this.addField('log', this.log, FIELDFLAGS.CONSTANT);
         this.addField('wait', this.wait, FIELDFLAGS.CONSTANT);
+        this.addField('eval', this.eval, FIELDFLAGS.CONSTANT);
 
         this.addLib('default.numbers');
+        this.addLib('default.joiners');
         this.addLib('default.regexp');
         this.addLib('default.dates');
         this.addLib('default.math');
+    }
+
+    eval(service, string) {
+        service.context.eval(string).then(service.resolve);
     }
 
     wait(service, milis){

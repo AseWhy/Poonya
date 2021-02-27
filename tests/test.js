@@ -241,4 +241,36 @@ describe("poonya-common-test", () => {
             assert.strictEqual(await context.eval(`2 + 2 * 2`), 6);
         });
     });
+
+    describe("#output-group-test", () => {
+        it("Should return array of strings", async () => {
+            const pattern = new poonya.ExecutionPattern({
+                path: "./src/output-group-test-0",
+            });
+
+            assert.deepStrictEqual(await pattern.result().complete(), [
+                ['it', ' ', 'says', ' ', 'hello', ' ', 'world']
+            ]);
+        });
+
+        it("Should return 'it says hello world'", async () => {
+            const pattern = new poonya.ExecutionPattern({
+                path: "./src/output-group-test-1",
+            });
+
+            assert.deepStrictEqual(await pattern.result().complete(), [
+                'it says hello world'
+            ]);
+        });
+
+        it("Should return sequence of numbers", async () => {
+            const pattern = new poonya.ExecutionPattern({
+                path: "./src/output-group-test-2",
+            });
+
+            assert.deepStrictEqual(await pattern.result().complete(), [
+                '012345678910'
+            ]);
+        });
+    });
 });

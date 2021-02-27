@@ -80,8 +80,7 @@ const
     { EventEmitter } = require("events"),
     // #!if platform === 'node'
     { readFile } = require("fs"),
-    { Stream } = require('stream'),
-    { normalize, extname, join } = require("path"),
+    { extname, join } = require("path"),
     // #!endif
     { IOError, PoonyaException } = require('./classes/exceptions'),
     { Import, ImportDir, ImportFile } = require("./importer.js"),
@@ -90,129 +89,12 @@ const
     { SERVICE } = require('./classes/static'),
     { toFixed, toBytes, fromBytes, setImmediate } = require('./utils'),
     { iPoonyaConstructsData, iCodeEmitter } = require("./classes/interfaces"),
+    PoonyaOutputStream = require("./classes/common/PoonyaOutputStream"),
     lexer = require("./lexer/lexer.js");
 
 // Private fields
 const RESULT = Symbol('RESULT')
     , INIT = Symbol('INIT');
-
-/**
- * @lends PoonyaOutputStream
- * @class
- */
-class PoonyaOutputStream extends EventEmitter {
-    /**
-     * Класс вывода шаблонов, за счет этого интерфейса производится
-     * Template output class, due to this interface is created
-     *
-     * @param {Object} data
-     * @param {Context} context
-     * 
-     * @property {Context} data данные которые уже были выведены
-     * 
-     * @memberof Poonya
-     * @constructs Heap
-     * @public
-     */
-    constructor() {
-        super();
-
-        this._data = new Array();
-        this._ended = false;
-    }
-
-    /**
-     * Преобразует поток в ReadableStream или в Stream.Writable для nodejs
-     * Converts stream to ReadableStream or Stream.Writable for nodejs
-     * 
-     * @returns {ReadableStream|Stream.Writable} a read stream if it's a browser, or a write stream if it's nodejs
-     *                                           поток чтения, если это браузер, или поток записи если это nodejs
-     * @method
-     * @public
-     */
-    toReadable(){
-        const _ = this;
-
-        // #!if platform === 'browser'
-        /*~
-        return new ReadableStream({
-            start(controller){
-                _.on('data', controller.enqueue.bind(controller));
-                _.on('end', controller.close.bind(controller));
-            }
-        });
-        */
-        // #!endif
-
-        // #!if platform === 'node'
-        const stream = new Stream.Writable();
-
-        _.on('data', stream.write.bind(stream));
-        _.on('end', stream.end.bind(stream));
-
-        return stream;
-        // #!endif
-    }
-
-    /**
-     * Redirects the data stream to `stream` passed as the first argument
-     * Перенаправляет поток данных в `stream` переданный первым аргументом
-     * 
-     * @param {PoonyaOutputStream|Stream} stream поток которому необходимо передавать данные помимо этого
-     *                                           the stream to which you need to transfer data in addition to this
-     * @returns `stream` Поток который был передан.
-     * @returns `stream` The stream that was sent.
-     * @method
-     * @public
-     */
-    pipe(stream){
-        if(typeof stream.write === 'function'){
-            this.on('data', stream.write.bind(stream));
-
-            return stream;
-        } else {
-            throw new TypeError('Is not a WriteStream');
-        }
-    }
-
-    /**
-     * Выводит данные
-     * Outputs data
-     * 
-     * @param {Any} data данные которые необходимо вывести
-     *                   data to be displayed
-     * @method
-     * @public
-     */
-    write(data){
-        this._data.push(data);
-
-        this.emit('data', data);
-    }
-
-    end(){
-        this._ended = true;
-
-        this.emit('end');
-    }
-
-    /**
-     * Ожидает завершения записи потока, после чего возвращает массив с буффером данных
-     * Waits for the stream to finish writing, then returns an array with a data buffer
-     * 
-     * @async
-     * @public
-     * @method
-     * @returns {Array<Any>} массив с переданными данными
-     *                       array with passed data
-     */
-    complete(){
-        if(!this._ended)
-            return new Promise(res => this.on('end', () => res(this._data)));
-        else
-            return this._data;
-    }
-}
 
 /**
  * @lends CodeEmitter;
@@ -868,6 +750,9 @@ module.exports.ImportDir = ImportDir.bind(null, module.parent != null ? module.p
 
 const presset = require('./preset');
 
+//
+// Static library
+//
 module.exports.PoonyaPrototype = presset.PoonyaPrototype;
 module.exports.PoonyaStaticLibrary = presset.PoonyaStaticLibrary;
 module.exports.Exceptions = presset.Exceptions;
