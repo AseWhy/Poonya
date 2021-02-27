@@ -18,7 +18,7 @@ module.exports = (env) => {
     env.type = env && env.type || 'var';
     env.minimize = env && env.minimize == 'true' ? true : false;
     env.path = (env && env.platform != 'node' ? 'poonya.browser.' + env.type + '.bundle' : 'poonya.node.bundle') + (env.minimize ? '.min' : '') + '.js';
-    env.intname = path.basename(env.path, '.js') + '.ts';
+    env.intname = path.basename(env.path, '.js') + '.d.ts';
     env.intsource = './tsinterfaces/poonya.' + env.platform + '.interface.d.ts';
 
     l(
