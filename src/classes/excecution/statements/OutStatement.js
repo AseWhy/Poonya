@@ -36,8 +36,8 @@ class OutStatement {
      * @public
      * @method
      */
-    toString() {
-        return '> ' + this.expression.toString();
+    toString(indent) {
+        return '> ' + this.expression.toString(indent);
     }
 
     /**

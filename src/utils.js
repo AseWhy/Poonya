@@ -201,39 +201,9 @@ const setImmediate = global.setImmediate;
 // #!endif
 // #!if platform === 'browser'
 /*~
-const setImmediate = (function() {
-    let head = new Object(), tail = head;
-
-    const ID = Math.random();
-
-    function onmessage(e) {
-        if(e.data != ID)
-            return;
-        
-        head = head.next;
-
-        const func = head.func;
-
-        const args = head.args;
-
-        delete head.func;
-        delete head.args;
-
-        func(...args);
-    }
-
-    if(window.addEventListener) {
-        window.addEventListener('message', onmessage);
-    } else {
-        window.attachEvent( 'onmessage', onmessage );
-    }
-
-    return function(func, ...args) {
-        tail = tail.next = { func: func, args };
-
-        window.postMessage(ID, "*");
-    };
-}());
+const setImmediate = function(func, ...args) {
+    Promise.resolve().then(() => func(...args));
+};
 */
 // #!endif
 
