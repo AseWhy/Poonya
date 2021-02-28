@@ -47,7 +47,10 @@ const {
     ,   ResetStatement = require('./classes/excecution/statements/ResetStatement')
     ,   PushStatement = require('./classes/excecution/statements/PushStatement')
     ,   SequenceMainGroup = require('./classes/excecution/statements/SequenceMainGroup')
+    ,   GroupOutStatement = require('./classes/excecution/expression/GroupOutStatement')
     ,   linker = require('./linker');
+
+const KEYWORDS = [ 'true', 'false', 'null' ];
 
 /**
  * Парсит вызов функции, возвращает объект вызова функции, и позицию с которой можно продолжить прасинг
@@ -96,7 +99,13 @@ function parseFunctionCall(query_stack, start, data, reject, block_start) {
  * @memberof Poonya.Parser
  * @protected
  */
-function parseObject(query_stack, start, data, reject, level = 0) {
+function parseObject(
+    query_stack, 
+    start,
+    data,
+    reject, 
+    level = 0
+) {
     let result = null,
         count = 0,
         entries = new Array([]),
@@ -108,7 +117,8 @@ function parseObject(query_stack, start, data, reject, level = 0) {
             case 
                 data[i] === undefined || 
                 expected === 3 && !data[i].equals(CHARTYPE.OPERATOR, ',') ||
-                data[i].equals(CHARTYPE.OPERATOR, [';', ')']):
+                data[i].equals(CHARTYPE.OPERATOR, [';', ')'])
+            :
                 if (entries[entries.length - 1].length !== 2)
                     reject(data[i].position, new ParserUnfinishedNotationException());
 
@@ -129,7 +139,10 @@ function parseObject(query_stack, start, data, reject, level = 0) {
             default:
                 switch (expected) {
                     case 0:
-                        if (data[i].equals(CHARTYPE.WORD) || data[i].equals(CHARTYPE.STRING)) {
+                        if (
+                            data[i].equals(CHARTYPE.WORD) ||
+                            data[i].equals(CHARTYPE.STRING)
+                        ) {
                             entries[entries.length - 1][0] = data[i].toRawString();
                         } else if (data[i].equals(CHARTYPE.NUMBER)) {
                             entries[entries.length - 1][0] = parseFloat(data[i].toRawString());
@@ -248,23 +261,25 @@ function parseTernar(condition, start, data, reject) {
             args.push(parseExpression(0, buffer, reject).data);
 
             buffer.splice(0, buffer.length);
-        }
-        else
+        } else {
             reject(
                 token != undefined ? token.position : data[start],
                 new ParserEmtyArgumentException()
             );
+        }
     }
 
     for (let i = start;; i++) {
         switch (true) {
-            case data[i] === undefined ||
+            case 
+                data[i] === undefined ||
                 data[i].equals(CHARTYPE.OPERATOR, ";") ||
                 data[i].equals(CHARTYPE.NEWLINE) ||
                 (
                     data[i].equals(CHARTYPE.OPERATOR, ")") &&
                     hook_index <= 0
-                ):
+                )
+            :
                 push(data[i]);
 
                 if (args[0] === undefined || args[1] === undefined)
@@ -310,6 +325,34 @@ function parseTernar(condition, start, data, reject) {
         }
     }
 }
+
+/**
+ * Парсит групповой вывод <formatter?> <-? {  }
+ *
+ * @param {Number} start Начальная позиция разбора, для выражения
+ * @param {Array<Token>} data Вхождения которые будут обработаны парсером
+ * @param {?Array<String | ExpressionGroup>} path путь к обработчику, опционально
+ * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+ *
+ * @returns {{data: GroupOutStatement, jump: Number}} массив со стэком запроса, по которому можно получит доступ к переменной, и позиция с которой можно продолжить парсинг
+ *
+ * @memberof Poonya.Parser
+ * @protected
+ */
+function parseGroupOut(
+    entries,
+    start,
+    path,
+    reject,
+) {
+    const segments = segmentCutter(start, entries, reject);
+
+    return {
+        data: new GroupOutStatement(segments.data, path, start),
+        jump: segments.jump
+    };
+}
+
 /**
  * Парсит название, позвращает массив со стэком запроса, по которому можно получит доступ к переменной, и позицию с которой можно продолжить парсинг
  *
@@ -336,11 +379,16 @@ function parseVarName(start, data, reject) {
 
     for (let i = start;; i++) {
         switch (true) {
-            case data[i] == null ||
-                (data[i].equals(CHARTYPE.OPERATOR) &&
-                    !data[i].equals(CHARTYPE.OPERATOR, ["[", "]"])) ||
+            case 
+                data[i] == null ||
+                (
+                    data[i].equals(CHARTYPE.OPERATOR) &&
+                !   data[i].equals(CHARTYPE.OPERATOR, ["[", "]"])
+                ) ||
                 data[i].equals(CHARTYPE.NEWLINE) ||
-                data[i].equals(CHARTYPE.SPACE):
+                data[i].equals(CHARTYPE.SPACE)
+            :
+
                 return {
                     data: buffer,
                     jump: i - start,
@@ -360,6 +408,7 @@ function parseVarName(start, data, reject) {
                 // Позиция начала парсинга
                 hook_start = i;
 
+                //
                 // ...[3 + 4 + 5]...
                 //    ^^^^^^^^^^
                 while (data[i] != null &&
@@ -381,7 +430,9 @@ function parseVarName(start, data, reject) {
                         new ParserLogicException()
                     );
 
+                //
                 // Вставляем выражение как оператор доступа
+                //
                 buffer.push(
                     parseExpression(0, data.slice(hook_start, i), reject)
                         .data
@@ -400,7 +451,7 @@ function parseVarName(start, data, reject) {
  * Парсит выражение, позвращает выражение и позицию, с которой можно продолжить парсинг
  *
  * @param {Number} start Начальная позиция разбора, для выражения
- * @param {Array<Token>} data Вхождения которые будут обработаны парсером
+ * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
  * @param {Function} reject Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
  * @param {String} end_marker Маркер конца выражения
  *
@@ -409,24 +460,34 @@ function parseVarName(start, data, reject) {
  * @memberof Poonya.Parser
  * @protected
  */
-function parseExpression(start, data, reject, end_marker = ';') {
-    if (data.length === 0)
+function parseExpression(
+    start,
+    entries,
+    reject,
+    end_marker = ';'
+) {
+    if (entries.length === 0)
         return {
             data: new ExpressionGroup(0),
             jump: 0,
         };
 
-    const buffer = new ExpressionGroup(data[0].position)
+    const buffer = new ExpressionGroup(entries[0].position)
         , result = new Array();
 
     for (let i = start;; i++) {
         if (
-            data[i] == undefined ||
-            data[i].equals(CHARTYPE.OPERATOR, ")") ||
-            data[i].contentEquals(end_marker)
+            entries[i] == undefined ||
+            entries[i].equals(CHARTYPE.OPERATOR, ")") ||
+            entries[i].contentEquals(end_marker)
         ) {
             if (buffer.isNotDone())
-                reject(data[i - 1].position, data[i] == undefined ? new CriticalParserErrorUnexpectedEndOfInputException() : new CriticalParserErrorUnexpectedEndOfExpression());
+                reject(
+                    entries[i - 1].position, 
+                    entries[i] == undefined ?
+                        new CriticalParserErrorUnexpectedEndOfInputException() : 
+                        new CriticalParserErrorUnexpectedEndOfExpression()
+                );
 
             buffer.complete(reject);
 
@@ -436,71 +497,122 @@ function parseExpression(start, data, reject, end_marker = ';') {
             };
         }
 
-        if(data[i].equals(CHARTYPE.NEWLINE))
+        if(entries[i].equals(CHARTYPE.NEWLINE))
             continue;
 
         switch (true) {
             // Какое-то слово
-            case data[i].equals(CHARTYPE.WORD):
+            case entries[i].equals(CHARTYPE.WORD):
                 // Ключевые слова
-                switch (data[i].toString()) {
-                    case "true": case "false": case "null":
-                        buffer.append(data[i], reject);
-                        continue;
+                if(KEYWORDS.includes(entries[i].toString())) {
+                    buffer.append(entries[i], reject); continue;
                 }
 
-                result[0] = parseVarName(i, data, reject);
+                //
+                // Если не ключевое слово, то разбираем как название перемнной
+                // 
+                result[0] = parseVarName(i, entries, reject);
 
-                if (data[i + result[0].jump] != null && data[i + result[0].jump].equals(CHARTYPE.OPERATOR, "(")) {
+                // 
+                // Проверяю следующий токен, если это (, значит впереди функция
+                //
+                if (
+                    entries[i + result[0].jump] != null && 
+                    entries[i + result[0].jump].equals(CHARTYPE.OPERATOR, "(")
+                ) {
                     // Функция
                     result[1] = parseFunctionCall(
                         result[0].data,
                         i + result[0].jump + 1,
-                        data,
+                        entries,
                         reject,
-                        data[i].position
+                        entries[i].position
                     );
 
                     i += result[0].jump + result[1].jump + 1;
-
-                    buffer.append(result[1].data, reject);
-                } else if (
-                    data[i + result[0].jump + 1] != null &&
-                    data[i + result[0].jump].equals(CHARTYPE.OPERATOR, "-") &&
-                    data[i + result[0].jump + 1].equals(CHARTYPE.OPERATOR, ">")
-                ) {
-
-                    // Конструктор объекта
-                    result[1] = parseObject(
-                        result[0].data,
-                        i + result[0].jump + 2,
-                        data,
-                        reject,
-                        0
-                    );
-
-                    i += result[0].jump + result[1].jump + 1;
-
-                    if(data[i + 1].equals(CHARTYPE.OPERATOR, [ '*' ]))
-                        i += 1;
 
                     buffer.append(result[1].data, reject);
                 } else {
-                    // Получение значения переменной
-                    buffer.append(new GetOperator(data[i].position, result[0].data), reject);
+                    // 
+                    // Если ->, значит конструктор объектта
+                    // 
+                    if(entries[i + result[0].jump + 1] != null) {
+                        if(entries[i + result[0].jump].equals(CHARTYPE.OPERATOR, "-")) {
+                            if(entries[i + result[0].jump + 1].equals(CHARTYPE.OPERATOR, ">")) {
+                                // Конструктор объекта
+                                result[1] = parseObject(
+                                    result[0].data,
+                                    i + result[0].jump + 2,
+                                    entries,
+                                    reject,
+                                    0
+                                );
 
-                    i += result[0].jump - 1;
+                                i += result[0].jump + result[1].jump + 1;
+                                
+                                // 
+                                // Если недопрыгнул
+                                // 
+                                if(entries[i + 1].equals(CHARTYPE.OPERATOR, [ '*' ]))
+                                    i += 1;
+
+                                buffer.append(result[1].data, reject);
+                            } else {
+                                reject(
+                                    new UnexpectedTokenException(
+                                        entries[i + result[0].jump + 1].toString(),
+                                        '>'
+                                    )
+                                );
+                            }
+                        // 
+                        // Если <-, значит групповой вывод
+                        // 
+                        } else if(entries[i + result[0].jump].equals(CHARTYPE.OPERATOR, "<")) {
+                            if(entries[i + result[0].jump + 1].equals(CHARTYPE.OPERATOR, "-")) {
+                                result[1] = parseGroupOut(
+                                    entries,
+                                    i + result[0].jump + 3,
+                                    result[0].data, 
+                                    reject
+                                );
+            
+                                i += result[0].jump + result[1].jump + 1;
+            
+                                buffer.append(result[1].data, reject);
+                            } else {
+                                reject(
+                                    new UnexpectedTokenException(
+                                        entries[i + result[0].jump + 1].toString(),
+                                        '-'
+                                    )
+                                );
+                            }
+                        } else {
+                            buffer.append(new GetOperator(entries[i].position, result[0].data), reject);
+
+                            i += result[0].jump - 1;
+                        }
+                    } else {
+                        buffer.append(new GetOperator(entries[i].position, result[0].data), reject);
+
+                        i += result[0].jump - 1;
+                    }
                 }
             continue;
+            //
             // Конструктор объекта
-            case data[i + 1] != null &&
-                data[i].equals(CHARTYPE.OPERATOR, "-") &&
-                data[i + 1].equals(CHARTYPE.OPERATOR, ">"):
-                // Конструктор объекта
+            //
+            case 
+                entries[i + 1] != null &&
+                entries[i + 1].equals(CHARTYPE.OPERATOR, ">") &&
+                maybeEquals(entries, i + 2, CHARTYPE.NEWLINE) &&
+                entries[i].equals(CHARTYPE.OPERATOR, "-")
+            :
                 result[0] = parseObject(
                     SERVICE.CONSTRUCTORS.OBJECT,
                     i + 2,
-                    data,
+                    entries,
                     reject,
                     0
                 );
@@ -508,24 +620,44 @@ function parseExpression(start, data, reject, end_marker = ';') {
                 i += result[0].jump + 2;
 
                 buffer.append(result[0].data, reject);
-
             continue;
-            // Другая группа выражений
-            case data[i].equals(CHARTYPE.OPERATOR, "("):
-                result[0] = parseExpression(i + 1, data, reject);
+            //
+            // Групповой вывод (без обработчика)
+            //
+            case 
+                entries[i].equals(CHARTYPE.OPERATOR, "{")
+            :
+                result[0] = parseGroupOut(
+                    entries,
+                    i + 1,
+                    null,
+                    reject
+                );
 
                 i += result[0].jump + 1;
 
                 buffer.append(result[0].data, reject);
             continue;
+            //
+            // Другая группа выражений
+            //
+            case entries[i].equals(CHARTYPE.OPERATOR, "("):
+                result[0] = parseExpression(i + 1, entries, reject);
+
+                i += result[0].jump + 1;
+
+                buffer.append(result[0].data, reject);
+            continue;
+            //
             // Тернарное выражение
-            case data[i].equals(CHARTYPE.OPERATOR, "?"):
+            //
+            case entries[i].equals(CHARTYPE.OPERATOR, "?"):
                 buffer.complete(reject);
 
                 result[0] = parseTernar(
-                    new ExpressionGroup(data[i].position, buffer.data),
+                    new ExpressionGroup(entries[i].position, buffer.data),
                     i + 1,
-                    data,
+                    entries,
                     reject
                 );
 
@@ -533,10 +665,13 @@ function parseExpression(start, data, reject, end_marker = ';') {
                     data: result[0].data,
                     jump: i - start + result[0].jump + 2,
                 };
+            //
             // Операторы строки числа и т.д
-            case data[i].equals(CHARTYPE.STRING) ||
-                data[i].equals(CHARTYPE.NUMBER) ||
-                data[i].equals(CHARTYPE.OPERATOR, [
+            //
+            case 
+                entries[i].equals(CHARTYPE.STRING) ||
+                entries[i].equals(CHARTYPE.NUMBER) ||
+                entries[i].equals(CHARTYPE.OPERATOR, [
                     "/",
                     "*",
                     "+",
@@ -550,12 +685,14 @@ function parseExpression(start, data, reject, end_marker = ';') {
                     "|",
                     "&",
                 ]):
-                buffer.append(data[i], reject);
+                buffer.append(entries[i], reject);
             continue;
+            //
             // Неизвестно что это, завершаем парсинг выражения на этом
+            //
             default:
                 if (buffer.isNotDone())
-                    reject(data[i - 1].position, new CriticalParserErrorUnexpectedEndOfExpression());
+                    reject(entries[i - 1].position, new CriticalParserErrorUnexpectedEndOfExpression());
 
                 buffer.complete(reject);
 
@@ -597,8 +734,13 @@ function segmentationParser(
             continue;
 
         switch (true) {
-            case entries[i] === undefined ||
-                (entries[i].equals(CHARTYPE.OPERATOR, ")") && hook_index <= 0):
+            case 
+                entries[i] === undefined ||
+                (
+                    entries[i].equals(CHARTYPE.OPERATOR, ")") && 
+                    hook_index <= 0
+                )
+            :
                 if (buffer.length > 0 && buffer[buffer.length - 1].length > 0) {
                     buffer[buffer.length - 1] = parseExpression(
                         0,
@@ -637,8 +779,10 @@ function segmentationParser(
                         new ParserLogicException()
                     );
                 continue;
-            case entries[i].contentEquals(segment_separator) &&
-                hook_index === 0:
+            case 
+                entries[i].contentEquals(segment_separator) &&
+                hook_index === 0
+            :
                     if (buffer[buffer.length - 1].length > 0) {
                         buffer[buffer.length - 1] = parseExpression(
                             0,
@@ -668,6 +812,8 @@ function segmentationParser(
 }
 /**
  * Используется для того, чтобы вырезать исполняемые сегменты из исполняемых блоков `{}`
+ * 
+ * ***Данные туда подаются исключая первую фигурную скобку - ...}***
  *
  * @param {Number} start Начальная позиция разбора, для выражения
  * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
@@ -684,8 +830,13 @@ function segmentCutter(start, entries, reject) {
 
     for (let i = start;; i++) {
         switch (true) {
-            case entries[i] === undefined ||
-                (entries[i].equals(CHARTYPE.OPERATOR, "}") && hook_index <= 0):
+            case 
+                entries[i] === undefined ||
+                (
+                    entries[i].equals(CHARTYPE.OPERATOR, "}") &&
+                    hook_index <= 0
+                )
+            :
                 return {
                     // Сегменты
                     data: codeBlockParser(0, body, reject).data,
@@ -702,12 +853,12 @@ function segmentCutter(start, entries, reject) {
                     hook_index--;
 
                     body.push(entries[i]);
-                }
-                else
+                } else {
                     reject(
                         entries[i].position,
                         new ParserLogicException()
                     );
+                }
                 continue;
             default:
                 body.push(entries[i]);
@@ -731,8 +882,10 @@ function ifStatementParser(start, entries, reject) {
     let index = start,
         result = new Array();
 
-    if (maybeEquals(entries, index + 1, CHARTYPE.NEWLINE) &&
-        entries[index + 1].equals(CHARTYPE.OPERATOR, "(")) {
+    if (
+        maybeEquals(entries, index + 1, CHARTYPE.NEWLINE) &&
+        entries[index + 1].equals(CHARTYPE.OPERATOR, "(")
+    ) {
         // statement ( ...parse... )
         result[0] = segmentationParser(
             index + 2,
@@ -753,8 +906,10 @@ function ifStatementParser(start, entries, reject) {
             index += result[1].jump + 1;
 
             // Else statement
-            if (entries[index + 1] != null &&
-                entries[index + 1].equals(CHARTYPE.WORD, "else")) {
+            if (
+                entries[index + 1] != null &&
+                entries[index + 1].equals(CHARTYPE.WORD, "else")
+            ) {
                 // { expression }
                 if (maybeEquals(entries, index + 2, CHARTYPE.NEWLINE) &&
                     entries[index + 2].equals(CHARTYPE.OPERATOR, "{")) {
@@ -770,8 +925,14 @@ function ifStatementParser(start, entries, reject) {
                         ),
                         jump: index - start,
                     };
-                } else if (maybeEquals(entries, index + 2, CHARTYPE.NEWLINE) &&
-                    entries[index + 2].equals(CHARTYPE.WORD, "if")) {
+
+                // 
+                // else if...
+                // 
+                } else if (
+                    maybeEquals(entries, index + 2, CHARTYPE.NEWLINE) &&
+                    entries[index + 2].equals(CHARTYPE.WORD, "if")
+                ) {
                     result[2] = ifStatementParser(
                         index + 2,
                         entries,
@@ -872,10 +1033,15 @@ function codeBlockParser(start, entries, reject) {
                     buffer.push(result[0].data);
                     continue;
                 case entries[i].equals(CHARTYPE.WORD, "while"):
-                    if (i + 1 < leng &&
+                    if (
+                        i + 1 < leng &&
                         maybeEquals(entries, i + 1, CHARTYPE.NEWLINE) &&
-                        entries[i + 1].equals(CHARTYPE.OPERATOR, "(")) {
+                        entries[i + 1].equals(CHARTYPE.OPERATOR, "(")
+                    ) {
+
+                        //
                         // statement ( ...parse... )
+                        //
                         result[0] = segmentationParser(
                             i + 2,
                             entries,
@@ -888,8 +1054,10 @@ function codeBlockParser(start, entries, reject) {
                         i += result[0].jump + 3;
 
                         // { expression }
-                        if (maybeEquals(entries, i, CHARTYPE.NEWLINE) &&
-                            entries[i].equals(CHARTYPE.OPERATOR, "{")) {
+                        if (
+                            maybeEquals(entries, i, CHARTYPE.NEWLINE) &&
+                            entries[i].equals(CHARTYPE.OPERATOR, "{")
+                        ) {
                             result[1] = segmentCutter(
                                 i + 1,
                                 entries,
@@ -926,28 +1094,36 @@ function codeBlockParser(start, entries, reject) {
                     }
                     continue;
                 case entries[i].equals(CHARTYPE.WORD, "repeat"):
-                    if (i + 1 < leng &&
+                    if (
+                        i + 1 < leng &&
                         maybeEquals(entries, i + 1, CHARTYPE.NEWLINE) &&
-                        entries[i + 1].equals(CHARTYPE.OPERATOR, "(")) {
+                        entries[i + 1].equals(CHARTYPE.OPERATOR, "(")
+                    ) {
+                        //
                         // statement ( ...parse... )
+                        //
                         result[0] = segmentationParser(
                             i + 2,
                             entries,
                             reject,
-                            ";",
+                            [ 
+                                ";", 
+                                ','
+                            ],
                             2,
                             "repeat"
                         );
 
                         i += result[0].jump + 3;
 
-                        if(result[0].data.length < 2) {
+                        if(result[0].data.length < 2)
                             reject(entries[i].position, new ParserEmtyArgumentException());
-                        }
 
                         // { expression }
-                        if (maybeEquals(entries, i, CHARTYPE.NEWLINE) &&
-                            entries[i].equals(CHARTYPE.OPERATOR, "{")) {
+                        if (
+                            maybeEquals(entries, i, CHARTYPE.NEWLINE) &&
+                            entries[i].equals(CHARTYPE.OPERATOR, "{")
+                        ) {
                             result[1] = segmentCutter(
                                 i + 1,
                                 entries,
@@ -985,12 +1161,16 @@ function codeBlockParser(start, entries, reject) {
                     }
                     continue;
                 case entries[i].equals(CHARTYPE.WORD, "set"):
-                    if (i + 1 < leng &&
+                    if (
+                        i + 1 < leng &&
                         maybeEquals(entries, i + 1, CHARTYPE.NEWLINE) &&
-                        entries[i + 1].equals(CHARTYPE.WORD)) {
-                        if (i + 2 < leng &&
+                        entries[i + 1].equals(CHARTYPE.WORD)
+                    ) {
+                        if (
+                            i + 2 < leng &&
                             maybeEquals(entries, i + 2, CHARTYPE.NEWLINE) &&
-                            entries[i + 2].equals(CHARTYPE.OPERATOR, "=")) {
+                            entries[i + 2].equals(CHARTYPE.OPERATOR, "=")
+                        ) {
                             result[0] = parseExpression(
                                 i + 3,
                                 entries,
@@ -1017,16 +1197,26 @@ function codeBlockParser(start, entries, reject) {
                         );
                     }
                 break;
+
+                // 
+                // Текущий - слово
+                // 
                 case entries[i].equals(CHARTYPE.WORD):
                     result[0] = parseVarName(i, entries, reject);
 
+                    //
                     // Если следующий символ доступен
+                    //
                     if (i + result[0].jump < leng) {
+                        //
                         // Переопределение
-                        if (entries[i + result[0].jump].equals(
-                            CHARTYPE.OPERATOR,
-                            "="
-                        )) {
+                        //
+                        if (
+                            entries[i + result[0].jump].equals(
+                                CHARTYPE.OPERATOR,
+                                "="
+                            )
+                        ) {
                             result[1] = parseExpression(
                                 result[0].jump + i + 1,
                                 entries,
@@ -1043,15 +1233,21 @@ function codeBlockParser(start, entries, reject) {
 
                             i += result[0].jump + result[1].jump + 1;
 
-                            // Добавление
-                        } else if (entries[i + result[0].jump].equals(
-                            CHARTYPE.OPERATOR,
-                            "<"
-                        )) {
-                            if (entries[i + result[0].jump + 1].equals(
+                        //
+                        // Добавление <-
+                        //
+                        } else if (
+                            entries[i + result[0].jump].equals(
                                 CHARTYPE.OPERATOR,
-                                "-"
-                            )) {
+                                "<"
+                            )
+                        ) {
+                            if (
+                                entries[i + result[0].jump + 1].equals(
+                                    CHARTYPE.OPERATOR,
+                                    "-"
+                                )
+                            ) {
                                 result[1] = parseExpression(
                                     result[0].jump + i + 2,
                                     entries,
@@ -1078,10 +1274,12 @@ function codeBlockParser(start, entries, reject) {
                             }
 
                             // Вызов функции
-                        } else if (entries[i + result[0].jump].equals(
-                            CHARTYPE.OPERATOR,
-                            "("
-                        )) {
+                        } else if (
+                            entries[i + result[0].jump].equals(
+                                CHARTYPE.OPERATOR,
+                                "("
+                            )
+                        ) {
                             result[1] = parseExpression(
                                 i,
                                 entries,
@@ -1091,8 +1289,10 @@ function codeBlockParser(start, entries, reject) {
                             buffer.push(result[1].data);
 
                             i += result[1].jump;
-
-                            // Ошибка
+                                
+                        //
+                        // Ошибка
+                        //
                         } else {
                             reject(
                                 entries[i].position,
@@ -1103,8 +1303,10 @@ function codeBlockParser(start, entries, reject) {
                         i += result[0].jump;
                     }
                     continue;
-                case entries[i].equals(CHARTYPE.NUMBER) ||
-                    entries[i].equals(CHARTYPE.STRING):
+                case 
+                    entries[i].equals(CHARTYPE.NUMBER) ||
+                    entries[i].equals(CHARTYPE.STRING)
+                :
                     result[0] = parseExpression(i, entries, reject);
 
                     buffer.push(result[0].data);

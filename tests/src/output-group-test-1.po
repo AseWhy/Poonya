@@ -1,0 +1,9 @@
+> joiners.concat <- {
+    > 'it';
+    > ' ';
+    > 'says';
+    > ' ';
+    > 'hello';
+    > ' ';
+    > 'world';
+};
