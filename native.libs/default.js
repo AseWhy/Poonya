@@ -1,5 +1,21 @@
-const { PoonyaStaticLibrary, PoonyaPrototype, FIELDFLAGS, Exceptions } = require('poonya')
-    ,   date = new Date();
+const { PoonyaStaticLibrary, PoonyaPrototype, FIELDFLAGS, Exceptions } = require('poonya');
+
+new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
+    constructor(){
+        super('default.joiners', false, false, 'joiners');
+
+        this.addField('concat', this.concat, FIELDFLAGS.CONSTANT);
+        this.addField('array', this.array, FIELDFLAGS.CONSTANT);
+    }
+
+    concat(service, ...data) {
+        return Array.prototype.join.call(data, '');
+    }
+
+    array(service, ...data) {
+        return data;
+    }
+};
 
 new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
