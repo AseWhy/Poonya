@@ -2,24 +2,24 @@ const { PoonyaStaticLibrary, PoonyaPrototype, FIELDFLAGS, Exceptions } = require
 
 new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
-        super('default.joiners', false, false, 'joiners');
+        super('default.joiners', false, false, 'Join');
 
         this.addField('concat', this.concat, FIELDFLAGS.CONSTANT);
-        this.addField('array', this.array, FIELDFLAGS.CONSTANT);
+        this.addField('raw', this.raw, FIELDFLAGS.CONSTANT);
     }
 
     concat(service, ...data) {
         return Array.prototype.join.call(data, '');
     }
 
-    array(service, ...data) {
+    raw(service, ...data) {
         return data;
     }
 };
 
 new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
-        super('default.math', false, false, 'math');
+        super('default.math', false, false, 'Math');
 
         this.addField('floor', this.floor, FIELDFLAGS.CONSTANT);
         this.addField('round', this.round, FIELDFLAGS.CONSTANT);
@@ -52,26 +52,9 @@ new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
     }
 };
 
-new class DefaultRegExpStaticLibrary extends PoonyaStaticLibrary {
-    constructor(){
-        super('default.regexp', false, false, 'regexp');
-
-        this.addField('test', this.test, FIELDFLAGS.CONSTANT);
-        this.addField('replace', this.replace, FIELDFLAGS.CONSTANT);
-    }
-
-    test (service, expression, flags, string) {
-        return new RegExp(expression, flags ? flags : undefined).test(string);
-    }
-
-    replace (service, expression, flags, string, to) {
-        return string.replace(new RegExp(expression, flags ? flags : undefined), to);
-    }
-};
-
 new class DefaultDatesStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
-        super('default.dates', false, false, 'dates');
+        super('default.dates', false, false, 'Date');
 
         this.addField('minutes', this.minutes, FIELDFLAGS.CONSTANT);
         this.addField('seconds', this.seconds, FIELDFLAGS.CONSTANT);
@@ -80,59 +63,36 @@ new class DefaultDatesStaticLibrary extends PoonyaStaticLibrary {
         this.addField('year', this.year, FIELDFLAGS.CONSTANT);
         this.addField('day', this.day, FIELDFLAGS.CONSTANT);
         this.addField('now', this.now, FIELDFLAGS.CONSTANT);
+
+        this.date = new Date();
     }
 
     year(){
-        return date.getUTCFullYear();
+        return this.date.getUTCFullYear();
     }
 
     month(){
-        return date.getUTCMonth();
+        return this.date.getUTCMonth();
     }
 
     day(){
-        return date.getUTCDay();
+        return this.date.getUTCDay();
     }
 
     hours(){
-        return date.getUTCHours();
+        return this.date.getUTCHours();
     }
 
     minutes(){
-        return date.getUTCMinutes();
+        return this.date.getUTCMinutes();
     }
 
     seconds(){
-        return date.getUTCSeconds();
+        return this.date.getUTCSeconds();
     }
 
     now(){
-        return Date.now();
-    }
-};
-
-new class DefaultNumbersStaticLibrary extends PoonyaStaticLibrary {
-    constructor(){
-        super('default.numbers', false, false, 'numbers');
-
-        this.addField('random', this.random, FIELDFLAGS.CONSTANT);
-        this.addField('isNumber', this.isNumber, FIELDFLAGS.CONSTANT);
-        this.addField('parseInt', this.parseInt, FIELDFLAGS.CONSTANT);
-    }
-
-    random(service, f, t){
-        if(typeof f == 'number' && typeof t == 'number' && !isNaN(f) && !isNaN(t))
-            return Math.random();
-        else
-            return Math.round(f + Math.random() * (t - f));
-    }
-
-    isNumber(service, o){
-        return !isNaN(o) && typeof o === 'number';
-    }
-
-    parseInt(service, numb){
-        return isNaN(numb = parseInt(numb)) ? null : numb;
+        return this.date.getTime();
     }
 };
 
@@ -190,15 +150,44 @@ class PoonyaObjectPrototype extends PoonyaPrototype {
     }
 }
 
-class PoonyaIntegerPrototype extends PoonyaPrototype {
-    constructor(){
-        super([], 'Integer');
-    }
-}
-
 class PoonyaNumberPrototype extends PoonyaPrototype {
     constructor(){
         super([], 'Number');
+
+        this.addField('random', this.random, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC);
+        this.addField('isNumber', this.isNumber, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC);
+        this.addField('parseInt', this.parseInt, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC);
+    }
+
+    random(service, f, t){
+        if(typeof f != 'number' || typeof t != 'number' || isNaN(f) || isNaN(t))
+            return Math.random();
+        else
+            return Math.round(f + Math.random() * (t - f));
+    }
+
+    isNumber(service, o){
+        return !isNaN(o) && typeof o === 'number';
+    }
+
+    parseInt(service, numb){
+        return isNaN(numb = parseInt(numb)) ? null : numb;
+    }
+}
+
+class PoonyaIntegerPrototype extends PoonyaPrototype {
+    constructor(context, reject){
+        let pNumber = null;
+
+        // 
+        // Ищу прототип числа в текущем контексте
+        // 
+        context.getByPath([ 'Number' ], -1, null, reject, null, result => pNumber = result);
+
+        // 
+        // Integer extends Number
+        // 
+        super([ pNumber ], 'Integer');
     }
 }
 
@@ -226,6 +215,11 @@ class PoonyaStringPrototype extends PoonyaPrototype {
 
         this.addField('charAt', this.charAt, FIELDFLAGS.CONSTANT, context);
         this.addField('length', this.length, FIELDFLAGS.CONSTANT | FIELDFLAGS.PROPERTY, context);
+        this.addField('fromaCharCode', this.fromaCharCode, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC, context);
+    }
+
+    fromaCharCode(service, code) {
+        return String.fromCharCode(code);
     }
 
     charAt(service, index){
@@ -350,9 +344,9 @@ new class DefaultStaticLibrary extends PoonyaStaticLibrary {
         this.expandPrototype(PoonyaObjectPrototype);
         this.expandPrototype(PoonyaArrayPrototype);
         this.expandPrototype(PoonyaStringPrototype);
-        this.expandPrototype(PoonyaIntegerPrototype);
         this.expandPrototype(PoonyaBooleanPrototype);
         this.expandPrototype(PoonyaNumberPrototype);
+        this.expandPrototype(PoonyaIntegerPrototype);
         this.expandPrototype(PoonyaNullPrototype);
         this.expandPrototype(PoonyaPatternPrototype);
 
@@ -363,8 +357,7 @@ new class DefaultStaticLibrary extends PoonyaStaticLibrary {
         this.addField('log', this.log, FIELDFLAGS.CONSTANT);
         this.addField('wait', this.wait, FIELDFLAGS.CONSTANT);
 
-        this.addLib('default.numbers');
-        this.addLib('default.regexp');
+        this.addLib('default.joiners');
         this.addLib('default.dates');
         this.addLib('default.math');
     }

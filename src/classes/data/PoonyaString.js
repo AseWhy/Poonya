@@ -16,16 +16,18 @@ class PoonyaString extends PoonyaObject {
     /**
      * Дескриптор объекта строки в poonya
      *
-     * @param {iPoonyaPrototype} prototype Прототип строки
-     * @param {String} init Исходная строка
+     * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+     * @param {String} init - Данные для инициализации объекта.
+     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+     * @param {Function} reject - Функция для выброса исключения.
      * 
      * @memberof Poonya.Data
      * @constructs PoonyaString
      * @extends PoonyaObject
      * @public
      */
-    constructor(prototype = null, init) {
-        super(prototype);
+    constructor(prototype = null, init, context, reject) {
+        super(prototype, init, context, reject);
 
         this.data = init;
     }

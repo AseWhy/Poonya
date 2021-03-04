@@ -151,17 +151,34 @@ class PoonyaPrototype extends iPoonyaPrototype {
      * Вызывает супер вызов всех родительских конструкторов
      *
      * @param {PoonyaObject} child дочерний объект, который необходимо собрать
+     * @param {Map} data данные для инициализауии объекта
+     * 
      * @method
      * @protected
      */
-    [SUPER_CALL](child) {
-        // Копируем значения полей 
+    [SUPER_CALL](child, data) {
+        // 
+        // Копирую свойства полей
+        // 
         for (let [key, value] of this._fields_data)
             child.field_attrs.set(key, value);
 
+        //
+        // Получаю конструктор этого прототипа
+        // 
+        const constructor = [...this._fields_data.entries()].find(e => e === FIELDFLAGS.CONSTRUCTOR);
+
+        // 
+        // Если нашел, вызываю его
+        // 
+        if(constructor != null && typeof this._fields.get(constructor[0]) == 'function')
+            this._fields.get(constructor[0]).call(child, data);
+
+        //
         // Вызываем конструкторы родительских прототипов
+        //
         for (let i = 0, leng = this._parents.length; i < leng; i++)
-            this._parents[i][SUPER_CALL](child);
+            this._parents[i][SUPER_CALL](child, data);
     }
 
     /**

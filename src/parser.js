@@ -119,13 +119,28 @@ function parseObject(
                 expected === 3 && !data[i].equals(CHARTYPE.OPERATOR, ',') ||
                 data[i].equals(CHARTYPE.OPERATOR, [';', ')'])
             :
-                if (entries[entries.length - 1].length !== 2)
-                    reject(data[i].position, new ParserUnfinishedNotationException());
+                if(entries.length == 1) {
+                    if (entries[entries.length - 1].length == 0)
+                        reject(data[i].position, new ParserUnfinishedNotationException());
+                    else if (entries[entries.length - 1].length == 1)
+                        return {
+                            data: new ObjectContructorCall(query_stack, entries[0][0], data[start].position),
+                            jump: i - start
+                        };
+                    else
+                        return {
+                            data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
+                            jump: i - start
+                        };
+                } else {
+                    if (entries[entries.length - 1].length != 2)
+                        reject(data[i].position, new ParserUnfinishedNotationException());
 
-                return {
-                    data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
-                    jump: i - start
-                };
+                    return {
+                        data: new ObjectContructorCall(query_stack, new Map(entries), data[start].position),
+                        jump: i - start
+                    };
+                }
             case data[i].equals(CHARTYPE.OPERATOR, '*') && expected === 0:
                 if (entries.length !== 1)
                     reject(data[i].position, new BadEmptyObjectException());
@@ -145,7 +160,7 @@ function parseObject(
                         ) {
                             entries[entries.length - 1][0] = data[i].toRawString();
                         } else if (data[i].equals(CHARTYPE.NUMBER)) {
-                            entries[entries.length - 1][0] = parseFloat(data[i].toRawString());
+                            entries[entries.length - 1][0] = data[i].toRawString();
                         } else {
                             reject(data[i].position, new UnexpectedTokenException(data[i], '[Word]'));
                         }
@@ -572,7 +587,7 @@ function parseExpression(
                             if(entries[i + result[0].jump + 1].equals(CHARTYPE.OPERATOR, "-")) {
                                 result[1] = parseGroupOut(
                                     entries,
-                                    i + result[0].jump + 3,
+                                    i + result[0].jump + 2,
                                     result[0].data, 
                                     reject
                                 );
@@ -629,7 +644,7 @@ function parseExpression(
             :
                 result[0] = parseGroupOut(
                     entries,
-                    i + 1,
+                    i,
                     null,
                     reject
                 );
@@ -697,7 +712,8 @@ function parseExpression(
                 buffer.complete(reject);
 
                 return {
-                    data: buffer
+                    data: buffer,
+                    jump: i - start
                 };
         }
     }
@@ -825,8 +841,8 @@ function segmentationParser(
  * @protected
  */
 function segmentCutter(start, entries, reject) {
-    let hook_index = 0,
-        body = new Array();
+    let  hook_index = 0
+    ,    body       = new Array();
 
     for (let i = start;; i++) {
         switch (true) {
@@ -834,12 +850,12 @@ function segmentCutter(start, entries, reject) {
                 entries[i] === undefined ||
                 (
                     entries[i].equals(CHARTYPE.OPERATOR, "}") &&
-                    hook_index <= 0
+                    hook_index <= 1
                 )
             :
                 return {
                     // Сегменты
-                    data: codeBlockParser(0, body, reject).data,
+                    data: codeBlockParser(0, body.slice(1, -1), reject).data,
                     // Прыжок парсера
                     jump: i - start,
                 };
@@ -849,9 +865,7 @@ function segmentCutter(start, entries, reject) {
                 body.push(entries[i]);
                 continue;
             case entries[i].equals(CHARTYPE.OPERATOR, "}"):
-                if (hook_index > 0) {
-                    hook_index--;
-
+                if (hook_index-- > 0) {
                     body.push(entries[i]);
                 } else {
                     reject(
@@ -862,7 +876,7 @@ function segmentCutter(start, entries, reject) {
                 continue;
             default:
                 body.push(entries[i]);
-                break;
+                continue;
         }
     }
 }
@@ -1016,7 +1030,7 @@ function codeBlockParser(start, entries, reject) {
             }
 
             switch (true) {
-                case entries[i].equals(CHARTYPE.NEWLINE):
+                case entries[i].equals(CHARTYPE.NEWLINE) || entries[i].equals(CHARTYPE.OPERATOR, ';'):
                     continue;
                 case entries[i].equals(CHARTYPE.OPERATOR, ">"):
                     result[0] = parseExpression(i + 1, entries, reject);
@@ -1248,21 +1262,64 @@ function codeBlockParser(start, entries, reject) {
                                     "-"
                                 )
                             ) {
-                                result[1] = parseExpression(
-                                    result[0].jump + i + 2,
-                                    entries,
-                                    reject
-                                );
+                                if(
+                                    entries[i + result[0].jump + 2].equals(
+                                        CHARTYPE.OPERATOR,
+                                        "{"
+                                    )
+                                ) {
+                                    result[0] = parseExpression(i, entries, reject);
 
-                                buffer.push(
-                                    new PushStatement(
-                                        entries[i + result[0].jump].position,
-                                        result[0].data,
-                                        result[1].data
+                                    buffer.push(result[0].data);
+    
+                                    i += result[0].jump + 1;
+                                } else {
+                                    result[1] = parseExpression(
+                                        result[0].jump + i + 2,
+                                        entries,
+                                        reject
+                                    );
+
+                                    buffer.push(
+                                        new PushStatement(
+                                            entries[i + result[0].jump].position,
+                                            result[0].data,
+                                            result[1].data
+                                        )
+                                    );
+
+                                    i += result[0].jump + result[1].jump + 2;
+                                }
+                            } else {
+                                reject(
+                                    entries[i + result[0].jump + 1].position,
+                                    new UnexpectedTokenException(
+                                        entries[i + result[0].jump + 1].toString(),
+                                        "-"
                                     )
                                 );
+                            }
+                            
+                        // 
+                        // Конструктор объекта 
+                        // 
+                        } else if (
+                            entries[i + result[0].jump].equals(
+                                CHARTYPE.OPERATOR,
+                                "-"
+                            )
+                        ) {
+                            if (
+                                entries[i + result[0].jump + 1].equals(
+                                    CHARTYPE.OPERATOR,
+                                    ">"
+                                )
+                            ) {
+                                result[0] = parseExpression(i, entries, reject);
 
-                                i += result[0].jump + result[1].jump + 2;
+                                buffer.push(result[0].data);
+
+                                i += result[0].jump;
                             } else {
                                 reject(
                                     entries[i + result[0].jump + 1].position,
@@ -1273,7 +1330,9 @@ function codeBlockParser(start, entries, reject) {
                                 );
                             }
 
-                            // Вызов функции
+                        //
+                        // Вызов функции
+                        //
                         } else if (
                             entries[i + result[0].jump].equals(
                                 CHARTYPE.OPERATOR,
@@ -1305,7 +1364,8 @@ function codeBlockParser(start, entries, reject) {
                     continue;
                 case 
                     entries[i].equals(CHARTYPE.NUMBER) ||
-                    entries[i].equals(CHARTYPE.STRING)
+                    entries[i].equals(CHARTYPE.STRING) ||
+                    entries[i].equals(CHARTYPE.OPERATOR, "{")
                 :
                     result[0] = parseExpression(i, entries, reject);
 

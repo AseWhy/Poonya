@@ -579,41 +579,40 @@ module.exports = /******/ (() => {
                 /**
                  * Дескриптор массива в poonya
                  *
-                 * @param {iPoonyaPrototype} prototype Прототип массива
-                 * @param {Object} init Объект, который будет использоваться для иницализации текущего массива
-                 * @param {iContext} context Текущий контекст, который будет использовать при кастинге значений
+                 * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                 * @param {Boolean} init - Данные для инициализации объекта.
+                 * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                 * @param {Function} reject - Функция для выброса исключения.
                  *
                  * @memberof Poonya.Data
                  * @constructs PoonyaArray
                  * @extends PoonyaObject
                  * @public
                  */
-                constructor(prototype = null, init, context) {
-                    super(prototype);
+                constructor(prototype = null, init, context, reject) {
+                    const computed = new Object();
 
                     if (init) {
                         if (Array.isArray(init)) {
                             for (let i = 0, leng = init.length; i < leng; i++) {
-                                this.push(context, init[i]);
+                                computed[i] = init[key];
                             }
                         } else {
                             for (let key in init) {
                                 switch (typeof key) {
                                     case 'string':
-                                        this.set(
-                                            context,
-                                            parseInt(key),
-                                            init[key]
-                                        );
+                                        computed[parseInt(key)] = init[key];
                                         break;
 
                                     case 'number':
-                                        this.set(context, key, init[key]);
+                                        computed[key] = init[key];
                                         break;
                                 }
                             }
                         }
                     }
+
+                    super(prototype, computed, context, reject);
                 }
                 /**
                  * Возвращает копию этого объекта
@@ -708,17 +707,26 @@ module.exports = /******/ (() => {
                 /**
                  * Дескриптор массива в poonya
                  *
-                 * @param {iPoonyaPrototype} prototype Прототип массива
-                 * @param {Boolean} init Исходное значение
+                 * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                 * @param {Boolean} init - Данные для инициализации объекта.
+                 * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                 * @param {Function} reject - Функция для выброса исключения.
                  *
                  * @memberof Poonya.Data
                  * @constructs PoonyaBoolean
                  * @extends PoonyaObject
                  * @public
                  */
-                constructor(prototype = null, init) {
-                    super(prototype);
-                    this.data = init;
+                constructor(prototype = null, init, context, reject) {
+                    super(prototype, init, context, reject);
+                    this.data =
+                        typeof init == 'boolean'
+                            ? init
+                            : init == 'true'
+                            ? true
+                            : init == 'false'
+                            ? false
+                            : true;
                 }
                 /**
                  * Применяет новое значение к текущему объекту
@@ -808,17 +816,19 @@ module.exports = /******/ (() => {
                 /**
                  * Дескриптор массива в poonya
                  *
-                 * @param {iPoonyaPrototype} prototype Прототип массива
-                 * @param {BigInt} init Исходное целое число
+                 * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                 * @param {BigInt} init - Данные для инициализации объекта.
+                 * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                 * @param {Function} reject - Функция для выброса исключения.
                  *
                  * @memberof Poonya.Data
                  * @constructs PoonyaInteger
                  * @extends PoonyaObject
                  * @public
                  */
-                constructor(prototype = null, init) {
-                    super(prototype);
-                    this.data = init;
+                constructor(prototype = null, init, context, reject) {
+                    super(prototype, init, context, reject);
+                    this.data = BigInt(init);
                 }
                 /**
                  * Возвращает копию этого объекта
@@ -908,15 +918,18 @@ module.exports = /******/ (() => {
                 /**
                  * Дескриптор массива в poonya
                  *
-                 * @param {iPoonyaPrototype} prototype Прототип массива
+                 * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                 * @param {null} init - Данные для инициализации объекта.
+                 * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                 * @param {Function} reject - Функция для выброса исключения.
                  *
                  * @memberof Poonya.Data
                  * @constructs PoonyaNull
                  * @extends PoonyaObject
                  * @public
                  */
-                constructor(prototype = null) {
-                    super(prototype);
+                constructor(prototype = null, init, context, reject) {
+                    super(prototype, null, context, reject);
                 }
                 /**
                  * Возвращает копию этого объекта
@@ -1004,17 +1017,19 @@ module.exports = /******/ (() => {
                 /**
                  * Дескриптор массива в poonya
                  *
-                 * @param {iPoonyaPrototype} prototype Прототип массива
-                 * @param {Number} init Исходное число
+                 * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                 * @param {Number} init - Данные для инициализации объекта.
+                 * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                 * @param {Function} reject - Функция для выброса исключения.
                  *
                  * @memberof Poonya.Data
                  * @constructs PoonyaNumber
                  * @extends PoonyaObject
                  * @public
                  */
-                constructor(prototype = null, init) {
-                    super(prototype);
-                    this.data = init;
+                constructor(prototype = null, init, context, reject) {
+                    super(prototype, init, context, reject);
+                    this.data = parseFloat(init);
                 }
                 /**
                  * Возвращает копию этого объекта
@@ -1113,27 +1128,29 @@ module.exports = /******/ (() => {
                 /**
                  * Дескриптор объекта в poonya
                  *
-                 * @param {PoonyaObject} prototype - Прототип объекта, если необходимо
-                 * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память
-                 * @param {Object} init - Объект инициализации
+                 * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                 * @param {Object} init - Данные для инициализации объекта.
+                 * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                 * @param {Function} reject - Функция для выброса исключения.
                  *
                  * @memberof Poonya.Data
                  *
                  * @constructs PoonyaObject
                  * @public
                  */
-                constructor(prototype, init, context) {
+                constructor(prototype, init, context, reject) {
                     super();
                     this.fields = new Map();
                     this.field_attrs = new Map();
                     this.raw = false;
 
                     if (prototype instanceof iPoonyaPrototype) {
-                        prototype[SUPER_CALL](this);
+                        prototype[SUPER_CALL](this, init);
                         this.prototype = prototype;
                     }
 
-                    if (init != null) this.append(context, init);
+                    if (typeof init == 'object' && init != null)
+                        this.append(context, init);
                 }
                 /**
                  * Возвращает копию этого объекта
@@ -1381,6 +1398,8 @@ module.exports = /******/ (() => {
 
             const { Cast } = __webpack_require__(88);
 
+            const { iCodeEmitter } = __webpack_require__(161);
+
             const PoonyaObject = __webpack_require__(753);
             /**
              * @lends PoonyaPattern
@@ -1391,16 +1410,18 @@ module.exports = /******/ (() => {
                 /**
                  * Дескриптор объекта строки в poonya
                  *
-                 * @param {iPoonyaPrototype} prototype Прототип строки
-                 * @param {iCodeEmitter} init Исходная строка
+                 * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                 * @param {iCodeEmitter} init - Данные для инициализации объекта.
+                 * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                 * @param {Function} reject - Функция для выброса исключения.
                  *
                  * @memberof Poonya.Data
                  * @constructs PoonyaPattern
                  * @extends PoonyaObject
                  * @public
                  */
-                constructor(prototype = null, init) {
-                    super(prototype);
+                constructor(prototype = null, init, context, reject) {
+                    super(prototype, init, context, reject);
                     this.data = init;
                 }
                 /**
@@ -1645,17 +1666,37 @@ module.exports = /******/ (() => {
                  * Вызывает супер вызов всех родительских конструкторов
                  *
                  * @param {PoonyaObject} child дочерний объект, который необходимо собрать
+                 * @param {Map} data данные для инициализауии объекта
+                 *
                  * @method
                  * @protected
                  */
 
-                [SUPER_CALL](child) {
-                    // Копируем значения полей
+                [SUPER_CALL](child, data) {
+                    //
+                    // Копирую свойства полей
+                    //
                     for (let [key, value] of this._fields_data)
-                        child.field_attrs.set(key, value); // Вызываем конструкторы родительских прототипов
+                        child.field_attrs.set(key, value); //
+                    // Получаю конструктор этого прототипа
+                    //
+
+                    const constructor = [...this._fields_data.entries()].find(
+                        (e) => e === FIELDFLAGS.CONSTRUCTOR
+                    ); //
+                    // Если нашел, вызываю его
+                    //
+
+                    if (
+                        constructor != null &&
+                        typeof this._fields.get(constructor[0]) == 'function'
+                    )
+                        this._fields.get(constructor[0]).call(child, data); //
+                    // Вызываем конструкторы родительских прототипов
+                    //
 
                     for (let i = 0, leng = this._parents.length; i < leng; i++)
-                        this._parents[i][SUPER_CALL](child);
+                        this._parents[i][SUPER_CALL](child, data);
                 }
                 /**
                  * Сериализует объект в простое значение.
@@ -1696,16 +1737,18 @@ module.exports = /******/ (() => {
                 /**
                  * Дескриптор объекта строки в poonya
                  *
-                 * @param {iPoonyaPrototype} prototype Прототип строки
-                 * @param {String} init Исходная строка
+                 * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                 * @param {String} init - Данные для инициализации объекта.
+                 * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                 * @param {Function} reject - Функция для выброса исключения.
                  *
                  * @memberof Poonya.Data
                  * @constructs PoonyaString
                  * @extends PoonyaObject
                  * @public
                  */
-                constructor(prototype = null, init) {
-                    super(prototype);
+                constructor(prototype = null, init, context, reject) {
+                    super(prototype, init, context, reject);
                     this.data = init;
                 }
                 /**
@@ -2429,6 +2472,7 @@ module.exports = /******/ (() => {
             const { Operand } = __webpack_require__(501),
                 { Tick, Cast } = __webpack_require__(88),
                 { iPoonyaPrototype } = __webpack_require__(161),
+                { FieldNotAFunctionException } = __webpack_require__(943),
                 PoonyaOutputStream = __webpack_require__(580),
                 NativeFunction = __webpack_require__(329);
             /**
@@ -4504,6 +4548,7 @@ module.exports = /******/ (() => {
              * @property {Number} CONSTANT - Константное значение, невозможно изменить оператором присваивания
              * @property {Number} STATIC   - Статическое значение прототипа
              * @property {Number} PROPERTY - Сделать это поле доступным как свойство
+             * @property {Number} CONSTRUCTOR - Поле является функцией конструктором.
              * @protected
              * @enum
              * @static
@@ -4514,6 +4559,7 @@ module.exports = /******/ (() => {
                 CONSTANT: 0x2,
                 STATIC: 0x4,
                 PROPERTY: 0x8,
+                CONSTRUCTOR: 0x10,
             };
             /**
              * Занимаемая область в глобальном контексте
@@ -5176,7 +5222,12 @@ module.exports = /******/ (() => {
                                 switch (true) {
                                     case prototype[IS]('String'):
                                         resolve(
-                                            new PoonyaString(prototype, init, _)
+                                            new PoonyaString(
+                                                prototype,
+                                                init,
+                                                _,
+                                                reject
+                                            )
                                         );
                                         return;
 
@@ -5185,7 +5236,8 @@ module.exports = /******/ (() => {
                                             new PoonyaInteger(
                                                 prototype,
                                                 init,
-                                                _
+                                                _,
+                                                reject
                                             )
                                         );
                                         return;
@@ -5195,26 +5247,42 @@ module.exports = /******/ (() => {
                                             new PoonyaBoolean(
                                                 prototype,
                                                 init,
-                                                _
+                                                _,
+                                                reject
                                             )
                                         );
                                         return;
 
                                     case prototype[IS]('Number'):
                                         resolve(
-                                            new PoonyaNumber(prototype, init, _)
+                                            new PoonyaNumber(
+                                                prototype,
+                                                init,
+                                                _,
+                                                reject
+                                            )
                                         );
                                         return;
 
                                     case prototype[IS]('Null'):
                                         resolve(
-                                            new PoonyaNull(prototype, init, _)
+                                            new PoonyaNull(
+                                                prototype,
+                                                init,
+                                                _,
+                                                reject
+                                            )
                                         );
                                         return;
 
                                     case prototype[IS]('Array'):
                                         resolve(
-                                            new PoonyaArray(prototype, init, _)
+                                            new PoonyaArray(
+                                                prototype,
+                                                init,
+                                                _,
+                                                reject
+                                            )
                                         );
                                         return;
 
@@ -5223,14 +5291,20 @@ module.exports = /******/ (() => {
                                             new PoonyaPattern(
                                                 prototype,
                                                 init,
-                                                _
+                                                _,
+                                                reject
                                             )
                                         );
                                         break;
 
                                     default:
                                         resolve(
-                                            new PoonyaObject(prototype, init, _)
+                                            new PoonyaObject(
+                                                prototype,
+                                                init,
+                                                _,
+                                                reject
+                                            )
                                         );
                                         return;
                                 }
@@ -5518,7 +5592,8 @@ module.exports = /******/ (() => {
                                 ) {
                                     parent.set(
                                         context,
-                                        (value = new value(context)).name,
+                                        (value = new value(context, reject))
+                                            .name,
                                         value
                                     );
                                 } else {
@@ -6345,19 +6420,47 @@ module.exports = /******/ (() => {
                             (expected === 3 &&
                                 !data[i].equals(CHARTYPE.OPERATOR, ',')) ||
                             data[i].equals(CHARTYPE.OPERATOR, [';', ')']):
-                            if (entries[entries.length - 1].length !== 2)
-                                reject(
-                                    data[i].position,
-                                    new ParserUnfinishedNotationException()
-                                );
-                            return {
-                                data: new ObjectContructorCall(
-                                    query_stack,
-                                    new Map(entries),
-                                    data[start].position
-                                ),
-                                jump: i - start,
-                            };
+                            if (entries.length == 1) {
+                                if (entries[entries.length - 1].length == 0)
+                                    reject(
+                                        data[i].position,
+                                        new ParserUnfinishedNotationException()
+                                    );
+                                else if (
+                                    entries[entries.length - 1].length == 1
+                                )
+                                    return {
+                                        data: new ObjectContructorCall(
+                                            query_stack,
+                                            entries[0][0],
+                                            data[start].position
+                                        ),
+                                        jump: i - start,
+                                    };
+                                else
+                                    return {
+                                        data: new ObjectContructorCall(
+                                            query_stack,
+                                            new Map(entries),
+                                            data[start].position
+                                        ),
+                                        jump: i - start,
+                                    };
+                            } else {
+                                if (entries[entries.length - 1].length != 2)
+                                    reject(
+                                        data[i].position,
+                                        new ParserUnfinishedNotationException()
+                                    );
+                                return {
+                                    data: new ObjectContructorCall(
+                                        query_stack,
+                                        new Map(entries),
+                                        data[start].position
+                                    ),
+                                    jump: i - start,
+                                };
+                            }
 
                         case data[i].equals(CHARTYPE.OPERATOR, '*') &&
                             expected === 0:
@@ -6391,11 +6494,9 @@ module.exports = /******/ (() => {
                                     } else if (
                                         data[i].equals(CHARTYPE.NUMBER)
                                     ) {
-                                        entries[
-                                            entries.length - 1
-                                        ][0] = parseFloat(
-                                            data[i].toRawString()
-                                        );
+                                        entries[entries.length - 1][0] = data[
+                                            i
+                                        ].toRawString();
                                     } else {
                                         reject(
                                             data[i].position,
@@ -6893,7 +6994,7 @@ module.exports = /******/ (() => {
                                         ) {
                                             result[1] = parseGroupOut(
                                                 entries,
-                                                i + result[0].jump + 3,
+                                                i + result[0].jump + 2,
                                                 result[0].data,
                                                 reject
                                             );
@@ -6961,12 +7062,7 @@ module.exports = /******/ (() => {
                         //
 
                         case entries[i].equals(CHARTYPE.OPERATOR, '{'):
-                            result[0] = parseGroupOut(
-                                entries,
-                                i + 1,
-                                null,
-                                reject
-                            );
+                            result[0] = parseGroupOut(entries, i, null, reject);
                             i += result[0].jump + 1;
                             buffer.append(result[0].data, reject);
                             continue;
@@ -7033,6 +7129,7 @@ module.exports = /******/ (() => {
                             buffer.complete(reject);
                             return {
                                 data: buffer,
+                                jump: i - start,
                             };
                     }
                 }
@@ -7171,10 +7268,14 @@ module.exports = /******/ (() => {
                     switch (true) {
                         case entries[i] === undefined ||
                             (entries[i].equals(CHARTYPE.OPERATOR, '}') &&
-                                hook_index <= 0):
+                                hook_index <= 1):
                             return {
                                 // Сегменты
-                                data: codeBlockParser(0, body, reject).data,
+                                data: codeBlockParser(
+                                    0,
+                                    body.slice(1, -1),
+                                    reject
+                                ).data,
                                 // Прыжок парсера
                                 jump: i - start,
                             };
@@ -7185,8 +7286,7 @@ module.exports = /******/ (() => {
                             continue;
 
                         case entries[i].equals(CHARTYPE.OPERATOR, '}'):
-                            if (hook_index > 0) {
-                                hook_index--;
+                            if (hook_index-- > 0) {
                                 body.push(entries[i]);
                             } else {
                                 reject(
@@ -7199,7 +7299,7 @@ module.exports = /******/ (() => {
 
                         default:
                             body.push(entries[i]);
-                            break;
+                            continue;
                     }
                 }
             }
@@ -7367,7 +7467,8 @@ module.exports = /******/ (() => {
                         }
 
                         switch (true) {
-                            case entries[i].equals(CHARTYPE.NEWLINE):
+                            case entries[i].equals(CHARTYPE.NEWLINE) ||
+                                entries[i].equals(CHARTYPE.OPERATOR, ';'):
                                 continue;
 
                             case entries[i].equals(CHARTYPE.OPERATOR, '>'):
@@ -7643,24 +7744,38 @@ module.exports = /******/ (() => {
                                                 i + result[0].jump + 1
                                             ].equals(CHARTYPE.OPERATOR, '-')
                                         ) {
-                                            result[1] = parseExpression(
-                                                result[0].jump + i + 2,
-                                                entries,
-                                                reject
-                                            );
-                                            buffer.push(
-                                                new PushStatement(
-                                                    entries[
-                                                        i + result[0].jump
-                                                    ].position,
-                                                    result[0].data,
-                                                    result[1].data
-                                                )
-                                            );
-                                            i +=
-                                                result[0].jump +
-                                                result[1].jump +
-                                                2;
+                                            if (
+                                                entries[
+                                                    i + result[0].jump + 2
+                                                ].equals(CHARTYPE.OPERATOR, '{')
+                                            ) {
+                                                result[0] = parseExpression(
+                                                    i,
+                                                    entries,
+                                                    reject
+                                                );
+                                                buffer.push(result[0].data);
+                                                i += result[0].jump + 1;
+                                            } else {
+                                                result[1] = parseExpression(
+                                                    result[0].jump + i + 2,
+                                                    entries,
+                                                    reject
+                                                );
+                                                buffer.push(
+                                                    new PushStatement(
+                                                        entries[
+                                                            i + result[0].jump
+                                                        ].position,
+                                                        result[0].data,
+                                                        result[1].data
+                                                    )
+                                                );
+                                                i +=
+                                                    result[0].jump +
+                                                    result[1].jump +
+                                                    2;
+                                            }
                                         } else {
                                             reject(
                                                 entries[i + result[0].jump + 1]
@@ -7672,7 +7787,41 @@ module.exports = /******/ (() => {
                                                     '-'
                                                 )
                                             );
-                                        } // Вызов функции
+                                        } //
+                                        // Конструктор объекта
+                                        //
+                                    } else if (
+                                        entries[i + result[0].jump].equals(
+                                            CHARTYPE.OPERATOR,
+                                            '-'
+                                        )
+                                    ) {
+                                        if (
+                                            entries[
+                                                i + result[0].jump + 1
+                                            ].equals(CHARTYPE.OPERATOR, '>')
+                                        ) {
+                                            result[0] = parseExpression(
+                                                i,
+                                                entries,
+                                                reject
+                                            );
+                                            buffer.push(result[0].data);
+                                            i += result[0].jump;
+                                        } else {
+                                            reject(
+                                                entries[i + result[0].jump + 1]
+                                                    .position,
+                                                new UnexpectedTokenException(
+                                                    entries[
+                                                        i + result[0].jump + 1
+                                                    ].toString(),
+                                                    '-'
+                                                )
+                                            );
+                                        } //
+                                        // Вызов функции
+                                        //
                                     } else if (
                                         entries[i + result[0].jump].equals(
                                             CHARTYPE.OPERATOR,
@@ -7701,7 +7850,8 @@ module.exports = /******/ (() => {
                                 continue;
 
                             case entries[i].equals(CHARTYPE.NUMBER) ||
-                                entries[i].equals(CHARTYPE.STRING):
+                                entries[i].equals(CHARTYPE.STRING) ||
+                                entries[i].equals(CHARTYPE.OPERATOR, '{'):
                                 result[0] = parseExpression(i, entries, reject);
                                 buffer.push(result[0].data);
                                 i += result[0].jump;

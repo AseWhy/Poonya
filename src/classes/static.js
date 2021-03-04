@@ -90,6 +90,7 @@ const OPERATOR = {
  * @property {Number} CONSTANT - Константное значение, невозможно изменить оператором присваивания
  * @property {Number} STATIC   - Статическое значение прототипа
  * @property {Number} PROPERTY - Сделать это поле доступным как свойство
+ * @property {Number} CONSTRUCTOR - Поле является функцией конструктором.
  * @protected
  * @enum
  * @static
@@ -98,7 +99,8 @@ const FIELDFLAGS = {
     NOOUTPUT: 0x1,
     CONSTANT: 0x2,
     STATIC: 0x4,
-    PROPERTY: 0x8
+    PROPERTY: 0x8,
+    CONSTRUCTOR: 0x10
 };
 
 /**

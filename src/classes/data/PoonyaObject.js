@@ -33,16 +33,17 @@ class PoonyaObject extends iPoonyaObject {
     /**
      * Дескриптор объекта в poonya
      *
-     * @param {PoonyaObject} prototype - Прототип объекта, если необходимо
-     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память
-     * @param {Object} init - Объект инициализации
+     * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+     * @param {Object} init - Данные для инициализации объекта.
+     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+     * @param {Function} reject - Функция для выброса исключения.
      * 
      * @memberof Poonya.Data
      * 
      * @constructs PoonyaObject
      * @public
      */
-    constructor(prototype, init, context) {
+    constructor(prototype, init, context, reject) {
         super();
 
         this.fields = new Map();
@@ -50,12 +51,12 @@ class PoonyaObject extends iPoonyaObject {
         this.raw = false;
 
         if (prototype instanceof iPoonyaPrototype) {
-            prototype[SUPER_CALL](this);
+            prototype[SUPER_CALL](this, init);
 
             this.prototype = prototype;
         }
 
-        if (init != null)
+        if (typeof init == 'object' && init != null)
             this.append(context, init);
     }
 

@@ -16,18 +16,20 @@ class PoonyaBoolean extends PoonyaObject {
     /**
      * Дескриптор массива в poonya
      *
-     * @param {iPoonyaPrototype} prototype Прототип массива
-     * @param {Boolean} init Исходное значение
+     * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+     * @param {Boolean} init - Данные для инициализации объекта.
+     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+     * @param {Function} reject - Функция для выброса исключения.
      * 
      * @memberof Poonya.Data
      * @constructs PoonyaBoolean
      * @extends PoonyaObject
      * @public
      */
-    constructor(prototype = null, init) {
-        super(prototype);
+    constructor(prototype = null, init, context, reject) {
+        super(prototype, init, context, reject);
 
-        this.data = init;
+        this.data = typeof init == 'boolean' ? init : init == 'true' ? true : init == 'false' ? false : true;
     }
 
     /**
