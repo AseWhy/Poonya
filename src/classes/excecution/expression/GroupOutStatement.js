@@ -9,6 +9,7 @@
 const { Operand } = require("../../common/ParserData")
     , { Tick, Cast } = require("../../../utils")
     , { iPoonyaPrototype } = require("../../interfaces")
+    , { FieldNotAFunctionException } = require("../../exceptions")
     , PoonyaOutputStream = require("../../common/PoonyaOutputStream")
     , NativeFunction = require("../../data/NativeFunction");
 

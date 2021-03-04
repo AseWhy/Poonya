@@ -16,15 +16,18 @@ class PoonyaNull extends PoonyaObject {
     /**
      * Дескриптор массива в poonya
      *
-     * @param {iPoonyaPrototype} prototype Прототип массива
+     * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+     * @param {null} init - Данные для инициализации объекта.
+     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+     * @param {Function} reject - Функция для выброса исключения.
      * 
      * @memberof Poonya.Data
      * @constructs PoonyaNull
      * @extends PoonyaObject
      * @public
      */
-    constructor(prototype = null) {
-        super(prototype);
+    constructor(prototype = null, init, context, reject) {
+        super(prototype, null, context, reject);
     }
 
     /**

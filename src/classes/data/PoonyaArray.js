@@ -18,36 +18,39 @@ class PoonyaArray extends PoonyaObject {
     /**
      * Дескриптор массива в poonya
      *
-     * @param {iPoonyaPrototype} prototype Прототип массива
-     * @param {Object} init Объект, который будет использоваться для иницализации текущего массива
-     * @param {iContext} context Текущий контекст, который будет использовать при кастинге значений
+     * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+     * @param {Boolean} init - Данные для инициализации объекта.
+     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+     * @param {Function} reject - Функция для выброса исключения.
      * 
      * @memberof Poonya.Data
      * @constructs PoonyaArray
      * @extends PoonyaObject
      * @public
      */
-    constructor(prototype = null, init, context) {
-        super(prototype);
+    constructor(prototype = null, init, context, reject) {
+        const computed = new Object();
 
         if (init) {
             if(Array.isArray(init)) {
                 for (let i = 0, leng = init.length; i < leng; i++) {
-                    this.push(context, init[i]);
+                    computed[i] = init[key];
                 }
             } else {
                 for(let key in init) {
                     switch(typeof key) {
                         case "string":
-                            this.set(context, parseInt(key), init[key]);
+                            computed[parseInt(key)] = init[key];
                         break;
                         case "number":
-                            this.set(context, key, init[key]);
+                            computed[key] = init[key];
                         break;
                     }
                 }
             }
         }
+
+        super(prototype, computed, context, reject);
     }
 
     /**

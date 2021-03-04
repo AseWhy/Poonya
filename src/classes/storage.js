@@ -512,28 +512,28 @@ class Context extends iContext {
             function done() {
                 switch (true) {
                     case prototype[IS]('String'): 
-                        resolve(new PoonyaString(prototype, init, _)); 
+                        resolve(new PoonyaString(prototype, init, _, reject)); 
                     return;
                     case prototype[IS]('Integer'): 
-                        resolve(new PoonyaInteger(prototype, init, _)); 
+                        resolve(new PoonyaInteger(prototype, init, _, reject)); 
                     return;
                     case prototype[IS]('Boolean'): 
-                        resolve(new PoonyaBoolean(prototype, init, _)); 
+                        resolve(new PoonyaBoolean(prototype, init, _, reject)); 
                     return;
                     case prototype[IS]('Number'): 
-                        resolve(new PoonyaNumber(prototype, init, _)); 
+                        resolve(new PoonyaNumber(prototype, init, _, reject)); 
                     return;
                     case prototype[IS]('Null'): 
-                        resolve(new PoonyaNull(prototype, init, _)); 
+                        resolve(new PoonyaNull(prototype, init, _, reject)); 
                     return;
                     case prototype[IS]('Array'): 
-                        resolve(new PoonyaArray(prototype, init, _)); 
+                        resolve(new PoonyaArray(prototype, init, _, reject)); 
                     return;
                     case prototype[IS]('Pattern'):
-                        resolve(new PoonyaPattern(prototype, init, _));
+                        resolve(new PoonyaPattern(prototype, init, _, reject));
                     break;
                     default: 
-                        resolve(new PoonyaObject(prototype, init, _)); 
+                        resolve(new PoonyaObject(prototype, init, _, reject)); 
                     return;
                 }
             }

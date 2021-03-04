@@ -184,7 +184,8 @@ class PoonyaStaticLibrary {
                         Symbol.keyFor(value),
                         -1,
                         SERVICE.CONSTRUCTORS.STRING,
-                        reject, new Array(), 
+                        reject, 
+                        new Array(), 
                         result => parent.set(
                             context,
                             key,
@@ -194,7 +195,7 @@ class PoonyaStaticLibrary {
                     break;
                 case 'function':
                     if (Object.prototype.isPrototypeOf.call(PoonyaPrototype, value)) {
-                        parent.set(context, (value = new value(context)).name, value);
+                        parent.set(context, (value = new value(context, reject)).name, value);
                     } else {
                         parent.set(context, key, new NativeFunction(value));
                     }

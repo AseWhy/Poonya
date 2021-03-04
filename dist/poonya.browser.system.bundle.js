@@ -735,7 +735,7 @@ System.register(
                                             'default.joiners',
                                             false,
                                             false,
-                                            'joiners'
+                                            'Join'
                                         );
                                         this.addField(
                                             'concat',
@@ -743,8 +743,8 @@ System.register(
                                             FIELDFLAGS.CONSTANT
                                         );
                                         this.addField(
-                                            'array',
-                                            this.array,
+                                            'raw',
+                                            this.raw,
                                             FIELDFLAGS.CONSTANT
                                         );
                                     }
@@ -756,11 +756,8 @@ System.register(
                                         );
                                     }
 
-                                    array(service, ...data) {
-                                        return Array.prototype.join.call(
-                                            data,
-                                            ''
-                                        );
+                                    raw(service, ...data) {
+                                        return data;
                                     }
                                 })();
                                 new (class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
@@ -769,7 +766,7 @@ System.register(
                                             'default.math',
                                             false,
                                             false,
-                                            'math'
+                                            'Math'
                                         );
                                         this.addField(
                                             'floor',
@@ -817,56 +814,13 @@ System.register(
                                         return null;
                                     }
                                 })();
-                                new (class DefaultRegExpStaticLibrary extends PoonyaStaticLibrary {
-                                    constructor() {
-                                        super(
-                                            'default.regexp',
-                                            false,
-                                            false,
-                                            'regexp'
-                                        );
-                                        this.addField(
-                                            'test',
-                                            this.test,
-                                            FIELDFLAGS.CONSTANT
-                                        );
-                                        this.addField(
-                                            'replace',
-                                            this.replace,
-                                            FIELDFLAGS.CONSTANT
-                                        );
-                                    }
-
-                                    test(service, expression, flags, string) {
-                                        return new RegExp(
-                                            expression,
-                                            flags ? flags : undefined
-                                        ).test(string);
-                                    }
-
-                                    replace(
-                                        service,
-                                        expression,
-                                        flags,
-                                        string,
-                                        to
-                                    ) {
-                                        return string.replace(
-                                            new RegExp(
-                                                expression,
-                                                flags ? flags : undefined
-                                            ),
-                                            to
-                                        );
-                                    }
-                                })();
                                 new (class DefaultDatesStaticLibrary extends PoonyaStaticLibrary {
                                     constructor() {
                                         super(
                                             'default.dates',
                                             false,
                                             false,
-                                            'dates'
+                                            'Date'
                                         );
                                         this.addField(
                                             'minutes',
@@ -934,57 +888,6 @@ System.register(
                                         return this.date.getTime();
                                     }
                                 })();
-                                new (class DefaultNumbersStaticLibrary extends PoonyaStaticLibrary {
-                                    constructor() {
-                                        super(
-                                            'default.numbers',
-                                            false,
-                                            false,
-                                            'numbers'
-                                        );
-                                        this.addField(
-                                            'random',
-                                            this.random,
-                                            FIELDFLAGS.CONSTANT
-                                        );
-                                        this.addField(
-                                            'isNumber',
-                                            this.isNumber,
-                                            FIELDFLAGS.CONSTANT
-                                        );
-                                        this.addField(
-                                            'parseInt',
-                                            this.parseInt,
-                                            FIELDFLAGS.CONSTANT
-                                        );
-                                    }
-
-                                    random(service, f, t) {
-                                        if (
-                                            typeof f == 'number' &&
-                                            typeof t == 'number' &&
-                                            !isNaN(f) &&
-                                            !isNaN(t)
-                                        )
-                                            return Math.random();
-                                        else
-                                            return Math.round(
-                                                f + Math.random() * (t - f)
-                                            );
-                                    }
-
-                                    isNumber(service, o) {
-                                        return (
-                                            !isNaN(o) && typeof o === 'number'
-                                        );
-                                    }
-
-                                    parseInt(service, numb) {
-                                        return isNaN((numb = parseInt(numb)))
-                                            ? null
-                                            : numb;
-                                    }
-                                })();
 
                                 class PoonyaObjectPrototype extends PoonyaPrototype {
                                     constructor() {
@@ -1032,6 +935,14 @@ System.register(
                                         );
                                     }
 
+                                    keys() {
+                                        return this.keys();
+                                    }
+
+                                    values() {
+                                        return this.values();
+                                    }
+
                                     assign(service, ...args) {
                                         for (
                                             let i = 0, leng = args.length;
@@ -1046,14 +957,6 @@ System.register(
                                     set(service, key, value) {
                                         this.set(service.context, key, value);
                                         return null;
-                                    }
-
-                                    keys() {
-                                        return this.keys();
-                                    }
-
-                                    values() {
-                                        return this.values();
                                     }
 
                                     has(service, key) {
@@ -1074,15 +977,74 @@ System.register(
                                     }
                                 }
 
-                                class PoonyaIntegerPrototype extends PoonyaPrototype {
-                                    constructor() {
-                                        super([], 'Integer');
-                                    }
-                                }
-
                                 class PoonyaNumberPrototype extends PoonyaPrototype {
                                     constructor() {
                                         super([], 'Number');
+                                        this.addField(
+                                            'random',
+                                            this.random,
+                                            FIELDFLAGS.CONSTANT |
+                                                FIELDFLAGS.STATIC
+                                        );
+                                        this.addField(
+                                            'isNumber',
+                                            this.isNumber,
+                                            FIELDFLAGS.CONSTANT |
+                                                FIELDFLAGS.STATIC
+                                        );
+                                        this.addField(
+                                            'parseInt',
+                                            this.parseInt,
+                                            FIELDFLAGS.CONSTANT |
+                                                FIELDFLAGS.STATIC
+                                        );
+                                    }
+
+                                    random(service, f, t) {
+                                        if (
+                                            typeof f != 'number' ||
+                                            typeof t != 'number' ||
+                                            isNaN(f) ||
+                                            isNaN(t)
+                                        )
+                                            return Math.random();
+                                        else
+                                            return Math.round(
+                                                f + Math.random() * (t - f)
+                                            );
+                                    }
+
+                                    isNumber(service, o) {
+                                        return (
+                                            !isNaN(o) && typeof o === 'number'
+                                        );
+                                    }
+
+                                    parseInt(service, numb) {
+                                        return isNaN((numb = parseInt(numb)))
+                                            ? null
+                                            : numb;
+                                    }
+                                }
+
+                                class PoonyaIntegerPrototype extends PoonyaPrototype {
+                                    constructor(context, reject) {
+                                        let pNumber = null; //
+                                        // Ищу прототип числа в текущем контексте
+                                        //
+
+                                        context.getByPath(
+                                            ['Number'],
+                                            -1,
+                                            null,
+                                            reject,
+                                            null,
+                                            (result) => (pNumber = result)
+                                        ); //
+                                        // Integer extends Number
+                                        //
+
+                                        super([pNumber], 'Integer');
                                     }
                                 }
 
@@ -1120,15 +1082,20 @@ System.register(
                                                 FIELDFLAGS.PROPERTY,
                                             context
                                         );
+                                        this.addField(
+                                            'fromaCharCode',
+                                            this.fromaCharCode,
+                                            FIELDFLAGS.CONSTANT |
+                                                FIELDFLAGS.STATIC,
+                                            context
+                                        );
+                                    }
+
+                                    fromaCharCode(service, code) {
+                                        return String.fromCharCode(code);
                                     }
 
                                     charAt(service, index) {
-                                        if (index != null) {
-                                            return this.data.charAt(index);
-                                        } else return null;
-                                    }
-
-                                    charCodeAt(service, index) {
                                         if (index != null) {
                                             return this.data.charAt(index);
                                         } else return null;
@@ -1343,13 +1310,13 @@ System.register(
                                             PoonyaStringPrototype
                                         );
                                         this.expandPrototype(
-                                            PoonyaIntegerPrototype
-                                        );
-                                        this.expandPrototype(
                                             PoonyaBooleanPrototype
                                         );
                                         this.expandPrototype(
                                             PoonyaNumberPrototype
+                                        );
+                                        this.expandPrototype(
+                                            PoonyaIntegerPrototype
                                         );
                                         this.expandPrototype(
                                             PoonyaNullPrototype
@@ -1382,22 +1349,9 @@ System.register(
                                             this.wait,
                                             FIELDFLAGS.CONSTANT
                                         );
-                                        this.addField(
-                                            'eval',
-                                            this.eval,
-                                            FIELDFLAGS.CONSTANT
-                                        );
-                                        this.addLib('default.numbers');
                                         this.addLib('default.joiners');
-                                        this.addLib('default.regexp');
                                         this.addLib('default.dates');
                                         this.addLib('default.math');
-                                    }
-
-                                    eval(service, string) {
-                                        service.context
-                                            .eval(string)
-                                            .then(service.resolve);
                                     }
 
                                     wait(service, milis) {
@@ -2718,9 +2672,10 @@ System.register(
                                     /**
                                      * Дескриптор массива в poonya
                                      *
-                                     * @param {iPoonyaPrototype} prototype Прототип массива
-                                     * @param {Object} init Объект, который будет использоваться для иницализации текущего массива
-                                     * @param {iContext} context Текущий контекст, который будет использовать при кастинге значений
+                                     * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                                     * @param {Boolean} init - Данные для инициализации объекта.
+                                     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                                     * @param {Function} reject - Функция для выброса исключения.
                                      *
                                      * @memberof Poonya.Data
                                      * @constructs PoonyaArray
@@ -2730,9 +2685,10 @@ System.register(
                                     constructor(
                                         prototype = null,
                                         init,
-                                        context
+                                        context,
+                                        reject
                                     ) {
-                                        super(prototype);
+                                        const computed = new Object();
 
                                         if (init) {
                                             if (Array.isArray(init)) {
@@ -2742,30 +2698,32 @@ System.register(
                                                     i < leng;
                                                     i++
                                                 ) {
-                                                    this.push(context, init[i]);
+                                                    computed[i] = init[key];
                                                 }
                                             } else {
                                                 for (let key in init) {
                                                     switch (typeof key) {
                                                         case 'string':
-                                                            this.set(
-                                                                context,
-                                                                parseInt(key),
-                                                                init[key]
-                                                            );
+                                                            computed[
+                                                                parseInt(key)
+                                                            ] = init[key];
                                                             break;
 
                                                         case 'number':
-                                                            this.set(
-                                                                context,
-                                                                key,
-                                                                init[key]
-                                                            );
+                                                            computed[key] =
+                                                                init[key];
                                                             break;
                                                     }
                                                 }
                                             }
                                         }
+
+                                        super(
+                                            prototype,
+                                            computed,
+                                            context,
+                                            reject
+                                        );
                                     }
                                     /**
                                      * Возвращает копию этого объекта
@@ -2888,17 +2846,31 @@ System.register(
                                     /**
                                      * Дескриптор массива в poonya
                                      *
-                                     * @param {iPoonyaPrototype} prototype Прототип массива
-                                     * @param {Boolean} init Исходное значение
+                                     * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                                     * @param {Boolean} init - Данные для инициализации объекта.
+                                     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                                     * @param {Function} reject - Функция для выброса исключения.
                                      *
                                      * @memberof Poonya.Data
                                      * @constructs PoonyaBoolean
                                      * @extends PoonyaObject
                                      * @public
                                      */
-                                    constructor(prototype = null, init) {
-                                        super(prototype);
-                                        this.data = init;
+                                    constructor(
+                                        prototype = null,
+                                        init,
+                                        context,
+                                        reject
+                                    ) {
+                                        super(prototype, init, context, reject);
+                                        this.data =
+                                            typeof init == 'boolean'
+                                                ? init
+                                                : init == 'true'
+                                                ? true
+                                                : init == 'false'
+                                                ? false
+                                                : true;
                                     }
                                     /**
                                      * Применяет новое значение к текущему объекту
@@ -2992,17 +2964,24 @@ System.register(
                                     /**
                                      * Дескриптор массива в poonya
                                      *
-                                     * @param {iPoonyaPrototype} prototype Прототип массива
-                                     * @param {BigInt} init Исходное целое число
+                                     * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                                     * @param {BigInt} init - Данные для инициализации объекта.
+                                     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                                     * @param {Function} reject - Функция для выброса исключения.
                                      *
                                      * @memberof Poonya.Data
                                      * @constructs PoonyaInteger
                                      * @extends PoonyaObject
                                      * @public
                                      */
-                                    constructor(prototype = null, init) {
-                                        super(prototype);
-                                        this.data = init;
+                                    constructor(
+                                        prototype = null,
+                                        init,
+                                        context,
+                                        reject
+                                    ) {
+                                        super(prototype, init, context, reject);
+                                        this.data = BigInt(init);
                                     }
                                     /**
                                      * Возвращает копию этого объекта
@@ -3096,15 +3075,23 @@ System.register(
                                     /**
                                      * Дескриптор массива в poonya
                                      *
-                                     * @param {iPoonyaPrototype} prototype Прототип массива
+                                     * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                                     * @param {null} init - Данные для инициализации объекта.
+                                     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                                     * @param {Function} reject - Функция для выброса исключения.
                                      *
                                      * @memberof Poonya.Data
                                      * @constructs PoonyaNull
                                      * @extends PoonyaObject
                                      * @public
                                      */
-                                    constructor(prototype = null) {
-                                        super(prototype);
+                                    constructor(
+                                        prototype = null,
+                                        init,
+                                        context,
+                                        reject
+                                    ) {
+                                        super(prototype, null, context, reject);
                                     }
                                     /**
                                      * Возвращает копию этого объекта
@@ -3193,17 +3180,24 @@ System.register(
                                     /**
                                      * Дескриптор массива в poonya
                                      *
-                                     * @param {iPoonyaPrototype} prototype Прототип массива
-                                     * @param {Number} init Исходное число
+                                     * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                                     * @param {Number} init - Данные для инициализации объекта.
+                                     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                                     * @param {Function} reject - Функция для выброса исключения.
                                      *
                                      * @memberof Poonya.Data
                                      * @constructs PoonyaNumber
                                      * @extends PoonyaObject
                                      * @public
                                      */
-                                    constructor(prototype = null, init) {
-                                        super(prototype);
-                                        this.data = init;
+                                    constructor(
+                                        prototype = null,
+                                        init,
+                                        context,
+                                        reject
+                                    ) {
+                                        super(prototype, init, context, reject);
+                                        this.data = parseFloat(init);
                                     }
                                     /**
                                      * Возвращает копию этого объекта
@@ -3312,16 +3306,22 @@ System.register(
                                     /**
                                      * Дескриптор объекта в poonya
                                      *
-                                     * @param {PoonyaObject} prototype - Прототип объекта, если необходимо
-                                     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память
-                                     * @param {Object} init - Объект инициализации
+                                     * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                                     * @param {Object} init - Данные для инициализации объекта.
+                                     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                                     * @param {Function} reject - Функция для выброса исключения.
                                      *
                                      * @memberof Poonya.Data
                                      *
                                      * @constructs PoonyaObject
                                      * @public
                                      */
-                                    constructor(prototype, init, context) {
+                                    constructor(
+                                        prototype,
+                                        init,
+                                        context,
+                                        reject
+                                    ) {
                                         super();
                                         this.fields = new Map();
                                         this.field_attrs = new Map();
@@ -3331,11 +3331,14 @@ System.register(
                                             prototype instanceof
                                             iPoonyaPrototype
                                         ) {
-                                            prototype[SUPER_CALL](this);
+                                            prototype[SUPER_CALL](this, init);
                                             this.prototype = prototype;
                                         }
 
-                                        if (init != null)
+                                        if (
+                                            typeof init == 'object' &&
+                                            init != null
+                                        )
                                             this.append(context, init);
                                     }
                                     /**
@@ -3658,6 +3661,10 @@ System.register(
 
                                 const { Cast } = __webpack_require__(88);
 
+                                const { iCodeEmitter } = __webpack_require__(
+                                    161
+                                );
+
                                 const PoonyaObject = __webpack_require__(753);
                                 /**
                                  * @lends PoonyaPattern
@@ -3668,16 +3675,23 @@ System.register(
                                     /**
                                      * Дескриптор объекта строки в poonya
                                      *
-                                     * @param {iPoonyaPrototype} prototype Прототип строки
-                                     * @param {iCodeEmitter} init Исходная строка
+                                     * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                                     * @param {iCodeEmitter} init - Данные для инициализации объекта.
+                                     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                                     * @param {Function} reject - Функция для выброса исключения.
                                      *
                                      * @memberof Poonya.Data
                                      * @constructs PoonyaPattern
                                      * @extends PoonyaObject
                                      * @public
                                      */
-                                    constructor(prototype = null, init) {
-                                        super(prototype);
+                                    constructor(
+                                        prototype = null,
+                                        init,
+                                        context,
+                                        reject
+                                    ) {
+                                        super(prototype, init, context, reject);
                                         this.data = init;
                                     }
                                     /**
@@ -3962,15 +3976,41 @@ System.register(
                                      * Вызывает супер вызов всех родительских конструкторов
                                      *
                                      * @param {PoonyaObject} child дочерний объект, который необходимо собрать
+                                     * @param {Map} data данные для инициализауии объекта
+                                     *
                                      * @method
                                      * @protected
                                      */
 
-                                    [SUPER_CALL](child) {
-                                        // Копируем значения полей
+                                    [SUPER_CALL](child, data) {
+                                        //
+                                        // Копирую свойства полей
+                                        //
                                         for (let [key, value] of this
                                             ._fields_data)
-                                            child.field_attrs.set(key, value); // Вызываем конструкторы родительских прототипов
+                                            child.field_attrs.set(key, value); //
+                                        // Получаю конструктор этого прототипа
+                                        //
+
+                                        const constructor = [
+                                            ...this._fields_data.entries(),
+                                        ].find(
+                                            (e) => e === FIELDFLAGS.CONSTRUCTOR
+                                        ); //
+                                        // Если нашел, вызываю его
+                                        //
+
+                                        if (
+                                            constructor != null &&
+                                            typeof this._fields.get(
+                                                constructor[0]
+                                            ) == 'function'
+                                        )
+                                            this._fields
+                                                .get(constructor[0])
+                                                .call(child, data); //
+                                        // Вызываем конструкторы родительских прототипов
+                                        //
 
                                         for (
                                             let i = 0,
@@ -3978,7 +4018,10 @@ System.register(
                                             i < leng;
                                             i++
                                         )
-                                            this._parents[i][SUPER_CALL](child);
+                                            this._parents[i][SUPER_CALL](
+                                                child,
+                                                data
+                                            );
                                     }
                                     /**
                                      * Сериализует объект в простое значение.
@@ -4020,16 +4063,23 @@ System.register(
                                     /**
                                      * Дескриптор объекта строки в poonya
                                      *
-                                     * @param {iPoonyaPrototype} prototype Прототип строки
-                                     * @param {String} init Исходная строка
+                                     * @param {iPoonyaPrototype} prototype - Прототип объекта, если необходимо.
+                                     * @param {String} init - Данные для инициализации объекта.
+                                     * @param {iContext} context - Контекст, который будет использоваться для кастинга значения при передачи их в память.
+                                     * @param {Function} reject - Функция для выброса исключения.
                                      *
                                      * @memberof Poonya.Data
                                      * @constructs PoonyaString
                                      * @extends PoonyaObject
                                      * @public
                                      */
-                                    constructor(prototype = null, init) {
-                                        super(prototype);
+                                    constructor(
+                                        prototype = null,
+                                        init,
+                                        context,
+                                        reject
+                                    ) {
+                                        super(prototype, init, context, reject);
                                         this.data = init;
                                     }
                                     /**
@@ -4940,6 +4990,9 @@ System.register(
                                     { iPoonyaPrototype } = __webpack_require__(
                                         161
                                     ),
+                                    {
+                                        FieldNotAFunctionException,
+                                    } = __webpack_require__(943),
                                     PoonyaOutputStream = __webpack_require__(
                                         580
                                     ),
@@ -7347,6 +7400,7 @@ System.register(
                                  * @property {Number} CONSTANT - Константное значение, невозможно изменить оператором присваивания
                                  * @property {Number} STATIC   - Статическое значение прототипа
                                  * @property {Number} PROPERTY - Сделать это поле доступным как свойство
+                                 * @property {Number} CONSTRUCTOR - Поле является функцией конструктором.
                                  * @protected
                                  * @enum
                                  * @static
@@ -7357,6 +7411,7 @@ System.register(
                                     CONSTANT: 0x2,
                                     STATIC: 0x4,
                                     PROPERTY: 0x8,
+                                    CONSTRUCTOR: 0x10,
                                 };
                                 /**
                                  * Занимаемая область в глобальном контексте
@@ -8175,7 +8230,8 @@ System.register(
                                                                 new PoonyaString(
                                                                     prototype,
                                                                     init,
-                                                                    _
+                                                                    _,
+                                                                    reject
                                                                 )
                                                             );
                                                             return;
@@ -8187,7 +8243,8 @@ System.register(
                                                                 new PoonyaInteger(
                                                                     prototype,
                                                                     init,
-                                                                    _
+                                                                    _,
+                                                                    reject
                                                                 )
                                                             );
                                                             return;
@@ -8199,7 +8256,8 @@ System.register(
                                                                 new PoonyaBoolean(
                                                                     prototype,
                                                                     init,
-                                                                    _
+                                                                    _,
+                                                                    reject
                                                                 )
                                                             );
                                                             return;
@@ -8211,7 +8269,8 @@ System.register(
                                                                 new PoonyaNumber(
                                                                     prototype,
                                                                     init,
-                                                                    _
+                                                                    _,
+                                                                    reject
                                                                 )
                                                             );
                                                             return;
@@ -8223,7 +8282,8 @@ System.register(
                                                                 new PoonyaNull(
                                                                     prototype,
                                                                     init,
-                                                                    _
+                                                                    _,
+                                                                    reject
                                                                 )
                                                             );
                                                             return;
@@ -8235,7 +8295,8 @@ System.register(
                                                                 new PoonyaArray(
                                                                     prototype,
                                                                     init,
-                                                                    _
+                                                                    _,
+                                                                    reject
                                                                 )
                                                             );
                                                             return;
@@ -8247,7 +8308,8 @@ System.register(
                                                                 new PoonyaPattern(
                                                                     prototype,
                                                                     init,
-                                                                    _
+                                                                    _,
+                                                                    reject
                                                                 )
                                                             );
                                                             break;
@@ -8257,7 +8319,8 @@ System.register(
                                                                 new PoonyaObject(
                                                                     prototype,
                                                                     init,
-                                                                    _
+                                                                    _,
+                                                                    reject
                                                                 )
                                                             );
                                                             return;
@@ -8629,7 +8692,8 @@ System.register(
                                                         parent.set(
                                                             context,
                                                             (value = new value(
-                                                                context
+                                                                context,
+                                                                reject
                                                             )).name,
                                                             value
                                                         );
@@ -9589,22 +9653,63 @@ System.register(
                                                     ';',
                                                     ')',
                                                 ]):
-                                                if (
-                                                    entries[entries.length - 1]
-                                                        .length !== 2
-                                                )
-                                                    reject(
-                                                        data[i].position,
-                                                        new ParserUnfinishedNotationException()
-                                                    );
-                                                return {
-                                                    data: new ObjectContructorCall(
-                                                        query_stack,
-                                                        new Map(entries),
-                                                        data[start].position
-                                                    ),
-                                                    jump: i - start,
-                                                };
+                                                if (entries.length == 1) {
+                                                    if (
+                                                        entries[
+                                                            entries.length - 1
+                                                        ].length == 0
+                                                    )
+                                                        reject(
+                                                            data[i].position,
+                                                            new ParserUnfinishedNotationException()
+                                                        );
+                                                    else if (
+                                                        entries[
+                                                            entries.length - 1
+                                                        ].length == 1
+                                                    )
+                                                        return {
+                                                            data: new ObjectContructorCall(
+                                                                query_stack,
+                                                                entries[0][0],
+                                                                data[
+                                                                    start
+                                                                ].position
+                                                            ),
+                                                            jump: i - start,
+                                                        };
+                                                    else
+                                                        return {
+                                                            data: new ObjectContructorCall(
+                                                                query_stack,
+                                                                new Map(
+                                                                    entries
+                                                                ),
+                                                                data[
+                                                                    start
+                                                                ].position
+                                                            ),
+                                                            jump: i - start,
+                                                        };
+                                                } else {
+                                                    if (
+                                                        entries[
+                                                            entries.length - 1
+                                                        ].length != 2
+                                                    )
+                                                        reject(
+                                                            data[i].position,
+                                                            new ParserUnfinishedNotationException()
+                                                        );
+                                                    return {
+                                                        data: new ObjectContructorCall(
+                                                            query_stack,
+                                                            new Map(entries),
+                                                            data[start].position
+                                                        ),
+                                                        jump: i - start,
+                                                    };
+                                                }
 
                                             case data[i].equals(
                                                 CHARTYPE.OPERATOR,
@@ -9654,11 +9759,9 @@ System.register(
                                                             entries[
                                                                 entries.length -
                                                                     1
-                                                            ][0] = parseFloat(
-                                                                data[
-                                                                    i
-                                                                ].toRawString()
-                                                            );
+                                                            ][0] = data[
+                                                                i
+                                                            ].toRawString();
                                                         } else {
                                                             reject(
                                                                 data[i]
@@ -10348,7 +10451,7 @@ System.register(
                                                                     i +
                                                                         result[0]
                                                                             .jump +
-                                                                        3,
+                                                                        2,
                                                                     result[0]
                                                                         .data,
                                                                     reject
@@ -10447,7 +10550,7 @@ System.register(
                                             ):
                                                 result[0] = parseGroupOut(
                                                     entries,
-                                                    i + 1,
+                                                    i,
                                                     null,
                                                     reject
                                                 );
@@ -10546,6 +10649,7 @@ System.register(
                                                 buffer.complete(reject);
                                                 return {
                                                     data: buffer,
+                                                    jump: i - start,
                                                 };
                                         }
                                     }
@@ -10722,12 +10826,12 @@ System.register(
                                                     CHARTYPE.OPERATOR,
                                                     '}'
                                                 ) &&
-                                                    hook_index <= 0):
+                                                    hook_index <= 1):
                                                 return {
                                                     // Сегменты
                                                     data: codeBlockParser(
                                                         0,
-                                                        body,
+                                                        body.slice(1, -1),
                                                         reject
                                                     ).data,
                                                     // Прыжок парсера
@@ -10746,8 +10850,7 @@ System.register(
                                                 CHARTYPE.OPERATOR,
                                                 '}'
                                             ):
-                                                if (hook_index > 0) {
-                                                    hook_index--;
+                                                if (hook_index-- > 0) {
                                                     body.push(entries[i]);
                                                 } else {
                                                     reject(
@@ -10760,7 +10863,7 @@ System.register(
 
                                             default:
                                                 body.push(entries[i]);
-                                                break;
+                                                continue;
                                         }
                                     }
                                 }
@@ -10969,7 +11072,11 @@ System.register(
                                             switch (true) {
                                                 case entries[i].equals(
                                                     CHARTYPE.NEWLINE
-                                                ):
+                                                ) ||
+                                                    entries[i].equals(
+                                                        CHARTYPE.OPERATOR,
+                                                        ';'
+                                                    ):
                                                     continue;
 
                                                 case entries[i].equals(
@@ -11331,31 +11438,57 @@ System.register(
                                                                     '-'
                                                                 )
                                                             ) {
-                                                                result[1] = parseExpression(
-                                                                    result[0]
-                                                                        .jump +
+                                                                if (
+                                                                    entries[
                                                                         i +
-                                                                        2,
-                                                                    entries,
-                                                                    reject
-                                                                );
-                                                                buffer.push(
-                                                                    new PushStatement(
-                                                                        entries[
-                                                                            i +
-                                                                                result[0]
-                                                                                    .jump
-                                                                        ].position,
-                                                                        result[0].data,
-                                                                        result[1].data
+                                                                            result[0]
+                                                                                .jump +
+                                                                            2
+                                                                    ].equals(
+                                                                        CHARTYPE.OPERATOR,
+                                                                        '{'
                                                                     )
-                                                                );
-                                                                i +=
-                                                                    result[0]
-                                                                        .jump +
-                                                                    result[1]
-                                                                        .jump +
-                                                                    2;
+                                                                ) {
+                                                                    result[0] = parseExpression(
+                                                                        i,
+                                                                        entries,
+                                                                        reject
+                                                                    );
+                                                                    buffer.push(
+                                                                        result[0]
+                                                                            .data
+                                                                    );
+                                                                    i +=
+                                                                        result[0]
+                                                                            .jump +
+                                                                        1;
+                                                                } else {
+                                                                    result[1] = parseExpression(
+                                                                        result[0]
+                                                                            .jump +
+                                                                            i +
+                                                                            2,
+                                                                        entries,
+                                                                        reject
+                                                                    );
+                                                                    buffer.push(
+                                                                        new PushStatement(
+                                                                            entries[
+                                                                                i +
+                                                                                    result[0]
+                                                                                        .jump
+                                                                            ].position,
+                                                                            result[0].data,
+                                                                            result[1].data
+                                                                        )
+                                                                    );
+                                                                    i +=
+                                                                        result[0]
+                                                                            .jump +
+                                                                        result[1]
+                                                                            .jump +
+                                                                        2;
+                                                                }
                                                             } else {
                                                                 reject(
                                                                     entries[
@@ -11374,7 +11507,63 @@ System.register(
                                                                         '-'
                                                                     )
                                                                 );
-                                                            } // Вызов функции
+                                                            } //
+                                                            // Конструктор объекта
+                                                            //
+                                                        } else if (
+                                                            entries[
+                                                                i +
+                                                                    result[0]
+                                                                        .jump
+                                                            ].equals(
+                                                                CHARTYPE.OPERATOR,
+                                                                '-'
+                                                            )
+                                                        ) {
+                                                            if (
+                                                                entries[
+                                                                    i +
+                                                                        result[0]
+                                                                            .jump +
+                                                                        1
+                                                                ].equals(
+                                                                    CHARTYPE.OPERATOR,
+                                                                    '>'
+                                                                )
+                                                            ) {
+                                                                result[0] = parseExpression(
+                                                                    i,
+                                                                    entries,
+                                                                    reject
+                                                                );
+                                                                buffer.push(
+                                                                    result[0]
+                                                                        .data
+                                                                );
+                                                                i +=
+                                                                    result[0]
+                                                                        .jump;
+                                                            } else {
+                                                                reject(
+                                                                    entries[
+                                                                        i +
+                                                                            result[0]
+                                                                                .jump +
+                                                                            1
+                                                                    ].position,
+                                                                    new UnexpectedTokenException(
+                                                                        entries[
+                                                                            i +
+                                                                                result[0]
+                                                                                    .jump +
+                                                                                1
+                                                                        ].toString(),
+                                                                        '-'
+                                                                    )
+                                                                );
+                                                            } //
+                                                            // Вызов функции
+                                                            //
                                                         } else if (
                                                             entries[
                                                                 i +
@@ -11414,6 +11603,10 @@ System.register(
                                                 ) ||
                                                     entries[i].equals(
                                                         CHARTYPE.STRING
+                                                    ) ||
+                                                    entries[i].equals(
+                                                        CHARTYPE.OPERATOR,
+                                                        '{'
                                                     ):
                                                     result[0] = parseExpression(
                                                         i,

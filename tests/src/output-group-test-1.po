@@ -1,4 +1,4 @@
-> joiners.concat <- {
+> Join.concat <- {
     > 'it';
     > ' ';
     > 'says';
