@@ -6,13 +6,17 @@
 
 "use strict";
 
-const { Tick } = require("../../../utils");
+const { Tick } = require("../../../utils")
+    , { iStatement } = require("../../interfaces")
+    , { UnexpectedTokenException } = require("../../exceptions")
+    ,   BreakStatement = require("./BreakStatement")
+    ,   ContinueStatement = require("./ContinueStatement");
 
 /**
  * @lends SequenceMainGroup;
  * @protected
  */
-class SequenceMainGroup {
+class SequenceMainGroup extends iStatement {
     /**
      * Главная исполняемая последовательность
      *
@@ -23,7 +27,55 @@ class SequenceMainGroup {
      * @protected
      */
     constructor(init) {
+        super();
+
         this.Sequence = Array.isArray(init) ? init : new Array();
+    }
+
+    /**
+     * !! Это главная группа, этот метод должен быть вызван сразу после окончания формирования группы !!
+     * 
+     * @see iStatement.__sync
+     * 
+     * @param {Function} reject функция выбрасывания исключений
+     * 
+     * @method
+     * 
+     * @returns {SequenceMainGroup}
+     */
+    __sync(reject) {
+        for(const elem of this.Sequence) {
+            for(const block of elem.__executable()) {
+                if(this.can_break) 
+                    block.interrupted();
+
+                if(this.can_continue) 
+                    block.continued();
+
+                if(this.can_return) 
+                    block.terminable();
+            };
+
+            if(elem instanceof BreakStatement)
+                reject(elem.position, new UnexpectedTokenException('break'));
+
+            if(elem instanceof ContinueStatement)
+                reject(elem.position, new UnexpectedTokenException('continue'));
+            
+            elem.__sync(reject);
+        }
+
+        return this;
+    }
+
+    /**
+     * @see iStatement.__executable
+     * 
+     * @returns {Array<SequenceGroup>} список исполняемых блоков
+     * @method
+     */
+    __executable(){
+        return new Array();
     }
 
     /**

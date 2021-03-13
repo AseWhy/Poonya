@@ -33,6 +33,25 @@ class GetOperator extends Operand {
     }
 
     /**
+     * Синхронизирует значение группы с родительской группой
+     * 
+     * @param {Function} функция выбрасывания исключений
+     * 
+     * @override
+     * @method
+     * @returns {GetOperator}
+     */
+     __sync(reject){
+        for(const elem of this.query_stack) {
+            if(elem instanceof Operand) {
+                elem.__sync(reject);
+            }
+        }
+
+        return this;
+    }
+
+    /**
      * Получает переменную заданную литералами
      *
      * @param {iContext} context Контекст выполнения

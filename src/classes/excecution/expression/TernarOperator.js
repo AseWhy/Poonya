@@ -34,6 +34,23 @@ class TernarOperator extends Operand {
     }
 
     /**
+     * Синхронизирует значение группы с родительской группой
+     * 
+     * @param {Function} функция выбрасывания исключений
+     * 
+     * @override
+     * @method
+     * @returns {TernarOperator}
+     */
+     __sync(reject){
+        condition.__sync(reject);
+        v_o.__sync(reject);
+        v_t.__sync(reject);
+
+        return this;
+    }
+
+    /**
      * Сериализует текущий объект в строку
      *
      * @returns {String} Строковое представление теранарного оператора

@@ -37,6 +37,25 @@ class ObjectContructorCall extends Operand {
     }
 
     /**
+     * Синхронизирует значение группы с родительской группой
+     * 
+     * @param {Function} функция выбрасывания исключений
+     * 
+     * @override
+     * @method
+     * @returns {ObjectContructorCall}
+     */
+     __sync(reject){
+        for(const elem of this.query_stack) {
+            if(elem instanceof Operand) {
+                elem.__sync(reject);
+            }
+        }
+
+        return this;
+    }
+
+    /**
      * Сериализует текущий объект в строку
      *
      * @param {String} indent отступ слева, для более понятного отображения кода

@@ -7,13 +7,15 @@
 "use strict";
 
 const { TheFieldAlreadyHasBeenDeclaredException } = require('../../exceptions')
-    , { Tick } = require('../../../utils');
+    , { Tick } = require('../../../utils')
+    , { iStatement } = require('../../interfaces')
+    , { Operand } = require('../../common/ParserData');
 
 /**
  * @lends SetStatement
  * @protected
  */
-class SetStatement {
+class SetStatement extends iStatement {
     /**
      * Объект который Сериализуется как set = (expression...)
      *
@@ -25,9 +27,36 @@ class SetStatement {
      * @protected
      */
     constructor(name, value) {
+        super();
+
         this.name = name.toString();
         this.position = name.position;
         this.value = value;
+    }
+
+    /**
+     * @see iStatement.__sync
+     * 
+     * @param {Function} reject функция выбрасывания исключений
+     * 
+     * @method
+     * 
+     * @returns {SetStatement}
+     */
+    __sync(reject) {
+        this.value.__sync(reject);
+
+        return this;
+    }
+
+    /**
+     * @see iStatement.__executable
+     * 
+     * @returns {Array<SequenceGroup>} список исполняемых блоков
+     * @method
+     */
+    __executable(){
+        return new Array();
     }
 
     /**

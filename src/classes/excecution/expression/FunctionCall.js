@@ -35,6 +35,25 @@ class FunctionCall extends Operand {
     }
 
     /**
+     * Синхронизирует значение группы с родительской группой
+     * 
+     * @param {Function} reject функция выбрасывания исключений
+     * 
+     * @override
+     * @method
+     * @returns {FunctionCall}
+     */
+     __sync(reject){
+        for(const elem of this.query_stack.concat(this.args)) {
+            if(elem instanceof Operand) {
+                elem.__sync(reject);
+            }
+        }
+
+        return this;
+    }
+
+    /**
      * Получает переменную заданную литералами
      *
      * @param {iContext} context Контекст выполнения

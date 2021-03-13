@@ -523,7 +523,7 @@ define('poonya', [], () =>
                     }
 
                     isNumber(service, o) {
-                        return !isNaN(o) && typeof o === 'number';
+                        return typeof o === 'number' && !isNaN(o);
                     }
 
                     parseInt(service, numb) {
@@ -548,7 +548,28 @@ define('poonya', [], () =>
                         // Integer extends Number
                         //
 
-                        super([pNumber], 'Integer');
+                        super([pNumber], 'Integer'); //
+                        // Methods
+                        //
+
+                        this.addField(
+                            'parseInt',
+                            this.parseInt,
+                            FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC
+                        );
+                        this.addField(
+                            'isInteger',
+                            this.isInteger,
+                            FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC
+                        );
+                    }
+
+                    isInteger(service, o) {
+                        return typeof o === 'bigint';
+                    }
+
+                    parseInt(service, numb) {
+                        return BigInt(numb);
                     }
                 }
 
@@ -1398,6 +1419,27 @@ define('poonya', [], () =>
                         super('operand');
                         this.name = name;
                     }
+                    /**
+                     * Синхронизирует группы выражений с оснновной группой
+                     *
+                     * @method
+                     *
+                     * @returns {Operand}
+                     */
+
+                    __sync(reject) {
+                        return this;
+                    }
+
+                    /**
+                     * Возвращет список исполняемых блоков, если такие есть.
+                     *
+                     * @method
+                     * @returns {Array<iStatement>} список исполняемых блоков, если такие есть.
+                     */
+                    __executable() {
+                        return new Array();
+                    }
                 }
                 /**
                  * @lends Operator
@@ -1511,13 +1553,13 @@ define('poonya', [], () =>
                  * @author Astecom
                  */
 
-                const { EventEmitter } = __webpack_require__(138);
+                const { iPoonyaOutputStream } = __webpack_require__(161);
                 /**
                  * @lends PoonyaOutputStream
                  * @class
                  */
 
-                class PoonyaOutputStream extends EventEmitter {
+                class PoonyaOutputStream extends iPoonyaOutputStream {
                     /**
                      * Класс вывода шаблонов, за счет этого интерфейса производится
                      * Template output class, due to this interface is created
@@ -3049,7 +3091,7 @@ define('poonya', [], () =>
                                 i++
                             ) {
                                 if (
-                                    (data = this._parents[i].get(
+                                    (data = this._parents[i][GET](
                                         key,
                                         context,
                                         static_assces
@@ -3262,7 +3304,8 @@ define('poonya', [], () =>
                         TheSequenceException,
                     } = __webpack_require__(943),
                     { Cast, Tick } = __webpack_require__(88),
-                    ObjectContructorCall = __webpack_require__(657);
+                    ObjectContructorCall = __webpack_require__(657),
+                    Token = __webpack_require__(359);
                 /**
                  * @lends MessagePattern;
                  */
@@ -3284,6 +3327,25 @@ define('poonya', [], () =>
                             initial != null ? [...initial] : new Array();
                         this.position = position;
                         this.validated = false;
+                    }
+                    /**
+                     * Синхронизирует значение группы с родительской группой
+                     *
+                     * @param {Function} reject функция выбрасывания исключений
+                     *
+                     * @override
+                     * @method
+                     * @returns {ExpressionGroup}
+                     */
+
+                    __sync(reject) {
+                        for (const elem of this.data) {
+                            if (elem instanceof Operand) {
+                                elem.__sync(reject);
+                            }
+                        }
+
+                        return this;
                     }
                     /**
                      * Если выражение завершено, то врнет true, иначе же вернет false
@@ -3394,12 +3456,9 @@ define('poonya', [], () =>
 
                         if (this.data.length !== 0) {
                             if (
-                                (current instanceof Operator &&
-                                    this.data[this.data.length - 1] instanceof
-                                        Operator) ||
-                                (current instanceof Operand &&
-                                    this.data[this.data.length - 1] instanceof
-                                        Operand)
+                                current instanceof Operator &&
+                                this.data[this.data.length - 1] instanceof
+                                    Operator
                             )
                                 reject(
                                     entry.position,
@@ -3408,16 +3467,32 @@ define('poonya', [], () =>
                                         this.data[this.data.length - 1]
                                     )
                                 );
-                        } else {
-                            if (current instanceof Operator)
-                                reject(
-                                    entry.position,
-                                    new TheSequenceException(
-                                        current,
-                                        '[ExpressionStart]'
+                            //
+                            // 4 4 => 4 + 4
+                            // 'Hello' ' ' 'World' => 'Hello world'
+                            //
+                            else if (
+                                current instanceof Operand &&
+                                this.data[this.data.length - 1] instanceof
+                                    Operand
+                            )
+                                this.data.push(
+                                    new Operator(
+                                        new Token(
+                                            CHARTYPE.OPERATOR,
+                                            [0x0, 0x2b],
+                                            -1
+                                        )
                                     )
                                 );
-                        }
+                        } else if (current instanceof Operator)
+                            reject(
+                                entry.position,
+                                new TheSequenceException(
+                                    current,
+                                    '[ExpressionStart]'
+                                )
+                            );
 
                         this.data.push(current);
                     }
@@ -3465,6 +3540,8 @@ define('poonya', [], () =>
                                         case OPERATOR.EQUAL:
                                         case OPERATOR.LARGER:
                                         case OPERATOR.LESS:
+                                        case OPERATOR.ELARGER:
+                                        case OPERATOR.ELESS:
                                         case OPERATOR.OR:
                                         case OPERATOR.AND:
                                             if (!mltexp) break;
@@ -3619,12 +3696,22 @@ define('poonya', [], () =>
 
                                         case _.data[i].equals(OPERATOR.AND):
                                             result = result && cur.toRawData();
-                                            if (!result) return result;
+
+                                            if (!result) {
+                                                resolve(Cast(result, context));
+                                                return;
+                                            }
+
                                             break;
 
                                         case _.data[i].equals(OPERATOR.OR):
                                             result = result || cur.toRawData();
-                                            if (result) return result;
+
+                                            if (result) {
+                                                resolve(Cast(result, context));
+                                                return;
+                                            }
+
                                             break;
                                     }
 
@@ -3697,6 +3784,25 @@ define('poonya', [], () =>
                         this.query_stack = [...query_stack];
                         this.position = position;
                         this.args = args;
+                    }
+                    /**
+                     * Синхронизирует значение группы с родительской группой
+                     *
+                     * @param {Function} reject функция выбрасывания исключений
+                     *
+                     * @override
+                     * @method
+                     * @returns {FunctionCall}
+                     */
+
+                    __sync(reject) {
+                        for (const elem of this.query_stack.concat(this.args)) {
+                            if (elem instanceof Operand) {
+                                elem.__sync(reject);
+                            }
+                        }
+
+                        return this;
                     }
                     /**
                      * Получает переменную заданную литералами
@@ -3810,6 +3916,25 @@ define('poonya', [], () =>
                         super('get');
                         this.position = position;
                         this.query_stack = stack;
+                    }
+                    /**
+                     * Синхронизирует значение группы с родительской группой
+                     *
+                     * @param {Function} функция выбрасывания исключений
+                     *
+                     * @override
+                     * @method
+                     * @returns {GetOperator}
+                     */
+
+                    __sync(reject) {
+                        for (const elem of this.query_stack) {
+                            if (elem instanceof Operand) {
+                                elem.__sync(reject);
+                            }
+                        }
+
+                        return this;
                     }
                     /**
                      * Получает переменную заданную литералами
@@ -3931,10 +4056,34 @@ define('poonya', [], () =>
                      */
                     constructor(body, query_stack, position) {
                         super('group-output');
-                        this.body = body;
                         this.query_stack =
                             query_stack != null ? [...query_stack] : null;
                         this.position = position;
+                        this.body = body;
+                        this.body.interrupted();
+                    }
+                    /**
+                     * Синхронизирует значение группы с родительской группой
+                     *
+                     * @param {Function} функция выбрасывания исключений
+                     *
+                     * @override
+                     * @method
+                     * @returns {GroupOutStatement}
+                     */
+
+                    __sync(reject) {
+                        if (this.query_stack != null) {
+                            for (const elem of this.query_stack) {
+                                if (elem instanceof Operand) {
+                                    elem.__sync(reject);
+                                }
+                            }
+                        }
+
+                        this.body.__sync(reject);
+
+                        return this;
                     }
                     /**
                      * Сериализует текущий объект в строку
@@ -4066,6 +4215,25 @@ define('poonya', [], () =>
                                 : SERVICE.CONSTRUCTORS.OBJECT;
                         this.initial = initial;
                         this.position = position;
+                    }
+                    /**
+                     * Синхронизирует значение группы с родительской группой
+                     *
+                     * @param {Function} функция выбрасывания исключений
+                     *
+                     * @override
+                     * @method
+                     * @returns {ObjectContructorCall}
+                     */
+
+                    __sync(reject) {
+                        for (const elem of this.query_stack) {
+                            if (elem instanceof Operand) {
+                                elem.__sync(reject);
+                            }
+                        }
+
+                        return this;
                     }
                     /**
                      * Сериализует текущий объект в строку
@@ -4202,6 +4370,25 @@ define('poonya', [], () =>
                         this.v_t = v2;
                     }
                     /**
+                     * Синхронизирует значение группы с родительской группой
+                     *
+                     * @param {Function} функция выбрасывания исключений
+                     *
+                     * @override
+                     * @method
+                     * @returns {TernarOperator}
+                     */
+
+                    __sync(reject) {
+                        condition.__sync(reject);
+
+                        v_o.__sync(reject);
+
+                        v_t.__sync(reject);
+
+                        return this;
+                    }
+                    /**
                      * Сериализует текущий объект в строку
                      *
                      * @returns {String} Строковое представление теранарного оператора
@@ -4249,6 +4436,178 @@ define('poonya', [], () =>
                 /***/
             },
 
+            /***/ 707: /***/ (
+                module,
+                __unused_webpack_exports,
+                __webpack_require__
+            ) => {
+                /**
+                 * @file src/classes/excecution/statements/BreakStatement.js
+                 * @description Содержит в себе оператор break, который используется для прерывания итераций массивов, и выхода из группового вывода
+                 * @author Astecom
+                 */
+                const { Tick } = __webpack_require__(88),
+                    { iStatement } = __webpack_require__(161);
+                /**
+                 * @lends BreakStatement
+                 * @protected
+                 */
+
+                class BreakStatement extends iStatement {
+                    /**
+                     * Дескриптор оператора break
+                     *
+                     * @param {Number} position позиция оператора
+                     *
+                     * @constructs BreakStatement
+                     * @memberof Poonya.Statements
+                     * @protected
+                     */
+                    constructor(position) {
+                        super();
+                        this.position = position;
+                    }
+                    /**
+                     * @see iStatement.__sync
+                     *
+                     * @param {Function} reject функция выбрасывания исключений
+                     *
+                     * @method
+                     * @returns {BreakStatement}
+                     */
+
+                    __sync(reject) {
+                        return this;
+                    }
+                    /**
+                     * @see iStatement.__executable
+                     *
+                     * @returns {Array<SequenceGroup>} список исполняемых блоков
+                     * @method
+                     */
+
+                    __executable() {
+                        return new Array();
+                    }
+                    /**
+                     * Преобразовывет оператор break  в строку
+                     *
+                     * @returns {String} строкове представление оператора
+                     */
+
+                    toString() {
+                        return 'break;';
+                    }
+                    /**
+                     * Выполняет прерывание перебора
+                     *
+                     * @returns {BreakStatement}
+                     *
+                     * @param {iContext} context Контекст выполнения
+                     * @param {PoonyaOutputStream} out вывод шаблонизатора
+                     * @param {Function} reject Вызывается при ошибке
+                     * @param {Function} resolve функция возврата результата
+                     *
+                     * @public
+                     * @method
+                     */
+
+                    result(context, out, reject, resolve) {
+                        Tick(resolve, this);
+                    }
+                }
+
+                module.exports = BreakStatement;
+
+                /***/
+            },
+
+            /***/ 914: /***/ (
+                module,
+                __unused_webpack_exports,
+                __webpack_require__
+            ) => {
+                /**
+                 * @file src/classes/excecution/statements/ContinueStatement.js
+                 * @description Содержит в себе оператор continue, который используется для перехода к следующей итерации
+                 * @author Astecom
+                 */
+                const { iStatement } = __webpack_require__(161),
+                    { Tick } = __webpack_require__(88);
+                /**
+                 * @lends ContinueStatement
+                 * @protected
+                 */
+
+                class ContinueStatement extends iStatement {
+                    /**
+                     * Дескриптор оператора continue
+                     *
+                     * @param {Number} position позиция оператора
+                     *
+                     * @constructs ContinueStatement
+                     * @memberof Poonya.Statements
+                     * @protected
+                     */
+                    constructor(position) {
+                        super();
+                        this.position = position;
+                    }
+                    /**
+                     * @see iStatement.__sync
+                     *
+                     * @param {Function} reject функция выбрасывания исключений
+                     *
+                     * @method
+                     * @returns {ContinueStatement}
+                     */
+
+                    __sync(reject) {
+                        return this;
+                    }
+                    /**
+                     * @see iStatement.__executable
+                     *
+                     * @returns {Array<SequenceGroup>} список исполняемых блоков
+                     * @method
+                     */
+
+                    __executable() {
+                        return new Array();
+                    }
+                    /**
+                     * Преобразовывет оператор continue в строку
+                     *
+                     * @returns {String} строкове представление оператора
+                     */
+
+                    toString() {
+                        return 'continue;';
+                    }
+                    /**
+                     * Выполняет переход к следующей итерации цикла
+                     *
+                     * @returns {ContinueStatement}
+                     *
+                     * @param {iContext} context Контекст выполнения
+                     * @param {PoonyaOutputStream} out вывод шаблонизатора
+                     * @param {Function} reject Вызывается при ошибке
+                     * @param {Function} resolve функция возврата результата
+                     *
+                     * @public
+                     * @method
+                     */
+
+                    result(context, out, reject, resolve) {
+                        Tick(resolve, this);
+                    }
+                }
+
+                module.exports = ContinueStatement;
+
+                /***/
+            },
+
             /***/ 602: /***/ (
                 module,
                 __unused_webpack_exports,
@@ -4261,13 +4620,14 @@ define('poonya', [], () =>
                  * @author Astecom
                  */
 
-                const { Tick } = __webpack_require__(88);
+                const { Tick } = __webpack_require__(88),
+                    { iStatement } = __webpack_require__(161);
                 /**
                  * @lends IfStatement
                  * @protected
                  */
 
-                class IfStatement {
+                class IfStatement extends iStatement {
                     /**
                      * Дескриптор оператора if
                      *
@@ -4280,9 +4640,38 @@ define('poonya', [], () =>
                      * @protected
                      */
                     constructor(condition, body_true, body_false) {
+                        super();
                         this.condition = condition;
                         this.body_true = body_true;
                         this.body_false = body_false;
+                    }
+                    /**
+                     * @see iStatement.__sync
+                     *
+                     * @param {Function} reject функция выбрасывания исключений
+                     *
+                     * @method
+                     *  @returns {IfStatement}
+                     */
+
+                    __sync(reject) {
+                        this.condition.__sync(reject);
+
+                        if (this.body_true) this.body_true.__sync(reject);
+                        if (this.body_false) this.body_false.__sync(reject);
+                        return this;
+                    }
+                    /**
+                     * @see iStatement.__executable
+                     *
+                     * @returns {Array<SequenceGroup>} список исполняемых блоков
+                     * @method
+                     */
+
+                    __executable() {
+                        return [this.body_true, this.body_false].filter(
+                            (e) => e != undefined
+                        );
                     }
                     /**
                      * Сериализует текущий объект в строку
@@ -4358,13 +4747,14 @@ define('poonya', [], () =>
                  * @author Astecom
                  */
 
-                const { Tick } = __webpack_require__(88);
+                const { Tick } = __webpack_require__(88),
+                    { iStatement } = __webpack_require__(161);
                 /**
                  * @lends OutStatement
                  * @protected
                  */
 
-                class OutStatement {
+                class OutStatement extends iStatement {
                     /**
                      * Оператор вывода который Сериализуется как > (...expression)
                      * Выводит данные из шаблона
@@ -4377,8 +4767,33 @@ define('poonya', [], () =>
                      * @protected
                      */
                     constructor(expression) {
+                        super();
                         this.expression = expression;
                         this.position = expression.position;
+                    }
+                    /**
+                     * @see iStatement.__sync
+                     *
+                     * @param {Function} reject функция выбрасывания исключений
+                     *
+                     * @method
+                     * @returns {OutStatement}
+                     */
+
+                    __sync(reject) {
+                        this.expression.__sync(reject);
+
+                        return this;
+                    }
+                    /**
+                     * @see iStatement.__executable
+                     *
+                     * @returns {Array<SequenceGroup>} список исполняемых блоков
+                     * @method
+                     */
+
+                    __executable() {
+                        return new Array();
                     }
                     /**
                      * Сериализует текущий объект в строку
@@ -4445,17 +4860,19 @@ define('poonya', [], () =>
                  * @license MIT
                  */
 
-                const PoonyaArray = __webpack_require__(36),
-                    { Tick } = __webpack_require__(88),
+                const { Tick } = __webpack_require__(88),
                     {
                         TheFieldMustBeAnArrayInstanceExceprion,
-                    } = __webpack_require__(943);
+                    } = __webpack_require__(943),
+                    { iStatement } = __webpack_require__(161),
+                    { Operand } = __webpack_require__(501),
+                    PoonyaArray = __webpack_require__(36);
                 /**
                  * @lends PushStatement
                  * @protected
                  */
 
-                class PushStatement {
+                class PushStatement extends iStatement {
                     /**
                      * Объект который Сериализуется как var_name <- (expression...)
                      * Это опреатор для работы с массивами, и он заменяет свойство push
@@ -4469,9 +4886,40 @@ define('poonya', [], () =>
                      * @protected
                      */
                     constructor(position, query_stack, value) {
+                        super();
                         this.query_stack = query_stack;
                         this.position = position;
                         this.value = value;
+                    }
+                    /**
+                     * @see iStatement.__sync
+                     *
+                     * @param {Function} reject функция выбрасывания исключений
+                     *
+                     * @method
+                     * @returns {PushStatement}
+                     */
+
+                    __sync(reject) {
+                        this.value.__sync(reject);
+
+                        for (const elem of this.query_stack) {
+                            if (elem instanceof Operand) {
+                                elem.__sync(reject);
+                            }
+                        }
+
+                        return this;
+                    }
+                    /**
+                     * @see iStatement.__executable
+                     *
+                     * @returns {Array<SequenceGroup>} список исполняемых блоков
+                     * @method
+                     */
+
+                    __executable() {
+                        return new Array();
                     }
                     /**
                      * Сериализует текущий объект в строку
@@ -4561,13 +5009,16 @@ define('poonya', [], () =>
                         943
                     ),
                     { Tick } = __webpack_require__(88),
-                    PoonyaNumber = __webpack_require__(220);
+                    { iStatement } = __webpack_require__(161),
+                    PoonyaNumber = __webpack_require__(220),
+                    BreakStatement = __webpack_require__(707),
+                    ContinueStatement = __webpack_require__(914);
                 /**
                  * @lends RepeatStatement;
                  * @protected
                  */
 
-                class RepeatStatement {
+                class RepeatStatement extends iStatement {
                     /**
                      * Дескриптор оператора repeat
                      *
@@ -4580,9 +5031,40 @@ define('poonya', [], () =>
                      * @protected
                      */
                     constructor(from, to, body) {
+                        super();
                         this.from = from;
                         this.to = to;
                         this.body = body;
+                        this.body.interrupted();
+                        this.body.continued();
+                    }
+                    /**
+                     * @see iStatement.__sync
+                     *
+                     * @param {Function} reject функция выбрасывания исключений
+                     *
+                     * @method
+                     * @returns {RepeatStatement}
+                     */
+
+                    __sync(reject) {
+                        this.from.__sync(reject);
+
+                        this.to.__sync(reject);
+
+                        this.body.__sync(reject);
+
+                        return this;
+                    }
+                    /**
+                     * @see iStatement.__executable
+                     *
+                     * @returns {Array<SequenceGroup>} список исполняемых блоков
+                     * @method
+                     */
+
+                    __executable() {
+                        return [this.body];
                     }
                     /**
                      * Сериализует текущий объект в строку
@@ -4648,8 +5130,21 @@ define('poonya', [], () =>
                                         }
 
                                         function tick(result) {
-                                            if (from == to) {
-                                                Tick(resolve, result);
+                                            if (
+                                                from == to ||
+                                                result instanceof BreakStatement
+                                            ) {
+                                                Tick(
+                                                    resolve, //
+                                                    // Защита, чтобы инструкция выхода из цикла не предавалась дальше по цепочке
+                                                    //
+                                                    result instanceof
+                                                        BreakStatement ||
+                                                        result instanceof
+                                                            ContinueStatement
+                                                        ? null
+                                                        : result
+                                                );
                                                 return;
                                             }
 
@@ -4695,6 +5190,7 @@ define('poonya', [], () =>
                         iPoonyaObject,
                         iPoonyaPrototype,
                         iContext,
+                        iStatement,
                     } = __webpack_require__(161),
                     {
                         GetFieldOfNullException,
@@ -4702,13 +5198,14 @@ define('poonya', [], () =>
                     } = __webpack_require__(943),
                     { GET } = __webpack_require__(351),
                     { Tick } = __webpack_require__(88),
+                    { Operand } = __webpack_require__(501),
                     PoonyaObject = __webpack_require__(753);
                 /**
                  * @lends ResetStatement
                  * @protected
                  */
 
-                class ResetStatement {
+                class ResetStatement extends iStatement {
                     /**
                      * Производит переустновку значения переменной переданной как левой операнд на выражение, которое передано как правый операнд.
                      * Объект который сериализуется как name = (...expression)
@@ -4722,9 +5219,40 @@ define('poonya', [], () =>
                      * @protected
                      */
                     constructor(position, query_stack, value) {
+                        super();
                         this.query_stack = query_stack;
                         this.position = position;
                         this.value = value;
+                    }
+                    /**
+                     * @see iStatement.__sync
+                     *
+                     * @param {Function} reject функция выбрасывания исключений
+                     *
+                     * @method
+                     * @returns {ResetStatement}
+                     */
+
+                    __sync(reject) {
+                        this.value.__sync(reject);
+
+                        for (const elem of this.query_stack) {
+                            if (elem instanceof Operand) {
+                                elem.__sync(reject);
+                            }
+                        }
+
+                        return this;
+                    }
+                    /**
+                     * @see iStatement.__executable
+                     *
+                     * @returns {Array<SequenceGroup>} список исполняемых блоков
+                     * @method
+                     */
+
+                    __executable() {
+                        return new Array();
                     }
                     /**
                      * Сериализует текущий объект в строку
@@ -4739,7 +5267,10 @@ define('poonya', [], () =>
                             '(' +
                             this.query_stack
                                 .map((e) =>
-                                    typeof e === 'number' ? `[${e}]` : e
+                                    typeof e === 'number' ||
+                                    e instanceof Operand
+                                        ? `[${e.toString(indent)}]`
+                                        : e
                                 )
                                 .join(' => ') +
                             ') = ' +
@@ -4857,22 +5388,88 @@ define('poonya', [], () =>
                  * @author Astecom
                  */
 
-                const { Tick } = __webpack_require__(88);
+                const { Tick } = __webpack_require__(88),
+                    { iStatement } = __webpack_require__(161),
+                    { UnexpectedTokenException } = __webpack_require__(943),
+                    BreakStatement = __webpack_require__(707),
+                    ContinueStatement = __webpack_require__(914);
                 /**
                  * @lends SequenceGroup;
                  * @protected
                  */
 
-                class SequenceGroup {
+                class SequenceGroup extends iStatement {
                     /**
                      * Исполняемая последовательность
+                     *
+                     * @param {Boolean} can_break можно ли завершить это выражение оператором break
+                     * @param {Boolean} can_continue можно ли завершить это выражение оператором continue
+                     * @param {Boolean} can_return можно ли завершить это выражение оператором return
                      *
                      * @constructs SequenceGroup
                      * @memberof Poonya.Statements
                      * @protected
                      */
-                    constructor() {
+                    constructor(
+                        can_break = false,
+                        can_continue = false,
+                        can_return = false
+                    ) {
+                        super();
                         this.Sequence = new Array();
+                        this.can_break = can_break;
+                        this.can_continue = can_continue;
+                        this.can_return = can_return;
+                    }
+                    /**
+                     * @see iStatement.__executable
+                     *
+                     * @returns {Array<SequenceGroup>} список исполняемых блоков
+                     * @method
+                     */
+
+                    __executable() {
+                        return new Array();
+                    }
+                    /**
+                     * Синхронизирует флаги родительской группы с дочерними
+                     *
+                     * @param {Function} reject функция выбрасывания исключений
+                     *
+                     * @method
+                     *
+                     * @returns {SequenceGroup}
+                     */
+
+                    __sync(reject) {
+                        for (const elem of this.Sequence) {
+                            for (const block of elem.__executable()) {
+                                if (this.can_break) block.interrupted();
+                                if (this.can_continue) block.continued();
+                                if (this.can_return) block.terminable();
+                            }
+
+                            if (
+                                elem instanceof BreakStatement &&
+                                !this.can_break
+                            )
+                                reject(
+                                    elem.position,
+                                    new UnexpectedTokenException('break')
+                                );
+                            if (
+                                elem instanceof ContinueStatement &&
+                                !this.can_continue
+                            )
+                                reject(
+                                    elem.position,
+                                    new UnexpectedTokenException('continue')
+                                );
+
+                            elem.__sync(reject);
+                        }
+
+                        return this;
                     }
                     /**
                      * Добавляет элемент в стэк
@@ -4884,7 +5481,40 @@ define('poonya', [], () =>
                      */
 
                     push(elem) {
+                        //
+                        // Проталкиваю нужное мне выражение в общую группу
+                        //
                         this.Sequence.push(elem);
+                    }
+                    /**
+                     * Ставит флаг на последовательности, что её можно прервать оператором breack
+                     *
+                     * @public
+                     * @method
+                     */
+
+                    interrupted() {
+                        this.can_break = true;
+                    }
+                    /**
+                     * Ставит флаг на последовательности, что последовательность можно превать оператором continue
+                     *
+                     * @public
+                     * @method
+                     */
+
+                    continued() {
+                        this.can_continue = true;
+                    }
+                    /**
+                     * Ставит флаг на последовательности, что последовательность можно превать оператором return
+                     *
+                     * @public
+                     * @method
+                     */
+
+                    terminable() {
+                        this.can_return = true;
                     }
                     /**
                      * Выполняет текущую последовательность
@@ -4893,6 +5523,7 @@ define('poonya', [], () =>
                      * @param {PoonyaOutputStream} out вывод шаблонизатора
                      * @param {Function} reject Вызывается при ошибке
                      * @param {Function} resolve функция возврата результата
+                     * @param {Boolean} level_ops Если true, то операции с уровнями памяти будут происходить автоматически
                      *
                      * @public
                      * @method
@@ -4910,7 +5541,13 @@ define('poonya', [], () =>
                         }
 
                         function tick(result) {
-                            if (i >= leng) {
+                            if (
+                                i >= leng ||
+                                (result instanceof BreakStatement &&
+                                    _.can_break) ||
+                                (result instanceof ContinueStatement &&
+                                    _.can_continue)
+                            ) {
                                 if (level_ops) context.popLevel();
                                 Tick(resolve, result);
                                 return;
@@ -4919,7 +5556,7 @@ define('poonya', [], () =>
                             _.Sequence[i++].result(context, out, reject, next);
                         }
 
-                        tick();
+                        tick(null);
                     }
                     /**
                      * Сериализует текущую группу в текст
@@ -4955,13 +5592,17 @@ define('poonya', [], () =>
                  * @author Astecom
                  */
 
-                const { Tick } = __webpack_require__(88);
+                const { Tick } = __webpack_require__(88),
+                    { iStatement } = __webpack_require__(161),
+                    { UnexpectedTokenException } = __webpack_require__(943),
+                    BreakStatement = __webpack_require__(707),
+                    ContinueStatement = __webpack_require__(914);
                 /**
                  * @lends SequenceMainGroup;
                  * @protected
                  */
 
-                class SequenceMainGroup {
+                class SequenceMainGroup extends iStatement {
                     /**
                      * Главная исполняемая последовательность
                      *
@@ -4972,9 +5613,56 @@ define('poonya', [], () =>
                      * @protected
                      */
                     constructor(init) {
+                        super();
                         this.Sequence = Array.isArray(init)
                             ? init
                             : new Array();
+                    }
+                    /**
+                     * !! Это главная группа, этот метод должен быть вызван сразу после окончания формирования группы !!
+                     *
+                     * @see iStatement.__sync
+                     *
+                     * @param {Function} reject функция выбрасывания исключений
+                     *
+                     * @method
+                     *
+                     * @returns {SequenceMainGroup}
+                     */
+
+                    __sync(reject) {
+                        for (const elem of this.Sequence) {
+                            for (const block of elem.__executable()) {
+                                if (this.can_break) block.interrupted();
+                                if (this.can_continue) block.continued();
+                                if (this.can_return) block.terminable();
+                            }
+
+                            if (elem instanceof BreakStatement)
+                                reject(
+                                    elem.position,
+                                    new UnexpectedTokenException('break')
+                                );
+                            if (elem instanceof ContinueStatement)
+                                reject(
+                                    elem.position,
+                                    new UnexpectedTokenException('continue')
+                                );
+
+                            elem.__sync(reject);
+                        }
+
+                        return this;
+                    }
+                    /**
+                     * @see iStatement.__executable
+                     *
+                     * @returns {Array<SequenceGroup>} список исполняемых блоков
+                     * @method
+                     */
+
+                    __executable() {
+                        return new Array();
                     }
                     /**
                      * Добавляет элемент в стэк
@@ -5072,13 +5760,15 @@ define('poonya', [], () =>
                 const {
                         TheFieldAlreadyHasBeenDeclaredException,
                     } = __webpack_require__(943),
-                    { Tick } = __webpack_require__(88);
+                    { Tick } = __webpack_require__(88),
+                    { iStatement } = __webpack_require__(161),
+                    { Operand } = __webpack_require__(501);
                 /**
                  * @lends SetStatement
                  * @protected
                  */
 
-                class SetStatement {
+                class SetStatement extends iStatement {
                     /**
                      * Объект который Сериализуется как set = (expression...)
                      *
@@ -5090,9 +5780,35 @@ define('poonya', [], () =>
                      * @protected
                      */
                     constructor(name, value) {
+                        super();
                         this.name = name.toString();
                         this.position = name.position;
                         this.value = value;
+                    }
+                    /**
+                     * @see iStatement.__sync
+                     *
+                     * @param {Function} reject функция выбрасывания исключений
+                     *
+                     * @method
+                     *
+                     * @returns {SetStatement}
+                     */
+
+                    __sync(reject) {
+                        this.value.__sync(reject);
+
+                        return this;
+                    }
+                    /**
+                     * @see iStatement.__executable
+                     *
+                     * @returns {Array<SequenceGroup>} список исполняемых блоков
+                     * @method
+                     */
+
+                    __executable() {
+                        return new Array();
                     }
                     /**
                      * Сериализует текущий объект в строку
@@ -5160,13 +5876,16 @@ define('poonya', [], () =>
                  * @author Astecom
                  */
 
-                const { Tick } = __webpack_require__(88);
+                const { Tick } = __webpack_require__(88),
+                    { iStatement } = __webpack_require__(161),
+                    BreakStatement = __webpack_require__(707),
+                    ContinueStatement = __webpack_require__(914);
                 /**
                  * @lends WhileStatement
                  * @protected
                  */
 
-                class WhileStatement {
+                class WhileStatement extends iStatement {
                     /**
                      * Дескриптор инструкции while
                      *
@@ -5178,8 +5897,38 @@ define('poonya', [], () =>
                      * @protected
                      */
                     constructor(condition, body) {
+                        super();
                         this.condition = condition;
                         this.body = body;
+                        this.body.interrupted();
+                        this.body.continued();
+                    }
+                    /**
+                     * @see iStatement.__sync
+                     *
+                     * @param {Function} reject функция выбрасывания исключений
+                     *
+                     * @method
+                     *
+                     * @returns {WhileStatement}
+                     */
+
+                    __sync(reject) {
+                        this.condition.__sync(reject);
+
+                        this.body.__sync(reject);
+
+                        return this;
+                    }
+                    /**
+                     * @see iStatement.__executable
+                     *
+                     * @returns {Array<SequenceGroup>} список исполняемых блоков
+                     * @method
+                     */
+
+                    __executable() {
+                        return [this.body];
                     }
                     /**
                      * Сериализует текущий объект в строку
@@ -5222,7 +5971,10 @@ define('poonya', [], () =>
                                 out,
                                 reject,
                                 (d_result) => {
-                                    if (context.toBooleanResult(d_result)) {
+                                    if (
+                                        context.toBooleanResult(d_result) &&
+                                        !(result instanceof BreakStatement)
+                                    ) {
                                         _.body.result(
                                             context,
                                             out,
@@ -5230,12 +5982,21 @@ define('poonya', [], () =>
                                             tick
                                         );
                                     } else {
-                                        Tick(resolve, result);
+                                        Tick(
+                                            resolve, //
+                                            // Защита, чтобы инструкция выхода из цикла не предавалась дальше по цепочке
+                                            //
+                                            result instanceof BreakStatement ||
+                                                result instanceof
+                                                    ContinueStatement
+                                                ? null
+                                                : result
+                                        );
                                         return;
                                     }
                                 }
                             );
-                        })();
+                        })(null);
                     }
                 }
 
@@ -5335,7 +6096,10 @@ define('poonya', [], () =>
                 class UnexpectedTokenException extends ParserException {
                     constructor(token, expected) {
                         super(
-                            `Unexpected token '${token.toString()}' when expected '${expected.toString()}'`
+                            `Unexpected token '${token.toString()}'` +
+                                (expected
+                                    ? `when expected '${expected.toString()}'`
+                                    : '')
                         );
                     }
                 }
@@ -5886,14 +6650,19 @@ define('poonya', [], () =>
                 /***/
             },
 
-            /***/ 161: /***/ (module) => {
+            /***/ 161: /***/ (
+                module,
+                __unused_webpack_exports,
+                __webpack_require__
+            ) => {
                 'use strict';
                 /**
                  * @file src/interfaces.js
                  * @description Тут собраны интерфейсы, для боллее удобного последующего сравнения объектов
                  * @author Astecom
                  */
-                // Poonya
+
+                const EventEmitter = __webpack_require__(138); // Poonya
 
                 class iCodeEmitter {} // Storage
 
@@ -5950,6 +6719,104 @@ define('poonya', [], () =>
                      */
                     constructor() {}
                 }
+                /**
+                 * @lends iPoonyaOutputStream
+                 * @interface iPoonyaOutputStream
+                 */
+
+                class iPoonyaOutputStream extends EventEmitter {
+                    /**
+                     * Интерфейс вывода шаблонов
+                     * Template output interface
+                     *
+                     * @param {Object} data
+                     * @param {Context} context
+                     *
+                     * @property {Context} data данные которые уже были выведены
+                     *
+                     * @memberof Poonya
+                     * @constructs iPoonyaOutputStream
+                     * @public
+                     */
+                    constructor() {
+                        super();
+                    }
+                    /**
+                     * Выводит данные
+                     * Outputs data
+                     *
+                     * @param {Any} data данные которые необходимо вывести
+                     *                   data to be displayed
+                     * @method
+                     * @public
+                     */
+
+                    write(data) {}
+                    /**
+                     * Redirects the data stream to `stream` passed as the first argument
+                     * Перенаправляет поток данных в `stream` переданный первым аргументом
+                     *
+                     * @param {PoonyaOutputStream|Stream} stream поток которому необходимо передавать данные помимо этого
+                     *                                           the stream to which you need to transfer data in addition to this
+                     * @returns `stream` Поток который был передан.
+                     * @returns `stream` The stream that was sent.
+                     * @method
+                     * @public
+                     */
+
+                    pipe(stream) {}
+                    /**
+                     * Преобразует поток в ReadableStream или в Stream.Writable для nodejs
+                     * Converts stream to ReadableStream or Stream.Writable for nodejs
+                     *
+                     * @returns {ReadableStream|Stream.Writable} a read stream if it's a browser, or a write stream if it's nodejs
+                     *                                           поток чтения, если это браузер, или поток записи если это nodejs
+                     * @method
+                     * @public
+                     */
+
+                    toReadable() {}
+                    /**
+                     * Ожидает завершения записи потока, после чего возвращает массив с буффером данных
+                     * Waits for the stream to finish writing, then returns an array with a data buffer
+                     *
+                     * @async
+                     * @public
+                     * @method
+                     * @returns {Array<Any>} массив с переданными данными
+                     *                       array with passed data
+                     */
+
+                    complete() {}
+                } // Excecute
+
+                /**
+                 * @lends iStatement
+                 * @interface iStatement
+                 */
+
+                class iStatement {
+                    /**
+                     * Возвращет список исполняемых блоков, если такие есть.
+                     *
+                     * @method
+                     * @returns {Array<iStatement>} список исполняемых блоков, если такие есть.
+                     */
+                    __executable() {
+                        return new Array();
+                    }
+                    /**
+                     * Синхронизирует группы выражений с оснновной группой
+                     *
+                     * @method
+                     *
+                     * @returns {iStatement}
+                     */
+
+                    __sync(reject) {
+                        return this;
+                    }
+                }
 
                 module.exports.iContext = iContext;
                 module.exports.iPathData = iPathData;
@@ -5958,6 +6825,8 @@ define('poonya', [], () =>
                 module.exports.iPoonyaObject = iPoonyaObject;
                 module.exports.iPoonyaPrototype = iPoonyaPrototype;
                 module.exports.iPoonyaConstructsData = iPoonyaConstructsData;
+                module.exports.iStatement = iStatement;
+                module.exports.iPoonyaOutputStream = iPoonyaOutputStream;
 
                 /***/
             },
@@ -6159,6 +7028,7 @@ define('poonya', [], () =>
                         iPathData,
                         iCodeEmitter,
                         iPoonyaObject,
+                        iPoonyaOutputStream,
                     } = __webpack_require__(161),
                     { PoonyaStaticLibrary } = __webpack_require__(742),
                     { parser } = __webpack_require__(743),
@@ -6404,11 +7274,9 @@ define('poonya', [], () =>
                                     toBytes(input),
                                     false
                                 ),
-                                (symbol, message) => {
-                                    throw new PoonyaException(
-                                        message + ', at symbol ' + symbol
-                                    );
-                                }, // Присваеваем рандомный идентификатор исполнителю
+                                rej, //
+                                // Присваеваем рандомный идентификатор исполнителю
+                                //
                                 'eval-' +
                                     Math.floor(
                                         Math.random() * Number.MAX_SAFE_INTEGER
@@ -6419,7 +7287,9 @@ define('poonya', [], () =>
                                     result &&
                                         result.result(
                                             this,
-                                            out,
+                                            out != null
+                                                ? out
+                                                : new iPoonyaOutputStream(),
                                             (symbol, message) =>
                                                 rej(
                                                     new PoonyaException(
@@ -7898,6 +8768,8 @@ define('poonya', [], () =>
                     PushStatement = __webpack_require__(505),
                     SequenceMainGroup = __webpack_require__(404),
                     GroupOutStatement = __webpack_require__(281),
+                    BreakStatement = __webpack_require__(707),
+                    ContinueStatement = __webpack_require__(914),
                     linker = __webpack_require__(434);
 
                 const KEYWORDS = ['true', 'false', 'null'];
@@ -8229,7 +9101,7 @@ define('poonya', [], () =>
                             reject(
                                 token != undefined
                                     ? token.position
-                                    : data[start],
+                                    : data[start].position,
                                 new ParserEmtyArgumentException()
                             );
                         }
@@ -8343,15 +9215,15 @@ define('poonya', [], () =>
                         };
 
                     for (let i = start; ; i++) {
+                        maybeEquals(data, i, CHARTYPE.NEWLINE);
+
                         switch (true) {
                             case data[i] == null ||
-                                (data[i].equals(CHARTYPE.OPERATOR) &&
-                                    !data[i].equals(CHARTYPE.OPERATOR, [
-                                        '[',
-                                        ']',
-                                    ])) ||
-                                data[i].equals(CHARTYPE.NEWLINE) ||
-                                data[i].equals(CHARTYPE.SPACE):
+                                (point_before &&
+                                    !data[i].equals(CHARTYPE.WORD)) ||
+                                (!point_before &&
+                                    !data[i].equals(CHARTYPE.OPERATOR, '[') &&
+                                    !data[i].equals(CHARTYPE.POINT)):
                                 return {
                                     data: buffer,
                                     jump: i - start,
@@ -8386,20 +9258,25 @@ define('poonya', [], () =>
                                         ) && hook_index === 0
                                     )
                                 ) {
-                                    if (data[i].equals(CHARTYPE.OPERATOR, '['))
+                                    if (
+                                        data[i].equals(CHARTYPE.OPERATOR, '[')
+                                    ) {
                                         hook_index++;
-                                    else if (
+                                    } else if (
                                         data[i].equals(CHARTYPE.OPERATOR, ']')
-                                    )
+                                    ) {
                                         hook_index--;
+                                    }
+
                                     i++;
                                 }
 
-                                if (hook_index != 0)
+                                if (hook_index != 0) {
                                     reject(
                                         data[i].position,
                                         new ParserLogicException()
-                                    ); //
+                                    );
+                                } //
                                 // Вставляем выражение как оператор доступа
                                 //
 
@@ -8537,11 +9414,10 @@ define('poonya', [], () =>
                                                 //
 
                                                 if (
-                                                    entries[
-                                                        i + 1
-                                                    ].equals(
+                                                    entries[i + 1] &&
+                                                    entries[i + 1].equals(
                                                         CHARTYPE.OPERATOR,
-                                                        ['*']
+                                                        '*'
                                                     )
                                                 )
                                                     i += 1;
@@ -8550,16 +9426,14 @@ define('poonya', [], () =>
                                                     reject
                                                 );
                                             } else {
-                                                reject(
-                                                    new UnexpectedTokenException(
-                                                        entries[
-                                                            i +
-                                                                result[0].jump +
-                                                                1
-                                                        ].toString(),
-                                                        '>'
-                                                    )
+                                                buffer.append(
+                                                    new GetOperator(
+                                                        entries[i].position,
+                                                        result[0].data
+                                                    ),
+                                                    reject
                                                 );
+                                                i += result[0].jump - 1;
                                             } //
                                             // Если <-, значит групповой вывод
                                             //
@@ -8576,7 +9450,7 @@ define('poonya', [], () =>
                                             ) {
                                                 result[1] = parseGroupOut(
                                                     entries,
-                                                    i + result[0].jump + 2,
+                                                    i + result[0].jump + 3,
                                                     result[0].data,
                                                     reject
                                                 );
@@ -8589,16 +9463,14 @@ define('poonya', [], () =>
                                                     reject
                                                 );
                                             } else {
-                                                reject(
-                                                    new UnexpectedTokenException(
-                                                        entries[
-                                                            i +
-                                                                result[0].jump +
-                                                                1
-                                                        ].toString(),
-                                                        '-'
-                                                    )
+                                                buffer.append(
+                                                    new GetOperator(
+                                                        entries[i].position,
+                                                        result[0].data
+                                                    ),
+                                                    reject
                                                 );
+                                                i += result[0].jump - 1;
                                             }
                                         } else {
                                             buffer.append(
@@ -8648,7 +9520,7 @@ define('poonya', [], () =>
                             case entries[i].equals(CHARTYPE.OPERATOR, '{'):
                                 result[0] = parseGroupOut(
                                     entries,
-                                    i,
+                                    i + 1,
                                     null,
                                     reject
                                 );
@@ -8861,14 +9733,10 @@ define('poonya', [], () =>
                         switch (true) {
                             case entries[i] === undefined ||
                                 (entries[i].equals(CHARTYPE.OPERATOR, '}') &&
-                                    hook_index <= 1):
+                                    hook_index < 1):
                                 return {
                                     // Сегменты
-                                    data: codeBlockParser(
-                                        0,
-                                        body.slice(1, -1),
-                                        reject
-                                    ).data,
+                                    data: codeBlockParser(0, body, reject).data,
                                     // Прыжок парсера
                                     jump: i - start,
                                 };
@@ -9297,7 +10165,30 @@ define('poonya', [], () =>
                                         );
                                     }
 
-                                    break;
+                                    continue;
+                                //
+                                // Оператор break
+                                //
+
+                                case entries[i].equals(CHARTYPE.WORD, 'break'):
+                                    buffer.push(
+                                        new BreakStatement(entries[i].position)
+                                    );
+                                    continue;
+                                //
+                                // Оператор continue
+                                //
+
+                                case entries[i].equals(
+                                    CHARTYPE.WORD,
+                                    'continue'
+                                ):
+                                    buffer.push(
+                                        new ContinueStatement(
+                                            entries[i].position
+                                        )
+                                    );
+                                    continue;
                                 //
                                 // Текущий - слово
                                 //
@@ -9366,7 +10257,7 @@ define('poonya', [], () =>
                                                         reject
                                                     );
                                                     buffer.push(result[0].data);
-                                                    i += result[0].jump + 1;
+                                                    i += result[0].jump;
                                                 } else {
                                                     result[1] = parseExpression(
                                                         result[0].jump + i + 2,
@@ -9470,6 +10361,11 @@ define('poonya', [], () =>
 
                                 case entries[i].equals(CHARTYPE.NUMBER) ||
                                     entries[i].equals(CHARTYPE.STRING) ||
+                                    entries[i].equals(CHARTYPE.WORD, [
+                                        'true',
+                                        'false',
+                                        'null',
+                                    ]) ||
                                     entries[i].equals(CHARTYPE.OPERATOR, '{'):
                                     result[0] = parseExpression(
                                         i,
@@ -9538,7 +10434,7 @@ define('poonya', [], () =>
                             await linker(entries, parent_path, reject),
                             reject
                         ).data.Sequence
-                    );
+                    ).__sync(reject);
                 }
                 /**
                  * Парсит шаблон сообщения, которое помимо кода Poonya может содержать и любые другие символы вне префикса.
@@ -9690,7 +10586,7 @@ define('poonya', [], () =>
                                 )
                             );
                         }
-                    return out;
+                    return out.__sync(reject);
                 }
 
                 module.exports.parser = parser;
@@ -10453,14 +11349,7 @@ define('poonya', [], () =>
                                     })
                                 )
                             );
-                            Pattern.on('error', (...args) =>
-                                rej(
-                                    Object.assign(new iPoonyaConstructsData(), {
-                                        data: Pattern,
-                                        args,
-                                    })
-                                )
-                            );
+                            Pattern.on('error', (...args) => rej(...args));
                         });
                     } else {
                         throw new Error(
@@ -10807,7 +11696,10 @@ define('poonya', [], () =>
                  */
 
                 function maybeEquals(entries, index, equalts_t, equalts_v) {
-                    while (entries[index].equals(equalts_t, equalts_v))
+                    while (
+                        entries[index] != null &&
+                        entries[index].equals(equalts_t, equalts_v)
+                    )
                         entries.splice(index, 1);
 
                     return true;

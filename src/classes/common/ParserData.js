@@ -42,6 +42,27 @@ class Operand extends ParserData {
 
         this.name = name;
     }
+
+    /**
+     * Синхронизирует группы выражений с оснновной группой
+     * 
+     * @method
+     * 
+     * @returns {Operand}
+     */
+     __sync(reject){
+        return this;
+    };
+
+    /**
+     * Возвращет список исполняемых блоков, если такие есть.
+     * 
+     * @method
+     * @returns {Array<iStatement>} список исполняемых блоков, если такие есть.
+     */
+    __executable(){
+        return new Array();
+    }
 }
 
 /**

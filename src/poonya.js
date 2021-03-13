@@ -656,11 +656,8 @@ function createPattern(Pattern, ...args) {
                 }))
             );
 
-            Pattern.on('error', (...args) => 
-                rej(Object.assign(new iPoonyaConstructsData(), {
-                    data: Pattern,
-                    args
-                }))
+            Pattern.on('error', (...args) =>
+                rej(...args)
             );
         });
     } else {

@@ -7,13 +7,16 @@
 "use strict";
 const { TheFieldMustBeNumberException } = require('../../exceptions')
     , { Tick } = require('../../../utils')
-    ,   PoonyaNumber = require('../../data/PoonyaNumber');
+    , { iStatement } = require('../../interfaces')
+    ,   PoonyaNumber = require('../../data/PoonyaNumber')
+    ,   BreakStatement = require('./BreakStatement')
+    ,   ContinueStatement = require('./ContinueStatement');
 
 /**
  * @lends RepeatStatement;
  * @protected
  */
-class RepeatStatement {
+class RepeatStatement extends iStatement {
     /**
      * Дескриптор оператора repeat
      *
@@ -26,9 +29,40 @@ class RepeatStatement {
      * @protected
      */
     constructor(from, to, body) {
+        super();
+
         this.from = from;
         this.to = to;
         this.body = body;
+
+        this.body.interrupted();
+        this.body.continued();
+    }
+
+    /**
+     * @see iStatement.__sync
+     * 
+     * @param {Function} reject функция выбрасывания исключений
+     * 
+     * @method
+     * @returns {RepeatStatement}
+     */
+    __sync(reject) {
+        this.from.__sync(reject);
+        this.to.__sync(reject);
+        this.body.__sync(reject);
+
+        return this;
+    }
+
+    /**
+     * @see iStatement.__executable
+     * 
+     * @returns {Array<SequenceGroup>} список исполняемых блоков
+     * @method
+     */
+     __executable(){
+        return [ this.body ];
     }
 
     /**
@@ -90,8 +124,22 @@ class RepeatStatement {
                         }
 
                         function tick(result){
-                            if(from == to){
-                                Tick(resolve, result);
+                            if(
+                                from == to ||
+                                result instanceof BreakStatement
+                            ){
+                                Tick(
+                                    resolve,
+                                    // 
+                                    // Защита, чтобы инструкция выхода из цикла не предавалась дальше по цепочке
+                                    // 
+                                    (
+                                        result instanceof BreakStatement ||
+                                        result instanceof ContinueStatement
+                                    ) ?
+                                        null :
+                                        result
+                                );
                 
                                 return;
                             }

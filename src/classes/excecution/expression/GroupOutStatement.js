@@ -33,9 +33,34 @@ class GroupOutStatement extends Operand {
     constructor(body, query_stack, position) {
         super('group-output');
 
-        this.body = body;
         this.query_stack = query_stack != null ? [ ...query_stack ] : null;
         this.position = position;
+        this.body = body;
+
+        this.body.interrupted();
+    }
+
+    /**
+     * Синхронизирует значение группы с родительской группой
+     * 
+     * @param {Function} функция выбрасывания исключений
+     * 
+     * @override
+     * @method
+     * @returns {GroupOutStatement}
+     */
+     __sync(reject){
+         if(this.query_stack != null) {
+            for(const elem of this.query_stack) {
+                if(elem instanceof Operand) {
+                    elem.__sync(reject);
+                }
+            }
+        }
+
+        this.body.__sync(reject);
+
+        return this;
     }
 
     /**

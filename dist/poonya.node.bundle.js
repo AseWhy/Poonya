@@ -1,12 +1,12 @@
 module.exports = /******/ (() => {
     // webpackBootstrap
-    /******/ 'use strict';
     /******/ var __webpack_modules__ = {
         /***/ 501: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/common/ParserData.js
              * @description Cодержит прототипы исполняемых данных.
@@ -47,6 +47,27 @@ module.exports = /******/ (() => {
                 constructor(name = 'undefined') {
                     super('operand');
                     this.name = name;
+                }
+                /**
+                 * Синхронизирует группы выражений с оснновной группой
+                 *
+                 * @method
+                 *
+                 * @returns {Operand}
+                 */
+
+                __sync(reject) {
+                    return this;
+                }
+
+                /**
+                 * Возвращет список исполняемых блоков, если такие есть.
+                 *
+                 * @method
+                 * @returns {Array<iStatement>} список исполняемых блоков, если такие есть.
+                 */
+                __executable() {
+                    return new Array();
                 }
             }
             /**
@@ -154,13 +175,14 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/common/PoonyaOutputStream.js
              * @description Cодержит поток вывода данных poonya
              * @author Astecom
              */
 
-            const { EventEmitter } = __webpack_require__(614);
+            const { iPoonyaOutputStream } = __webpack_require__(161);
 
             const { Stream } = __webpack_require__(413);
             /**
@@ -168,7 +190,7 @@ module.exports = /******/ (() => {
              * @class
              */
 
-            class PoonyaOutputStream extends EventEmitter {
+            class PoonyaOutputStream extends iPoonyaOutputStream {
                 /**
                  * Класс вывода шаблонов, за счет этого интерфейса производится
                  * Template output class, due to this interface is created
@@ -278,6 +300,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/data/NativeFunction.js
              * @description Содержит в себе объект нативной функции, которая так-же вызывается при вызове функции
@@ -561,6 +584,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/data/PoonyaArray.js
              * @description Cодержит класс массива Poonya
@@ -691,6 +715,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/data/PoonyaBoolean.js
              * @description Cодержит класс булевого значения Poonya
@@ -800,6 +825,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/data/PoonyaInteger.js
              * @description Cодержит класс целого числа Poonya
@@ -902,6 +928,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/data/PoonyaNull.js
              * @description Cодержит класс null объекта Poonya
@@ -1001,6 +1028,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/data/PoonyaNumber.js
              * @description Cодержит класс числа Poonya
@@ -1103,6 +1131,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/data/PoonyaObject.js
              * @description Cодержит класс объекта Poonya
@@ -1390,6 +1419,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/data/PoonyaPattern.js
              * @description Cодержит класс строки Poonya
@@ -1505,6 +1535,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/data/PoonyaPrototype.js
              * @description Cодержит объект прототипа объекта Poonya
@@ -1649,7 +1680,7 @@ module.exports = /******/ (() => {
                             i++
                         ) {
                             if (
-                                (data = this._parents[i].get(
+                                (data = this._parents[i][GET](
                                     key,
                                     context,
                                     static_assces
@@ -1721,6 +1752,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/data/PoonyaString.js
              * @description Cодержит класс строки Poonya
@@ -1842,6 +1874,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/excecution/expression/ExpressionGroup.js
              * @description Cодержит группу выражений, которая выполняется при выполнении выражения
@@ -1855,7 +1888,8 @@ module.exports = /******/ (() => {
                     TheSequenceException,
                 } = __webpack_require__(943),
                 { Cast, Tick } = __webpack_require__(88),
-                ObjectContructorCall = __webpack_require__(657);
+                ObjectContructorCall = __webpack_require__(657),
+                Token = __webpack_require__(359);
             /**
              * @lends MessagePattern;
              */
@@ -1876,6 +1910,25 @@ module.exports = /******/ (() => {
                     this.data = initial != null ? [...initial] : new Array();
                     this.position = position;
                     this.validated = false;
+                }
+                /**
+                 * Синхронизирует значение группы с родительской группой
+                 *
+                 * @param {Function} reject функция выбрасывания исключений
+                 *
+                 * @override
+                 * @method
+                 * @returns {ExpressionGroup}
+                 */
+
+                __sync(reject) {
+                    for (const elem of this.data) {
+                        if (elem instanceof Operand) {
+                            elem.__sync(reject);
+                        }
+                    }
+
+                    return this;
                 }
                 /**
                  * Если выражение завершено, то врнет true, иначе же вернет false
@@ -1982,12 +2035,8 @@ module.exports = /******/ (() => {
 
                     if (this.data.length !== 0) {
                         if (
-                            (current instanceof Operator &&
-                                this.data[this.data.length - 1] instanceof
-                                    Operator) ||
-                            (current instanceof Operand &&
-                                this.data[this.data.length - 1] instanceof
-                                    Operand)
+                            current instanceof Operator &&
+                            this.data[this.data.length - 1] instanceof Operator
                         )
                             reject(
                                 entry.position,
@@ -1996,16 +2045,31 @@ module.exports = /******/ (() => {
                                     this.data[this.data.length - 1]
                                 )
                             );
-                    } else {
-                        if (current instanceof Operator)
-                            reject(
-                                entry.position,
-                                new TheSequenceException(
-                                    current,
-                                    '[ExpressionStart]'
+                        //
+                        // 4 4 => 4 + 4
+                        // 'Hello' ' ' 'World' => 'Hello world'
+                        //
+                        else if (
+                            current instanceof Operand &&
+                            this.data[this.data.length - 1] instanceof Operand
+                        )
+                            this.data.push(
+                                new Operator(
+                                    new Token(
+                                        CHARTYPE.OPERATOR,
+                                        [0x0, 0x2b],
+                                        -1
+                                    )
                                 )
                             );
-                    }
+                    } else if (current instanceof Operator)
+                        reject(
+                            entry.position,
+                            new TheSequenceException(
+                                current,
+                                '[ExpressionStart]'
+                            )
+                        );
 
                     this.data.push(current);
                 }
@@ -2050,6 +2114,8 @@ module.exports = /******/ (() => {
                                     case OPERATOR.EQUAL:
                                     case OPERATOR.LARGER:
                                     case OPERATOR.LESS:
+                                    case OPERATOR.ELARGER:
+                                    case OPERATOR.ELESS:
                                     case OPERATOR.OR:
                                     case OPERATOR.AND:
                                         if (!mltexp) break;
@@ -2196,12 +2262,22 @@ module.exports = /******/ (() => {
 
                                 case _.data[i].equals(OPERATOR.AND):
                                     result = result && cur.toRawData();
-                                    if (!result) return result;
+
+                                    if (!result) {
+                                        resolve(Cast(result, context));
+                                        return;
+                                    }
+
                                     break;
 
                                 case _.data[i].equals(OPERATOR.OR):
                                     result = result || cur.toRawData();
-                                    if (result) return result;
+
+                                    if (result) {
+                                        resolve(Cast(result, context));
+                                        return;
+                                    }
+
                                     break;
                             }
 
@@ -2233,6 +2309,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/excecution/expression/FunctionCall.js
              * @description Содержит в себе вхождение вызовва функции
@@ -2267,6 +2344,25 @@ module.exports = /******/ (() => {
                     this.query_stack = [...query_stack];
                     this.position = position;
                     this.args = args;
+                }
+                /**
+                 * Синхронизирует значение группы с родительской группой
+                 *
+                 * @param {Function} reject функция выбрасывания исключений
+                 *
+                 * @override
+                 * @method
+                 * @returns {FunctionCall}
+                 */
+
+                __sync(reject) {
+                    for (const elem of this.query_stack.concat(this.args)) {
+                        if (elem instanceof Operand) {
+                            elem.__sync(reject);
+                        }
+                    }
+
+                    return this;
                 }
                 /**
                  * Получает переменную заданную литералами
@@ -2350,6 +2446,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/excecution/expression/GetOperator.js
              * @description Содержит в себе оператор получения значения по индексам
@@ -2379,6 +2476,25 @@ module.exports = /******/ (() => {
                     super('get');
                     this.position = position;
                     this.query_stack = stack;
+                }
+                /**
+                 * Синхронизирует значение группы с родительской группой
+                 *
+                 * @param {Function} функция выбрасывания исключений
+                 *
+                 * @override
+                 * @method
+                 * @returns {GetOperator}
+                 */
+
+                __sync(reject) {
+                    for (const elem of this.query_stack) {
+                        if (elem instanceof Operand) {
+                            elem.__sync(reject);
+                        }
+                    }
+
+                    return this;
                 }
                 /**
                  * Получает переменную заданную литералами
@@ -2463,6 +2579,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/excecution/expression/GroupOutStatement.js
              * @description Содержит в себе оператор группового вывода {}
@@ -2495,10 +2612,34 @@ module.exports = /******/ (() => {
                  */
                 constructor(body, query_stack, position) {
                     super('group-output');
-                    this.body = body;
                     this.query_stack =
                         query_stack != null ? [...query_stack] : null;
                     this.position = position;
+                    this.body = body;
+                    this.body.interrupted();
+                }
+                /**
+                 * Синхронизирует значение группы с родительской группой
+                 *
+                 * @param {Function} функция выбрасывания исключений
+                 *
+                 * @override
+                 * @method
+                 * @returns {GroupOutStatement}
+                 */
+
+                __sync(reject) {
+                    if (this.query_stack != null) {
+                        for (const elem of this.query_stack) {
+                            if (elem instanceof Operand) {
+                                elem.__sync(reject);
+                            }
+                        }
+                    }
+
+                    this.body.__sync(reject);
+
+                    return this;
                 }
                 /**
                  * Сериализует текущий объект в строку
@@ -2593,6 +2734,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/excecution/expression/ObjectContructorCall.js
              * @description Содержит в конструктор объекта который сериализуется как
@@ -2629,6 +2771,25 @@ module.exports = /******/ (() => {
                             : SERVICE.CONSTRUCTORS.OBJECT;
                     this.initial = initial;
                     this.position = position;
+                }
+                /**
+                 * Синхронизирует значение группы с родительской группой
+                 *
+                 * @param {Function} функция выбрасывания исключений
+                 *
+                 * @override
+                 * @method
+                 * @returns {ObjectContructorCall}
+                 */
+
+                __sync(reject) {
+                    for (const elem of this.query_stack) {
+                        if (elem instanceof Operand) {
+                            elem.__sync(reject);
+                        }
+                    }
+
+                    return this;
                 }
                 /**
                  * Сериализует текущий объект в строку
@@ -2728,6 +2889,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/excecution/expression/TernarOperator.js
              * @description Содержит в себе тернарный оператор, который сериализуется как <condition> ? <v1> : <v2>
@@ -2758,6 +2920,25 @@ module.exports = /******/ (() => {
                     this.condition = condition;
                     this.v_o = v1;
                     this.v_t = v2;
+                }
+                /**
+                 * Синхронизирует значение группы с родительской группой
+                 *
+                 * @param {Function} функция выбрасывания исключений
+                 *
+                 * @override
+                 * @method
+                 * @returns {TernarOperator}
+                 */
+
+                __sync(reject) {
+                    condition.__sync(reject);
+
+                    v_o.__sync(reject);
+
+                    v_t.__sync(reject);
+
+                    return this;
                 }
                 /**
                  * Сериализует текущий объект в строку
@@ -2807,24 +2988,198 @@ module.exports = /******/ (() => {
             /***/
         },
 
+        /***/ 707: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
+            /**
+             * @file src/classes/excecution/statements/BreakStatement.js
+             * @description Содержит в себе оператор break, который используется для прерывания итераций массивов, и выхода из группового вывода
+             * @author Astecom
+             */
+            const { Tick } = __webpack_require__(88),
+                { iStatement } = __webpack_require__(161);
+            /**
+             * @lends BreakStatement
+             * @protected
+             */
+
+            class BreakStatement extends iStatement {
+                /**
+                 * Дескриптор оператора break
+                 *
+                 * @param {Number} position позиция оператора
+                 *
+                 * @constructs BreakStatement
+                 * @memberof Poonya.Statements
+                 * @protected
+                 */
+                constructor(position) {
+                    super();
+                    this.position = position;
+                }
+                /**
+                 * @see iStatement.__sync
+                 *
+                 * @param {Function} reject функция выбрасывания исключений
+                 *
+                 * @method
+                 * @returns {BreakStatement}
+                 */
+
+                __sync(reject) {
+                    return this;
+                }
+                /**
+                 * @see iStatement.__executable
+                 *
+                 * @returns {Array<SequenceGroup>} список исполняемых блоков
+                 * @method
+                 */
+
+                __executable() {
+                    return new Array();
+                }
+                /**
+                 * Преобразовывет оператор break  в строку
+                 *
+                 * @returns {String} строкове представление оператора
+                 */
+
+                toString() {
+                    return 'break;';
+                }
+                /**
+                 * Выполняет прерывание перебора
+                 *
+                 * @returns {BreakStatement}
+                 *
+                 * @param {iContext} context Контекст выполнения
+                 * @param {PoonyaOutputStream} out вывод шаблонизатора
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve функция возврата результата
+                 *
+                 * @public
+                 * @method
+                 */
+
+                result(context, out, reject, resolve) {
+                    Tick(resolve, this);
+                }
+            }
+
+            module.exports = BreakStatement;
+
+            /***/
+        },
+
+        /***/ 914: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
+            /**
+             * @file src/classes/excecution/statements/ContinueStatement.js
+             * @description Содержит в себе оператор continue, который используется для перехода к следующей итерации
+             * @author Astecom
+             */
+            const { iStatement } = __webpack_require__(161),
+                { Tick } = __webpack_require__(88);
+            /**
+             * @lends ContinueStatement
+             * @protected
+             */
+
+            class ContinueStatement extends iStatement {
+                /**
+                 * Дескриптор оператора continue
+                 *
+                 * @param {Number} position позиция оператора
+                 *
+                 * @constructs ContinueStatement
+                 * @memberof Poonya.Statements
+                 * @protected
+                 */
+                constructor(position) {
+                    super();
+                    this.position = position;
+                }
+                /**
+                 * @see iStatement.__sync
+                 *
+                 * @param {Function} reject функция выбрасывания исключений
+                 *
+                 * @method
+                 * @returns {ContinueStatement}
+                 */
+
+                __sync(reject) {
+                    return this;
+                }
+                /**
+                 * @see iStatement.__executable
+                 *
+                 * @returns {Array<SequenceGroup>} список исполняемых блоков
+                 * @method
+                 */
+
+                __executable() {
+                    return new Array();
+                }
+                /**
+                 * Преобразовывет оператор continue в строку
+                 *
+                 * @returns {String} строкове представление оператора
+                 */
+
+                toString() {
+                    return 'continue;';
+                }
+                /**
+                 * Выполняет переход к следующей итерации цикла
+                 *
+                 * @returns {ContinueStatement}
+                 *
+                 * @param {iContext} context Контекст выполнения
+                 * @param {PoonyaOutputStream} out вывод шаблонизатора
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve функция возврата результата
+                 *
+                 * @public
+                 * @method
+                 */
+
+                result(context, out, reject, resolve) {
+                    Tick(resolve, this);
+                }
+            }
+
+            module.exports = ContinueStatement;
+
+            /***/
+        },
+
         /***/ 602: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/excecution/statements/IfStatement.js
              * @description Содержит в себе оператор if, который используется для создания условных операций
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(88);
+            const { Tick } = __webpack_require__(88),
+                { iStatement } = __webpack_require__(161);
             /**
              * @lends IfStatement
              * @protected
              */
 
-            class IfStatement {
+            class IfStatement extends iStatement {
                 /**
                  * Дескриптор оператора if
                  *
@@ -2837,9 +3192,38 @@ module.exports = /******/ (() => {
                  * @protected
                  */
                 constructor(condition, body_true, body_false) {
+                    super();
                     this.condition = condition;
                     this.body_true = body_true;
                     this.body_false = body_false;
+                }
+                /**
+                 * @see iStatement.__sync
+                 *
+                 * @param {Function} reject функция выбрасывания исключений
+                 *
+                 * @method
+                 *  @returns {IfStatement}
+                 */
+
+                __sync(reject) {
+                    this.condition.__sync(reject);
+
+                    if (this.body_true) this.body_true.__sync(reject);
+                    if (this.body_false) this.body_false.__sync(reject);
+                    return this;
+                }
+                /**
+                 * @see iStatement.__executable
+                 *
+                 * @returns {Array<SequenceGroup>} список исполняемых блоков
+                 * @method
+                 */
+
+                __executable() {
+                    return [this.body_true, this.body_false].filter(
+                        (e) => e != undefined
+                    );
                 }
                 /**
                  * Сериализует текущий объект в строку
@@ -2898,19 +3282,21 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/excecution/statements/OutStatement.js
              * @description Содержит в себе оператор вывода, который используется для вывода информации из шаблона
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(88);
+            const { Tick } = __webpack_require__(88),
+                { iStatement } = __webpack_require__(161);
             /**
              * @lends OutStatement
              * @protected
              */
 
-            class OutStatement {
+            class OutStatement extends iStatement {
                 /**
                  * Оператор вывода который Сериализуется как > (...expression)
                  * Выводит данные из шаблона
@@ -2923,8 +3309,33 @@ module.exports = /******/ (() => {
                  * @protected
                  */
                 constructor(expression) {
+                    super();
                     this.expression = expression;
                     this.position = expression.position;
+                }
+                /**
+                 * @see iStatement.__sync
+                 *
+                 * @param {Function} reject функция выбрасывания исключений
+                 *
+                 * @method
+                 * @returns {OutStatement}
+                 */
+
+                __sync(reject) {
+                    this.expression.__sync(reject);
+
+                    return this;
+                }
+                /**
+                 * @see iStatement.__executable
+                 *
+                 * @returns {Array<SequenceGroup>} список исполняемых блоков
+                 * @method
+                 */
+
+                __executable() {
+                    return new Array();
                 }
                 /**
                  * Сериализует текущий объект в строку
@@ -2978,6 +3389,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/excecution/statements/PushStatement.js
              * @description Содержит в себе оператор вставки, который используется для обновления массива, путем вставки в его конец значения
@@ -2985,17 +3397,19 @@ module.exports = /******/ (() => {
              * @license MIT
              */
 
-            const PoonyaArray = __webpack_require__(36),
-                { Tick } = __webpack_require__(88),
+            const { Tick } = __webpack_require__(88),
                 {
                     TheFieldMustBeAnArrayInstanceExceprion,
-                } = __webpack_require__(943);
+                } = __webpack_require__(943),
+                { iStatement } = __webpack_require__(161),
+                { Operand } = __webpack_require__(501),
+                PoonyaArray = __webpack_require__(36);
             /**
              * @lends PushStatement
              * @protected
              */
 
-            class PushStatement {
+            class PushStatement extends iStatement {
                 /**
                  * Объект который Сериализуется как var_name <- (expression...)
                  * Это опреатор для работы с массивами, и он заменяет свойство push
@@ -3009,9 +3423,40 @@ module.exports = /******/ (() => {
                  * @protected
                  */
                 constructor(position, query_stack, value) {
+                    super();
                     this.query_stack = query_stack;
                     this.position = position;
                     this.value = value;
+                }
+                /**
+                 * @see iStatement.__sync
+                 *
+                 * @param {Function} reject функция выбрасывания исключений
+                 *
+                 * @method
+                 * @returns {PushStatement}
+                 */
+
+                __sync(reject) {
+                    this.value.__sync(reject);
+
+                    for (const elem of this.query_stack) {
+                        if (elem instanceof Operand) {
+                            elem.__sync(reject);
+                        }
+                    }
+
+                    return this;
+                }
+                /**
+                 * @see iStatement.__executable
+                 *
+                 * @returns {Array<SequenceGroup>} список исполняемых блоков
+                 * @method
+                 */
+
+                __executable() {
+                    return new Array();
                 }
                 /**
                  * Сериализует текущий объект в строку
@@ -3088,6 +3533,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/excecution/statements/RepeatStatement.js
              * @description Содержит в себе оператор repeat, который используется для создания цикличных конечных конструкций
@@ -3096,13 +3542,16 @@ module.exports = /******/ (() => {
 
             const { TheFieldMustBeNumberException } = __webpack_require__(943),
                 { Tick } = __webpack_require__(88),
-                PoonyaNumber = __webpack_require__(220);
+                { iStatement } = __webpack_require__(161),
+                PoonyaNumber = __webpack_require__(220),
+                BreakStatement = __webpack_require__(707),
+                ContinueStatement = __webpack_require__(914);
             /**
              * @lends RepeatStatement;
              * @protected
              */
 
-            class RepeatStatement {
+            class RepeatStatement extends iStatement {
                 /**
                  * Дескриптор оператора repeat
                  *
@@ -3115,9 +3564,40 @@ module.exports = /******/ (() => {
                  * @protected
                  */
                 constructor(from, to, body) {
+                    super();
                     this.from = from;
                     this.to = to;
                     this.body = body;
+                    this.body.interrupted();
+                    this.body.continued();
+                }
+                /**
+                 * @see iStatement.__sync
+                 *
+                 * @param {Function} reject функция выбрасывания исключений
+                 *
+                 * @method
+                 * @returns {RepeatStatement}
+                 */
+
+                __sync(reject) {
+                    this.from.__sync(reject);
+
+                    this.to.__sync(reject);
+
+                    this.body.__sync(reject);
+
+                    return this;
+                }
+                /**
+                 * @see iStatement.__executable
+                 *
+                 * @returns {Array<SequenceGroup>} список исполняемых блоков
+                 * @method
+                 */
+
+                __executable() {
+                    return [this.body];
                 }
                 /**
                  * Сериализует текущий объект в строку
@@ -3181,8 +3661,21 @@ module.exports = /******/ (() => {
                                     }
 
                                     function tick(result) {
-                                        if (from == to) {
-                                            Tick(resolve, result);
+                                        if (
+                                            from == to ||
+                                            result instanceof BreakStatement
+                                        ) {
+                                            Tick(
+                                                resolve, //
+                                                // Защита, чтобы инструкция выхода из цикла не предавалась дальше по цепочке
+                                                //
+                                                result instanceof
+                                                    BreakStatement ||
+                                                    result instanceof
+                                                        ContinueStatement
+                                                    ? null
+                                                    : result
+                                            );
                                             return;
                                         }
 
@@ -3216,6 +3709,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/excecution/statements/ResetStatement.js
              * @description Содержит в себе оператор обновления значения переменной
@@ -3227,6 +3721,7 @@ module.exports = /******/ (() => {
                     iPoonyaObject,
                     iPoonyaPrototype,
                     iContext,
+                    iStatement,
                 } = __webpack_require__(161),
                 {
                     GetFieldOfNullException,
@@ -3234,13 +3729,14 @@ module.exports = /******/ (() => {
                 } = __webpack_require__(943),
                 { GET } = __webpack_require__(351),
                 { Tick } = __webpack_require__(88),
+                { Operand } = __webpack_require__(501),
                 PoonyaObject = __webpack_require__(753);
             /**
              * @lends ResetStatement
              * @protected
              */
 
-            class ResetStatement {
+            class ResetStatement extends iStatement {
                 /**
                  * Производит переустновку значения переменной переданной как левой операнд на выражение, которое передано как правый операнд.
                  * Объект который сериализуется как name = (...expression)
@@ -3254,9 +3750,40 @@ module.exports = /******/ (() => {
                  * @protected
                  */
                 constructor(position, query_stack, value) {
+                    super();
                     this.query_stack = query_stack;
                     this.position = position;
                     this.value = value;
+                }
+                /**
+                 * @see iStatement.__sync
+                 *
+                 * @param {Function} reject функция выбрасывания исключений
+                 *
+                 * @method
+                 * @returns {ResetStatement}
+                 */
+
+                __sync(reject) {
+                    this.value.__sync(reject);
+
+                    for (const elem of this.query_stack) {
+                        if (elem instanceof Operand) {
+                            elem.__sync(reject);
+                        }
+                    }
+
+                    return this;
+                }
+                /**
+                 * @see iStatement.__executable
+                 *
+                 * @returns {Array<SequenceGroup>} список исполняемых блоков
+                 * @method
+                 */
+
+                __executable() {
+                    return new Array();
                 }
                 /**
                  * Сериализует текущий объект в строку
@@ -3270,7 +3797,11 @@ module.exports = /******/ (() => {
                     return (
                         '(' +
                         this.query_stack
-                            .map((e) => (typeof e === 'number' ? `[${e}]` : e))
+                            .map((e) =>
+                                typeof e === 'number' || e instanceof Operand
+                                    ? `[${e.toString(indent)}]`
+                                    : e
+                            )
                             .join(' => ') +
                         ') = ' +
                         this.value.toString(indent + '\t')
@@ -3376,28 +3907,92 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/excecution/statements/SequenceGroup.js
              * @description Содержит в себе дочернуюю исполняемую группу, которая, при нормальных услвиях, является чустью главной исполняемой группы.
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(88);
+            const { Tick } = __webpack_require__(88),
+                { iStatement } = __webpack_require__(161),
+                { UnexpectedTokenException } = __webpack_require__(943),
+                BreakStatement = __webpack_require__(707),
+                ContinueStatement = __webpack_require__(914);
             /**
              * @lends SequenceGroup;
              * @protected
              */
 
-            class SequenceGroup {
+            class SequenceGroup extends iStatement {
                 /**
                  * Исполняемая последовательность
+                 *
+                 * @param {Boolean} can_break можно ли завершить это выражение оператором break
+                 * @param {Boolean} can_continue можно ли завершить это выражение оператором continue
+                 * @param {Boolean} can_return можно ли завершить это выражение оператором return
                  *
                  * @constructs SequenceGroup
                  * @memberof Poonya.Statements
                  * @protected
                  */
-                constructor() {
+                constructor(
+                    can_break = false,
+                    can_continue = false,
+                    can_return = false
+                ) {
+                    super();
                     this.Sequence = new Array();
+                    this.can_break = can_break;
+                    this.can_continue = can_continue;
+                    this.can_return = can_return;
+                }
+                /**
+                 * @see iStatement.__executable
+                 *
+                 * @returns {Array<SequenceGroup>} список исполняемых блоков
+                 * @method
+                 */
+
+                __executable() {
+                    return new Array();
+                }
+                /**
+                 * Синхронизирует флаги родительской группы с дочерними
+                 *
+                 * @param {Function} reject функция выбрасывания исключений
+                 *
+                 * @method
+                 *
+                 * @returns {SequenceGroup}
+                 */
+
+                __sync(reject) {
+                    for (const elem of this.Sequence) {
+                        for (const block of elem.__executable()) {
+                            if (this.can_break) block.interrupted();
+                            if (this.can_continue) block.continued();
+                            if (this.can_return) block.terminable();
+                        }
+
+                        if (elem instanceof BreakStatement && !this.can_break)
+                            reject(
+                                elem.position,
+                                new UnexpectedTokenException('break')
+                            );
+                        if (
+                            elem instanceof ContinueStatement &&
+                            !this.can_continue
+                        )
+                            reject(
+                                elem.position,
+                                new UnexpectedTokenException('continue')
+                            );
+
+                        elem.__sync(reject);
+                    }
+
+                    return this;
                 }
                 /**
                  * Добавляет элемент в стэк
@@ -3409,7 +4004,40 @@ module.exports = /******/ (() => {
                  */
 
                 push(elem) {
+                    //
+                    // Проталкиваю нужное мне выражение в общую группу
+                    //
                     this.Sequence.push(elem);
+                }
+                /**
+                 * Ставит флаг на последовательности, что её можно прервать оператором breack
+                 *
+                 * @public
+                 * @method
+                 */
+
+                interrupted() {
+                    this.can_break = true;
+                }
+                /**
+                 * Ставит флаг на последовательности, что последовательность можно превать оператором continue
+                 *
+                 * @public
+                 * @method
+                 */
+
+                continued() {
+                    this.can_continue = true;
+                }
+                /**
+                 * Ставит флаг на последовательности, что последовательность можно превать оператором return
+                 *
+                 * @public
+                 * @method
+                 */
+
+                terminable() {
+                    this.can_return = true;
                 }
                 /**
                  * Выполняет текущую последовательность
@@ -3418,6 +4046,7 @@ module.exports = /******/ (() => {
                  * @param {PoonyaOutputStream} out вывод шаблонизатора
                  * @param {Function} reject Вызывается при ошибке
                  * @param {Function} resolve функция возврата результата
+                 * @param {Boolean} level_ops Если true, то операции с уровнями памяти будут происходить автоматически
                  *
                  * @public
                  * @method
@@ -3435,7 +4064,12 @@ module.exports = /******/ (() => {
                     }
 
                     function tick(result) {
-                        if (i >= leng) {
+                        if (
+                            i >= leng ||
+                            (result instanceof BreakStatement && _.can_break) ||
+                            (result instanceof ContinueStatement &&
+                                _.can_continue)
+                        ) {
                             if (level_ops) context.popLevel();
                             Tick(resolve, result);
                             return;
@@ -3444,7 +4078,7 @@ module.exports = /******/ (() => {
                         _.Sequence[i++].result(context, out, reject, next);
                     }
 
-                    tick();
+                    tick(null);
                 }
                 /**
                  * Сериализует текущую группу в текст
@@ -3473,19 +4107,24 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/excecution/statements/SequenceMainGroup.js
              * @description Содержит в себе оператор главную сполняемую группу, т.е. группу которая явлся родетелем дочерних исполняемых групп, при нормальных условиях.
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(88);
+            const { Tick } = __webpack_require__(88),
+                { iStatement } = __webpack_require__(161),
+                { UnexpectedTokenException } = __webpack_require__(943),
+                BreakStatement = __webpack_require__(707),
+                ContinueStatement = __webpack_require__(914);
             /**
              * @lends SequenceMainGroup;
              * @protected
              */
 
-            class SequenceMainGroup {
+            class SequenceMainGroup extends iStatement {
                 /**
                  * Главная исполняемая последовательность
                  *
@@ -3496,7 +4135,54 @@ module.exports = /******/ (() => {
                  * @protected
                  */
                 constructor(init) {
+                    super();
                     this.Sequence = Array.isArray(init) ? init : new Array();
+                }
+                /**
+                 * !! Это главная группа, этот метод должен быть вызван сразу после окончания формирования группы !!
+                 *
+                 * @see iStatement.__sync
+                 *
+                 * @param {Function} reject функция выбрасывания исключений
+                 *
+                 * @method
+                 *
+                 * @returns {SequenceMainGroup}
+                 */
+
+                __sync(reject) {
+                    for (const elem of this.Sequence) {
+                        for (const block of elem.__executable()) {
+                            if (this.can_break) block.interrupted();
+                            if (this.can_continue) block.continued();
+                            if (this.can_return) block.terminable();
+                        }
+
+                        if (elem instanceof BreakStatement)
+                            reject(
+                                elem.position,
+                                new UnexpectedTokenException('break')
+                            );
+                        if (elem instanceof ContinueStatement)
+                            reject(
+                                elem.position,
+                                new UnexpectedTokenException('continue')
+                            );
+
+                        elem.__sync(reject);
+                    }
+
+                    return this;
+                }
+                /**
+                 * @see iStatement.__executable
+                 *
+                 * @returns {Array<SequenceGroup>} список исполняемых блоков
+                 * @method
+                 */
+
+                __executable() {
+                    return new Array();
                 }
                 /**
                  * Добавляет элемент в стэк
@@ -3581,6 +4267,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/excecution/statements/SetStatement.js
              * @description Содержит в себе оператор set, который используется для устновки значения в области памяти
@@ -3590,13 +4277,15 @@ module.exports = /******/ (() => {
             const {
                     TheFieldAlreadyHasBeenDeclaredException,
                 } = __webpack_require__(943),
-                { Tick } = __webpack_require__(88);
+                { Tick } = __webpack_require__(88),
+                { iStatement } = __webpack_require__(161),
+                { Operand } = __webpack_require__(501);
             /**
              * @lends SetStatement
              * @protected
              */
 
-            class SetStatement {
+            class SetStatement extends iStatement {
                 /**
                  * Объект который Сериализуется как set = (expression...)
                  *
@@ -3608,9 +4297,35 @@ module.exports = /******/ (() => {
                  * @protected
                  */
                 constructor(name, value) {
+                    super();
                     this.name = name.toString();
                     this.position = name.position;
                     this.value = value;
+                }
+                /**
+                 * @see iStatement.__sync
+                 *
+                 * @param {Function} reject функция выбрасывания исключений
+                 *
+                 * @method
+                 *
+                 * @returns {SetStatement}
+                 */
+
+                __sync(reject) {
+                    this.value.__sync(reject);
+
+                    return this;
+                }
+                /**
+                 * @see iStatement.__executable
+                 *
+                 * @returns {Array<SequenceGroup>} список исполняемых блоков
+                 * @method
+                 */
+
+                __executable() {
+                    return new Array();
                 }
                 /**
                  * Сериализует текущий объект в строку
@@ -3669,19 +4384,23 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/excecution/statements/WhileStatement.js
              * @description Содержит в себе инструкцию while, который используется для создания цикличных условных операций
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(88);
+            const { Tick } = __webpack_require__(88),
+                { iStatement } = __webpack_require__(161),
+                BreakStatement = __webpack_require__(707),
+                ContinueStatement = __webpack_require__(914);
             /**
              * @lends WhileStatement
              * @protected
              */
 
-            class WhileStatement {
+            class WhileStatement extends iStatement {
                 /**
                  * Дескриптор инструкции while
                  *
@@ -3693,8 +4412,38 @@ module.exports = /******/ (() => {
                  * @protected
                  */
                 constructor(condition, body) {
+                    super();
                     this.condition = condition;
                     this.body = body;
+                    this.body.interrupted();
+                    this.body.continued();
+                }
+                /**
+                 * @see iStatement.__sync
+                 *
+                 * @param {Function} reject функция выбрасывания исключений
+                 *
+                 * @method
+                 *
+                 * @returns {WhileStatement}
+                 */
+
+                __sync(reject) {
+                    this.condition.__sync(reject);
+
+                    this.body.__sync(reject);
+
+                    return this;
+                }
+                /**
+                 * @see iStatement.__executable
+                 *
+                 * @returns {Array<SequenceGroup>} список исполняемых блоков
+                 * @method
+                 */
+
+                __executable() {
+                    return [this.body];
                 }
                 /**
                  * Сериализует текущий объект в строку
@@ -3733,14 +4482,25 @@ module.exports = /******/ (() => {
 
                     (function tick(result) {
                         _.condition.result(context, out, reject, (d_result) => {
-                            if (context.toBooleanResult(d_result)) {
+                            if (
+                                context.toBooleanResult(d_result) &&
+                                !(result instanceof BreakStatement)
+                            ) {
                                 _.body.result(context, out, reject, tick);
                             } else {
-                                Tick(resolve, result);
+                                Tick(
+                                    resolve, //
+                                    // Защита, чтобы инструкция выхода из цикла не предавалась дальше по цепочке
+                                    //
+                                    result instanceof BreakStatement ||
+                                        result instanceof ContinueStatement
+                                        ? null
+                                        : result
+                                );
                                 return;
                             }
                         });
-                    })();
+                    })(null);
                 }
             }
 
@@ -3754,6 +4514,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/classes/exceptions.js
              * @description Тут я сгруппировал всевозможные исклюения
@@ -3839,7 +4600,10 @@ module.exports = /******/ (() => {
             class UnexpectedTokenException extends ParserException {
                 constructor(token, expected) {
                     super(
-                        `Unexpected token '${token.toString()}' when expected '${expected.toString()}'`
+                        `Unexpected token '${token.toString()}'` +
+                            (expected
+                                ? `when expected '${expected.toString()}'`
+                                : '')
                     );
                 }
             }
@@ -4383,13 +5147,19 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 161: /***/ (module) => {
+        /***/ 161: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
+            'use strict';
             /**
              * @file src/interfaces.js
              * @description Тут собраны интерфейсы, для боллее удобного последующего сравнения объектов
              * @author Astecom
              */
-            // Poonya
+
+            const EventEmitter = __webpack_require__(614); // Poonya
 
             class iCodeEmitter {} // Storage
 
@@ -4446,6 +5216,104 @@ module.exports = /******/ (() => {
                  */
                 constructor() {}
             }
+            /**
+             * @lends iPoonyaOutputStream
+             * @interface iPoonyaOutputStream
+             */
+
+            class iPoonyaOutputStream extends EventEmitter {
+                /**
+                 * Интерфейс вывода шаблонов
+                 * Template output interface
+                 *
+                 * @param {Object} data
+                 * @param {Context} context
+                 *
+                 * @property {Context} data данные которые уже были выведены
+                 *
+                 * @memberof Poonya
+                 * @constructs iPoonyaOutputStream
+                 * @public
+                 */
+                constructor() {
+                    super();
+                }
+                /**
+                 * Выводит данные
+                 * Outputs data
+                 *
+                 * @param {Any} data данные которые необходимо вывести
+                 *                   data to be displayed
+                 * @method
+                 * @public
+                 */
+
+                write(data) {}
+                /**
+                 * Redirects the data stream to `stream` passed as the first argument
+                 * Перенаправляет поток данных в `stream` переданный первым аргументом
+                 *
+                 * @param {PoonyaOutputStream|Stream} stream поток которому необходимо передавать данные помимо этого
+                 *                                           the stream to which you need to transfer data in addition to this
+                 * @returns `stream` Поток который был передан.
+                 * @returns `stream` The stream that was sent.
+                 * @method
+                 * @public
+                 */
+
+                pipe(stream) {}
+                /**
+                 * Преобразует поток в ReadableStream или в Stream.Writable для nodejs
+                 * Converts stream to ReadableStream or Stream.Writable for nodejs
+                 *
+                 * @returns {ReadableStream|Stream.Writable} a read stream if it's a browser, or a write stream if it's nodejs
+                 *                                           поток чтения, если это браузер, или поток записи если это nodejs
+                 * @method
+                 * @public
+                 */
+
+                toReadable() {}
+                /**
+                 * Ожидает завершения записи потока, после чего возвращает массив с буффером данных
+                 * Waits for the stream to finish writing, then returns an array with a data buffer
+                 *
+                 * @async
+                 * @public
+                 * @method
+                 * @returns {Array<Any>} массив с переданными данными
+                 *                       array with passed data
+                 */
+
+                complete() {}
+            } // Excecute
+
+            /**
+             * @lends iStatement
+             * @interface iStatement
+             */
+
+            class iStatement {
+                /**
+                 * Возвращет список исполняемых блоков, если такие есть.
+                 *
+                 * @method
+                 * @returns {Array<iStatement>} список исполняемых блоков, если такие есть.
+                 */
+                __executable() {
+                    return new Array();
+                }
+                /**
+                 * Синхронизирует группы выражений с оснновной группой
+                 *
+                 * @method
+                 *
+                 * @returns {iStatement}
+                 */
+
+                __sync(reject) {
+                    return this;
+                }
+            }
 
             module.exports.iContext = iContext;
             module.exports.iPathData = iPathData;
@@ -4454,6 +5322,8 @@ module.exports = /******/ (() => {
             module.exports.iPoonyaObject = iPoonyaObject;
             module.exports.iPoonyaPrototype = iPoonyaPrototype;
             module.exports.iPoonyaConstructsData = iPoonyaConstructsData;
+            module.exports.iStatement = iStatement;
+            module.exports.iPoonyaOutputStream = iPoonyaOutputStream;
 
             /***/
         },
@@ -4463,6 +5333,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/static.js
              * @description Содержит в себе набор статических полей
@@ -4629,6 +5500,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/storage.js
              * @description Содержит в себе напиор классов и функций для управления динамической памятью.
@@ -4649,6 +5521,7 @@ module.exports = /******/ (() => {
                     iPathData,
                     iCodeEmitter,
                     iPoonyaObject,
+                    iPoonyaOutputStream,
                 } = __webpack_require__(161),
                 { PoonyaStaticLibrary } = __webpack_require__(742),
                 { parser } = __webpack_require__(743),
@@ -4881,11 +5754,9 @@ module.exports = /******/ (() => {
                                 toBytes(input),
                                 false
                             ),
-                            (symbol, message) => {
-                                throw new PoonyaException(
-                                    message + ', at symbol ' + symbol
-                                );
-                            }, // Присваеваем рандомный идентификатор исполнителю
+                            rej, //
+                            // Присваеваем рандомный идентификатор исполнителю
+                            //
                             'eval-' +
                                 Math.floor(
                                     Math.random() * Number.MAX_SAFE_INTEGER
@@ -4896,7 +5767,9 @@ module.exports = /******/ (() => {
                                 result &&
                                     result.result(
                                         this,
-                                        out,
+                                        out != null
+                                            ? out
+                                            : new iPoonyaOutputStream(),
                                         (symbol, message) =>
                                             rej(
                                                 new PoonyaException(
@@ -5372,6 +6245,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/importer.js
              * @description Содержит в себе набор фнукций, которые необходимы для импорта нативных, написанных на js в нашем случае, библиотека в память poonya
@@ -5824,6 +6698,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/Token.js
              * @description Содержит в себе класс вхождение лексера, массив которых получается на выходе из лексера
@@ -5928,6 +6803,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/lexer.js
              * @description Содержит в себе лексер, который преобразует строку в набор токенов.
@@ -6220,6 +7096,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/linker.js
              * @description Содержит в себе линкер, который позваоляет импортировать содержимое других файлов в исполняему последовательность poonya
@@ -6306,6 +7183,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/parser.js
              * @description Содержит в себе парсер исходного кода poonya, на выходе экспортируемых функций можно получить либо выражение, либо главную исполняемую последовательность
@@ -6348,6 +7226,8 @@ module.exports = /******/ (() => {
                 PushStatement = __webpack_require__(505),
                 SequenceMainGroup = __webpack_require__(404),
                 GroupOutStatement = __webpack_require__(281),
+                BreakStatement = __webpack_require__(707),
+                ContinueStatement = __webpack_require__(914),
                 linker = __webpack_require__(434);
 
             const KEYWORDS = ['true', 'false', 'null'];
@@ -6665,7 +7545,9 @@ module.exports = /******/ (() => {
                         buffer.splice(0, buffer.length);
                     } else {
                         reject(
-                            token != undefined ? token.position : data[start],
+                            token != undefined
+                                ? token.position
+                                : data[start].position,
                             new ParserEmtyArgumentException()
                         );
                     }
@@ -6776,15 +7658,14 @@ module.exports = /******/ (() => {
                     };
 
                 for (let i = start; ; i++) {
+                    maybeEquals(data, i, CHARTYPE.NEWLINE);
+
                     switch (true) {
                         case data[i] == null ||
-                            (data[i].equals(CHARTYPE.OPERATOR) &&
-                                !data[i].equals(CHARTYPE.OPERATOR, [
-                                    '[',
-                                    ']',
-                                ])) ||
-                            data[i].equals(CHARTYPE.NEWLINE) ||
-                            data[i].equals(CHARTYPE.SPACE):
+                            (point_before && !data[i].equals(CHARTYPE.WORD)) ||
+                            (!point_before &&
+                                !data[i].equals(CHARTYPE.OPERATOR, '[') &&
+                                !data[i].equals(CHARTYPE.POINT)):
                             return {
                                 data: buffer,
                                 jump: i - start,
@@ -6816,18 +7697,23 @@ module.exports = /******/ (() => {
                                     hook_index === 0
                                 )
                             ) {
-                                if (data[i].equals(CHARTYPE.OPERATOR, '['))
+                                if (data[i].equals(CHARTYPE.OPERATOR, '[')) {
                                     hook_index++;
-                                else if (data[i].equals(CHARTYPE.OPERATOR, ']'))
+                                } else if (
+                                    data[i].equals(CHARTYPE.OPERATOR, ']')
+                                ) {
                                     hook_index--;
+                                }
+
                                 i++;
                             }
 
-                            if (hook_index != 0)
+                            if (hook_index != 0) {
                                 reject(
                                     data[i].position,
                                     new ParserLogicException()
-                                ); //
+                                );
+                            } //
                             // Вставляем выражение как оператор доступа
                             //
 
@@ -6958,11 +7844,11 @@ module.exports = /******/ (() => {
                                             //
 
                                             if (
-                                                entries[
-                                                    i + 1
-                                                ].equals(CHARTYPE.OPERATOR, [
-                                                    '*',
-                                                ])
+                                                entries[i + 1] &&
+                                                entries[i + 1].equals(
+                                                    CHARTYPE.OPERATOR,
+                                                    '*'
+                                                )
                                             )
                                                 i += 1;
                                             buffer.append(
@@ -6970,14 +7856,14 @@ module.exports = /******/ (() => {
                                                 reject
                                             );
                                         } else {
-                                            reject(
-                                                new UnexpectedTokenException(
-                                                    entries[
-                                                        i + result[0].jump + 1
-                                                    ].toString(),
-                                                    '>'
-                                                )
+                                            buffer.append(
+                                                new GetOperator(
+                                                    entries[i].position,
+                                                    result[0].data
+                                                ),
+                                                reject
                                             );
+                                            i += result[0].jump - 1;
                                         } //
                                         // Если <-, значит групповой вывод
                                         //
@@ -6994,7 +7880,7 @@ module.exports = /******/ (() => {
                                         ) {
                                             result[1] = parseGroupOut(
                                                 entries,
-                                                i + result[0].jump + 2,
+                                                i + result[0].jump + 3,
                                                 result[0].data,
                                                 reject
                                             );
@@ -7007,14 +7893,14 @@ module.exports = /******/ (() => {
                                                 reject
                                             );
                                         } else {
-                                            reject(
-                                                new UnexpectedTokenException(
-                                                    entries[
-                                                        i + result[0].jump + 1
-                                                    ].toString(),
-                                                    '-'
-                                                )
+                                            buffer.append(
+                                                new GetOperator(
+                                                    entries[i].position,
+                                                    result[0].data
+                                                ),
+                                                reject
                                             );
+                                            i += result[0].jump - 1;
                                         }
                                     } else {
                                         buffer.append(
@@ -7062,7 +7948,12 @@ module.exports = /******/ (() => {
                         //
 
                         case entries[i].equals(CHARTYPE.OPERATOR, '{'):
-                            result[0] = parseGroupOut(entries, i, null, reject);
+                            result[0] = parseGroupOut(
+                                entries,
+                                i + 1,
+                                null,
+                                reject
+                            );
                             i += result[0].jump + 1;
                             buffer.append(result[0].data, reject);
                             continue;
@@ -7268,14 +8159,10 @@ module.exports = /******/ (() => {
                     switch (true) {
                         case entries[i] === undefined ||
                             (entries[i].equals(CHARTYPE.OPERATOR, '}') &&
-                                hook_index <= 1):
+                                hook_index < 1):
                             return {
                                 // Сегменты
-                                data: codeBlockParser(
-                                    0,
-                                    body.slice(1, -1),
-                                    reject
-                                ).data,
+                                data: codeBlockParser(0, body, reject).data,
                                 // Прыжок парсера
                                 jump: i - start,
                             };
@@ -7695,7 +8582,25 @@ module.exports = /******/ (() => {
                                     );
                                 }
 
-                                break;
+                                continue;
+                            //
+                            // Оператор break
+                            //
+
+                            case entries[i].equals(CHARTYPE.WORD, 'break'):
+                                buffer.push(
+                                    new BreakStatement(entries[i].position)
+                                );
+                                continue;
+                            //
+                            // Оператор continue
+                            //
+
+                            case entries[i].equals(CHARTYPE.WORD, 'continue'):
+                                buffer.push(
+                                    new ContinueStatement(entries[i].position)
+                                );
+                                continue;
                             //
                             // Текущий - слово
                             //
@@ -7755,7 +8660,7 @@ module.exports = /******/ (() => {
                                                     reject
                                                 );
                                                 buffer.push(result[0].data);
-                                                i += result[0].jump + 1;
+                                                i += result[0].jump;
                                             } else {
                                                 result[1] = parseExpression(
                                                     result[0].jump + i + 2,
@@ -7851,6 +8756,11 @@ module.exports = /******/ (() => {
 
                             case entries[i].equals(CHARTYPE.NUMBER) ||
                                 entries[i].equals(CHARTYPE.STRING) ||
+                                entries[i].equals(CHARTYPE.WORD, [
+                                    'true',
+                                    'false',
+                                    'null',
+                                ]) ||
                                 entries[i].equals(CHARTYPE.OPERATOR, '{'):
                                 result[0] = parseExpression(i, entries, reject);
                                 buffer.push(result[0].data);
@@ -7914,7 +8824,7 @@ module.exports = /******/ (() => {
                         await linker(entries, parent_path, reject),
                         reject
                     ).data.Sequence
-                );
+                ).__sync(reject);
             }
             /**
              * Парсит шаблон сообщения, которое помимо кода Poonya может содержать и любые другие символы вне префикса.
@@ -8055,7 +8965,7 @@ module.exports = /******/ (() => {
                             )
                         );
                     }
-                return out;
+                return out.__sync(reject);
             }
 
             module.exports.parser = parser;
@@ -8070,6 +8980,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /* module decorator */ module = __webpack_require__.nmd(module);
             /**
              * @author Astecom
@@ -8721,14 +9632,7 @@ module.exports = /******/ (() => {
                                 })
                             )
                         );
-                        Pattern.on('error', (...args) =>
-                            rej(
-                                Object.assign(new iPoonyaConstructsData(), {
-                                    data: Pattern,
-                                    args,
-                                })
-                            )
-                        );
+                        Pattern.on('error', (...args) => rej(...args));
                     });
                 } else {
                     throw new Error(
@@ -8776,6 +9680,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/preset.js
              * @description Содержит в себе прессеть данных для создания нативных бибилотек
@@ -8797,6 +9702,7 @@ module.exports = /******/ (() => {
             __unused_webpack_exports,
             __webpack_require__
         ) => {
+            'use strict';
             /**
              * @file src/utils.js
              * @description Содержит в себе набор утилит, которые нужны много где, и их нельзя отнести к какой-либо конкретной группе
@@ -8993,7 +9899,10 @@ module.exports = /******/ (() => {
              */
 
             function maybeEquals(entries, index, equalts_t, equalts_v) {
-                while (entries[index].equals(equalts_t, equalts_v))
+                while (
+                    entries[index] != null &&
+                    entries[index].equals(equalts_t, equalts_v)
+                )
                     entries.splice(index, 1);
 
                 return true;
@@ -9088,36 +9997,42 @@ module.exports = /******/ (() => {
         },
 
         /***/ 614: /***/ (module) => {
+            'use strict';
             module.exports = require('events');
 
             /***/
         },
 
         /***/ 747: /***/ (module) => {
+            'use strict';
             module.exports = require('fs');
 
             /***/
         },
 
         /***/ 282: /***/ (module) => {
+            'use strict';
             module.exports = require('module');
 
             /***/
         },
 
         /***/ 622: /***/ (module) => {
+            'use strict';
             module.exports = require('path');
 
             /***/
         },
 
         /***/ 765: /***/ (module) => {
+            'use strict';
             module.exports = require('process');
 
             /***/
         },
 
         /***/ 413: /***/ (module) => {
+            'use strict';
             module.exports = require('stream');
 
             /***/

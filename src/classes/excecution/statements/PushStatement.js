@@ -7,19 +7,17 @@
 
 "use strict";
 
-const   PoonyaArray = require('../../data/PoonyaArray'),
-    {   
-        Tick 
-    } = require('../../../utils'),
-    {
-        TheFieldMustBeAnArrayInstanceExceprion,
-    } = require('../../exceptions');
+const { Tick } = require('../../../utils')
+    , { TheFieldMustBeAnArrayInstanceExceprion } = require('../../exceptions')
+    , { iStatement } = require('../../interfaces')
+    , { Operand } = require('../../common/ParserData')
+    , PoonyaArray = require('../../data/PoonyaArray');
 
 /**
  * @lends PushStatement
  * @protected
  */
-class PushStatement {
+class PushStatement extends iStatement {
     /**
      * Объект который Сериализуется как var_name <- (expression...)
      * Это опреатор для работы с массивами, и он заменяет свойство push
@@ -33,9 +31,41 @@ class PushStatement {
      * @protected
      */
     constructor(position, query_stack, value) {
+        super();
+        
         this.query_stack = query_stack;
         this.position = position;
         this.value = value;
+    }
+
+    /**
+     * @see iStatement.__sync
+     * 
+     * @param {Function} reject функция выбрасывания исключений
+     * 
+     * @method
+     * @returns {PushStatement}
+     */
+    __sync(reject) {
+        this.value.__sync(reject);
+
+        for(const elem of this.query_stack) {
+            if(elem instanceof Operand) {
+                elem.__sync(reject);
+            }
+        }
+
+        return this;
+    }
+    
+    /**
+     * @see iStatement.__executable
+     * 
+     * @returns {Array<SequenceGroup>} список исполняемых блоков
+     * @method
+     */
+    __executable(){
+        return new Array();
     }
 
     /**

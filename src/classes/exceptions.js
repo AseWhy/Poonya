@@ -79,7 +79,7 @@ class TheSequenceException extends ParserException {
  */
 class UnexpectedTokenException extends ParserException {
     constructor(token, expected) {
-        super(`Unexpected token '${token.toString()}' when expected '${expected.toString()}'`);
+        super(`Unexpected token '${token.toString()}'` + (expected ? `when expected '${expected.toString()}'` : ''));
     }
 }
 

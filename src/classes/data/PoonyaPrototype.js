@@ -138,7 +138,7 @@ class PoonyaPrototype extends iPoonyaPrototype {
                 return null;
         } else {
             for (let i = 0, leng = this._parents.length; i < leng; i++) {
-                if ((data = this._parents[i].get(key, context, static_assces)) != null) {
+                if ((data = this._parents[i][GET](key, context, static_assces)) != null) {
                     return data;
                 }
             }

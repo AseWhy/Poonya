@@ -10,7 +10,7 @@ const PoonyaPattern = require('./data/PoonyaPattern')
     , { GetFieldOfNullException, IsNotAConstructorException, PoonyaException } = require('./exceptions')
     , { GET, SERVICE, IS } = require('./static')
     , { Cast, toBytes } = require('../utils.js')
-    , { iContext, iPoonyaPrototype, iPathData, iCodeEmitter, iPoonyaObject } = require('./interfaces')
+    , { iContext, iPoonyaPrototype, iPathData, iCodeEmitter, iPoonyaObject, iPoonyaOutputStream } = require('./interfaces')
     , { PoonyaStaticLibrary } = require('../importer.js')
     , { parser } = require('../parser')
     ,   lexer = require('../lexer/lexer')
@@ -230,8 +230,10 @@ class Context extends iContext {
                     // Разбираем текст на байты
                     toBytes(input), false
                 ),
-                (symbol, message) => { throw new PoonyaException(message + ', at symbol ' + symbol); },
+                rej,
+                //
                 // Присваеваем рандомный идентификатор исполнителю
+                //
                 'eval-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)
             )
                 .catch(
@@ -239,11 +241,22 @@ class Context extends iContext {
                 )
                 .then(
                     result => {
-                        result && result.result(this, out, 
+                        result && 
+                        result.result(
+                            this, 
+                            out != null ? 
+                                out : 
+                                new iPoonyaOutputStream(), 
                             (symbol, message) => rej(
-                                new PoonyaException(message + ', at symbol ' + symbol)
+                                new PoonyaException(
+                                    message + 
+                                    ', at symbol ' + 
+                                    symbol
+                                )
                             ),
-                        res, console.error);
+                            res, 
+                            console.error
+                        );
                     }
                 );
         });

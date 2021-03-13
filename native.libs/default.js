@@ -167,7 +167,7 @@ class PoonyaNumberPrototype extends PoonyaPrototype {
     }
 
     isNumber(service, o){
-        return !isNaN(o) && typeof o === 'number';
+        return typeof o === 'number' && !isNaN(o);
     }
 
     parseInt(service, numb){
@@ -188,6 +188,20 @@ class PoonyaIntegerPrototype extends PoonyaPrototype {
         // Integer extends Number
         // 
         super([ pNumber ], 'Integer');
+
+        // 
+        // Methods
+        // 
+        this.addField('parseInt', this.parseInt, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC);
+        this.addField('isInteger', this.isInteger, FIELDFLAGS.CONSTANT | FIELDFLAGS.STATIC);
+    }
+
+    isInteger(service, o){
+        return typeof o === 'bigint';
+    }
+
+    parseInt(service, numb){
+        return BigInt(numb);
     }
 }
 

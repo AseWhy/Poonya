@@ -7,17 +7,18 @@
 "use strict";
 
 const ExpressionGroup = require('../expression/ExpressionGroup')
-    , { iPoonyaObject, iPoonyaPrototype, iContext } = require('../../interfaces')
+    , { iPoonyaObject, iPoonyaPrototype, iContext, iStatement } = require('../../interfaces')
     , { GetFieldOfNullException, TheFieldNotHasDeclaredExceprion } = require('../../exceptions')
     , { GET } = require('../../static')
     , { Tick } = require('../../../utils')
+    , { Operand } = require('../../common/ParserData')
     , PoonyaObject = require('../../data/PoonyaObject');
 
 /**
  * @lends ResetStatement
  * @protected
  */
-class ResetStatement {
+class ResetStatement extends iStatement {
     /**
      * Производит переустновку значения переменной переданной как левой операнд на выражение, которое передано как правый операнд.
      * Объект который сериализуется как name = (...expression)
@@ -31,9 +32,41 @@ class ResetStatement {
      * @protected
      */
     constructor(position, query_stack, value) {
+        super();
+
         this.query_stack = query_stack;
         this.position = position;
         this.value = value;
+    }
+
+    /**
+     * @see iStatement.__sync
+     * 
+     * @param {Function} reject функция выбрасывания исключений
+     * 
+     * @method
+     * @returns {ResetStatement}
+     */
+    __sync(reject) {
+        this.value.__sync(reject);
+
+        for(const elem of this.query_stack) {
+            if(elem instanceof Operand) {
+                elem.__sync(reject);
+            }
+        }
+
+        return this;
+    }
+
+    /**
+     * @see iStatement.__executable
+     * 
+     * @returns {Array<SequenceGroup>} список исполняемых блоков
+     * @method
+     */
+     __executable(){
+        return new Array();
     }
 
     /**
@@ -46,7 +79,7 @@ class ResetStatement {
     toString(indent) {
         return (
             '(' +
-            this.query_stack.map(e => (typeof e === 'number' ? `[${e}]` : e)).join(' => ') +
+            this.query_stack.map(e => (typeof e === 'number' || e instanceof Operand ? `[${e.toString(indent)}]` : e)).join(' => ') +
             ') = ' +
             this.value.toString(indent + '\t')
         );

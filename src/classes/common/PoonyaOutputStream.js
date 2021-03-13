@@ -6,7 +6,7 @@
 
 "use strict";
 
-const { EventEmitter } = require("events");
+const { iPoonyaOutputStream } = require("../interfaces");
 // #!if platform === 'node'
 const { Stream } = require('stream');
 // #!endif
@@ -15,7 +15,7 @@ const { Stream } = require('stream');
  * @lends PoonyaOutputStream
  * @class
  */
-class PoonyaOutputStream extends EventEmitter {
+class PoonyaOutputStream extends iPoonyaOutputStream {
     /**
      * Класс вывода шаблонов, за счет этого интерфейса производится
      * Template output class, due to this interface is created

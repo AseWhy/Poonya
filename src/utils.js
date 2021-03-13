@@ -122,7 +122,7 @@ function Cast(data, context, parents_three = new Array()) {
  * @private
  */
 function maybeEquals(entries, index, equalts_t, equalts_v) {
-    while (entries[index].equals(equalts_t, equalts_v))
+    while (entries[index] != null && entries[index].equals(equalts_t, equalts_v))
         entries.splice(index, 1);
 
     return true;

@@ -521,5 +521,210 @@ describe("poonya-common-test", () => {
                 [['h', 'e', 'l', 'l', 'o'], ' ', ['w', 'o', 'r', 'l', 'd']]
             );
         });
-    })
+    });
+
+    describe("#script-execution-test[eval#2]-break-and-continue-statements", () => {
+        it("Double repeat break", async () => {
+            const context = await poonya.createContext();
+
+            assert.deepStrictEqual(
+                await context.eval(`
+                    {
+                        repeat(0; 100) {
+                            repeat(0; current 1) {
+                                if(current > 10) {
+                                    > current ' - 1';
+                        
+                                    break;
+                                }
+                            }
+                        
+                            if(current > 10) {
+                                > current;
+                        
+                                break;
+                            }
+                        }
+                        
+                        > 'result';
+                    }
+                `),
+                [
+                    '11 - 1',
+                    11,
+                    'result'
+                ]
+            );
+        });
+
+        it("While break", async () => {
+            const context = await poonya.createContext();
+
+            assert.deepStrictEqual(
+                await context.eval(`
+                    {
+                        set s = 5;
+
+                        while(true) {
+                            if(s > 100) {
+                                > 'Foo!' s;
+
+                                break;
+                            }
+
+                            s = s + 1;
+                        }
+                    }
+                `),
+                [
+                    'Foo!101'
+                ]
+            );
+        });
+
+        it("While continue", async () => {
+            const context = await poonya.createContext();
+
+            assert.deepStrictEqual(
+                await context.eval(`
+                    {
+                        set s = 0;
+
+                        while(true) {
+                            s = s + 1;
+                            
+                            if(s < 10 & s >= 0) {
+                                if(s = 1) {
+                                    > 'Foo!' s;
+                                }
+            
+                                continue;
+                            }
+            
+                            if(s < 20 & s >= 10) {
+                                if(s = 11) {
+                                    > 'Foo!' s;
+                                }
+            
+                                continue;
+                            }
+            
+                            if(s < 30 & s >= 20) {
+                                if(s = 21) {
+                                    > 'Foo!' s;
+                                }
+            
+                                continue;
+                            }
+            
+                            if(s < 40 & s >= 30) {
+                                if(s = 31) {
+                                    > 'Foo!' s;
+                                }
+            
+                                continue;
+                            }
+            
+                            if(s < 50 & s >= 40) {
+                                if(s = 41) {
+                                    > 'Foo!' s;
+                                }
+            
+                                continue;
+                            }
+            
+                            if(s < 60 & s >= 50) {
+                                if(s = 51) {
+                                    > 'Foo!' s;
+                                }
+            
+                                continue;
+                            }
+            
+                            break;
+                        }
+                    }
+                `),
+                [
+                    'Foo!1',
+                    'Foo!11',
+                    'Foo!21',
+                    'Foo!31',
+                    'Foo!41',
+                    'Foo!51'
+                ]
+            );
+        });
+
+        it("Output group break", async () => {
+            const context = await poonya.createContext();
+
+            assert.deepStrictEqual(
+                await context.eval(`
+                    Join.concat <- {
+                        > 'h';
+                        > 'e';
+                        > 'l';
+                        > 'l';
+                        > 'o';
+
+                        break;
+
+                        > ' ';
+
+                        > 'w';
+                        > 'o';
+                        > 'r';
+                        > 'l';
+                        > 'd';
+                    }
+                `),
+                'hello'
+            );
+        });
+
+        it("Repeat and output group break", async () => {
+            const context = await poonya.createContext();
+
+            assert.deepStrictEqual(
+                await context.eval(`
+                    {
+                        repeat(0; 10) {
+                            > Join.concat <- {
+                                > 'h';
+                                > 'e';
+                                > 'l';
+                                > 'l';
+                                > 'o';
+    
+                                > current;
+        
+                                break;
+        
+                                > ' ';
+        
+                                > 'w';
+                                > 'o';
+                                > 'r';
+                                > 'l';
+                                > 'd';
+                            }
+                        }
+                    }
+                `),
+                [
+                    'hello0',
+                    'hello1',
+                    'hello2',
+                    'hello3',
+                    'hello4',
+                    'hello5',
+                    'hello6',
+                    'hello7',
+                    'hello8',
+                    'hello9'
+                ]
+            );
+        });
+    });
 });

@@ -6,13 +6,14 @@
 
 "use strict";
 
-const { Tick } = require("../../../utils");
+const { Tick } = require("../../../utils")
+    , { iStatement } = require("../../interfaces");
 
 /**
  * @lends IfStatement
  * @protected
  */
-class IfStatement {
+class IfStatement extends iStatement {
     /**
      * Дескриптор оператора if
      *
@@ -25,9 +26,41 @@ class IfStatement {
      * @protected
      */
     constructor(condition, body_true, body_false) {
+        super();
+        
         this.condition = condition;
         this.body_true = body_true;
         this.body_false = body_false;
+    }
+
+    /**
+     * @see iStatement.__sync
+     * 
+     * @param {Function} reject функция выбрасывания исключений
+     * 
+     * @method
+    *  @returns {IfStatement}
+     */
+    __sync(reject) {
+        this.condition.__sync(reject);
+
+        if(this.body_true)
+            this.body_true.__sync(reject);
+
+        if(this.body_false)
+            this.body_false.__sync(reject);
+
+        return this;
+    }
+
+    /**
+     * @see iStatement.__executable
+     * 
+     * @returns {Array<SequenceGroup>} список исполняемых блоков
+     * @method
+     */
+    __executable(){
+        return [ this.body_true, this.body_false ].filter(e => e != undefined);
     }
 
     /**

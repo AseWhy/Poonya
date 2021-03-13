@@ -6,13 +6,14 @@
 
 "use strict";
 
-const { Tick } = require("../../../utils");
+const { Tick } = require("../../../utils")
+    , { iStatement } = require("../../interfaces");
 
 /**
  * @lends OutStatement
  * @protected
  */
-class OutStatement {
+class OutStatement extends iStatement {
     /**
      * Оператор вывода который Сериализуется как > (...expression)
      * Выводит данные из шаблона
@@ -25,8 +26,34 @@ class OutStatement {
      * @protected
      */
     constructor(expression) {
+        super();
+
         this.expression = expression;
         this.position = expression.position;
+    }
+
+    /**
+     * @see iStatement.__sync
+     * 
+     * @param {Function} reject функция выбрасывания исключений
+     * 
+     * @method
+     * @returns {OutStatement}
+     */
+    __sync(reject) {
+        this.expression.__sync(reject);
+
+        return this;
+    }
+
+    /**
+     * @see iStatement.__executable
+     * 
+     * @returns {Array<SequenceGroup>} список исполняемых блоков
+     * @method
+     */
+    __executable(){
+        return new Array();
     }
 
     /**

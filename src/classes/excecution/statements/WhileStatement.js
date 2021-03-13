@@ -6,13 +6,16 @@
 
 "use strict";
 
-const { Tick } = require("../../../utils");
+const { Tick } = require("../../../utils")
+    , { iStatement } = require("../../interfaces")
+    , BreakStatement = require("./BreakStatement")
+    , ContinueStatement = require("./ContinueStatement");
 
 /**
  * @lends WhileStatement
  * @protected
  */
-class WhileStatement {
+class WhileStatement extends iStatement {
     /**
      * Дескриптор инструкции while
      *
@@ -24,8 +27,39 @@ class WhileStatement {
      * @protected
      */
     constructor(condition, body) {
+        super();
+
         this.condition = condition;
         this.body = body;
+
+        this.body.interrupted();
+        this.body.continued();
+    }
+
+    /**
+     * @see iStatement.__sync
+     * 
+     * @param {Function} reject функция выбрасывания исключений
+     * 
+     * @method
+     * 
+     * @returns {WhileStatement}
+     */
+    __sync(reject) {
+        this.condition.__sync(reject);
+        this.body.__sync(reject);
+
+        return this;
+    }
+
+    /**
+     * @see iStatement.__executable
+     * 
+     * @returns {Array<SequenceGroup>} список исполняемых блоков
+     * @method
+     */
+    __executable(){
+        return [ this.body ];
     }
 
     /**
@@ -59,15 +93,31 @@ class WhileStatement {
 
         (function tick(result){
             _.condition.result(context, out, reject, d_result => {
-                if(context.toBooleanResult(d_result)) {
+                if(
+                    context.toBooleanResult(d_result) &&
+                    !(
+                        result instanceof BreakStatement
+                    )
+                ) {
                     _.body.result(context, out, reject, tick);
                 } else {
-                    Tick(resolve, result);
+                    Tick(
+                        resolve,
+                        // 
+                        // Защита, чтобы инструкция выхода из цикла не предавалась дальше по цепочке
+                        // 
+                        (
+                            result instanceof BreakStatement ||
+                            result instanceof ContinueStatement
+                        ) ?
+                            null :
+                            result
+                    );
 
                     return;
                 }
             });
-        })();
+        })(null);
     }
 }
 

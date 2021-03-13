@@ -10,7 +10,8 @@ const { Operand, Operator } = require('../../common/ParserData')
     , { CHARTYPE, OPERATOR, SERVICE } = require('../../static')
     , { UnableToRecognizeTypeException, TheSequenceException } = require('../../exceptions')
     , { Cast, Tick } = require('../../../utils')
-    ,   ObjectContructorCall = require('./ObjectContructorCall');
+    ,   ObjectContructorCall = require('./ObjectContructorCall')
+    ,   Token = require('../../../lexer/Token');
 
 /**
  * @lends MessagePattern;
@@ -32,6 +33,25 @@ class ExpressionGroup extends Operand {
         this.data = initial != null ? [...initial] : new Array();
         this.position = position;
         this.validated = false;
+    }
+
+    /**
+     * Синхронизирует значение группы с родительской группой
+     * 
+     * @param {Function} reject функция выбрасывания исключений
+     * 
+     * @override
+     * @method
+     * @returns {ExpressionGroup}
+     */
+    __sync(reject){
+        for(const elem of this.data) {
+            if(elem instanceof Operand) {
+                elem.__sync(reject);
+            }
+        }
+
+        return this;
     }
 
     /**
@@ -114,21 +134,53 @@ class ExpressionGroup extends Operand {
                 }
                 break;
             default:
-                if (entry instanceof Operator || entry instanceof Operand) current = entry;
-                else reject(entry.position, new UnableToRecognizeTypeException(entry.type));
+                if (
+                    entry instanceof Operator || 
+                    entry instanceof Operand
+                ) 
+                    current = entry;
+                else 
+                    reject(
+                        entry.position, 
+                        new UnableToRecognizeTypeException(entry.type)
+                    );
                 break;
         }
 
         if(this.data.length !== 0) {
             if (
-                (current instanceof Operator && this.data[this.data.length - 1] instanceof Operator) ||
-                (current instanceof Operand && this.data[this.data.length - 1] instanceof Operand)
+                current instanceof Operator && 
+                this.data[this.data.length - 1] instanceof Operator
             )
-                reject(entry.position, new TheSequenceException(current, this.data[this.data.length - 1]));
-        } else {
-            if(current instanceof Operator)
-                reject(entry.position, new TheSequenceException(current, '[ExpressionStart]'));
-        }
+                reject(
+                    entry.position, 
+                    new TheSequenceException(
+                        current, 
+                        this.data[this.data.length - 1]
+                    )
+                );
+            //
+            // 4 4 => 4 + 4
+            // 'Hello' ' ' 'World' => 'Hello world'
+            //
+            else if(
+                current instanceof Operand &&
+                this.data[this.data.length - 1] instanceof Operand
+            )
+                this.data.push(
+                    new Operator(
+                        new Token(
+                            CHARTYPE.OPERATOR, 
+                            [0x0, 0x2b], 
+                            -1
+                        )
+                    )
+                );
+        } else if(current instanceof Operator)
+            reject(
+                entry.position, 
+                new TheSequenceException(current, '[ExpressionStart]')
+            );
 
         this.data.push(current);
     }
@@ -170,6 +222,8 @@ class ExpressionGroup extends Operand {
                         case OPERATOR.EQUAL:
                         case OPERATOR.LARGER:
                         case OPERATOR.LESS:
+                        case OPERATOR.ELARGER:
+                        case OPERATOR.ELESS:
                         case OPERATOR.OR:
                         case OPERATOR.AND:
                             if (!mltexp) break;
@@ -307,14 +361,20 @@ class ExpressionGroup extends Operand {
                     case _.data[i].equals(OPERATOR.AND):
                         result = result && cur.toRawData();
 
-                        if (!result)
-                            return result;
+                        if (!result) {
+                            resolve(Cast(result, context));
+
+                            return
+                        }
                     break;
                     case _.data[i].equals(OPERATOR.OR):
                         result = result || cur.toRawData();
 
-                        if (result)
-                            return result;
+                        if (result) {
+                            resolve(Cast(result, context));
+
+                            return
+                        }
                     break;
                 }
 
