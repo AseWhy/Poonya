@@ -23,10 +23,10 @@ declare abstract class CodeEmitter extends EventEmitter {
     abstract result(data?: Object | Heap | Context, error?: Function) : PoonyaOutputStream;
 }
 
-declare class MessagePattern extends CodeEmitter{
+declare class MessagePattern extends CodeEmitter {
     throwError(pos: Number, error: Function, { rad_of }: { rad_of: Number; }): void;
     result(data?: Object | Heap | Context, error?: Function): PoonyaOutputStream;
-    constructor(input: iInputData | String, {block_prefix } : {block_prefix: String}, import_s?: Array<String>, logger?: Console);
+    constructor(input: iInputData | String, { block_prefix } : { block_prefix: String }, import_s?: Array<String>, logger?: Console);
 }
 
 declare class ExecutionPattern extends CodeEmitter{
@@ -35,14 +35,14 @@ declare class ExecutionPattern extends CodeEmitter{
     constructor(input: iInputData | String, import_s?: Array<String>, logger?: Console);
 }
 
-declare class ExpressionPattern extends CodeEmitter{
+declare class ExpressionPattern extends CodeEmitter {
     throwError(pos: Number, error: Function, { rad_of }: { rad_of: Number; }): void;
     result(data?: Object | Heap | Context, error?: Function): PoonyaOutputStream;
     constructor(input: iInputData | String, import_s?: Array<String>, logger?: Console)
 }
 
 declare function createContext(data: object, ...libs: Array<string | Array<string>>) : Promise<Context>;
-declare function createPattern(Pattern: CodeEmitter, ...args: any[]) : Promise<iPoonyaConstructsData>;
+declare function createPattern<T extends CodeEmitter>(Pattern: { new (...args: any[]): T }, ...args: any[]) : Promise<iPoonyaConstructsData>;
 declare const ImportFile: typeof _ImportFile;
 
 //
