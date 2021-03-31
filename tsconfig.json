@@ -1,0 +1,15 @@
+{
+    "include": [
+        "src/**/*",
+        "tsinterfaces/*"
+    ],
+
+    "compilerOptions": {
+        "target": "ES2020",
+        "module": "es6",
+        "allowJs": true,
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "outDir": "dist"
+    }
+  }
