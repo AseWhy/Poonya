@@ -1,51 +1,54 @@
 import { EventEmitter } from 'events';
 import { Writable } from 'stream';
-import { ImportFile as _ImportFile } from '../src/importer';
+import { ImportFile as _ImportFile, ImportDir as _ImportDir } from '../src/importer';
 import { iPoonyaConstructsData } from '../src/classes/interfaces';
 import { Heap, Context } from '../src/classes/storage';
-import presset from '../src/preset';
-
-export interface iInputData {
+import { Exceptions as _Exceptions, FIELDFLAGS as _FIELDFLAGS, PoonyaPrototype as _PoonyaPrototype, PoonyaStaticLibrary as _PoonyaStaticLibrary } from '../src/preset';
+declare interface iInputData {
     raw?: String;
     path?: String;
     charset?: String;
 }
-
-export class PoonyaOutputStream extends EventEmitter {
+declare class PoonyaOutputStream extends EventEmitter {
     toReadable() : ReadableStream | Writable;
     pipe<T>(stream: T) : T;
-    write(data: any) : void  {};
-    end() : void {}
+    write(data: any) : void;
+    end() : void;
     complete() : Promise<Array<any>> | Array<any>;
 }
 
-export abstract class CodeEmitter extends EventEmitter {
+declare abstract class CodeEmitter extends EventEmitter {
     constructor(input: iInputData | String, import_s: Array<String>, logger: Console, onload: Function);
-    abstract throwError(pos: Number, error: Function, { rad_of = 5 } : { rad_of: Number }) : void;
+    abstract throwError(pos: Number, error: Function, { rad_of } : { rad_of: Number }) : void;
     abstract result(data?: Object | Heap | Context, error?: Function) : PoonyaOutputStream;
 }
 
-export class MessagePattern extends CodeEmitter{
-    constructor(input: iInputData | String, {block_prefix = 'poonya'} : {block_prefix: String}, import_s?: Array<String>, logger?: Console);
+declare class MessagePattern extends CodeEmitter {
+    throwError(pos: Number, error: Function, { rad_of }: { rad_of: Number; }): void;
+    result(data?: Object | Heap | Context, error?: Function): PoonyaOutputStream;
+    constructor(input: iInputData | String, { block_prefix } : { block_prefix: String }, import_s?: Array<String>, logger?: Console);
 }
 
-export class ExecutionPattern extends CodeEmitter{
+declare class ExecutionPattern extends CodeEmitter{
+    throwError(pos: Number, error: Function, { rad_of }: { rad_of: Number; }): void;
+    result(data?: Object | Heap | Context, error?: Function): PoonyaOutputStream;
     constructor(input: iInputData | String, import_s?: Array<String>, logger?: Console);
 }
 
-export class ExpressionPattern extends CodeEmitter{
+declare class ExpressionPattern extends CodeEmitter {
+    throwError(pos: Number, error: Function, { rad_of }: { rad_of: Number; }): void;
+    result(data?: Object | Heap | Context, error?: Function): PoonyaOutputStream;
     constructor(input: iInputData | String, import_s?: Array<String>, logger?: Console)
 }
 
-export function createContext(data: object, ...libs: Array<string | Array<string>>) : Promise<Context>;
-export function createPattern(Pattern: CodeEmitter, ...args: any[]) : Promise<iPoonyaConstructsData>;
-export const ImportFile = _ImportFile;
-export const ImportDir = _ImportDir;
+declare function createContext(data: object, ...libs: Array<string | Array<string>>) : Promise<Context>;
+declare function createPattern<T extends CodeEmitter>(Pattern: { new (...args: any[]): T }, ...args: any[]) : Promise<iPoonyaConstructsData>;
+declare const ImportFile: typeof _ImportFile;
 
 //
 // Static library
 //
-module.exports.PoonyaPrototype = presset.PoonyaPrototype;
-module.exports.PoonyaStaticLibrary = presset.PoonyaStaticLibrary;
-module.exports.Exceptions = presset.Exceptions;
-module.exports.FIELDFLAGS = presset.FIELDFLAGS;
+declare const PoonyaPrototype: typeof _PoonyaPrototype;
+declare const PoonyaStaticLibrary: typeof _PoonyaStaticLibrary;
+declare const Exceptions: typeof _Exceptions;
+declare const FIELDFLAGS: typeof _FIELDFLAGS;

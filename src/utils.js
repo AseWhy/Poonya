@@ -31,66 +31,63 @@ const {
  * @param {Any} data Данные которые необходимо преобразовать
  * @param {iContext} context Контекст
  * @param {Array<Any>} parents_three дерево родителей объекта
+ * @param {Function} resolve функция для вывод результата
  *
  * @protected
  */
-function Cast(data, context, parents_three = new Array()) {
+function Cast(data, context, parents_three = new Array(), resolve) {
     ///
     /// При кастинге значения, значение data (js примитив) преобразовывается в значение poonya
     /// Никаких ассинхрнных операций тут нет, поэтому можно возвращать результат, как результат
     /// Кастинга примитива js
     ///
-    let result;
-
     switch (typeof data) {
         case 'bigint':
-            context.createObject(data, -1, SERVICE.CONSTRUCTORS.INTEGER, null, parents_three, d_result => result = d_result);
+            context.createObject(data, -1, SERVICE.CONSTRUCTORS.INTEGER, null, parents_three, resolve);
         break;
         case 'number':
-            context.createObject(data, -1, SERVICE.CONSTRUCTORS.NUMBER, null, parents_three, d_result => result = d_result);
+            context.createObject(data, -1, SERVICE.CONSTRUCTORS.NUMBER, null, parents_three, resolve);
         break;
         case 'string':
-            context.createObject(data, -1, SERVICE.CONSTRUCTORS.STRING, null, parents_three, d_result => result = d_result);
+            context.createObject(data, -1, SERVICE.CONSTRUCTORS.STRING, null, parents_three, resolve);
         break;
         case 'symbol':
-            context.createObject(Symbol.keyFor(data), -1, SERVICE.CONSTRUCTORS.STRING, null, parents_three, d_result => result = d_result);
+            context.createObject(Symbol.keyFor(data), -1, SERVICE.CONSTRUCTORS.STRING, null, parents_three, resolve);
         break;
         case 'boolean':
-            context.createObject(data, -1, SERVICE.CONSTRUCTORS.BOOLEAN, null, parents_three, d_result => result = d_result);
+            context.createObject(data, -1, SERVICE.CONSTRUCTORS.BOOLEAN, null, parents_three, resolve);
         break;
         case 'undefined':
-            context.createObject(data, -1, SERVICE.CONSTRUCTORS.NULL, null, parents_three, d_result => result = d_result);
+            context.createObject(data, -1, SERVICE.CONSTRUCTORS.NULL, null, parents_three, resolve);
         break;
         case 'object':
             switch (true) {
                 case data === null:
-                    context.createObject(data, -1, SERVICE.CONSTRUCTORS.NULL, null, parents_three, d_result => result = d_result);
+                    context.createObject(data, -1, SERVICE.CONSTRUCTORS.NULL, null, parents_three, resolve);
                 break;
                 case data instanceof iPoonyaObject:
                 case data instanceof iPoonyaPrototype:
                 case data instanceof NativeFunction:
                 case data instanceof Operand:
-                    result = data;
+                    resolve(data);
                 break;
                 case data instanceof iCodeEmitter:
-                    context.createObject(data, -1, SERVICE.CONSTRUCTORS.PATTERN, null, parents_three, d_result => result = d_result);
+                    context.createObject(data, -1, SERVICE.CONSTRUCTORS.PATTERN, null, parents_three, resolve);
                 break;
                 default:
                     parents_three.push(data);
 
                     if (Array.isArray(data))
-                        context.createObject(data, -1, SERVICE.CONSTRUCTORS.ARRAY, null, parents_three, d_result => result = d_result);
+                        context.createObject(data, -1, SERVICE.CONSTRUCTORS.ARRAY, null, parents_three, resolve);
                     else
-                        context.createObject(data, -1, SERVICE.CONSTRUCTORS.OBJECT, null, parents_three, d_result => result = d_result);
+                        context.createObject(data, -1, SERVICE.CONSTRUCTORS.OBJECT, null, parents_three, resolve);
                 break;
             }
         break;
         case 'function':
-            result = new NativeFunction(data);
+            resolve(new NativeFunction(data));
         break;
     }
-
-    return result;
 }
 
 /**

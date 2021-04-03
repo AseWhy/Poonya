@@ -94,7 +94,7 @@ class PoonyaPrototype extends iPoonyaPrototype {
      * @public
      */
     addField(field, data, flags, context) {
-        this._fields.set(field, Cast(data, context));
+        Cast(data, context, [], this._fields.set.bind(this._fields, field));
 
         this._fields_data.set(field, flags);
     }

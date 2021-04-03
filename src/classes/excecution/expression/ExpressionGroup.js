@@ -362,7 +362,7 @@ class ExpressionGroup extends Operand {
                         result = result && cur.toRawData();
 
                         if (!result) {
-                            resolve(Cast(result, context));
+                            Cast(result, context, [], resolve)
 
                             return
                         }
@@ -371,7 +371,7 @@ class ExpressionGroup extends Operand {
                         result = result || cur.toRawData();
 
                         if (result) {
-                            resolve(Cast(result, context));
+                            Cast(result, context, [], resolve)
 
                             return
                         }
@@ -379,7 +379,7 @@ class ExpressionGroup extends Operand {
                 }
 
                 if((i += 2) >= leng) {
-                    resolve(Cast(result, context));
+                    Cast(result, context, [], resolve)
                 } else {
                     Tick(tick);
                 }
@@ -393,7 +393,7 @@ class ExpressionGroup extends Operand {
                 if(_.data.length > 1)
                     tick();
                 else
-                    resolve(Cast(result, context));
+                    Cast(result, context, [], resolve)
             });
         });
     }

@@ -3399,6 +3399,7 @@ System.register(
                                         obj.field_attrs = new Map(
                                             this.field_attrs
                                         );
+                                        obj.raw = this.raw;
                                         return obj;
                                     }
                                     /**
@@ -3586,12 +3587,13 @@ System.register(
                                             throw new BadKeyProtectedFieldException();
 
                                         try {
-                                            this.fields.set(
-                                                key,
-                                                Cast(
-                                                    data,
-                                                    context,
-                                                    parents_three
+                                            Cast(
+                                                data,
+                                                context,
+                                                parents_three,
+                                                this.fields.set.bind(
+                                                    this.fields,
+                                                    key
                                                 )
                                             );
                                         } catch (e) {
@@ -3790,14 +3792,22 @@ System.register(
                                         const result = this.data.result();
                                         if (result instanceof Promise)
                                             result.then((d_result) =>
-                                                resolve(Cast(d_result, context))
+                                                Cast(
+                                                    d_result,
+                                                    context,
+                                                    [],
+                                                    resolve
+                                                )
                                             );
                                         else
                                             result
                                                 .complete()
                                                 .then((d_result) =>
-                                                    resolve(
-                                                        Cast(d_result, context)
+                                                    Cast(
+                                                        d_result,
+                                                        context,
+                                                        [],
+                                                        resolve
                                                     )
                                                 );
                                     }
@@ -3937,9 +3947,14 @@ System.register(
                                      */
 
                                     addField(field, data, flags, context) {
-                                        this._fields.set(
-                                            field,
-                                            Cast(data, context)
+                                        Cast(
+                                            data,
+                                            context,
+                                            [],
+                                            this._fields.set.bind(
+                                                this._fields,
+                                                field
+                                            )
                                         );
 
                                         this._fields_data.set(field, flags);
@@ -4737,11 +4752,11 @@ System.register(
                                                                 cur.toRawData();
 
                                                             if (!result) {
-                                                                resolve(
-                                                                    Cast(
-                                                                        result,
-                                                                        context
-                                                                    )
+                                                                Cast(
+                                                                    result,
+                                                                    context,
+                                                                    [],
+                                                                    resolve
                                                                 );
                                                                 return;
                                                             }
@@ -4756,11 +4771,11 @@ System.register(
                                                                 cur.toRawData();
 
                                                             if (result) {
-                                                                resolve(
-                                                                    Cast(
-                                                                        result,
-                                                                        context
-                                                                    )
+                                                                Cast(
+                                                                    result,
+                                                                    context,
+                                                                    [],
+                                                                    resolve
                                                                 );
                                                                 return;
                                                             }
@@ -4769,11 +4784,11 @@ System.register(
                                                     }
 
                                                     if ((i += 2) >= leng) {
-                                                        resolve(
-                                                            Cast(
-                                                                result,
-                                                                context
-                                                            )
+                                                        Cast(
+                                                            result,
+                                                            context,
+                                                            [],
+                                                            resolve
                                                         );
                                                     } else {
                                                         Tick(tick);
@@ -4796,11 +4811,11 @@ System.register(
                                                         if (_.data.length > 1)
                                                             tick();
                                                         else
-                                                            resolve(
-                                                                Cast(
-                                                                    result,
-                                                                    context
-                                                                )
+                                                            Cast(
+                                                                result,
+                                                                context,
+                                                                [],
+                                                                resolve
                                                             );
                                                     }
                                                 );
@@ -5232,10 +5247,12 @@ System.register(
                                             () => {
                                                 if (_.query_stack == null) {
                                                     Tick(
-                                                        resolve,
-                                                        Cast(
+                                                        Cast.bind(
+                                                            null,
                                                             stream_mask._data,
-                                                            context
+                                                            context,
+                                                            [],
+                                                            resolve
                                                         )
                                                     );
                                                 } else {
@@ -8415,15 +8432,20 @@ System.register(
                                  * @author Astecom
                                  */
 
+                                const { Operand } = __webpack_require__(501);
+
                                 const PoonyaPattern = __webpack_require__(360),
                                     {
                                         GetFieldOfNullException,
                                         IsNotAConstructorException,
                                         PoonyaException,
                                     } = __webpack_require__(943),
-                                    { GET, SERVICE, IS } = __webpack_require__(
-                                        351
-                                    ),
+                                    {
+                                        GET,
+                                        SERVICE,
+                                        IS,
+                                        CONFIG,
+                                    } = __webpack_require__(351),
                                     { Cast, toBytes } = __webpack_require__(88),
                                     {
                                         iContext,
@@ -8562,15 +8584,14 @@ System.register(
                                             );
 
                                         try {
-                                            super.set(
-                                                key,
-                                                Cast(
-                                                    data,
-                                                    context,
-                                                    parents_three
-                                                )
+                                            Cast(
+                                                data,
+                                                context,
+                                                parents_three,
+                                                super.set.bind(this, key)
                                             );
                                         } catch (e) {
+                                            if (CONFIG.DEBUG) console.error(e);
                                             console.error(
                                                 'Error when cast value of ' +
                                                     key
@@ -9255,19 +9276,18 @@ System.register(
                                                                 entry[1] instanceof
                                                                     iPoonyaPrototype ||
                                                                 entry[1] instanceof
-                                                                    iPoonyaObject
+                                                                    iPoonyaObject ||
+                                                                entry[1] instanceof
+                                                                    Operand
                                                             )
-                                                                init[
-                                                                    entry[0]
-                                                                ] = entry[1].result(
+                                                                entry[1].result(
                                                                     _,
                                                                     null,
                                                                     reject,
-                                                                    (result) =>
-                                                                        set(
-                                                                            entry[0],
-                                                                            result
-                                                                        )
+                                                                    set.bind(
+                                                                        null,
+                                                                        entry[0]
+                                                                    )
                                                                 );
                                                             else
                                                                 set(
@@ -13959,6 +13979,7 @@ System.register(
                                  * @param {Any} data Данные которые необходимо преобразовать
                                  * @param {iContext} context Контекст
                                  * @param {Array<Any>} parents_three дерево родителей объекта
+                                 * @param {Function} resolve функция для вывод результата
                                  *
                                  * @protected
                                  */
@@ -13966,15 +13987,14 @@ System.register(
                                 function Cast(
                                     data,
                                     context,
-                                    parents_three = new Array()
+                                    parents_three = new Array(),
+                                    resolve
                                 ) {
                                     ///
                                     /// При кастинге значения, значение data (js примитив) преобразовывается в значение poonya
                                     /// Никаких ассинхрнных операций тут нет, поэтому можно возвращать результат, как результат
                                     /// Кастинга примитива js
                                     ///
-                                    let result;
-
                                     switch (typeof data) {
                                         case 'bigint':
                                             context.createObject(
@@ -13983,8 +14003,7 @@ System.register(
                                                 SERVICE.CONSTRUCTORS.INTEGER,
                                                 null,
                                                 parents_three,
-                                                (d_result) =>
-                                                    (result = d_result)
+                                                resolve
                                             );
                                             break;
 
@@ -13995,8 +14014,7 @@ System.register(
                                                 SERVICE.CONSTRUCTORS.NUMBER,
                                                 null,
                                                 parents_three,
-                                                (d_result) =>
-                                                    (result = d_result)
+                                                resolve
                                             );
                                             break;
 
@@ -14007,8 +14025,7 @@ System.register(
                                                 SERVICE.CONSTRUCTORS.STRING,
                                                 null,
                                                 parents_three,
-                                                (d_result) =>
-                                                    (result = d_result)
+                                                resolve
                                             );
                                             break;
 
@@ -14019,8 +14036,7 @@ System.register(
                                                 SERVICE.CONSTRUCTORS.STRING,
                                                 null,
                                                 parents_three,
-                                                (d_result) =>
-                                                    (result = d_result)
+                                                resolve
                                             );
                                             break;
 
@@ -14031,8 +14047,7 @@ System.register(
                                                 SERVICE.CONSTRUCTORS.BOOLEAN,
                                                 null,
                                                 parents_three,
-                                                (d_result) =>
-                                                    (result = d_result)
+                                                resolve
                                             );
                                             break;
 
@@ -14043,8 +14058,7 @@ System.register(
                                                 SERVICE.CONSTRUCTORS.NULL,
                                                 null,
                                                 parents_three,
-                                                (d_result) =>
-                                                    (result = d_result)
+                                                resolve
                                             );
                                             break;
 
@@ -14058,8 +14072,7 @@ System.register(
                                                             .NULL,
                                                         null,
                                                         parents_three,
-                                                        (d_result) =>
-                                                            (result = d_result)
+                                                        resolve
                                                     );
                                                     break;
 
@@ -14070,7 +14083,7 @@ System.register(
                                                 case data instanceof
                                                     NativeFunction:
                                                 case data instanceof Operand:
-                                                    result = data;
+                                                    resolve(data);
                                                     break;
 
                                                 case data instanceof
@@ -14082,8 +14095,7 @@ System.register(
                                                             .PATTERN,
                                                         null,
                                                         parents_three,
-                                                        (d_result) =>
-                                                            (result = d_result)
+                                                        resolve
                                                     );
                                                     break;
 
@@ -14097,8 +14109,7 @@ System.register(
                                                                 .ARRAY,
                                                             null,
                                                             parents_three,
-                                                            (d_result) =>
-                                                                (result = d_result)
+                                                            resolve
                                                         );
                                                     else
                                                         context.createObject(
@@ -14108,8 +14119,7 @@ System.register(
                                                                 .OBJECT,
                                                             null,
                                                             parents_three,
-                                                            (d_result) =>
-                                                                (result = d_result)
+                                                            resolve
                                                         );
                                                     break;
                                             }
@@ -14117,11 +14127,9 @@ System.register(
                                             break;
 
                                         case 'function':
-                                            result = new NativeFunction(data);
+                                            resolve(new NativeFunction(data));
                                             break;
                                     }
-
-                                    return result;
                                 }
                                 /**
                                  * Иногда некоторые выражения записываются неоднозначно, допустим <br> <br>

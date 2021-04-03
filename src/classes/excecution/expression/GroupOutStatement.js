@@ -94,7 +94,7 @@ class GroupOutStatement extends Operand {
 
         _.body.result(context, stream_mask, reject, () => {
             if(_.query_stack == null) {
-                Tick(resolve, Cast(stream_mask._data, context))
+                Tick(Cast.bind(null, stream_mask._data, context, [], resolve));
             } else {
                 context.getByPath(_.query_stack, _.position, null, reject, true, result => {
                     if (result.instance instanceof NativeFunction) {

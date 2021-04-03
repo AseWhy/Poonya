@@ -6,9 +6,10 @@
 
 "use strict";
 
+const { Operand } = require("./common/ParserData");
 const PoonyaPattern = require('./data/PoonyaPattern')
     , { GetFieldOfNullException, IsNotAConstructorException, PoonyaException } = require('./exceptions')
-    , { GET, SERVICE, IS } = require('./static')
+    , { GET, SERVICE, IS, CONFIG } = require('./static')
     , { Cast, toBytes } = require('../utils.js')
     , { iContext, iPoonyaPrototype, iPathData, iCodeEmitter, iPoonyaObject, iPoonyaOutputStream } = require('./interfaces')
     , { PoonyaStaticLibrary } = require('../importer.js')
@@ -102,8 +103,16 @@ class Heap extends Map {
             throw new TypeError('Bad key ' + key);
 
         try {
-            super.set(key, Cast(data, context, parents_three));
+            Cast(
+                data, 
+                context, 
+                parents_three, 
+                super.set.bind(this, key)
+            );
         } catch (e) {
+            if(CONFIG.DEBUG)
+                console.error(e);
+
             console.error('Error when cast value of ' + key);
         }
     }
@@ -522,7 +531,7 @@ class Context extends iContext {
                 cur = 0, 
                 from = initial instanceof Map ? Array.from(initial.entries()) : typeof initial === 'object' && initial != null ? Object.entries(initial) : null;
 
-            function done() {
+            function done() {    
                 switch (true) {
                     case prototype[IS]('String'): 
                         resolve(new PoonyaString(prototype, init, _, reject)); 
@@ -533,7 +542,7 @@ class Context extends iContext {
                     case prototype[IS]('Boolean'): 
                         resolve(new PoonyaBoolean(prototype, init, _, reject)); 
                     return;
-                    case prototype[IS]('Number'): 
+                    case prototype[IS]('Number'):
                         resolve(new PoonyaNumber(prototype, init, _, reject)); 
                     return;
                     case prototype[IS]('Null'): 
@@ -556,8 +565,12 @@ class Context extends iContext {
 
                 if(entry != null) {
                     if(!parents_three.includes(entry[1]))
-                        if(entry[1] instanceof iPoonyaPrototype || entry[1] instanceof iPoonyaObject)
-                            init[entry[0]] = entry[1].result(_, null, reject, result => set(entry[0], result));
+                        if(
+                            entry[1] instanceof iPoonyaPrototype ||
+                            entry[1] instanceof iPoonyaObject ||
+                            entry[1] instanceof Operand
+                        )
+                            entry[1].result(_, null, reject, set.bind(null, entry[0]));
                         else
                             set(entry[0], entry[1]);
                     else
