@@ -86,9 +86,9 @@ class PoonyaPattern extends PoonyaObject {
         const result = this.data.result();
 
         if(result instanceof Promise)
-            result.then(d_result => resolve(Cast(d_result, context)));
+            result.then(d_result => Cast(d_result, context, [], resolve));
         else
-            result.complete().then(d_result => resolve(Cast(d_result, context)));
+            result.complete().then(d_result => Cast(d_result, context, [], resolve));
     }
     
     /**

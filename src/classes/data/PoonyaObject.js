@@ -70,6 +70,7 @@ class PoonyaObject extends iPoonyaObject {
 
         obj.fields = new Map(this.fields);
         obj.field_attrs = new Map(this.field_attrs);
+        obj.raw = this.raw;
 
         return obj;
     }
@@ -196,7 +197,12 @@ class PoonyaObject extends iPoonyaObject {
             throw new BadKeyProtectedFieldException();
 
         try {
-            this.fields.set(key, Cast(data, context, parents_three));
+            Cast(
+                data, 
+                context, 
+                parents_three, 
+                this.fields.set.bind(this.fields, key)
+            );
         } catch (e) {
             if(CONFIG.DEBUG)
                 console.error(e);

@@ -2733,9 +2733,11 @@ define('poonya', [], () =>
                             throw new BadKeyProtectedFieldException();
 
                         try {
-                            this.fields.set(
-                                key,
-                                Cast(data, context, parents_three)
+                            Cast(
+                                data, 
+                                context, 
+                                parents_three, 
+                                this.fields.set.bind(null, key)
                             );
                         } catch (e) {
                             if (CONFIG.DEBUG) console.error(e);
