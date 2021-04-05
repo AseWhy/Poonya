@@ -18,8 +18,9 @@ const { SERVICE } = require('./static')
  * @protected
  */
 class PoonyaException {
-    constructor(header, message) {
+    constructor(header, message, throwed = false) {
         this.message = 'PoonyaException / ' + header + (message != null ? ': \n' + message : '');
+        this.throwed = throwed;
     }
 
     toString(){
@@ -549,7 +550,22 @@ class IsNotAConstructorException extends PoonyaException {
     }
 }
 
+/**
+ * Рекурсивное включение файла, когда файл пытается заинклудить сам себя.
+ *
+ * @memberof Poonya.Exceptions
+ * @name IsRecursiveLink
+ * @class
+ * @protected
+ */
+ class IsRecursiveLink extends PoonyaException {
+    constructor(path) {
+        super('The "' + path + '" source file has a recursive inclusion of itself');
+    }
+}
+
 module.exports.IOError = IOError;
+module.exports.IsRecursiveLink = IsRecursiveLink;
 module.exports.LinkerIOError = LinkerIOError;
 module.exports.LinkerException = LinkerException;
 module.exports.PoonyaException = PoonyaException;

@@ -14,11 +14,12 @@ const { CHARTYPE } = require('../classes/static')
  *
  * @param {Buffer|UInt8Array|Array} input Вход с `сырыми` данными
  * @param {Boolean} allow_spaces разрешены ли пробелы, если `false`, то лексер вернет ответ без пробелов
+ * @param {Number} offset - смещение позиции байтов
  *
  * @memberof Poonya.Lexer
  * @protected
  */
-function lexer(input, allow_spaces = true) {
+function lexer(input, allow_spaces = true, offset = 0) {
     if(!Array.isArray(input)) {
         throw TypeError('Only array-like data can be input to the lexer');
     }
@@ -164,7 +165,7 @@ function lexer(input, allow_spaces = true) {
                 append(i);
 
                 if (allow_spaces || last !== CHARTYPE.SPACE)
-                    Export.push(last_token = new Token(last, buff, i, string_entry));
+                    Export.push(last_token = new Token(last, buff, offset + i, string_entry));
 
                 string_entry = null;
 
@@ -209,7 +210,7 @@ function lexer(input, allow_spaces = true) {
                 ) && last != null
             ) {
                 if (allow_spaces || last !== CHARTYPE.SPACE)
-                    Export.push(last_token = new Token(last, buff, i, string_entry));
+                    Export.push(last_token = new Token(last, buff, offset + i, string_entry));
 
                 string_entry = null;
 
@@ -277,7 +278,7 @@ function lexer(input, allow_spaces = true) {
             new Token(
                 cur,
                 buff,
-                input.length - buff.length - 1,
+                offset + input.length - buff.length - 1,
                 string_entry
             )
         );

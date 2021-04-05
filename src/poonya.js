@@ -85,9 +85,9 @@ const
     { IOError, PoonyaException } = require('./classes/exceptions'),
     { Import, ImportDir, ImportFile } = require("./importer.js"),
     { Context, Heap } = require("./classes/storage"),
-    { parser, parseExpression, parserMP } = require("./parser.js"),
+    { parser, parseExpression, parserMP } = require("./parser/parser.js"),
     { SERVICE } = require('./classes/static'),
-    { toFixed, toBytes, fromBytes, setImmediate } = require('./utils'),
+    { toFixed, toBytes, fromBytes, setImmediate, throwError } = require('./utils'),
     { iPoonyaConstructsData, iCodeEmitter } = require("./classes/interfaces"),
     PoonyaOutputStream = require("./classes/common/PoonyaOutputStream"),
     lexer = require("./lexer/lexer.js");
@@ -110,6 +110,8 @@ class CodeEmitter extends iCodeEmitter {
      *                                 Array with native import libraries
      * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
      *                         Logger, you need to take console as the interface, with the functions log, warn, error;
+     * 
+     * @property {ParserData} data данные, которые были подготовлены парсером для разбора
      *
      * @memberof Poonya
      * @constructs CodeEmitter
@@ -253,81 +255,6 @@ class CodeEmitter extends iCodeEmitter {
     }
 
     /**
-     * Выводит сообщение об ошибке, прекращает выполнения текущего шаблона.
-     * Displays an error message, terminates the execution of the current template.
-     *
-     * @param {Number} pos Позиция в которой произшла ошибка
-     *                     The position at which the error occurred
-     * 
-     * @param {String} error Сообщение с ошибкой
-     *                       Error message
-     * 
-     * @param {Number} rad_of Радиус печати, т.е. количество строк которое будет печатать в вывод по мимо строки на которой произошла ошибка
-     *                        The radius of the seal, i.e. the number of lines that will print to the output next to the line on which the error occurred
-     * @method
-     * @public
-     */
-    throwError(pos, error, rad_of = 5) {
-        rad_of = parseInt(rad_of);
-
-        let buffer = [],
-
-            data = this.input.split(/$\n/gm),
-
-            line_dump = fromBytes(
-                    toBytes(this.input).slice(0, pos)
-                )
-                .split(/$\n/gm),
-
-            line = line_dump.length - 1,
-
-            line_start =
-                line - parseInt(rad_of / 2) < 0
-                    ? 0
-                    : line - parseInt(rad_of / 2),
-
-            line_end =
-                line_start + rad_of < data.length
-                    ? line_start + rad_of
-                    : data.length,
-
-            ll = line_end.toString(16).length + 2;
-
-        buffer.push(
-            "  at ",
-            this.path,
-            ':',
-            line + 1,
-            ":", line_dump[line].length,
-        );
-
-        if(pos != -1) {
-            buffer.push(' :>\n');
-
-            for (let i = line_start; i < line_end; i++) {
-                buffer.push("     ", toFixed(i + 1, ll), " |> ", data[i]);
-
-                if (i === line) {
-                    buffer.push(
-                        "\n     ".padEnd(ll + 6, ' '),
-                        " |> ".padEnd(line_dump[line].length + 3, ' '),
-                        "^",
-                    );
-                }
-
-                if (i + 1 !== line_end) buffer.push("\n");
-            }
-        }
-        
-        if(error instanceof PoonyaException) {
-            error.message += '\n' + buffer.join('');
-
-            throw error;
-        } else
-            throw new PoonyaException(error, buffer.join(''));
-    }
-
-    /**
      * Инициалзирует блок инструкций
      * Initializes a block of instructions
      *
@@ -363,19 +290,19 @@ class CodeEmitter extends iCodeEmitter {
      */
     [RESULT](data, error, out, c_clone){
         if (Array.isArray(data)) {
-            this.data.result(new Context(this.libraries, error, ...data), out, error, () => out.end());
+            this.data.sequense.result(new Context(this.libraries, error, ...data), out, error, () => out.end());
         } else if(data instanceof Context){
             if(c_clone) {
                 const clone = data.clone();
 
                 clone.import(this.libraries, error);
 
-                this.data.result(clone, out, error, () => out.end());
+                this.data.sequense.result(clone, out, error, () => out.end());
             } else {
-                this.data.result(data, out, error, () => out.end());
+                this.data.sequense.result(data, out, error, () => out.end());
             }
         } else {
-            this.data.result(new Context(this.libraries, error, data), out, error, () => out.end());
+            this.data.sequense.result(new Context(this.libraries, error, data), out, error, () => out.end());
         }
     }
 
@@ -395,7 +322,7 @@ class CodeEmitter extends iCodeEmitter {
      * @method
      * @public
      */
-    result(data = new Heap(), error = this.throwError.bind(this), c_clone = false) {
+    result(data = new Heap(), error = throwError.bind(this), c_clone = false) {
         const out = new PoonyaOutputStream();
 
         // Если вхождения уже загружены, выполняем последовательность
@@ -440,7 +367,7 @@ class MessagePattern extends CodeEmitter {
     constructor(input, block_prefix = 'poonya', import_s, logger = console) {
         super(input, import_s, logger, async () => {
             try {
-                this.data = await parserMP(lexer(toBytes(this.input)), block_prefix, this.throwError.bind(this), this.path);
+                this.data = await parserMP(this.input, block_prefix, this.path);
             } catch (e) {
                 this.emit('error', e);
             }
@@ -481,7 +408,7 @@ class ExecutionPattern extends CodeEmitter {
     constructor(input, import_s, logger = console) {
         super(input, import_s, logger, async () => {
             try {
-                this.data = await parser(lexer(toBytes(this.input), false), this.throwError.bind(this), this.path);
+                this.data = await parser(this.input, this.path);
             } catch (e) {
                 this.emit('error', e);
             }
@@ -515,7 +442,7 @@ class ExpressionPattern extends CodeEmitter {
     constructor(input, import_s, logger = console) {
         super(input, import_s, logger, () => {
             try {
-                this.data = parseExpression(0, lexer(toBytes(this.input), false), this.throwError.bind(this)).data;
+                this.data = parseExpression(0, lexer(toBytes(this.input), false)).data;
             } catch (e) {
                 this.emit('error', e);
             }
@@ -534,15 +461,15 @@ class ExpressionPattern extends CodeEmitter {
         
                     context.import(this.libraries, error);
         
-                    this.data.result(context, [], error, result => result.result(context, null, null, res));
+                    this.data.sequense.result(context, [], error, result => result.result(context, null, null, res));
                 } else {
-                    this.data.result(data, [], error, result => result.result(data, null, null, res));
+                    this.data.sequense.result(data, [], error, result => result.result(data, null, null, res));
                 }
             } else {
                 if (Array.isArray(data)) {
                     const context = new Context(this.libraries, error, ...data);
 
-                    this.data.result(
+                    this.data.sequense.result(
                         context,
                         [],
                         error,
@@ -551,7 +478,7 @@ class ExpressionPattern extends CodeEmitter {
                 } else {
                     const context = new Context(this.libraries, error, ...data);
 
-                    this.data.result(
+                    this.data.sequense.result(
                         context,
                         [],
                         error,
@@ -571,7 +498,7 @@ class ExpressionPattern extends CodeEmitter {
      * @public
      * @async
      */
-    result(data = new Heap(), error = this.throwError.bind(this), c_clone = false) {
+    result(data = new Heap(), error = throwError.bind(this), c_clone = false) {
         const _ = this;
 
         return new Promise(res => {
@@ -607,7 +534,7 @@ function createContext(data = new Object, ...libs) {
             res(new Context(
                 Import(['default', ...libs]),
         
-                CodeEmitter.prototype.throwError.bind({
+                throwError.bind({
                     input: '',
                     charset: 'utf-8',
                     path: 'untitled.po',
@@ -621,7 +548,7 @@ function createContext(data = new Object, ...libs) {
                 res(new Context(
                     Import(['default', ...libs]),
             
-                    CodeEmitter.prototype.throwError.bind({
+                    throwError.bind({
                         input: '',
                         charset: 'utf-8',
                         path: 'untitled.po',

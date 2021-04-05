@@ -10,10 +10,10 @@ const { Operand } = require("./common/ParserData");
 const PoonyaPattern = require('./data/PoonyaPattern')
     , { GetFieldOfNullException, IsNotAConstructorException, PoonyaException } = require('./exceptions')
     , { GET, SERVICE, IS, CONFIG } = require('./static')
-    , { Cast, toBytes } = require('../utils.js')
+    , { Cast, toBytes, throwError } = require('../utils.js')
     , { iContext, iPoonyaPrototype, iPathData, iCodeEmitter, iPoonyaObject, iPoonyaOutputStream } = require('./interfaces')
     , { PoonyaStaticLibrary } = require('../importer.js')
-    , { parser } = require('../parser')
+    , { parser } = require('../parser/parser')
     ,   lexer = require('../lexer/lexer')
     ,   NativeFunction = require('./data/NativeFunction')
     ,   ExpressionGroup = require('./excecution/expression/ExpressionGroup')
@@ -232,18 +232,12 @@ class Context extends iContext {
      * @async
      */
     eval(input, out) {
+        const ident = 'eval-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16);
+
         return new Promise((res, rej) => {
             parser(
-                // Выполняем лексинг переданого текста
-                lexer(
-                    // Разбираем текст на байты
-                    toBytes(input), false
-                ),
-                rej,
-                //
-                // Присваеваем рандомный идентификатор исполнителю
-                //
-                'eval-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)
+                input,
+                ident
             )
                 .catch(
                     error => rej(error)
@@ -251,7 +245,7 @@ class Context extends iContext {
                 .then(
                     result => {
                         result && 
-                        result.result(
+                        result.sequense.result(
                             this, 
                             out != null ? 
                                 out : 
@@ -263,8 +257,10 @@ class Context extends iContext {
                                     symbol
                                 )
                             ),
-                            res, 
-                            console.error
+
+                            res,
+
+                            throwError.bind({ input, path: ident })
                         );
                     }
                 );
