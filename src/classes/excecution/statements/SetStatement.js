@@ -8,8 +8,7 @@
 
 const { TheFieldAlreadyHasBeenDeclaredException } = require('../../exceptions')
     , { Tick } = require('../../../utils')
-    , { iStatement } = require('../../interfaces')
-    , { Operand } = require('../../common/ParserData');
+    , { iStatement } = require('../../interfaces');
 
 /**
  * @lends SetStatement

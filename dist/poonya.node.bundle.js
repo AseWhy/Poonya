@@ -1,7 +1,7 @@
 module.exports = /******/ (() => {
     // webpackBootstrap
     /******/ var __webpack_modules__ = {
-        /***/ 501: /***/ (
+        /***/ 4501: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -13,7 +13,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { OPERATOR } = __webpack_require__(351);
+            const { OPERATOR } = __webpack_require__(8351);
             /**
              * @lends ParserData
              * @class
@@ -170,7 +170,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 580: /***/ (
+        /***/ 5580: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -182,9 +182,9 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { iPoonyaOutputStream } = __webpack_require__(161);
+            const { iPoonyaOutputStream } = __webpack_require__(2161);
 
-            const { Stream } = __webpack_require__(413);
+            const { Stream } = __webpack_require__(2413);
             /**
              * @lends PoonyaOutputStream
              * @class
@@ -226,6 +226,8 @@ module.exports = /******/ (() => {
 
                     _.on('data', stream.write.bind(stream));
 
+                    _.on('error', stream.emit.bind(stream, 'error'));
+
                     _.on('end', stream.end.bind(stream));
 
                     return stream;
@@ -266,6 +268,12 @@ module.exports = /******/ (() => {
                     this.emit('data', data);
                 }
 
+                error(error) {
+                    this._data.push(error);
+
+                    this.emit('error', error);
+                }
+
                 end() {
                     this._ended = true;
                     this.emit('end');
@@ -283,9 +291,10 @@ module.exports = /******/ (() => {
 
                 complete() {
                     if (!this._ended)
-                        return new Promise((res) =>
-                            this.on('end', () => res(this._data))
-                        );
+                        return new Promise((res, rej) => {
+                            this.on('end', () => res(this._data));
+                            this.on('error', (error) => rej(error));
+                        });
                     else return this._data;
                 }
             }
@@ -295,7 +304,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 329: /***/ (
+        /***/ 2329: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -307,14 +316,14 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(501),
-                { SERVICE } = __webpack_require__(351),
-                { NativeFunctionExecutionError } = __webpack_require__(943),
+            const { Operand } = __webpack_require__(4501),
+                { SERVICE } = __webpack_require__(8351),
+                { NativeFunctionExecutionError } = __webpack_require__(2943),
                 {
                     iPoonyaObject,
                     iPoonyaPrototype,
                     iCodeEmitter,
-                } = __webpack_require__(161);
+                } = __webpack_require__(2161);
             /**
              * @lends NativeFunction
              * @class
@@ -579,7 +588,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 36: /***/ (
+        /***/ 9036: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -591,9 +600,9 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { FIELDFLAGS } = __webpack_require__(351),
-                PoonyaObject = __webpack_require__(753),
-                NativeFunction = __webpack_require__(329);
+            const { FIELDFLAGS } = __webpack_require__(8351),
+                PoonyaObject = __webpack_require__(5753),
+                NativeFunction = __webpack_require__(2329);
             /**
              * @lends PoonyaArray
              * @class
@@ -710,7 +719,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 839: /***/ (
+        /***/ 1839: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -722,7 +731,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(753);
+            const PoonyaObject = __webpack_require__(5753);
             /**
              * @lends PoonyaBoolean
              * @class
@@ -820,7 +829,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 550: /***/ (
+        /***/ 7550: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -832,7 +841,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(753);
+            const PoonyaObject = __webpack_require__(5753);
             /**
              * @lends PoonyaInteger
              * @class
@@ -923,7 +932,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 679: /***/ (
+        /***/ 3679: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -935,7 +944,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(753);
+            const PoonyaObject = __webpack_require__(5753);
             /**
              * @lends PoonyaNull
              * @class
@@ -1023,7 +1032,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 220: /***/ (
+        /***/ 6220: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -1035,7 +1044,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(753);
+            const PoonyaObject = __webpack_require__(5753);
             /**
              * @lends PoonyaNumber
              * @class
@@ -1126,7 +1135,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 753: /***/ (
+        /***/ 5753: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -1141,13 +1150,13 @@ module.exports = /******/ (() => {
             const {
                     BadKeyInvalidTypeException,
                     BadKeyProtectedFieldException,
-                } = __webpack_require__(943),
+                } = __webpack_require__(2943),
                 { SUPER_CALL, GET, FIELDFLAGS, CONFIG } = __webpack_require__(
-                    351
+                    8351
                 ),
-                { Cast } = __webpack_require__(88),
-                { iPoonyaObject, iPoonyaPrototype } = __webpack_require__(161),
-                NativeFunction = __webpack_require__(329);
+                { Cast } = __webpack_require__(1088),
+                { iPoonyaObject, iPoonyaPrototype } = __webpack_require__(2161),
+                NativeFunction = __webpack_require__(2329);
             /**
              * @lends PoonyaObject
              * @class
@@ -1417,7 +1426,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 360: /***/ (
+        /***/ 7360: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -1429,11 +1438,11 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Cast } = __webpack_require__(88);
+            const { Cast } = __webpack_require__(1088);
 
-            const { iCodeEmitter } = __webpack_require__(161);
+            const { iCodeEmitter } = __webpack_require__(2161);
 
-            const PoonyaObject = __webpack_require__(753);
+            const PoonyaObject = __webpack_require__(5753);
             /**
              * @lends PoonyaPattern
              * @class
@@ -1533,7 +1542,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 326: /***/ (
+        /***/ 8326: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -1546,10 +1555,10 @@ module.exports = /******/ (() => {
              */
 
             const { IS, GET, FIELDFLAGS, SUPER_CALL } = __webpack_require__(
-                    351
+                    8351
                 ),
-                { iPoonyaPrototype } = __webpack_require__(161),
-                { Cast } = __webpack_require__(88);
+                { iPoonyaPrototype } = __webpack_require__(2161),
+                { Cast } = __webpack_require__(1088);
             /**
              * @lends PoonyaPrototype
              * @class
@@ -1755,7 +1764,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 809: /***/ (
+        /***/ 6809: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -1767,7 +1776,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const PoonyaObject = __webpack_require__(753);
+            const PoonyaObject = __webpack_require__(5753);
             /**
              * @lends PoonyaString
              * @class
@@ -1877,7 +1886,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 515: /***/ (
+        /***/ 5515: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -1889,15 +1898,15 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand, Operator } = __webpack_require__(501),
-                { CHARTYPE, OPERATOR, SERVICE } = __webpack_require__(351),
+            const { Operand, Operator } = __webpack_require__(4501),
+                { CHARTYPE, OPERATOR, SERVICE } = __webpack_require__(8351),
                 {
                     UnableToRecognizeTypeException,
                     TheSequenceException,
-                } = __webpack_require__(943),
-                { Cast, Tick } = __webpack_require__(88),
-                ObjectContructorCall = __webpack_require__(657),
-                Token = __webpack_require__(359);
+                } = __webpack_require__(2943),
+                { Cast, Tick } = __webpack_require__(1088),
+                ObjectContructorCall = __webpack_require__(8657),
+                Token = __webpack_require__(5359);
             /**
              * @lends MessagePattern;
              */
@@ -2312,7 +2321,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 79: /***/ (
+        /***/ 9079: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2324,13 +2333,13 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(501),
+            const { Operand } = __webpack_require__(4501),
                 {
                     UnableToCreateAnObjectException,
                     FieldNotAFunctionException,
-                } = __webpack_require__(943),
-                { iPoonyaPrototype } = __webpack_require__(161),
-                NativeFunction = __webpack_require__(329);
+                } = __webpack_require__(2943),
+                { iPoonyaPrototype } = __webpack_require__(2161),
+                NativeFunction = __webpack_require__(2329);
             /**
              * @lends FunctionCall
              * @protected
@@ -2461,9 +2470,9 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(501),
-                { SERVICE, FIELDFLAGS } = __webpack_require__(351),
-                NativeFunction = __webpack_require__(329);
+            const { Operand } = __webpack_require__(4501),
+                { SERVICE, FIELDFLAGS } = __webpack_require__(8351),
+                NativeFunction = __webpack_require__(2329);
             /**
              * @lends GetOperator
              * @protected
@@ -2582,7 +2591,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 281: /***/ (
+        /***/ 2281: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2594,12 +2603,12 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(501),
-                { Tick, Cast } = __webpack_require__(88),
-                { iPoonyaPrototype } = __webpack_require__(161),
-                { FieldNotAFunctionException } = __webpack_require__(943),
-                PoonyaOutputStream = __webpack_require__(580),
-                NativeFunction = __webpack_require__(329);
+            const { Operand } = __webpack_require__(4501),
+                { Tick, Cast } = __webpack_require__(1088),
+                { iPoonyaPrototype } = __webpack_require__(2161),
+                { FieldNotAFunctionException } = __webpack_require__(2943),
+                PoonyaOutputStream = __webpack_require__(5580),
+                NativeFunction = __webpack_require__(2329);
             /**
              * @lends GroupOutStatement
              * @protected
@@ -2745,7 +2754,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 657: /***/ (
+        /***/ 8657: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2759,8 +2768,8 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(501),
-                { SERVICE } = __webpack_require__(351);
+            const { Operand } = __webpack_require__(4501),
+                { SERVICE } = __webpack_require__(8351);
             /**
              * @lends ObjectContructorCall
              * @protected
@@ -2900,7 +2909,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 923: /***/ (
+        /***/ 1923: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -2912,7 +2921,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(501);
+            const { Operand } = __webpack_require__(4501);
             /**
              * @lends TernarOperator
              * @protected
@@ -2948,11 +2957,11 @@ module.exports = /******/ (() => {
                  */
 
                 __sync(reject) {
-                    condition.__sync(reject);
+                    this.condition.__sync(reject);
 
-                    v_o.__sync(reject);
+                    this.v_o.__sync(reject);
 
-                    v_t.__sync(reject);
+                    this.v_t.__sync(reject);
 
                     return this;
                 }
@@ -3004,7 +3013,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 707: /***/ (
+        /***/ 9707: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3014,8 +3023,8 @@ module.exports = /******/ (() => {
              * @description Содержит в себе оператор break, который используется для прерывания итераций массивов, и выхода из группового вывода
              * @author Astecom
              */
-            const { Tick } = __webpack_require__(88),
-                { iStatement } = __webpack_require__(161);
+            const { Tick } = __webpack_require__(1088),
+                { iStatement } = __webpack_require__(2161);
             /**
              * @lends BreakStatement
              * @protected
@@ -3090,7 +3099,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 914: /***/ (
+        /***/ 1914: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3100,8 +3109,8 @@ module.exports = /******/ (() => {
              * @description Содержит в себе оператор continue, который используется для перехода к следующей итерации
              * @author Astecom
              */
-            const { iStatement } = __webpack_require__(161),
-                { Tick } = __webpack_require__(88);
+            const { iStatement } = __webpack_require__(2161),
+                { Tick } = __webpack_require__(1088);
             /**
              * @lends ContinueStatement
              * @protected
@@ -3176,7 +3185,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 602: /***/ (
+        /***/ 3602: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3188,8 +3197,8 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(88),
-                { iStatement } = __webpack_require__(161);
+            const { Tick } = __webpack_require__(1088),
+                { iStatement } = __webpack_require__(2161);
             /**
              * @lends IfStatement
              * @protected
@@ -3293,7 +3302,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 254: /***/ (
+        /***/ 6254: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3305,8 +3314,8 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(88),
-                { iStatement } = __webpack_require__(161);
+            const { Tick } = __webpack_require__(1088),
+                { iStatement } = __webpack_require__(2161);
             /**
              * @lends OutStatement
              * @protected
@@ -3400,7 +3409,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 505: /***/ (
+        /***/ 8505: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3413,13 +3422,13 @@ module.exports = /******/ (() => {
              * @license MIT
              */
 
-            const { Tick } = __webpack_require__(88),
+            const { Tick } = __webpack_require__(1088),
                 {
                     TheFieldMustBeAnArrayInstanceExceprion,
-                } = __webpack_require__(943),
-                { iStatement } = __webpack_require__(161),
-                { Operand } = __webpack_require__(501),
-                PoonyaArray = __webpack_require__(36);
+                } = __webpack_require__(2943),
+                { iStatement } = __webpack_require__(2161),
+                { Operand } = __webpack_require__(4501),
+                PoonyaArray = __webpack_require__(9036);
             /**
              * @lends PushStatement
              * @protected
@@ -3544,7 +3553,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 91: /***/ (
+        /***/ 4091: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3556,12 +3565,12 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { TheFieldMustBeNumberException } = __webpack_require__(943),
-                { Tick } = __webpack_require__(88),
-                { iStatement } = __webpack_require__(161),
-                PoonyaNumber = __webpack_require__(220),
-                BreakStatement = __webpack_require__(707),
-                ContinueStatement = __webpack_require__(914);
+            const { TheFieldMustBeNumberException } = __webpack_require__(2943),
+                { Tick } = __webpack_require__(1088),
+                { iStatement } = __webpack_require__(2161),
+                PoonyaNumber = __webpack_require__(6220),
+                BreakStatement = __webpack_require__(9707),
+                ContinueStatement = __webpack_require__(1914);
             /**
              * @lends RepeatStatement;
              * @protected
@@ -3720,7 +3729,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 498: /***/ (
+        /***/ 5498: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3732,21 +3741,21 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const ExpressionGroup = __webpack_require__(515),
+            const ExpressionGroup = __webpack_require__(5515),
                 {
                     iPoonyaObject,
                     iPoonyaPrototype,
                     iContext,
                     iStatement,
-                } = __webpack_require__(161),
+                } = __webpack_require__(2161),
                 {
                     GetFieldOfNullException,
                     TheFieldNotHasDeclaredExceprion,
-                } = __webpack_require__(943),
-                { GET } = __webpack_require__(351),
-                { Tick } = __webpack_require__(88),
-                { Operand } = __webpack_require__(501),
-                PoonyaObject = __webpack_require__(753);
+                } = __webpack_require__(2943),
+                { GET } = __webpack_require__(8351),
+                { Tick } = __webpack_require__(1088),
+                { Operand } = __webpack_require__(4501),
+                PoonyaObject = __webpack_require__(5753);
             /**
              * @lends ResetStatement
              * @protected
@@ -3918,7 +3927,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 938: /***/ (
+        /***/ 2938: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -3930,11 +3939,11 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(88),
-                { iStatement } = __webpack_require__(161),
-                { UnexpectedTokenException } = __webpack_require__(943),
-                BreakStatement = __webpack_require__(707),
-                ContinueStatement = __webpack_require__(914);
+            const { Tick } = __webpack_require__(1088),
+                { iStatement } = __webpack_require__(2161),
+                { UnexpectedTokenException } = __webpack_require__(2943),
+                BreakStatement = __webpack_require__(9707),
+                ContinueStatement = __webpack_require__(1914);
             /**
              * @lends SequenceGroup;
              * @protected
@@ -4118,7 +4127,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 404: /***/ (
+        /***/ 2404: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -4130,11 +4139,11 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(88),
-                { iStatement } = __webpack_require__(161),
-                { UnexpectedTokenException } = __webpack_require__(943),
-                BreakStatement = __webpack_require__(707),
-                ContinueStatement = __webpack_require__(914);
+            const { Tick } = __webpack_require__(1088),
+                { iStatement } = __webpack_require__(2161),
+                { UnexpectedTokenException } = __webpack_require__(2943),
+                BreakStatement = __webpack_require__(9707),
+                ContinueStatement = __webpack_require__(1914);
             /**
              * @lends SequenceMainGroup;
              * @protected
@@ -4278,7 +4287,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 859: /***/ (
+        /***/ 2859: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -4292,10 +4301,9 @@ module.exports = /******/ (() => {
 
             const {
                     TheFieldAlreadyHasBeenDeclaredException,
-                } = __webpack_require__(943),
-                { Tick } = __webpack_require__(88),
-                { iStatement } = __webpack_require__(161),
-                { Operand } = __webpack_require__(501);
+                } = __webpack_require__(2943),
+                { Tick } = __webpack_require__(1088),
+                { iStatement } = __webpack_require__(2161);
             /**
              * @lends SetStatement
              * @protected
@@ -4395,7 +4403,135 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 267: /***/ (
+        /***/ 7887: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
+            /**
+             * @file src/classes/excecution/statements/UseStatement.js
+             * @description Содержит в себе оператор use, который используется для иморта статической библиотеки в текущий контекст
+             * @author Astecom
+             */
+            const { Tick } = __webpack_require__(1088),
+                { iStatement } = __webpack_require__(2161),
+                { Import } = __webpack_require__(3742),
+                { CannotImportStaticLibrary } = __webpack_require__(2943),
+                ExpressionGroup = __webpack_require__(5515);
+            /**
+             * @lends UseStatement
+             * @protected
+             */
+
+            class UseStatement extends iStatement {
+                /**
+                 * Дескриптор оператора use
+                 *
+                 * @param {Number} position позиция оператора
+                 * @param {ExpressionGroup} libraries имя бибилиотеки для иморта
+                 *
+                 * @constructs UseStatement
+                 * @memberof Poonya.Statements
+                 * @protected
+                 */
+                constructor(position, libraries) {
+                    super();
+                    this.libraries = libraries;
+                    this.position = position;
+                }
+                /**
+                 * @see iStatement.__sync
+                 *
+                 * @method
+                 * @returns {UseStatement}
+                 */
+
+                __sync() {
+                    return this;
+                }
+                /**
+                 * @see iStatement.__executable
+                 *
+                 * @returns {Array<SequenceGroup>} список исполняемых блоков
+                 * @method
+                 */
+
+                __executable() {
+                    return new Array();
+                }
+                /**
+                 * Преобразовывет оператор use в строку
+                 *
+                 * @param {String} indent отступ слева
+                 *
+                 * @returns {String} строкове представление оператора
+                 */
+
+                toString(indent) {
+                    return 'use ' + this.libraries.toString(indent) + ';';
+                }
+                /**
+                 * Выполняет импорт статической библиотеки
+                 *
+                 * @returns {UseStatement}
+                 *
+                 * @param {iContext} context Контекст выполнения
+                 * @param {PoonyaOutputStream} out вывод шаблонизатора
+                 * @param {Function} reject Вызывается при ошибке
+                 * @param {Function} resolve функция возврата результата
+                 *
+                 * @public
+                 * @method
+                 */
+
+                result(context, out, reject, resolve) {
+                    this.libraries.result(context, out, reject, (result) => {
+                        result.result(context, out, reject, (d_result) => {
+                            const libraries = new Array();
+
+                            if (Array.isArray(d_result)) {
+                                libraries.push(
+                                    ...d_result
+                                        .map((e) =>
+                                            e != null ? e.toString() : 'null'
+                                        )
+                                        .filter((e) => e != null)
+                                );
+                            } else {
+                                if (d_result != null) {
+                                    libraries.push(d_result.toString());
+                                }
+                            }
+
+                            const imports = Import(libraries).filter(
+                                (e) => e != null
+                            );
+
+                            if (imports.length != libraries.length) {
+                                const imported = imports.map((e) => e.name);
+                                reject(
+                                    this.position,
+                                    new CannotImportStaticLibrary(
+                                        libraries.filter(
+                                            (e) => !imported.includes(e)
+                                        )
+                                    )
+                                );
+                            }
+
+                            context.import(imports, reject, false);
+                            Tick(resolve);
+                        });
+                    });
+                }
+            }
+
+            module.exports = UseStatement;
+
+            /***/
+        },
+
+        /***/ 1267: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -4407,10 +4543,10 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Tick } = __webpack_require__(88),
-                { iStatement } = __webpack_require__(161),
-                BreakStatement = __webpack_require__(707),
-                ContinueStatement = __webpack_require__(914);
+            const { Tick } = __webpack_require__(1088),
+                { iStatement } = __webpack_require__(2161),
+                BreakStatement = __webpack_require__(9707),
+                ContinueStatement = __webpack_require__(1914);
             /**
              * @lends WhileStatement
              * @protected
@@ -4525,7 +4661,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 943: /***/ (
+        /***/ 2943: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -4537,8 +4673,8 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { SERVICE } = __webpack_require__(351),
-                { dirname } = __webpack_require__(622);
+            const { SERVICE } = __webpack_require__(8351),
+                { dirname } = __webpack_require__(5622);
             /**
              * Класс ошибки шаблонизатора
              *
@@ -4549,11 +4685,12 @@ module.exports = /******/ (() => {
              */
 
             class PoonyaException {
-                constructor(header, message) {
+                constructor(header, message, throwed = false) {
                     this.message =
                         'PoonyaException / ' +
                         header +
                         (message != null ? ': \n' + message : '');
+                    this.throwed = throwed;
                 }
 
                 toString() {
@@ -4572,6 +4709,20 @@ module.exports = /******/ (() => {
             class ParserException extends PoonyaException {
                 constructor(header, message) {
                     super('Parser exception / ' + header, message);
+                }
+            }
+            /**
+             * Основное исключение лексера
+             *
+             * @memberof Poonya.Exceptions
+             * @name LexerException
+             * @class
+             * @protected
+             */
+
+            class LexerException extends PoonyaException {
+                constructor(header, message) {
+                    super('Lexer exception / ' + header, message);
                 }
             }
             /**
@@ -4977,6 +5128,20 @@ module.exports = /******/ (() => {
                 }
             }
             /**
+             * Критическая ошибка лексера, неожиданный конец ввода
+             *
+             * @memberof Poonya.Exceptions
+             * @name CriticalLexerErrorUnexpectedEndOfInputException
+             * @class
+             * @protected
+             */
+
+            class CriticalLexerErrorUnexpectedEndOfInputException extends LexerException {
+                constructor() {
+                    super(`Critical lexer error: unexpected end of input`);
+                }
+            }
+            /**
              * Критическая ошибка парсера, неожиданный конец ввода
              *
              * @memberof Poonya.Exceptions
@@ -5122,9 +5287,49 @@ module.exports = /******/ (() => {
                     );
                 }
             }
+            /**
+             * Рекурсивное включение файла, когда файл пытается заинклудить сам себя.
+             *
+             * @memberof Poonya.Exceptions
+             * @name IsRecursiveLink
+             * @class
+             * @protected
+             */
+
+            class IsRecursiveLink extends PoonyaException {
+                constructor(path) {
+                    super(
+                        'The "' +
+                            path +
+                            '" source file has a recursive inclusion of itself'
+                    );
+                }
+            }
+            /**
+             * Невозможно импортировать статическую библиотеку, возможно неправильно указано имя.
+             *
+             * @memberof Poonya.Exceptions
+             * @name CannotImportStaticLibrary
+             * @class
+             * @protected
+             */
+
+            class CannotImportStaticLibrary extends PoonyaException {
+                constructor(...libs) {
+                    super(
+                        `library ${libs
+                            .map((e) => `"${e.name}"`)
+                            .join(
+                                ', '
+                            )} cannot be imported, possibly the wrong library identifier for import was specified`
+                    );
+                }
+            }
 
             module.exports.IOError = IOError;
             module.exports.LinkerIOError = LinkerIOError;
+            module.exports.LexerException = LexerException;
+            module.exports.IsRecursiveLink = IsRecursiveLink;
             module.exports.LinkerException = LinkerException;
             module.exports.PoonyaException = PoonyaException;
             module.exports.ParserException = ParserException;
@@ -5134,28 +5339,30 @@ module.exports = /******/ (() => {
             module.exports.BadEmptyObjectException = BadEmptyObjectException;
             module.exports.UnexpectedTokenException = UnexpectedTokenException;
             module.exports.UnexpectedTokenStatement = UnexpectedTokenStatement;
+            module.exports.CannotImportStaticLibrary = CannotImportStaticLibrary;
             module.exports.FieldNotAFunctionException = FieldNotAFunctionException;
             module.exports.BadKeyInvalidTypeException = BadKeyInvalidTypeException;
             module.exports.IsNotAConstructorException = IsNotAConstructorException;
-            module.exports.ParserEmtyArgumentException = ParserEmtyArgumentException;
             module.exports.LinkerPathNotGiveException = LinkerPathNotGiveException;
+            module.exports.ParserEmtyArgumentException = ParserEmtyArgumentException;
             module.exports.CriticalParserErrorException = CriticalParserErrorException;
             module.exports.NativeFunctionExecutionError = NativeFunctionExecutionError;
             module.exports.BadKeyProtectedFieldException = BadKeyProtectedFieldException;
             module.exports.TheFieldMustBeNumberException = TheFieldMustBeNumberException;
+            module.exports.BadArrowNotationJumpingTwoLevels = BadArrowNotationJTException;
             module.exports.NativeFunctionReturnValueError = NativeFunctionReturnValueError;
             module.exports.UnableToRecognizeTypeException = UnableToRecognizeTypeException;
             module.exports.TheFieldNotHasDeclaredExceprion = TheFieldNotHasDeclaredExceprion;
             module.exports.UnableToCreateAnObjectException = UnableToCreateAnObjectException;
-            module.exports.BadArrowNotationJumpingTwoLevels = BadArrowNotationJTException;
+            module.exports.BadArrowNotationJumpingToUpperLevel = BadArrowNotationJTULException;
             module.exports.UnexpectedWordTypeAndGetException = UnexpectedWordTypeAndGetException;
             module.exports.ParserUnfinishedNotationException = ParserUnfinishedNotationException;
-            module.exports.BadArrowNotationJumpingToUpperLevel = BadArrowNotationJTULException;
             module.exports.TheFieldMustBeAnArrayInstanceExceprion = TheFieldMustBeAnArrayInstanceExceprion;
             module.exports.TheFieldAlreadyHasBeenDeclaredException = TheFieldAlreadyHasBeenDeclaredException;
             module.exports.SegmentationFaultEmptyArgumentException = SegmentationFaultEmptyArgumentException;
             module.exports.InvalidSequenceForLetiableAccessException = InvalidSequenceForLetiableAccessException;
             module.exports.CriticalParserErrorUnexpectedEndOfExpression = CriticalParserErrorUnexpectedEndOfExpression;
+            module.exports.CriticalLexerErrorUnexpectedEndOfInputException = CriticalLexerErrorUnexpectedEndOfInputException;
             module.exports.CriticalParserErrorUnexpectedEndOfInputException = CriticalParserErrorUnexpectedEndOfInputException;
             module.exports.CriticalParserErrorNoRawDataTransmittedException = CriticalParserErrorNoRawDataTransmittedException;
             module.exports.SegmentationFaultMaximumSegmentsForBlockException = SegmentationFaultMaximumSegmentsForBlockException;
@@ -5163,7 +5370,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 161: /***/ (
+        /***/ 2161: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -5175,7 +5382,7 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const EventEmitter = __webpack_require__(614); // Poonya
+            const EventEmitter = __webpack_require__(8614); // Poonya
 
             class iCodeEmitter {} // Storage
 
@@ -5344,7 +5551,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 351: /***/ (
+        /***/ 8351: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -5356,8 +5563,8 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { dirname } = __webpack_require__(622),
-                { EventEmitter } = __webpack_require__(614); // Защищенные поля для PoonyaPrototype
+            const { dirname } = __webpack_require__(5622),
+                { EventEmitter } = __webpack_require__(8614); // Защищенные поля для PoonyaPrototype
 
             const GET = Symbol('GET'),
                 IS = Symbol('IS'),
@@ -5511,7 +5718,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 591: /***/ (
+        /***/ 4591: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -5523,16 +5730,16 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { Operand } = __webpack_require__(501);
+            const { Operand } = __webpack_require__(4501);
 
-            const PoonyaPattern = __webpack_require__(360),
+            const PoonyaPattern = __webpack_require__(7360),
                 {
                     GetFieldOfNullException,
                     IsNotAConstructorException,
                     PoonyaException,
-                } = __webpack_require__(943),
-                { GET, SERVICE, IS, CONFIG } = __webpack_require__(351),
-                { Cast, toBytes } = __webpack_require__(88),
+                } = __webpack_require__(2943),
+                { GET, SERVICE, IS, CONFIG } = __webpack_require__(8351),
+                { Cast, toBytes, throwError } = __webpack_require__(1088),
                 {
                     iContext,
                     iPoonyaPrototype,
@@ -5540,19 +5747,19 @@ module.exports = /******/ (() => {
                     iCodeEmitter,
                     iPoonyaObject,
                     iPoonyaOutputStream,
-                } = __webpack_require__(161),
-                { PoonyaStaticLibrary } = __webpack_require__(742),
-                { parser } = __webpack_require__(743),
-                lexer = __webpack_require__(94),
-                NativeFunction = __webpack_require__(329),
-                ExpressionGroup = __webpack_require__(515),
-                PoonyaObject = __webpack_require__(753),
-                PoonyaArray = __webpack_require__(36),
-                PoonyaInteger = __webpack_require__(550),
-                PoonyaNumber = __webpack_require__(220),
-                PoonyaString = __webpack_require__(809),
-                PoonyaBoolean = __webpack_require__(839),
-                PoonyaNull = __webpack_require__(679);
+                } = __webpack_require__(2161),
+                { PoonyaStaticLibrary } = __webpack_require__(3742),
+                { parser } = __webpack_require__(1190),
+                lexer = __webpack_require__(8094),
+                NativeFunction = __webpack_require__(2329),
+                ExpressionGroup = __webpack_require__(5515),
+                PoonyaObject = __webpack_require__(5753),
+                PoonyaArray = __webpack_require__(9036),
+                PoonyaInteger = __webpack_require__(7550),
+                PoonyaNumber = __webpack_require__(6220),
+                PoonyaString = __webpack_require__(6809),
+                PoonyaBoolean = __webpack_require__(1839),
+                PoonyaNull = __webpack_require__(3679);
             /**
              * @lends Heap
              * @class
@@ -5689,6 +5896,7 @@ module.exports = /******/ (() => {
                 constructor(libraries, reject, ...initial) {
                     super();
                     this.levels = new Array();
+                    this.source = '';
                     this._lib_cache = new Array(); // Если переданы дидлиотеки для импорта, то импортируем их в этот контекст
 
                     if (libraries != null) this.import(libraries, reject); // Перебераем переданные для инициалзации объекты
@@ -5708,16 +5916,30 @@ module.exports = /******/ (() => {
                     );
                 }
                 /**
+                 * Устнаваливает истоник контекста (путь к файлу, из-за выполнения которого этот контекст был создан)
+                 *
+                 * @param {String} new_source
+                 * @returns
+                 */
+
+                setSource(new_source) {
+                    this.source = new_source;
+                    return this;
+                }
+                /**
                  * Импортирует нативные библиотеки `libraries` в текущий контекст.
                  *
                  * @param {Array<PoonyaStaticLibrary>} libraries массив с библиотеками, которые нужно импортировать
                  * @param {Function} reject фукнция вызова ошибки
+                 * @param {Boolean} add_root_level если true, то при имотрте будет добавлен новый слой памяти
                  */
 
-                import(libraries, reject) {
+                import(libraries, reject, add_root_level = true) {
                     if (libraries != null) {
                         // Корневой слой
-                        this.addLevel();
+                        if (add_root_level) {
+                            this.addLevel();
+                        }
 
                         for (
                             let i = 0, leng = libraries.length, target;
@@ -5762,7 +5984,7 @@ module.exports = /******/ (() => {
                  * Выполняет код poonya из строки
                  *
                  * @param {String} input Вход шаблона
-                 * @param {PoonyaOutputStream} out Вывод шаблонизатора
+                 * @param {?PoonyaOutputStream} out Вывод шаблонизатора
                  *
                  * @method
                  * @public
@@ -5771,40 +5993,32 @@ module.exports = /******/ (() => {
 
                 eval(input, out) {
                     return new Promise((res, rej) => {
-                        parser(
-                            // Выполняем лексинг переданого текста
-                            lexer(
-                                // Разбираем текст на байты
-                                toBytes(input),
-                                false
-                            ),
-                            rej, //
-                            // Присваеваем рандомный идентификатор исполнителю
-                            //
-                            'eval-' +
-                                Math.floor(
-                                    Math.random() * Number.MAX_SAFE_INTEGER
-                                ).toString(16)
-                        )
+                        parser(input, this.source)
                             .catch((error) => rej(error))
                             .then((result) => {
-                                result &&
-                                    result.result(
+                                if (result) {
+                                    result.sequense.result(
                                         this,
                                         out != null
                                             ? out
                                             : new iPoonyaOutputStream(),
-                                        (symbol, message) =>
-                                            rej(
-                                                new PoonyaException(
-                                                    message +
-                                                        ', at symbol ' +
-                                                        symbol
-                                                )
-                                            ),
-                                        res,
-                                        console.error
+                                        (position, content) => {
+                                            try {
+                                                throwError.call(
+                                                    {
+                                                        input,
+                                                        path: this.source,
+                                                    },
+                                                    position,
+                                                    content
+                                                );
+                                            } catch (e) {
+                                                rej(e);
+                                            }
+                                        },
+                                        res
                                     );
+                                }
                             });
                     });
                 }
@@ -5817,7 +6031,11 @@ module.exports = /******/ (() => {
                  */
 
                 clone() {
-                    const clone = new Context(null, null, ...this.levels);
+                    const clone = new Context(
+                        null,
+                        null,
+                        ...this.levels
+                    ).setSource(this.source);
                     clone._lib_cache = Array.from(this._lib_cache);
                     return clone;
                 }
@@ -6264,7 +6482,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 742: /***/ (
+        /***/ 3742: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -6276,13 +6494,13 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const Module = __webpack_require__(282),
-                { readdirSync, readFile } = __webpack_require__(747),
-                { join, normalize, resolve } = __webpack_require__(622),
-                { NAMESPACE, SERVICE } = __webpack_require__(351),
-                { IOError } = __webpack_require__(943),
-                NativeFunction = __webpack_require__(329),
-                PoonyaPrototype = __webpack_require__(326); // Пространство модулей в глобальном контексте
+            const Module = __webpack_require__(2282),
+                { readdirSync, readFile } = __webpack_require__(5747),
+                { join, normalize, resolve } = __webpack_require__(5622),
+                { NAMESPACE, SERVICE } = __webpack_require__(8351),
+                { IOError } = __webpack_require__(2943),
+                NativeFunction = __webpack_require__(2329),
+                PoonyaPrototype = __webpack_require__(8326); // Пространство модулей в глобальном контексте
 
             const modules = Symbol.for('Modules');
 
@@ -6320,6 +6538,7 @@ module.exports = /******/ (() => {
                               (++global[NAMESPACE].modules).toString(16) +
                               (l_global ? '-global' : '');
                     this.global = Boolean(l_global);
+                    this.name = id;
                     this._fields = new Map();
                 }
                 /**
@@ -6664,9 +6883,9 @@ module.exports = /******/ (() => {
 
                 require(id) {
                     if (id === 'poonya') {
-                        return __webpack_require__(40);
+                        return __webpack_require__(9040);
                     } else {
-                        return super.require(id);
+                        return __webpack_require__(875)(id);
                     }
                 }
             }
@@ -6717,7 +6936,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 359: /***/ (
+        /***/ 5359: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -6729,8 +6948,8 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { CHARTYPE } = __webpack_require__(351),
-                { fromBytes } = __webpack_require__(88);
+            const { CHARTYPE } = __webpack_require__(8351),
+                { fromBytes } = __webpack_require__(1088);
             /**
              * @lends Token
              * @class
@@ -6760,11 +6979,18 @@ module.exports = /******/ (() => {
                         s_separator != null
                             ? String.fromCharCode(s_separator)
                             : null;
+
+                    if (s_separator != null) {
+                        //
+                        // 4 байта, 2 символа.
+                        //
+                        this.position -= 4;
+                    }
                 }
                 /**
                  * Сравнивает текущее вхождение с преданным `t` типом и `s` содержанием.
                  *
-                 * @param {*} t Тип с которым нужно сравнить текущее вхождение
+                 * @param {CHARTYPE} t Тип с которым нужно сравнить текущее вхождение
                  * @param {?String|String[]} s содержание с котрым необходимо сравнить текущее вхождение
                  * @returns {Boolean}
                  */
@@ -6822,7 +7048,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 94: /***/ (
+        /***/ 8094: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -6834,19 +7060,26 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { CHARTYPE } = __webpack_require__(351),
-                Token = __webpack_require__(359);
+            const {
+                CriticalLexerErrorUnexpectedEndOfInputException,
+            } = __webpack_require__(2943);
+
+            const { CHARTYPE } = __webpack_require__(8351),
+                Token = __webpack_require__(5359);
+
+            const { throwError, fromBytes } = __webpack_require__(1088);
             /**
              * Лексер, который производит лексический разбор подаваемого текста в буффере
              *
              * @param {Buffer|UInt8Array|Array} input Вход с `сырыми` данными
              * @param {Boolean} allow_spaces разрешены ли пробелы, если `false`, то лексер вернет ответ без пробелов
+             * @param {Number} offset - смещение позиции байтов
              *
              * @memberof Poonya.Lexer
              * @protected
              */
 
-            function lexer(input, allow_spaces = true) {
+            function lexer(input, allow_spaces = true, offset = 0) {
                 if (!Array.isArray(input)) {
                     throw TypeError(
                         'Only array-like data can be input to the lexer'
@@ -6995,7 +7228,7 @@ module.exports = /******/ (() => {
                                     (last_token = new Token(
                                         last,
                                         buff,
-                                        i,
+                                        offset + i,
                                         string_entry
                                     ))
                                 );
@@ -7039,7 +7272,7 @@ module.exports = /******/ (() => {
                                     (last_token = new Token(
                                         last,
                                         buff,
-                                        i,
+                                        offset + i,
                                         string_entry
                                     ))
                                 );
@@ -7094,6 +7327,16 @@ module.exports = /******/ (() => {
                     }
                 }
 
+                if (is_comment || is_string) {
+                    throwError.call(
+                        {
+                            input: fromBytes(input),
+                        },
+                        offset + input.length - 1,
+                        new CriticalLexerErrorUnexpectedEndOfInputException()
+                    );
+                }
+
                 if (
                     !is_comment &&
                     (allow_spaces || cur !== CHARTYPE.SPACE) &&
@@ -7103,7 +7346,7 @@ module.exports = /******/ (() => {
                         new Token(
                             cur,
                             buff,
-                            input.length - buff.length - 1,
+                            offset + input.length - buff.length - 1,
                             string_entry
                         )
                     );
@@ -7115,7 +7358,67 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 434: /***/ (
+        /***/ 8700: /***/ (
+            module,
+            __unused_webpack_exports,
+            __webpack_require__
+        ) => {
+            const { toBytes, fromBytes } = __webpack_require__(1088);
+
+            module.exports = class ChunkData {
+                constructor(name, raw, from) {
+                    this.name = name;
+                    this.raw = toBytes(raw);
+                    this.from = from;
+                    this.to = from + this.raw.length * 2;
+                }
+                /**
+                 * Проверяет поизию токена, на принадлежность к текйщему чанку
+                 *
+                 * @param {Number} position позиция токена
+                 * @returns true если приндалежит false если не приндалежит
+                 */
+
+                isOwnChunckPosition(position) {
+                    return position >= this.from && position <= this.to;
+                }
+
+                toString() {
+                    return fromBytes(this.raw);
+                }
+            };
+
+            /***/
+        },
+
+        /***/ 9946: /***/ (module) => {
+            module.exports = class LinkerData {
+                constructor(contents, chuncks) {
+                    this.contents = contents;
+                    this.chuncks = chuncks;
+                }
+                /**
+                 * исходя из позиции токена возвращает тот чанк которому он принадлежит.
+                 *
+                 * @param {Number} position позиция токена для которой нужно получить чанк
+                 * @returns
+                 */
+
+                getOwnChunck(position) {
+                    for (const chunck of this.chuncks) {
+                        if (chunck.isOwnChunckPosition(position)) {
+                            return chunck;
+                        }
+                    }
+
+                    return null;
+                }
+            };
+
+            /***/
+        },
+
+        /***/ 5478: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -7127,59 +7430,104 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { readFile } = __webpack_require__(747),
-                { join, dirname, extname } = __webpack_require__(622),
-                { maybeEquals, toBytes } = __webpack_require__(88),
-                { CHARTYPE } = __webpack_require__(351),
-                { IOError } = __webpack_require__(943),
-                Exceptions = __webpack_require__(943),
-                lexer = __webpack_require__(94);
+            const { readFile } = __webpack_require__(5747),
+                { join, dirname, extname } = __webpack_require__(5622),
+                { maybeEquals } = __webpack_require__(1088),
+                { CHARTYPE } = __webpack_require__(8351),
+                { IOError } = __webpack_require__(2943),
+                Exceptions = __webpack_require__(2943),
+                lexer = __webpack_require__(8094),
+                ChunkData = __webpack_require__(8700),
+                LinkerData = __webpack_require__(9946);
             /**
              * Препроцессораня функция, линкует файлы.
              *
              * @param {Array<Token>} data данные для парсинга
-             * @param {String} parent_path Путь к файлу, который сейчас обрабатываем
+             * @param {String} passed_parent_path Путь к файлу, который сейчас обрабатываем
              * @param {Function} reject Фукцния выбрасывания ошибок
              *
              * @memberof Poonya.Linker
+             * @returns {LinkerData}
              * @protected
              * @async
              */
 
-            async function linker(data, parent_path, reject) {
+            async function linker(data, passed_parent_path, reject) {
+                const r_data = new LinkerData(data, []);
+
                 for (let i = 0; ; i++) {
-                    if (data[i] == null) return data;
+                    if (data[i] == null) {
+                        return r_data;
+                    }
 
                     if (data[i].equals(CHARTYPE.WORD, 'include')) {
                         if (
                             maybeEquals(data, i + 1, CHARTYPE.NEWLINE) &&
                             data[i + 1].equals(CHARTYPE.STRING)
                         ) {
-                            let path, content;
+                            let path,
+                                content,
+                                chunck = r_data.getOwnChunck(data[i].position),
+                                parent_path =
+                                    chunck == null
+                                        ? passed_parent_path
+                                        : chunck.name;
                             path = join(
                                 dirname(parent_path),
                                 data[i + 1].data.toString()
                             );
                             path = extname(path) == '' ? path + '.po' : path;
                             content = new Promise((res) => {
-                                readFile(path, (err, data) => {
-                                    if (err) throw new IOError(path);
-                                    res(data.toString());
+                                readFile(path, (err, r_data) => {
+                                    if (err) {
+                                        reject(
+                                            data[i].position,
+                                            new IOError(path)
+                                        );
+                                        return;
+                                    }
+
+                                    res(r_data.toString());
                                 });
                             });
 
+                            if (path == parent_path) {
+                                reject(
+                                    data[i].position,
+                                    new Exceptions.IsRecursiveLink(parent_path)
+                                );
+                            }
+
                             if (parent_path != null) {
                                 try {
+                                    const chunck = new ChunkData(
+                                        path,
+                                        await content,
+                                        data[i].position
+                                    );
+                                    const lexed = lexer(chunck.raw, false);
+                                    const last_pos =
+                                        lexed[lexed.length - 1].position;
+
+                                    for (const current of data.slice(i)) {
+                                        current.position += last_pos;
+                                    }
+
+                                    for (const current of lexed) {
+                                        current.position += data[i].position;
+                                    }
+
                                     data.splice(
                                         i,
-                                        data[i + 2].equals(
+                                        data[i-- + 2].equals(
                                             CHARTYPE.OPERATOR,
                                             ';'
                                         )
                                             ? 3
                                             : 2,
-                                        ...lexer(toBytes(await content), false)
+                                        ...lexed
                                     );
+                                    r_data.chuncks.push(chunck);
                                 } catch (e) {
                                     reject(
                                         data[i].position,
@@ -7202,7 +7550,18 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 743: /***/ (
+        /***/ 7938: /***/ (module) => {
+            module.exports = class ParserData {
+                constructor(linker_data, sequense) {
+                    this.linker_data = linker_data;
+                    this.sequense = sequense;
+                }
+            };
+
+            /***/
+        },
+
+        /***/ 1190: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -7232,27 +7591,36 @@ module.exports = /******/ (() => {
                     CriticalParserErrorNoRawDataTransmittedException,
                     CriticalParserErrorUnexpectedEndOfExpression,
                     ParserUnfinishedNotationException,
-                } = __webpack_require__(943),
-                { maybeEquals, countKeys } = __webpack_require__(88),
-                { CHARTYPE, SERVICE } = __webpack_require__(351),
-                FunctionCall = __webpack_require__(79),
-                ObjectContructorCall = __webpack_require__(657),
-                TernarOperator = __webpack_require__(923),
-                ExpressionGroup = __webpack_require__(515),
+                } = __webpack_require__(2943),
+                {
+                    maybeEquals,
+                    countKeys,
+                    throwError,
+                    toBytes,
+                } = __webpack_require__(1088),
+                { CHARTYPE, SERVICE } = __webpack_require__(8351),
+                ParserData = __webpack_require__(7938),
+                UseStatement = __webpack_require__(7887),
+                FunctionCall = __webpack_require__(9079),
+                ObjectContructorCall = __webpack_require__(8657),
+                TernarOperator = __webpack_require__(1923),
+                ExpressionGroup = __webpack_require__(5515),
                 GetOperator = __webpack_require__(346),
-                IfStatement = __webpack_require__(602),
-                SequenceGroup = __webpack_require__(938),
-                OutStatement = __webpack_require__(254),
-                WhileStatement = __webpack_require__(267),
-                RepeatStatement = __webpack_require__(91),
-                SetStatement = __webpack_require__(859),
-                ResetStatement = __webpack_require__(498),
-                PushStatement = __webpack_require__(505),
-                SequenceMainGroup = __webpack_require__(404),
-                GroupOutStatement = __webpack_require__(281),
-                BreakStatement = __webpack_require__(707),
-                ContinueStatement = __webpack_require__(914),
-                linker = __webpack_require__(434);
+                IfStatement = __webpack_require__(3602),
+                SequenceGroup = __webpack_require__(2938),
+                OutStatement = __webpack_require__(6254),
+                WhileStatement = __webpack_require__(1267),
+                RepeatStatement = __webpack_require__(4091),
+                SetStatement = __webpack_require__(2859),
+                ResetStatement = __webpack_require__(5498),
+                PushStatement = __webpack_require__(8505),
+                SequenceMainGroup = __webpack_require__(2404),
+                GroupOutStatement = __webpack_require__(2281),
+                BreakStatement = __webpack_require__(9707),
+                ContinueStatement = __webpack_require__(1914),
+                linker = __webpack_require__(5478),
+                lexer = __webpack_require__(8094),
+                LinkerData = __webpack_require__(9946);
 
             const KEYWORDS = ['true', 'false', 'null'];
             /**
@@ -8077,7 +8445,11 @@ module.exports = /******/ (() => {
                     buffer = [new Array()];
 
                 for (let i = start; ; i++) {
-                    if (entries[i].equals(CHARTYPE.NEWLINE)) continue;
+                    if (
+                        entries[i] != null &&
+                        entries[i].equals(CHARTYPE.NEWLINE)
+                    )
+                        continue;
 
                     switch (true) {
                         case entries[i] === undefined ||
@@ -8401,6 +8773,22 @@ module.exports = /******/ (() => {
                                 i += result[0].jump;
                                 buffer.push(result[0].data);
                                 continue;
+
+                            case entries[i].equals(CHARTYPE.WORD, 'use'):
+                                result[0] = parseExpression(
+                                    i + 1,
+                                    entries,
+                                    reject
+                                );
+                                buffer.push(
+                                    new UseStatement(
+                                        entries[i + 1].position,
+                                        result[0].data
+                                    )
+                                );
+                                i += result[0].jump + 1;
+                                continue;
+                                break;
 
                             case entries[i].equals(CHARTYPE.WORD, 'while'):
                                 if (
@@ -8830,32 +9218,38 @@ module.exports = /******/ (() => {
             /**
              * Парсит вхождения, которые можно получить вызовом функции @see {@link lexer}
              *
-             * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
-             * @param {Function} reject {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+             * @param {String} input Входящая строка для разбора
              * @param {?String} parent_path Путь к шаблону
              *
-             * @returns {SequenceMainGroup} Тело исполнителя
+             * @returns {ParserData} Тело исполнителя
              *
              * @memberof Poonya.Parser
              * @protected
              * @async
              */
 
-            async function parser(entries, reject, parent_path) {
-                return new SequenceMainGroup(
-                    codeBlockParser(
-                        0,
-                        await linker(entries, parent_path, reject),
-                        reject
-                    ).data.Sequence
+            async function parser(input, parent_path) {
+                const linked = await linker(
+                    lexer(toBytes(input), false),
+                    parent_path,
+                    throwError
+                );
+                const data = new ParserData(linked);
+                const reject = throwError.bind({
+                    data: data,
+                    path: parent_path,
+                    input,
+                });
+                data.sequense = new SequenceMainGroup(
+                    codeBlockParser(0, linked.contents, reject).data.Sequence
                 ).__sync(reject);
+                return data;
             }
             /**
              * Парсит шаблон сообщения, которое помимо кода Poonya может содержать и любые другие символы вне префикса.
              *
-             * @param {Array<Token>} entries Вхождения для парсинга
+             * @param {String} input Входящая строка для разбора
              * @param {String} block_prefix Префикс для обозначения начала блока кода poonya
-             * @param {Function} reject {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождени
              * @param {String} parent_path Путь к шаблону
              *
              * @returns {SequenceMainGroup} Тело исполнителя
@@ -8865,16 +9259,16 @@ module.exports = /******/ (() => {
              * @async
              */
 
-            async function parserMP(
-                entries,
-                block_prefix,
-                reject,
-                parent_path
-            ) {
+            async function parserMP(input, block_prefix, parent_path) {
                 let hook_index = 0,
                     buffer = new Array(),
-                    out = new SequenceMainGroup();
-
+                    out = new SequenceMainGroup(),
+                    chuncks = new Array(),
+                    entries = lexer(toBytes(input), true),
+                    reject = throwError.bind({
+                        path: parent_path,
+                        input,
+                    });
                 for (let i = 0; ; i++) {
                     if (entries[i] == null) break;
 
@@ -8918,20 +9312,22 @@ module.exports = /******/ (() => {
                         entries[i].equals(CHARTYPE.OPERATOR, '}') &&
                         hook_index === 1
                     ) {
+                        const tmp_linked = await linker(
+                            buffer.filter((e) => e.type !== CHARTYPE.SPACE),
+                            parent_path,
+                            throwError
+                        );
+                        const tmp_data = new ParserData(tmp_linked);
+                        const reject = throwError.bind({
+                            data: tmp_data,
+                            path: parent_path,
+                            input,
+                        });
                         out.push(
-                            codeBlockParser(
-                                0,
-                                await linker(
-                                    buffer.filter(
-                                        (e) => e.type !== CHARTYPE.SPACE
-                                    ),
-                                    parent_path,
-                                    reject
-                                ),
-                                reject
-                            ).data
+                            codeBlockParser(0, tmp_linked.contents, reject).data
                         );
                         buffer.splice(0, buffer.length);
+                        chuncks.push(...tmp_linked.chuncks);
                         hook_index--;
                         continue;
                     } else {
@@ -8953,19 +9349,21 @@ module.exports = /******/ (() => {
 
                 if (buffer.length !== 0)
                     if (hook_index === 1) {
-                        out.push(
-                            codeBlockParser(
-                                0,
-                                await linker(
-                                    buffer.filter(
-                                        (e) => e.type !== CHARTYPE.SPACE
-                                    ),
-                                    parent_path,
-                                    reject
-                                ),
-                                reject
-                            ).data
+                        const tmp_linked = await linker(
+                            buffer.filter((e) => e.type !== CHARTYPE.SPACE),
+                            parent_path,
+                            reject
                         );
+                        const tmp_data = new ParserData(tmp_linked);
+                        const reject = throwError.bind({
+                            data: tmp_data,
+                            path: parent_path,
+                            input,
+                        });
+                        out.push(
+                            codeBlockParser(0, tmp_linked.contents, reject).data
+                        );
+                        chuncks.push(...tmp_linked.chuncks);
                         buffer.splice(0, buffer.length);
                     } else if (hook_index === 0) {
                         if (buffer.length != 0) {
@@ -8989,7 +9387,10 @@ module.exports = /******/ (() => {
                             )
                         );
                     }
-                return out.__sync(reject);
+
+                const synced = out.__sync(reject);
+
+                return new ParserData(new LinkerData(synced, chuncks), synced);
             }
 
             module.exports.parser = parser;
@@ -8999,7 +9400,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 216: /***/ (
+        /***/ 9216: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -9074,27 +9475,29 @@ module.exports = /******/ (() => {
              */
             // This file is compiled specifically for the node runtime, if you need a browser version use poonya.browser.bundle.js
 
-            const { EventEmitter } = __webpack_require__(614),
-                { readFile } = __webpack_require__(747),
-                { extname, join } = __webpack_require__(622),
-                { IOError, PoonyaException } = __webpack_require__(943),
-                { Import, ImportDir, ImportFile } = __webpack_require__(742),
-                { Context, Heap } = __webpack_require__(591),
+            const { EventEmitter } = __webpack_require__(8614),
+                { readFile } = __webpack_require__(5747),
+                { extname, join } = __webpack_require__(5622),
+                { IOError, PoonyaException } = __webpack_require__(2943),
+                { Import, ImportDir, ImportFile } = __webpack_require__(3742),
+                { Context, Heap } = __webpack_require__(4591),
                 { parser, parseExpression, parserMP } = __webpack_require__(
-                    743
+                    1190
                 ),
-                { SERVICE } = __webpack_require__(351),
+                { SERVICE } = __webpack_require__(8351),
                 {
                     toFixed,
                     toBytes,
                     fromBytes,
                     setImmediate,
-                } = __webpack_require__(88),
+                    throwError,
+                    createCustomErrorHandler,
+                } = __webpack_require__(1088),
                 { iPoonyaConstructsData, iCodeEmitter } = __webpack_require__(
-                    161
+                    2161
                 ),
-                PoonyaOutputStream = __webpack_require__(580),
-                lexer = __webpack_require__(94); // Private fields
+                PoonyaOutputStream = __webpack_require__(5580),
+                lexer = __webpack_require__(8094); // Private fields
 
             const RESULT = Symbol('RESULT'),
                 INIT = Symbol('INIT');
@@ -9113,6 +9516,8 @@ module.exports = /******/ (() => {
                  *                                 Array with native import libraries
                  * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
                  *                         Logger, you need to take console as the interface, with the functions log, warn, error;
+                 *
+                 * @property {ParserData} data данные, которые были подготовлены парсером для разбора
                  *
                  * @memberof Poonya
                  * @constructs CodeEmitter
@@ -9221,93 +9626,18 @@ module.exports = /******/ (() => {
                     }
                 }
                 /**
-                 * Выводит сообщение об ошибке, прекращает выполнения текущего шаблона.
-                 * Displays an error message, terminates the execution of the current template.
-                 *
-                 * @param {Number} pos Позиция в которой произшла ошибка
-                 *                     The position at which the error occurred
-                 *
-                 * @param {String} error Сообщение с ошибкой
-                 *                       Error message
-                 *
-                 * @param {Number} rad_of Радиус печати, т.е. количество строк которое будет печатать в вывод по мимо строки на которой произошла ошибка
-                 *                        The radius of the seal, i.e. the number of lines that will print to the output next to the line on which the error occurred
-                 * @method
-                 * @public
-                 */
-
-                throwError(pos, error, rad_of = 5) {
-                    rad_of = parseInt(rad_of);
-                    let buffer = [],
-                        data = this.input.split(/$\n/gm),
-                        line_dump = fromBytes(
-                            toBytes(this.input).slice(0, pos)
-                        ).split(/$\n/gm),
-                        line = line_dump.length - 1,
-                        line_start =
-                            line - parseInt(rad_of / 2) < 0
-                                ? 0
-                                : line - parseInt(rad_of / 2),
-                        line_end =
-                            line_start + rad_of < data.length
-                                ? line_start + rad_of
-                                : data.length,
-                        ll = line_end.toString(16).length + 2;
-                    buffer.push(
-                        '  at ',
-                        this.path,
-                        ':',
-                        line + 1,
-                        ':',
-                        line_dump[line].length
-                    );
-
-                    if (pos != -1) {
-                        buffer.push(' :>\n');
-
-                        for (let i = line_start; i < line_end; i++) {
-                            buffer.push(
-                                '     ',
-                                toFixed(i + 1, ll),
-                                ' |> ',
-                                data[i]
-                            );
-
-                            if (i === line) {
-                                buffer.push(
-                                    '\n     '.padEnd(ll + 6, ' '),
-                                    ' |> '.padEnd(
-                                        line_dump[line].length + 3,
-                                        ' '
-                                    ),
-                                    '^'
-                                );
-                            }
-
-                            if (i + 1 !== line_end) buffer.push('\n');
-                        }
-                    }
-
-                    if (error instanceof PoonyaException) {
-                        error.message += '\n' + buffer.join('');
-                        throw error;
-                    } else throw new PoonyaException(error, buffer.join(''));
-                }
-                /**
                  * Инициалзирует блок инструкций
                  * Initializes a block of instructions
                  *
                  * @param {String|Heap} import_s названия нативных библиотек для импорта
                  *                               names of native libraries for import
-                 * @param {Console} logger интерфейс логгинга, Console like
-                 *                         logging interface, Console like
                  *
                  * @method
                  * @private
                  */
 
-                [INIT](import_s, logger) {
-                    this.libraries = Import(['default', ...import_s], logger);
+                [INIT](import_s) {
+                    this.libraries = Import(['default', ...import_s]);
                     this.import = import_s;
                     this.data = null;
                 }
@@ -9328,8 +9658,12 @@ module.exports = /******/ (() => {
 
                 [RESULT](data, error, out, c_clone) {
                     if (Array.isArray(data)) {
-                        this.data.result(
-                            new Context(this.libraries, error, ...data),
+                        this.data.sequense.result(
+                            new Context(
+                                this.libraries,
+                                error,
+                                ...data
+                            ).setSource(this.path),
                             out,
                             error,
                             () => out.end()
@@ -9337,16 +9671,20 @@ module.exports = /******/ (() => {
                     } else if (data instanceof Context) {
                         if (c_clone) {
                             const clone = data.clone();
-                            clone.import(this.libraries, error);
-                            this.data.result(clone, out, error, () =>
+                            clone.import(this.libraries);
+                            this.data.sequense.result(clone, out, error, () =>
                                 out.end()
                             );
                         } else {
-                            this.data.result(data, out, error, () => out.end());
+                            this.data.sequense.result(data, out, error, () =>
+                                out.end()
+                            );
                         }
                     } else {
-                        this.data.result(
-                            new Context(this.libraries, error, data),
+                        this.data.sequense.result(
+                            new Context(this.libraries, error, data).setSource(
+                                this.path
+                            ),
                             out,
                             error,
                             () => out.end()
@@ -9372,21 +9710,22 @@ module.exports = /******/ (() => {
 
                 result(
                     data = new Heap(),
-                    error = this.throwError.bind(this),
+                    error = throwError.bind(this),
                     c_clone = false
                 ) {
-                    const out = new PoonyaOutputStream(); // Если вхождения уже загружены, выполняем последовательность
+                    const out = new PoonyaOutputStream(),
+                        m_error = createCustomErrorHandler(error, out); // Если вхождения уже загружены, выполняем последовательность
                     // If the entries have already been loaded, execute the sequence
 
                     if (this.loaded) {
                         setImmediate(() =>
-                            this[RESULT](data, error, out, c_clone)
+                            this[RESULT](data, m_error, out, c_clone)
                         );
                     } else {
                         // Иначе, ждем окончания загрузки и выполняем последовательность
                         // Otherwise, wait for the download to finish and execute the sequence
                         this.on('load', () =>
-                            this[RESULT](data, error, out, c_clone)
+                            this[RESULT](data, m_error, out, c_clone)
                         );
                     }
 
@@ -9428,9 +9767,8 @@ module.exports = /******/ (() => {
                     super(input, import_s, logger, async () => {
                         try {
                             this.data = await parserMP(
-                                lexer(toBytes(this.input)),
+                                this.input,
                                 block_prefix,
-                                this.throwError.bind(this),
                                 this.path
                             );
                         } catch (e) {
@@ -9472,11 +9810,7 @@ module.exports = /******/ (() => {
                 constructor(input, import_s, logger = console) {
                     super(input, import_s, logger, async () => {
                         try {
-                            this.data = await parser(
-                                lexer(toBytes(this.input), false),
-                                this.throwError.bind(this),
-                                this.path
-                            );
+                            this.data = await parser(this.input, this.path);
                         } catch (e) {
                             this.emit('error', e);
                         }
@@ -9511,8 +9845,7 @@ module.exports = /******/ (() => {
                         try {
                             this.data = parseExpression(
                                 0,
-                                lexer(toBytes(this.input), false),
-                                this.throwError.bind(this)
+                                lexer(toBytes(this.input), false)
                             ).data;
                         } catch (e) {
                             this.emit('error', e);
@@ -9529,12 +9862,20 @@ module.exports = /******/ (() => {
                             if (c_clone) {
                                 const context = data.clone();
                                 context.import(this.libraries, error);
-                                this.data.result(context, [], error, (result) =>
-                                    result.result(context, null, null, res)
+                                this.data.sequense.result(
+                                    context,
+                                    [],
+                                    error,
+                                    (result) =>
+                                        result.result(context, null, null, res)
                                 );
                             } else {
-                                this.data.result(data, [], error, (result) =>
-                                    result.result(data, null, null, res)
+                                this.data.sequense.result(
+                                    data,
+                                    [],
+                                    error,
+                                    (result) =>
+                                        result.result(data, null, null, res)
                                 );
                             }
                         } else {
@@ -9543,18 +9884,26 @@ module.exports = /******/ (() => {
                                     this.libraries,
                                     error,
                                     ...data
-                                );
-                                this.data.result(context, [], error, (result) =>
-                                    result.result(context, null, null, res)
+                                ).setSource(this.path);
+                                this.data.sequense.result(
+                                    context,
+                                    [],
+                                    error,
+                                    (result) =>
+                                        result.result(context, null, null, res)
                                 );
                             } else {
                                 const context = new Context(
                                     this.libraries,
                                     error,
                                     ...data
-                                );
-                                this.data.result(context, [], error, (result) =>
-                                    result.result(context, null, null, res)
+                                ).setSource(this.path);
+                                this.data.sequense.result(
+                                    context,
+                                    [],
+                                    error,
+                                    (result) =>
+                                        result.result(context, null, null, res)
                                 );
                             }
                         }
@@ -9572,17 +9921,24 @@ module.exports = /******/ (() => {
 
                 result(
                     data = new Heap(),
-                    error = this.throwError.bind(this),
+                    error = throwError.bind(this),
                     c_clone = false
                 ) {
                     const _ = this;
 
                     return new Promise((res) => {
-                        if (_.loaded) _[RESULT](data, error, c_clone).then(res);
+                        if (_.loaded)
+                            _[RESULT](data, error, c_clone)
+                                .then(res)
+                                .catch((e) => {
+                                    throw e;
+                                });
                         else
                             _.on('load', () =>
                                 _[RESULT](data, error, c_clone).then(res)
-                            );
+                            ).catch((e) => {
+                                throw e;
+                            });
                     });
                 }
             }
@@ -9607,28 +9963,28 @@ module.exports = /******/ (() => {
                         res(
                             new Context(
                                 Import(['default', ...libs]),
-                                CodeEmitter.prototype.throwError.bind({
+                                throwError.bind({
                                     input: '',
                                     charset: 'utf-8',
                                     path: 'untitled.po',
                                     logger: console,
                                 }),
                                 data
-                            )
+                            ).setSource(module.parent.filename)
                         );
                     } else {
                         SERVICE.ACTIONS.on('load', () => {
                             res(
                                 new Context(
                                     Import(['default', ...libs]),
-                                    CodeEmitter.prototype.throwError.bind({
+                                    throwError.bind({
                                         input: '',
                                         charset: 'utf-8',
                                         path: 'untitled.po',
                                         logger: console,
                                     }),
                                     data
-                                )
+                                ).setSource(module.parent.filename)
                             );
                         });
                     }
@@ -9687,7 +10043,7 @@ module.exports = /******/ (() => {
                 module.parent != null ? module.parent.path : module.path
             );
 
-            const presset = __webpack_require__(40); //
+            const presset = __webpack_require__(9040); //
             // Static library
             //
 
@@ -9699,7 +10055,7 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 40: /***/ (
+        /***/ 9040: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -9711,17 +10067,17 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            module.exports.FIELDFLAGS = __webpack_require__(351).FIELDFLAGS;
-            module.exports.Exceptions = __webpack_require__(943);
+            module.exports.FIELDFLAGS = __webpack_require__(8351).FIELDFLAGS;
+            module.exports.Exceptions = __webpack_require__(2943);
             module.exports.PoonyaStaticLibrary = __webpack_require__(
-                742
+                3742
             ).PoonyaStaticLibrary;
-            module.exports.PoonyaPrototype = __webpack_require__(326);
+            module.exports.PoonyaPrototype = __webpack_require__(8326);
 
             /***/
         },
 
-        /***/ 88: /***/ (
+        /***/ 1088: /***/ (
             module,
             __unused_webpack_exports,
             __webpack_require__
@@ -9733,15 +10089,16 @@ module.exports = /******/ (() => {
              * @author Astecom
              */
 
-            const { SERVICE } = __webpack_require__(351),
-                { Operand } = __webpack_require__(501),
+            const { SERVICE } = __webpack_require__(8351),
+                { Operand } = __webpack_require__(4501),
                 {
                     iPoonyaObject,
                     iPoonyaPrototype,
                     iCodeEmitter,
-                } = __webpack_require__(161),
-                { nextTick } = __webpack_require__(765),
-                NativeFunction = __webpack_require__(329);
+                } = __webpack_require__(2161),
+                { PoonyaException } = __webpack_require__(2943),
+                { nextTick } = __webpack_require__(1765),
+                NativeFunction = __webpack_require__(2329);
             /**
              * Фукция которая преобразует нативное значение в значение Poonya
              *
@@ -9891,6 +10248,127 @@ module.exports = /******/ (() => {
                 }
             }
             /**
+             * Создает кастомный обработчик ошибок, для вывода их в поток вывода
+             *
+             * @param {throwError} error функция выброса исключений
+             * @param {PoonyaOutputStream} out поток вывода
+             * @returns кастомный обработчик ошибок
+             */
+
+            function createCustomErrorHandler(error, out) {
+                return (position, content) => {
+                    try {
+                        error(position, content);
+                    } catch (e) {
+                        out.error(e);
+                    }
+                };
+            }
+            /**
+             * !! Необходимо привести контекст
+             *
+             * Выводит сообщение об ошибке, прекращает выполнения текущего шаблона.
+             * Displays an error message, terminates the execution of the current template.
+             *
+             * @param {Number} pos Позиция в которой произшла ошибка
+             *                     The position at which the error occurred
+             *
+             * @param {String} error Сообщение с ошибкой
+             *                       Error message
+             *
+             * @param {Number} rad_of Радиус печати, т.е. количество строк которое будет печатать в вывод по мимо строки на которой произошла ошибка
+             *                        The radius of the seal, i.e. the number of lines that will print to the output next to the line on which the error occurred
+             * @method
+             * @public
+             */
+
+            function throwError(pos, error, rad_of = 5) {
+                rad_of = parseInt(rad_of);
+                const linked =
+                    this != null && this.data != null
+                        ? this.data.linker_data.getOwnChunck(pos)
+                        : null;
+                const input =
+                    linked != null
+                        ? linked.toString()
+                        : this != null
+                        ? this.input
+                        : null;
+                const path =
+                    linked != null
+                        ? linked.name
+                        : this != null
+                        ? this.path
+                        : null;
+                const buffer = new Array();
+
+                if (input) {
+                    let data = input.split(/$\n/gm),
+                        line_dump = fromBytes(
+                            toBytes(input).slice(
+                                0,
+                                pos - (linked != null ? linked.from : 0)
+                            )
+                        ).split(/$\n/gm),
+                        line = line_dump.length - 1,
+                        line_start =
+                            line - parseInt(rad_of / 2) < 0
+                                ? 0
+                                : line - parseInt(rad_of / 2),
+                        line_end =
+                            line_start + rad_of < data.length
+                                ? line_start + rad_of
+                                : data.length,
+                        ll = line_end.toString(16).length + 2;
+
+                    if (pos != -1) {
+                        buffer.push(
+                            '  at ',
+                            path,
+                            ':',
+                            line + 1,
+                            ':',
+                            line_dump[line].length,
+                            ' :>\n'
+                        );
+
+                        for (let i = line_start; i < line_end; i++) {
+                            buffer.push(
+                                '     ',
+                                toFixed(i + 1, ll),
+                                ' |> ',
+                                data[i]
+                            );
+
+                            if (i === line) {
+                                buffer.push(
+                                    '\n     '.padEnd(ll + 6, ' '),
+                                    ' |> '.padEnd(
+                                        line_dump[line].length + 3,
+                                        ' '
+                                    ),
+                                    '^'
+                                );
+                            }
+
+                            if (i + 1 !== line_end) buffer.push('\n');
+                        }
+                    }
+                }
+
+                if (error != null && !error.throwed) {
+                    if (error instanceof PoonyaException) {
+                        if (buffer.length != 0) {
+                            error.message += '\n' + buffer.join('');
+                        }
+
+                        error.throwed = true;
+                        throw error;
+                    } else
+                        throw new PoonyaException(error, buffer.join(''), true);
+                }
+            }
+            /**
              * Иногда некоторые выражения записываются неоднозначно, допустим <br> <br>
              *
              * if (<b> < exp > </b>) {} <br>
@@ -10005,54 +10483,70 @@ module.exports = /******/ (() => {
 
             const setImmediate = global.setImmediate;
             const Tick = nextTick;
-            module.exports.setImmediate = setImmediate;
-            module.exports.maybeEquals = maybeEquals;
-            module.exports.countKeys = countKeys;
-            module.exports.fromBytes = fromBytes;
-            module.exports.toFixed = toFixed;
-            module.exports.toBytes = toBytes;
             module.exports.Tick = Tick;
             module.exports.Cast = Cast;
+            module.exports.toFixed = toFixed;
+            module.exports.toBytes = toBytes;
+            module.exports.countKeys = countKeys;
+            module.exports.fromBytes = fromBytes;
+            module.exports.throwError = throwError;
+            module.exports.maybeEquals = maybeEquals;
+            module.exports.setImmediate = setImmediate;
+            module.exports.createCustomErrorHandler = createCustomErrorHandler;
 
             /***/
         },
 
-        /***/ 614: /***/ (module) => {
+        /***/ 875: /***/ (module) => {
+            function webpackEmptyContext(req) {
+                var e = new Error("Cannot find module '" + req + "'");
+                e.code = 'MODULE_NOT_FOUND';
+                throw e;
+            }
+            webpackEmptyContext.keys = () => [];
+            webpackEmptyContext.resolve = webpackEmptyContext;
+            webpackEmptyContext.id = 875;
+            module.exports = webpackEmptyContext;
+
+            /***/
+        },
+
+        /***/ 8614: /***/ (module) => {
             'use strict';
             module.exports = require('events');
 
             /***/
         },
 
-        /***/ 747: /***/ (module) => {
+        /***/ 5747: /***/ (module) => {
             'use strict';
             module.exports = require('fs');
 
             /***/
         },
 
-        /***/ 282: /***/ (module) => {
+        /***/ 2282: /***/ (module) => {
             'use strict';
             module.exports = require('module');
 
             /***/
         },
 
-        /***/ 622: /***/ (module) => {
+        /***/ 5622: /***/ (module) => {
             'use strict';
             module.exports = require('path');
 
             /***/
         },
 
-        /***/ 765: /***/ (module) => {
+        /***/ 1765: /***/ (module) => {
             'use strict';
             module.exports = require('process');
 
             /***/
         },
 
-        /***/ 413: /***/ (module) => {
+        /***/ 2413: /***/ (module) => {
             'use strict';
             module.exports = require('stream');
 
@@ -10087,9 +10581,15 @@ module.exports = /******/ (() => {
         /******/
         /******/ /******/ return module.exports;
         /******/
-    } /* webpack/runtime/node module decorator */
+    } /* webpack/runtime/hasOwnProperty shorthand */
     /******/
     /************************************************************************/
+    /******/ /******/ (() => {
+        /******/ __webpack_require__.o = (obj, prop) =>
+            Object.prototype.hasOwnProperty.call(obj, prop);
+        /******/
+    })(); /* webpack/runtime/node module decorator */
+    /******/
     /******/ /******/ (() => {
         /******/ __webpack_require__.nmd = (module) => {
             /******/ module.paths = [];
@@ -10101,6 +10601,6 @@ module.exports = /******/ (() => {
     })(); // module exports must be returned from runtime so entry inlining is disabled // startup // Load entry module and return exports
     /******/
     /************************************************************************/
-    /******/ /******/ /******/ /******/ return __webpack_require__(216);
+    /******/ /******/ /******/ /******/ return __webpack_require__(9216);
     /******/
 })();

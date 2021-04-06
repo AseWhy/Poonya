@@ -16,7 +16,7 @@ const { Tick } = require("../../../utils")
 */
 class UseStatement extends iStatement {
     /**
-     * Дескриптор оператора break
+     * Дескриптор оператора use
      *
      * @param {Number} position позиция оператора
      * @param {ExpressionGroup} libraries имя бибилиотеки для иморта
@@ -53,7 +53,7 @@ class UseStatement extends iStatement {
     }
 
     /**
-     * Преобразовывет оператор break  в строку
+     * Преобразовывет оператор use в строку
      * 
      * @param {String} indent отступ слева
      * 
@@ -64,7 +64,7 @@ class UseStatement extends iStatement {
     }
 
     /**
-     * Выполняет прерывание перебора
+     * Выполняет импорт статической библиотеки
      * 
      * @returns {UseStatement}
      * 
