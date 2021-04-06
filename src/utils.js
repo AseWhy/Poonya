@@ -15,6 +15,9 @@ const {
         iPoonyaPrototype,
         iCodeEmitter
     } = require('./classes/interfaces'),
+    {   
+        PoonyaException
+    } = require("./classes/exceptions"),
     // #!if platform === 'node'
     {
         nextTick
@@ -87,6 +90,111 @@ function Cast(data, context, parents_three = new Array(), resolve) {
         case 'function':
             resolve(new NativeFunction(data));
         break;
+    }
+}
+
+/**
+ * Создает кастомный обработчик ошибок, для вывода их в поток вывода
+ * 
+ * @param {throwError} error функция выброса исключений
+ * @param {PoonyaOutputStream} out поток вывода
+ * @returns кастомный обработчик ошибок
+ */
+ function createCustomErrorHandler(error, out) {
+    return (position, content) => {
+        try {
+            error(position, content);
+        } catch(e) {
+            out.error(e);
+        }
+    }
+}
+
+/**
+ * !! Необходимо привести контекст
+ * 
+ * Выводит сообщение об ошибке, прекращает выполнения текущего шаблона.
+ * Displays an error message, terminates the execution of the current template.
+ *
+ * @param {Number} pos Позиция в которой произшла ошибка
+ *                     The position at which the error occurred
+ * 
+ * @param {String} error Сообщение с ошибкой
+ *                       Error message
+ * 
+ * @param {Number} rad_of Радиус печати, т.е. количество строк которое будет печатать в вывод по мимо строки на которой произошла ошибка
+ *                        The radius of the seal, i.e. the number of lines that will print to the output next to the line on which the error occurred
+ * @method
+ * @public
+ */
+ function throwError(pos, error, rad_of = 5) {
+    rad_of = parseInt(rad_of);
+
+    const linked = this != null && this.data != null ? this.data.linker_data.getOwnChunck(pos) : null;
+
+    const input = linked != null ? linked.toString() : this != null ? this.input : null;
+    const path = linked != null ? linked.name : this != null ? this.path : null;
+    const buffer = new Array();
+
+    if(input) {
+        let data = input.split(/$\n/gm),
+
+            line_dump = fromBytes(
+                    toBytes(input).slice(0, pos - (linked != null ? linked.from : 0))
+                )
+                .split(/$\n/gm),
+
+            line = line_dump.length - 1,
+
+            line_start =
+                line - parseInt(rad_of / 2) < 0
+                    ? 0
+                    : line - parseInt(rad_of / 2),
+
+            line_end =
+                line_start + rad_of < data.length
+                    ? line_start + rad_of
+                    : data.length,
+
+            ll = line_end.toString(16).length + 2;
+
+        if(pos != -1) {
+            buffer.push(
+                "  at ",
+                path,
+                ':',
+                line + 1,
+                ":", line_dump[line].length,
+                ' :>\n'
+            );
+
+            for (let i = line_start; i < line_end; i++) {
+                buffer.push("     ", toFixed(i + 1, ll), " |> ", data[i]);
+
+                if (i === line) {
+                    buffer.push(
+                        "\n     ".padEnd(ll + 6, ' '),
+                        " |> ".padEnd(line_dump[line].length + 3, ' '),
+                        "^",
+                    );
+                }
+
+                if (i + 1 !== line_end) buffer.push("\n");
+            }
+        }
+    }
+
+    if(error != null && !error.throwed) {
+        if(error instanceof PoonyaException) {
+            if(buffer.length != 0) {
+                error.message += '\n' + buffer.join('');
+            }
+
+            error.throwed = true;
+
+            throw error;
+        } else
+            throw new PoonyaException(error, buffer.join(''), true);
     }
 }
 
@@ -211,11 +319,13 @@ const Tick = nextTick;
 // ~ const Tick = setImmediate;
 // #!endif
 
-module.exports.setImmediate = setImmediate;
-module.exports.maybeEquals = maybeEquals;
-module.exports.countKeys = countKeys;
-module.exports.fromBytes = fromBytes;
-module.exports.toFixed = toFixed;
-module.exports.toBytes = toBytes;
 module.exports.Tick = Tick;
 module.exports.Cast = Cast;
+module.exports.toFixed = toFixed;
+module.exports.toBytes = toBytes;
+module.exports.countKeys = countKeys;
+module.exports.fromBytes = fromBytes;
+module.exports.throwError = throwError;
+module.exports.maybeEquals = maybeEquals;
+module.exports.setImmediate = setImmediate;
+module.exports.createCustomErrorHandler = createCustomErrorHandler;

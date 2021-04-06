@@ -10,10 +10,10 @@ const { Operand } = require("./common/ParserData");
 const PoonyaPattern = require('./data/PoonyaPattern')
     , { GetFieldOfNullException, IsNotAConstructorException, PoonyaException } = require('./exceptions')
     , { GET, SERVICE, IS, CONFIG } = require('./static')
-    , { Cast, toBytes } = require('../utils.js')
+    , { Cast, toBytes, throwError } = require('../utils.js')
     , { iContext, iPoonyaPrototype, iPathData, iCodeEmitter, iPoonyaObject, iPoonyaOutputStream } = require('./interfaces')
     , { PoonyaStaticLibrary } = require('../importer.js')
-    , { parser } = require('../parser')
+    , { parser } = require('../parser/parser')
     ,   lexer = require('../lexer/lexer')
     ,   NativeFunction = require('./data/NativeFunction')
     ,   ExpressionGroup = require('./excecution/expression/ExpressionGroup')
@@ -161,6 +161,8 @@ class Context extends iContext {
 
         this.levels = new Array();
 
+        this.source = '';
+
         this._lib_cache = new Array();
         
         // Если переданы дидлиотеки для импорта, то импортируем их в этот контекст
@@ -186,15 +188,28 @@ class Context extends iContext {
     }
 
     /**
+     * Устнаваливает истоник контекста (путь к файлу, из-за выполнения которого этот контекст был создан)
+     * 
+     * @param {String} new_source 
+     * @returns 
+     */
+    setSource(new_source){
+        this.source = new_source;return this;
+    }
+
+    /**
      * Импортирует нативные библиотеки `libraries` в текущий контекст.
      * 
      * @param {Array<PoonyaStaticLibrary>} libraries массив с библиотеками, которые нужно импортировать
      * @param {Function} reject фукнция вызова ошибки
+     * @param {Boolean} add_root_level если true, то при имотрте будет добавлен новый слой памяти
      */
-    import(libraries, reject){
+    import(libraries, reject, add_root_level = true){
         if (libraries != null) {
             // Корневой слой
-            this.addLevel();
+            if(add_root_level) {
+                this.addLevel();
+            }
 
             for (let i = 0, leng = libraries.length, target; i < leng; i++) {
                 if (libraries[i] instanceof PoonyaStaticLibrary && !this._lib_cache.includes(libraries[i].namespace)) {
@@ -225,7 +240,7 @@ class Context extends iContext {
      * Выполняет код poonya из строки
      * 
      * @param {String} input Вход шаблона
-     * @param {PoonyaOutputStream} out Вывод шаблонизатора
+     * @param {?PoonyaOutputStream} out Вывод шаблонизатора
      * 
      * @method
      * @public
@@ -234,38 +249,33 @@ class Context extends iContext {
     eval(input, out) {
         return new Promise((res, rej) => {
             parser(
-                // Выполняем лексинг переданого текста
-                lexer(
-                    // Разбираем текст на байты
-                    toBytes(input), false
-                ),
-                rej,
-                //
-                // Присваеваем рандомный идентификатор исполнителю
-                //
-                'eval-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)
+                input,
+                this.source
             )
                 .catch(
                     error => rej(error)
                 )
                 .then(
                     result => {
-                        result && 
-                        result.result(
-                            this, 
-                            out != null ? 
-                                out : 
-                                new iPoonyaOutputStream(), 
-                            (symbol, message) => rej(
-                                new PoonyaException(
-                                    message + 
-                                    ', at symbol ' + 
-                                    symbol
-                                )
-                            ),
-                            res, 
-                            console.error
-                        );
+                        if(result) {
+                            result.sequense.result(
+                                this, 
+
+                                out != null ? 
+                                    out : 
+                                    new iPoonyaOutputStream(), 
+
+                                (position, content) => {
+                                    try {
+                                        throwError.call({ input, path: this.source }, position, content);
+                                    } catch(e) {
+                                        rej(e);
+                                    }
+                                },
+
+                                res
+                            );
+                        }
                     }
                 );
         });
@@ -279,7 +289,7 @@ class Context extends iContext {
      * @public
      */
     clone() {
-        const clone = new Context(null, null, ...this.levels);
+        const clone = new Context(null, null, ...this.levels).setSource(this.source);
 
         clone._lib_cache = Array.from(this._lib_cache);
 

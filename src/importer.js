@@ -50,6 +50,7 @@ class PoonyaStaticLibrary {
 
         this.namespace = namespace != null ? namespace : 'space-' + (++global[NAMESPACE].modules).toString(16) + (l_global ? '-global' : '');
         this.global = Boolean(l_global);
+        this.name = id;
 
         this._fields = new Map();
     }
@@ -317,7 +318,7 @@ class PoonyaModule extends Module {
         if(id === 'poonya') {
             return require('./preset');
         } else {
-            return super.require(id);
+            return require(id);
         }
     }
 }

@@ -31,12 +31,19 @@ class Token {
         this.position = position - data.length > 0 ? position - data.length + 1 : 0;
         this.leng = data.length;
         this.string_separator = s_separator != null ? String.fromCharCode(s_separator) : null;
+
+        if(s_separator != null) {
+            // 
+            // 4 байта, 2 символа.
+            // 
+            this.position -= 4;
+        }
     }
 
     /**
      * Сравнивает текущее вхождение с преданным `t` типом и `s` содержанием.
      *
-     * @param {*} t Тип с которым нужно сравнить текущее вхождение
+     * @param {CHARTYPE} t Тип с которым нужно сравнить текущее вхождение
      * @param {?String|String[]} s содержание с котрым необходимо сравнить текущее вхождение
      * @returns {Boolean}
      */

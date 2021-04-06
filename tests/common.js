@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 const poonya = require("../src/poonya")
-    , assert = require("assert");
+    , assert = require("assert")
+    , { CannotImportStaticLibrary } = require("../src/classes/exceptions");
 
 describe("poonya-common-test", () => {
     describe("#scope", () => {
@@ -271,6 +272,41 @@ describe("poonya-common-test", () => {
             assert.deepStrictEqual(await pattern.result().complete(), [
                 '012345678910'
             ]);
+        });
+    });
+
+    describe("#use-statement-test", () => {
+        it("use-statement-test#0-html-lorem-ipsum", async () => {
+            const pattern = new poonya.ExecutionPattern({
+                path: "./src/use-statement-test-0",
+            });
+
+            assert.deepStrictEqual(await pattern.result().complete(), [
+                '<div><h3>Hello world!</h3><p>Ex quis in reprehenderit excepteur ut proident nisi. Consectetur tempor proident est consequat excepteur eu. Adipisicing fugiat aute incididunt ad amet ea. Adipisicing duis reprehenderit pariatur ullamco consectetur tempor elit est cillum. Eu non reprehenderit enim magna eu et reprehenderit ex.</p><p>Culpa qui officia velit labore nisi ullamco fugiat excepteur incididunt ea magna enim cillum. Proident consectetur ad tempor laboris enim deserunt occaecat ullamco ex amet. Nostrud amet ut commodo mollit velit ut nulla pariatur reprehenderit dolor dolor ipsum.</p></div>'
+            ]);
+        });
+
+        it("use-statement-test#1-dynamic-use", async () => {
+            const pattern = new poonya.ExecutionPattern({
+                path: "./src/use-statement-test-1",
+            });
+
+            assert.deepStrictEqual(await pattern.result().complete(), [
+                'It working!)'
+            ]);
+        });
+
+        it("use-statement-test#2-import-fail", async () => {
+            const pattern = new poonya.ExecutionPattern({
+                path: "./src/use-statement-test-2",
+            });
+
+            try {
+                await pattern.result().complete();
+                assert.fail();
+            } catch(e) {
+                assert.ok(e instanceof CannotImportStaticLibrary);
+            }
         });
     });
 });

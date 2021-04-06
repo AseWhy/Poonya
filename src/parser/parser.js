@@ -24,33 +24,39 @@ const {
     ,   CriticalParserErrorNoRawDataTransmittedException
     ,   CriticalParserErrorUnexpectedEndOfExpression
     ,   ParserUnfinishedNotationException
-    } = require('./classes/exceptions'),
+    } = require('../classes/exceptions'),
     { 
         maybeEquals
     ,   countKeys
-    } = require('./utils'),
+    ,   throwError
+    ,   toBytes
+    } = require('../utils'),
     {
         CHARTYPE
     ,   SERVICE
-    } = require('./classes/static')
-    ,   FunctionCall = require('./classes/excecution/expression/FunctionCall')
-    ,   ObjectContructorCall = require('./classes/excecution/expression/ObjectContructorCall')
-    ,   TernarOperator = require('./classes/excecution/expression/TernarOperator')
-    ,   ExpressionGroup = require('./classes/excecution/expression/ExpressionGroup')
-    ,   GetOperator = require('./classes/excecution/expression/GetOperator')
-    ,   IfStatement = require('./classes/excecution/statements/IfStatement')
-    ,   SequenceGroup = require('./classes/excecution/statements/SequenceGroup')
-    ,   OutStatement = require('./classes/excecution/statements/OutStatement')
-    ,   WhileStatement = require('./classes/excecution/statements/WhileStatement')
-    ,   RepeatStatement = require('./classes/excecution/statements/RepeatStatement')
-    ,   SetStatement = require('./classes/excecution/statements/SetStatement')
-    ,   ResetStatement = require('./classes/excecution/statements/ResetStatement')
-    ,   PushStatement = require('./classes/excecution/statements/PushStatement')
-    ,   SequenceMainGroup = require('./classes/excecution/statements/SequenceMainGroup')
-    ,   GroupOutStatement = require('./classes/excecution/expression/GroupOutStatement')
-    ,   BreakStatement = require('./classes/excecution/statements/BreakStatement')
-    ,   ContinueStatement = require('./classes/excecution/statements/ContinueStatement')
-    ,   linker = require('./linker');
+    } = require('../classes/static')
+    ,   ParserData = require('./ParserData')
+    ,   UseStatement = require("../classes/excecution/statements/UseStatement")
+    ,   FunctionCall = require('../classes/excecution/expression/FunctionCall')
+    ,   ObjectContructorCall = require('../classes/excecution/expression/ObjectContructorCall')
+    ,   TernarOperator = require('../classes/excecution/expression/TernarOperator')
+    ,   ExpressionGroup = require('../classes/excecution/expression/ExpressionGroup')
+    ,   GetOperator = require('../classes/excecution/expression/GetOperator')
+    ,   IfStatement = require('../classes/excecution/statements/IfStatement')
+    ,   SequenceGroup = require('../classes/excecution/statements/SequenceGroup')
+    ,   OutStatement = require('../classes/excecution/statements/OutStatement')
+    ,   WhileStatement = require('../classes/excecution/statements/WhileStatement')
+    ,   RepeatStatement = require('../classes/excecution/statements/RepeatStatement')
+    ,   SetStatement = require('../classes/excecution/statements/SetStatement')
+    ,   ResetStatement = require('../classes/excecution/statements/ResetStatement')
+    ,   PushStatement = require('../classes/excecution/statements/PushStatement')
+    ,   SequenceMainGroup = require('../classes/excecution/statements/SequenceMainGroup')
+    ,   GroupOutStatement = require('../classes/excecution/expression/GroupOutStatement')
+    ,   BreakStatement = require('../classes/excecution/statements/BreakStatement')
+    ,   ContinueStatement = require('../classes/excecution/statements/ContinueStatement')
+    ,   linker = require('../linker/linker')
+    ,   lexer = require("../lexer/lexer")
+    ,   LinkerData = require("../linker/LinkerData");
 
 const KEYWORDS = [ 'true', 'false', 'null' ];
 
@@ -754,7 +760,7 @@ function segmentationParser(
         buffer = [new Array()];
 
     for (let i = start;; i++) {
-        if(entries[i].equals(CHARTYPE.NEWLINE))
+        if(entries[i] != null && entries[i].equals(CHARTYPE.NEWLINE))
             continue;
 
         switch (true) {
@@ -1054,6 +1060,14 @@ function codeBlockParser(start, entries, reject) {
 
                     buffer.push(result[0].data);
                     continue;
+                case entries[i].equals(CHARTYPE.WORD, 'use'):
+                    result[0] = parseExpression(i + 1, entries, reject);
+
+                    buffer.push(new UseStatement(entries[i + 1].position, result[0].data));
+
+                    i += result[0].jump + 1;
+                    continue;
+                break;
                 case entries[i].equals(CHARTYPE.WORD, "while"):
                     if (
                         i + 1 < leng &&
@@ -1434,34 +1448,36 @@ function codeBlockParser(start, entries, reject) {
 /**
  * Парсит вхождения, которые можно получить вызовом функции @see {@link lexer}
  *
- * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
- * @param {Function} reject {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+ * @param {String} input Входящая строка для разбора
  * @param {?String} parent_path Путь к шаблону
  *
- * @returns {SequenceMainGroup} Тело исполнителя
+ * @returns {ParserData} Тело исполнителя
  *
  * @memberof Poonya.Parser
  * @protected
  * @async
  */
-async function parser(entries, reject, parent_path) {
-    return new SequenceMainGroup(codeBlockParser(
-        0,
-        await linker(
-            entries,
-            parent_path,
-            reject
-        ),
-        reject
-    ).data.Sequence).__sync(reject);
+async function parser(input, parent_path) {
+    const linked    = await linker(lexer(toBytes(input), false), parent_path, throwError);
+    const data      = new ParserData(linked);
+    const reject    = throwError.bind({ data: data, path: parent_path, input });
+
+    data.sequense = new SequenceMainGroup(
+                        codeBlockParser(
+                            0,
+                            linked.contents,
+                            reject
+                        ).data.Sequence
+                    ).__sync(reject)
+
+    return data;
 }
 
 /**
  * Парсит шаблон сообщения, которое помимо кода Poonya может содержать и любые другие символы вне префикса.
  * 
- * @param {Array<Token>} entries Вхождения для парсинга
+ * @param {String} input Входящая строка для разбора
  * @param {String} block_prefix Префикс для обозначения начала блока кода poonya
- * @param {Function} reject {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождени
  * @param {String} parent_path Путь к шаблону
  * 
  * @returns {SequenceMainGroup} Тело исполнителя
@@ -1470,10 +1486,13 @@ async function parser(entries, reject, parent_path) {
  * @protected
  * @async
  */
-async function parserMP(entries, block_prefix, reject, parent_path) {
-    let   hook_index = 0
-        , buffer = new Array()
-        , out = new SequenceMainGroup();
+async function parserMP(input, block_prefix, parent_path) {
+    let   hook_index    = 0
+        , buffer        = new Array()
+        , out           = new SequenceMainGroup()
+        , chuncks       = new Array()
+        , entries       = lexer(toBytes(input), true)
+        , reject        = throwError.bind({ path: parent_path, input });;
 
     for (let i = 0;; i++) {
         if(entries[i] == null)
@@ -1509,19 +1528,21 @@ async function parserMP(entries, block_prefix, reject, parent_path) {
             entries[i].equals(CHARTYPE.OPERATOR, "}") &&
             hook_index === 1
         ) {
+            const tmp_linked    = await linker(buffer.filter((e) => e.type !== CHARTYPE.SPACE), parent_path, throwError);
+            const tmp_data      = new ParserData(tmp_linked);
+            const reject        = throwError.bind({ data: tmp_data, path: parent_path, input });
+
             out.push(
                 codeBlockParser(
                     0,
-                    await linker(
-                        buffer.filter((e) => e.type !== CHARTYPE.SPACE),
-                        parent_path,
-                        reject
-                    ),
+                    tmp_linked.contents,
                     reject
                 ).data
             );
 
             buffer.splice(0, buffer.length);
+
+            chuncks.push(...tmp_linked.chuncks);
 
             hook_index--;
 
@@ -1546,17 +1567,19 @@ async function parserMP(entries, block_prefix, reject, parent_path) {
 
     if (buffer.length !== 0)
         if (hook_index === 1) {
+            const tmp_linked    = await linker(buffer.filter((e) => e.type !== CHARTYPE.SPACE), parent_path, reject);
+            const tmp_data      = new ParserData(tmp_linked);
+            const reject        = throwError.bind({ data: tmp_data, path: parent_path, input });
+
             out.push(
                 codeBlockParser(
                     0,
-                    await linker(
-                        buffer.filter((e) => e.type !== CHARTYPE.SPACE),
-                        parent_path,
-                        reject
-                    ),
+                    tmp_linked.contents,
                     reject
                 ).data
             );
+
+            chuncks.push(...tmp_linked.chuncks);
 
             buffer.splice(0, buffer.length);
         } else if (hook_index === 0) {
@@ -1580,7 +1603,9 @@ async function parserMP(entries, block_prefix, reject, parent_path) {
             );
         }
 
-    return out.__sync(reject);
+    const synced = out.__sync(reject);
+
+    return new ParserData(new LinkerData(synced, chuncks), synced);
 }
 
 

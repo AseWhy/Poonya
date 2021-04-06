@@ -1,0 +1,9 @@
+use 'default.html';
+
+> Join.concat <- {
+    > html.createElement(html.TAGS.DIV, Join.concat <- {
+        > html.createElement(html.TAGS.H3, 'Hello world!');
+        > html.createElement(html.TAGS.P, 'Ex quis in reprehenderit excepteur ut proident nisi. Consectetur tempor proident est consequat excepteur eu. Adipisicing fugiat aute incididunt ad amet ea. Adipisicing duis reprehenderit pariatur ullamco consectetur tempor elit est cillum. Eu non reprehenderit enim magna eu et reprehenderit ex.');
+        > html.createElement(html.TAGS.P, 'Culpa qui officia velit labore nisi ullamco fugiat excepteur incididunt ea magna enim cillum. Proident consectetur ad tempor laboris enim deserunt occaecat ullamco ex amet. Nostrud amet ut commodo mollit velit ut nulla pariatur reprehenderit dolor dolor ipsum.');
+    })
+}

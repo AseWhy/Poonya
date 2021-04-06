@@ -641,30 +641,36 @@ System.register(
                                         service,
                                         tag,
                                         content,
-                                        attrs
+                                        attrs = new Array()
                                     ) {
-                                        if (
-                                            typeof tag === 'string' &&
-                                            typeof content === 'string'
-                                        ) {
-                                            let form_attrs = new Array();
-
-                                            for (let key in attrs)
-                                                form_attrs.push(
-                                                    `${key}="${format(
-                                                        attrs[key]
-                                                    ).replace(
-                                                        QUOTE_EXP,
-                                                        '\\"'
-                                                    )}"`
-                                                );
-
-                                            return `<${tag} ${form_attrs.join(
-                                                ' '
-                                            )}>${content}</${tag}>`;
-                                        } else {
-                                            return null;
+                                        if (typeof tag != 'string') {
+                                            tag =
+                                                tag != null
+                                                    ? tag.toString()
+                                                    : '';
                                         }
+
+                                        if (typeof content != 'string') {
+                                            content =
+                                                content != null
+                                                    ? content.toString()
+                                                    : '';
+                                        }
+
+                                        let form_attrs = new Array();
+
+                                        for (let key in attrs)
+                                            form_attrs.push(
+                                                `${key}="${format(
+                                                    attrs[key]
+                                                ).replace(QUOTE_EXP, '\\"')}"`
+                                            );
+
+                                        return `<${tag}${
+                                            form_attrs.length > 0
+                                                ? ' ' + form_attrs.join(' ')
+                                                : ''
+                                        }>${content}</${tag}>`;
                                     }
 
                                     getElementName(service, element) {
@@ -681,7 +687,11 @@ System.register(
                                         else return false;
                                     }
 
-                                    createTag(service, tag, attrs) {
+                                    createTag(
+                                        service,
+                                        tag,
+                                        attrs = new Array()
+                                    ) {
                                         if (typeof tag == 'string') {
                                             let form_attrs = new Array();
 
@@ -1372,9 +1382,76 @@ System.register(
                                             this.wait,
                                             FIELDFLAGS.CONSTANT
                                         );
+                                        this.addField(
+                                            'require',
+                                            this.require,
+                                            FIELDFLAGS.CONSTANT
+                                        );
+                                        this.addField(
+                                            'eval',
+                                            this.eval,
+                                            FIELDFLAGS.CONSTANT
+                                        );
                                         this.addLib('default.joiners');
                                         this.addLib('default.dates');
                                         this.addLib('default.math');
+                                    }
+
+                                    require(service, r_path) {
+                                        (async () => {
+                                            let path, content;
+                                            /*LIQUID*/
+
+                                            path =
+                                                window.location.origin +
+                                                '/' +
+                                                service.context.source
+                                                    .split('/')
+                                                    .slice(0, -1)
+                                                    .join('/') +
+                                                '/' +
+                                                r_path;
+                                            path =
+                                                path.split('/').pop().split('.')
+                                                    .length > 0
+                                                    ? path
+                                                    : path + '.po';
+                                            content = fetch(path, {
+                                                method: 'GET',
+                                            }).then((e) => e.text());
+                                            /*LIQUID-END*/
+
+                                            if (
+                                                path == service.context.source
+                                            ) {
+                                                service.reject(
+                                                    data[i].position,
+                                                    new Exceptions.IsRecursiveLink(
+                                                        service.context.source
+                                                    )
+                                                );
+                                            }
+
+                                            try {
+                                                service.resolve(
+                                                    await service.context
+                                                        .clone()
+                                                        .setSource(path)
+                                                        .eval(await content)
+                                                );
+                                            } catch (e) {
+                                                service.reject(
+                                                    data[i].position,
+                                                    new Exceptions.LinkerIOError(
+                                                        path
+                                                    )
+                                                );
+                                            }
+                                        })();
+                                    }
+
+                                    eval(srvice, string) {
+                                        return service.context.eval(string);
                                     }
 
                                     wait(service, milis) {
@@ -2343,6 +2420,12 @@ System.register(
                                         this.emit('data', data);
                                     }
 
+                                    error(error) {
+                                        this._data.push(error);
+
+                                        this.emit('error', error);
+                                    }
+
                                     end() {
                                         this._ended = true;
                                         this.emit('end');
@@ -2360,11 +2443,14 @@ System.register(
 
                                     complete() {
                                         if (!this._ended)
-                                            return new Promise((res) =>
+                                            return new Promise((res, rej) => {
                                                 this.on('end', () =>
                                                     res(this._data)
-                                                )
-                                            );
+                                                );
+                                                this.on('error', (error) =>
+                                                    rej(error)
+                                                );
+                                            });
                                         else return this._data;
                                     }
                                 }
@@ -5526,11 +5612,11 @@ System.register(
                                      */
 
                                     __sync(reject) {
-                                        condition.__sync(reject);
+                                        this.condition.__sync(reject);
 
-                                        v_o.__sync(reject);
+                                        this.v_o.__sync(reject);
 
-                                        v_t.__sync(reject);
+                                        this.v_t.__sync(reject);
 
                                         return this;
                                     }
@@ -6677,7 +6763,7 @@ System.register(
                                 /***/
                             },
 
-                            /***/ 938: /***/ (
+                            /***/ 530: /***/ (
                                 module,
                                 __unused_webpack_exports,
                                 __webpack_require__
@@ -7116,8 +7202,7 @@ System.register(
                                         TheFieldAlreadyHasBeenDeclaredException,
                                     } = __webpack_require__(943),
                                     { Tick } = __webpack_require__(88),
-                                    { iStatement } = __webpack_require__(161),
-                                    { Operand } = __webpack_require__(501);
+                                    { iStatement } = __webpack_require__(161);
                                 /**
                                  * @lends SetStatement
                                  * @protected
@@ -7224,6 +7309,179 @@ System.register(
                                 }
 
                                 module.exports = SetStatement;
+
+                                /***/
+                            },
+
+                            /***/ 887: /***/ (
+                                module,
+                                __unused_webpack_exports,
+                                __webpack_require__
+                            ) => {
+                                /**
+                                 * @file src/classes/excecution/statements/UseStatement.js
+                                 * @description Содержит в себе оператор use, который используется для иморта статической библиотеки в текущий контекст
+                                 * @author Astecom
+                                 */
+                                const { Tick } = __webpack_require__(88),
+                                    { iStatement } = __webpack_require__(161),
+                                    { Import } = __webpack_require__(742),
+                                    {
+                                        CannotImportStaticLibrary,
+                                    } = __webpack_require__(943),
+                                    ExpressionGroup = __webpack_require__(515);
+                                /**
+                                 * @lends UseStatement
+                                 * @protected
+                                 */
+
+                                class UseStatement extends iStatement {
+                                    /**
+                                     * Дескриптор оператора use
+                                     *
+                                     * @param {Number} position позиция оператора
+                                     * @param {ExpressionGroup} libraries имя бибилиотеки для иморта
+                                     *
+                                     * @constructs UseStatement
+                                     * @memberof Poonya.Statements
+                                     * @protected
+                                     */
+                                    constructor(position, libraries) {
+                                        super();
+                                        this.libraries = libraries;
+                                        this.position = position;
+                                    }
+                                    /**
+                                     * @see iStatement.__sync
+                                     *
+                                     * @method
+                                     * @returns {UseStatement}
+                                     */
+
+                                    __sync() {
+                                        return this;
+                                    }
+                                    /**
+                                     * @see iStatement.__executable
+                                     *
+                                     * @returns {Array<SequenceGroup>} список исполняемых блоков
+                                     * @method
+                                     */
+
+                                    __executable() {
+                                        return new Array();
+                                    }
+                                    /**
+                                     * Преобразовывет оператор use в строку
+                                     *
+                                     * @param {String} indent отступ слева
+                                     *
+                                     * @returns {String} строкове представление оператора
+                                     */
+
+                                    toString(indent) {
+                                        return (
+                                            'use ' +
+                                            this.libraries.toString(indent) +
+                                            ';'
+                                        );
+                                    }
+                                    /**
+                                     * Выполняет импорт статической библиотеки
+                                     *
+                                     * @returns {UseStatement}
+                                     *
+                                     * @param {iContext} context Контекст выполнения
+                                     * @param {PoonyaOutputStream} out вывод шаблонизатора
+                                     * @param {Function} reject Вызывается при ошибке
+                                     * @param {Function} resolve функция возврата результата
+                                     *
+                                     * @public
+                                     * @method
+                                     */
+
+                                    result(context, out, reject, resolve) {
+                                        this.libraries.result(
+                                            context,
+                                            out,
+                                            reject,
+                                            (result) => {
+                                                result.result(
+                                                    context,
+                                                    out,
+                                                    reject,
+                                                    (d_result) => {
+                                                        const libraries = new Array();
+
+                                                        if (
+                                                            Array.isArray(
+                                                                d_result
+                                                            )
+                                                        ) {
+                                                            libraries.push(
+                                                                ...d_result
+                                                                    .map((e) =>
+                                                                        e !=
+                                                                        null
+                                                                            ? e.toString()
+                                                                            : 'null'
+                                                                    )
+                                                                    .filter(
+                                                                        (e) =>
+                                                                            e !=
+                                                                            null
+                                                                    )
+                                                            );
+                                                        } else {
+                                                            if (
+                                                                d_result != null
+                                                            ) {
+                                                                libraries.push(
+                                                                    d_result.toString()
+                                                                );
+                                                            }
+                                                        }
+
+                                                        const imports = Import(
+                                                            libraries
+                                                        ).filter(
+                                                            (e) => e != null
+                                                        );
+
+                                                        if (
+                                                            imports.length !=
+                                                            libraries.length
+                                                        ) {
+                                                            const imported = imports.map(
+                                                                (e) => e.name
+                                                            );
+                                                            reject(
+                                                                this.position,
+                                                                new CannotImportStaticLibrary(
+                                                                    libraries.filter(
+                                                                        (e) =>
+                                                                            !imported.includes(
+                                                                                e
+                                                                            )
+                                                                    )
+                                                                )
+                                                            );
+                                                        }
+
+                                                        context.import(
+                                                            imports,
+                                                            reject,
+                                                            false
+                                                        );
+                                                        Tick(resolve);
+                                                    }
+                                                );
+                                            }
+                                        );
+                                    }
+                                }
+
+                                module.exports = UseStatement;
 
                                 /***/
                             },
@@ -7401,13 +7659,18 @@ System.register(
                                  */
 
                                 class PoonyaException {
-                                    constructor(header, message) {
+                                    constructor(
+                                        header,
+                                        message,
+                                        throwed = false
+                                    ) {
                                         this.message =
                                             'PoonyaException / ' +
                                             header +
                                             (message != null
                                                 ? ': \n' + message
                                                 : '');
+                                        this.throwed = throwed;
                                     }
 
                                     toString() {
@@ -7427,6 +7690,23 @@ System.register(
                                     constructor(header, message) {
                                         super(
                                             'Parser exception / ' + header,
+                                            message
+                                        );
+                                    }
+                                }
+                                /**
+                                 * Основное исключение лексера
+                                 *
+                                 * @memberof Poonya.Exceptions
+                                 * @name LexerException
+                                 * @class
+                                 * @protected
+                                 */
+
+                                class LexerException extends PoonyaException {
+                                    constructor(header, message) {
+                                        super(
+                                            'Lexer exception / ' + header,
                                             message
                                         );
                                     }
@@ -7868,6 +8148,22 @@ System.register(
                                     }
                                 }
                                 /**
+                                 * Критическая ошибка лексера, неожиданный конец ввода
+                                 *
+                                 * @memberof Poonya.Exceptions
+                                 * @name CriticalLexerErrorUnexpectedEndOfInputException
+                                 * @class
+                                 * @protected
+                                 */
+
+                                class CriticalLexerErrorUnexpectedEndOfInputException extends LexerException {
+                                    constructor() {
+                                        super(
+                                            `Critical lexer error: unexpected end of input`
+                                        );
+                                    }
+                                }
+                                /**
                                  * Критическая ошибка парсера, неожиданный конец ввода
                                  *
                                  * @memberof Poonya.Exceptions
@@ -8019,9 +8315,49 @@ System.register(
                                         );
                                     }
                                 }
+                                /**
+                                 * Рекурсивное включение файла, когда файл пытается заинклудить сам себя.
+                                 *
+                                 * @memberof Poonya.Exceptions
+                                 * @name IsRecursiveLink
+                                 * @class
+                                 * @protected
+                                 */
+
+                                class IsRecursiveLink extends PoonyaException {
+                                    constructor(path) {
+                                        super(
+                                            'The "' +
+                                                path +
+                                                '" source file has a recursive inclusion of itself'
+                                        );
+                                    }
+                                }
+                                /**
+                                 * Невозможно импортировать статическую библиотеку, возможно неправильно указано имя.
+                                 *
+                                 * @memberof Poonya.Exceptions
+                                 * @name CannotImportStaticLibrary
+                                 * @class
+                                 * @protected
+                                 */
+
+                                class CannotImportStaticLibrary extends PoonyaException {
+                                    constructor(...libs) {
+                                        super(
+                                            `library ${libs
+                                                .map((e) => `"${e.name}"`)
+                                                .join(
+                                                    ', '
+                                                )} cannot be imported, possibly the wrong library identifier for import was specified`
+                                        );
+                                    }
+                                }
 
                                 module.exports.IOError = IOError;
                                 module.exports.LinkerIOError = LinkerIOError;
+                                module.exports.LexerException = LexerException;
+                                module.exports.IsRecursiveLink = IsRecursiveLink;
                                 module.exports.LinkerException = LinkerException;
                                 module.exports.PoonyaException = PoonyaException;
                                 module.exports.ParserException = ParserException;
@@ -8031,28 +8367,30 @@ System.register(
                                 module.exports.BadEmptyObjectException = BadEmptyObjectException;
                                 module.exports.UnexpectedTokenException = UnexpectedTokenException;
                                 module.exports.UnexpectedTokenStatement = UnexpectedTokenStatement;
+                                module.exports.CannotImportStaticLibrary = CannotImportStaticLibrary;
                                 module.exports.FieldNotAFunctionException = FieldNotAFunctionException;
                                 module.exports.BadKeyInvalidTypeException = BadKeyInvalidTypeException;
                                 module.exports.IsNotAConstructorException = IsNotAConstructorException;
-                                module.exports.ParserEmtyArgumentException = ParserEmtyArgumentException;
                                 module.exports.LinkerPathNotGiveException = LinkerPathNotGiveException;
+                                module.exports.ParserEmtyArgumentException = ParserEmtyArgumentException;
                                 module.exports.CriticalParserErrorException = CriticalParserErrorException;
                                 module.exports.NativeFunctionExecutionError = NativeFunctionExecutionError;
                                 module.exports.BadKeyProtectedFieldException = BadKeyProtectedFieldException;
                                 module.exports.TheFieldMustBeNumberException = TheFieldMustBeNumberException;
+                                module.exports.BadArrowNotationJumpingTwoLevels = BadArrowNotationJTException;
                                 module.exports.NativeFunctionReturnValueError = NativeFunctionReturnValueError;
                                 module.exports.UnableToRecognizeTypeException = UnableToRecognizeTypeException;
                                 module.exports.TheFieldNotHasDeclaredExceprion = TheFieldNotHasDeclaredExceprion;
                                 module.exports.UnableToCreateAnObjectException = UnableToCreateAnObjectException;
-                                module.exports.BadArrowNotationJumpingTwoLevels = BadArrowNotationJTException;
+                                module.exports.BadArrowNotationJumpingToUpperLevel = BadArrowNotationJTULException;
                                 module.exports.UnexpectedWordTypeAndGetException = UnexpectedWordTypeAndGetException;
                                 module.exports.ParserUnfinishedNotationException = ParserUnfinishedNotationException;
-                                module.exports.BadArrowNotationJumpingToUpperLevel = BadArrowNotationJTULException;
                                 module.exports.TheFieldMustBeAnArrayInstanceExceprion = TheFieldMustBeAnArrayInstanceExceprion;
                                 module.exports.TheFieldAlreadyHasBeenDeclaredException = TheFieldAlreadyHasBeenDeclaredException;
                                 module.exports.SegmentationFaultEmptyArgumentException = SegmentationFaultEmptyArgumentException;
                                 module.exports.InvalidSequenceForLetiableAccessException = InvalidSequenceForLetiableAccessException;
                                 module.exports.CriticalParserErrorUnexpectedEndOfExpression = CriticalParserErrorUnexpectedEndOfExpression;
+                                module.exports.CriticalLexerErrorUnexpectedEndOfInputException = CriticalLexerErrorUnexpectedEndOfInputException;
                                 module.exports.CriticalParserErrorUnexpectedEndOfInputException = CriticalParserErrorUnexpectedEndOfInputException;
                                 module.exports.CriticalParserErrorNoRawDataTransmittedException = CriticalParserErrorNoRawDataTransmittedException;
                                 module.exports.SegmentationFaultMaximumSegmentsForBlockException = SegmentationFaultMaximumSegmentsForBlockException;
@@ -8446,7 +8784,11 @@ System.register(
                                         IS,
                                         CONFIG,
                                     } = __webpack_require__(351),
-                                    { Cast, toBytes } = __webpack_require__(88),
+                                    {
+                                        Cast,
+                                        toBytes,
+                                        throwError,
+                                    } = __webpack_require__(88),
                                     {
                                         iContext,
                                         iPoonyaPrototype,
@@ -8458,7 +8800,7 @@ System.register(
                                     {
                                         PoonyaStaticLibrary,
                                     } = __webpack_require__(742),
-                                    { parser } = __webpack_require__(743),
+                                    { parser } = __webpack_require__(190),
                                     lexer = __webpack_require__(94),
                                     NativeFunction = __webpack_require__(329),
                                     ExpressionGroup = __webpack_require__(515),
@@ -8652,6 +8994,7 @@ System.register(
                                     constructor(libraries, reject, ...initial) {
                                         super();
                                         this.levels = new Array();
+                                        this.source = '';
                                         this._lib_cache = new Array(); // Если переданы дидлиотеки для импорта, то импортируем их в этот контекст
 
                                         if (libraries != null)
@@ -8673,16 +9016,34 @@ System.register(
                                         );
                                     }
                                     /**
+                                     * Устнаваливает истоник контекста (путь к файлу, из-за выполнения которого этот контекст был создан)
+                                     *
+                                     * @param {String} new_source
+                                     * @returns
+                                     */
+
+                                    setSource(new_source) {
+                                        this.source = new_source;
+                                        return this;
+                                    }
+                                    /**
                                      * Импортирует нативные библиотеки `libraries` в текущий контекст.
                                      *
                                      * @param {Array<PoonyaStaticLibrary>} libraries массив с библиотеками, которые нужно импортировать
                                      * @param {Function} reject фукнция вызова ошибки
+                                     * @param {Boolean} add_root_level если true, то при имотрте будет добавлен новый слой памяти
                                      */
 
-                                    import(libraries, reject) {
+                                    import(
+                                        libraries,
+                                        reject,
+                                        add_root_level = true
+                                    ) {
                                         if (libraries != null) {
                                             // Корневой слой
-                                            this.addLevel();
+                                            if (add_root_level) {
+                                                this.addLevel();
+                                            }
 
                                             for (
                                                 let i = 0,
@@ -8739,7 +9100,7 @@ System.register(
                                      * Выполняет код poonya из строки
                                      *
                                      * @param {String} input Вход шаблона
-                                     * @param {PoonyaOutputStream} out Вывод шаблонизатора
+                                     * @param {?PoonyaOutputStream} out Вывод шаблонизатора
                                      *
                                      * @method
                                      * @public
@@ -8748,41 +9109,36 @@ System.register(
 
                                     eval(input, out) {
                                         return new Promise((res, rej) => {
-                                            parser(
-                                                // Выполняем лексинг переданого текста
-                                                lexer(
-                                                    // Разбираем текст на байты
-                                                    toBytes(input),
-                                                    false
-                                                ),
-                                                rej, //
-                                                // Присваеваем рандомный идентификатор исполнителю
-                                                //
-                                                'eval-' +
-                                                    Math.floor(
-                                                        Math.random() *
-                                                            Number.MAX_SAFE_INTEGER
-                                                    ).toString(16)
-                                            )
+                                            parser(input, this.source)
                                                 .catch((error) => rej(error))
                                                 .then((result) => {
-                                                    result &&
-                                                        result.result(
+                                                    if (result) {
+                                                        result.sequense.result(
                                                             this,
                                                             out != null
                                                                 ? out
                                                                 : new iPoonyaOutputStream(),
-                                                            (symbol, message) =>
-                                                                rej(
-                                                                    new PoonyaException(
-                                                                        message +
-                                                                            ', at symbol ' +
-                                                                            symbol
-                                                                    )
-                                                                ),
-                                                            res,
-                                                            console.error
+                                                            (
+                                                                position,
+                                                                content
+                                                            ) => {
+                                                                try {
+                                                                    throwError.call(
+                                                                        {
+                                                                            input,
+                                                                            path: this
+                                                                                .source,
+                                                                        },
+                                                                        position,
+                                                                        content
+                                                                    );
+                                                                } catch (e) {
+                                                                    rej(e);
+                                                                }
+                                                            },
+                                                            res
                                                         );
+                                                    }
                                                 });
                                         });
                                     }
@@ -8799,7 +9155,7 @@ System.register(
                                             null,
                                             null,
                                             ...this.levels
-                                        );
+                                        ).setSource(this.source);
                                         clone._lib_cache = Array.from(
                                             this._lib_cache
                                         );
@@ -9414,6 +9770,7 @@ System.register(
                                                   ].modules).toString(16) +
                                                   (l_global ? '-global' : '');
                                         this.global = Boolean(l_global);
+                                        this.name = id;
                                         this._fields = new Map();
                                     }
                                     /**
@@ -9936,11 +10293,18 @@ System.register(
                                                       s_separator
                                                   )
                                                 : null;
+
+                                        if (s_separator != null) {
+                                            //
+                                            // 4 байта, 2 символа.
+                                            //
+                                            this.position -= 4;
+                                        }
                                     }
                                     /**
                                      * Сравнивает текущее вхождение с преданным `t` типом и `s` содержанием.
                                      *
-                                     * @param {*} t Тип с которым нужно сравнить текущее вхождение
+                                     * @param {CHARTYPE} t Тип с которым нужно сравнить текущее вхождение
                                      * @param {?String|String[]} s содержание с котрым необходимо сравнить текущее вхождение
                                      * @returns {Boolean}
                                      */
@@ -10012,19 +10376,33 @@ System.register(
                                  * @author Astecom
                                  */
 
+                                const {
+                                    CriticalLexerErrorUnexpectedEndOfInputException,
+                                } = __webpack_require__(943);
+
                                 const { CHARTYPE } = __webpack_require__(351),
                                     Token = __webpack_require__(359);
+
+                                const {
+                                    throwError,
+                                    fromBytes,
+                                } = __webpack_require__(88);
                                 /**
                                  * Лексер, который производит лексический разбор подаваемого текста в буффере
                                  *
                                  * @param {Buffer|UInt8Array|Array} input Вход с `сырыми` данными
                                  * @param {Boolean} allow_spaces разрешены ли пробелы, если `false`, то лексер вернет ответ без пробелов
+                                 * @param {Number} offset - смещение позиции байтов
                                  *
                                  * @memberof Poonya.Lexer
                                  * @protected
                                  */
 
-                                function lexer(input, allow_spaces = true) {
+                                function lexer(
+                                    input,
+                                    allow_spaces = true,
+                                    offset = 0
+                                ) {
                                     if (!Array.isArray(input)) {
                                         throw TypeError(
                                             'Only array-like data can be input to the lexer'
@@ -10188,7 +10566,7 @@ System.register(
                                                         (last_token = new Token(
                                                             last,
                                                             buff,
-                                                            i,
+                                                            offset + i,
                                                             string_entry
                                                         ))
                                                     );
@@ -10237,7 +10615,7 @@ System.register(
                                                         (last_token = new Token(
                                                             last,
                                                             buff,
-                                                            i,
+                                                            offset + i,
                                                             string_entry
                                                         ))
                                                     );
@@ -10292,6 +10670,16 @@ System.register(
                                         }
                                     }
 
+                                    if (is_comment || is_string) {
+                                        throwError.call(
+                                            {
+                                                input: fromBytes(input),
+                                            },
+                                            offset + input.length - 1,
+                                            new CriticalLexerErrorUnexpectedEndOfInputException()
+                                        );
+                                    }
+
                                     if (
                                         !is_comment &&
                                         (allow_spaces ||
@@ -10302,7 +10690,10 @@ System.register(
                                             new Token(
                                                 cur,
                                                 buff,
-                                                input.length - buff.length - 1,
+                                                offset +
+                                                    input.length -
+                                                    buff.length -
+                                                    1,
                                                 string_entry
                                             )
                                         );
@@ -10314,7 +10705,77 @@ System.register(
                                 /***/
                             },
 
-                            /***/ 434: /***/ (
+                            /***/ 700: /***/ (
+                                module,
+                                __unused_webpack_exports,
+                                __webpack_require__
+                            ) => {
+                                const {
+                                    toBytes,
+                                    fromBytes,
+                                } = __webpack_require__(88);
+
+                                module.exports = class ChunkData {
+                                    constructor(name, raw, from) {
+                                        this.name = name;
+                                        this.raw = toBytes(raw);
+                                        this.from = from;
+                                        this.to = from + this.raw.length * 2;
+                                    }
+                                    /**
+                                     * Проверяет поизию токена, на принадлежность к текйщему чанку
+                                     *
+                                     * @param {Number} position позиция токена
+                                     * @returns true если приндалежит false если не приндалежит
+                                     */
+
+                                    isOwnChunckPosition(position) {
+                                        return (
+                                            position >= this.from &&
+                                            position <= this.to
+                                        );
+                                    }
+
+                                    toString() {
+                                        return fromBytes(this.raw);
+                                    }
+                                };
+
+                                /***/
+                            },
+
+                            /***/ 946: /***/ (module) => {
+                                module.exports = class LinkerData {
+                                    constructor(contents, chuncks) {
+                                        this.contents = contents;
+                                        this.chuncks = chuncks;
+                                    }
+                                    /**
+                                     * исходя из позиции токена возвращает тот чанк которому он принадлежит.
+                                     *
+                                     * @param {Number} position позиция токена для которой нужно получить чанк
+                                     * @returns
+                                     */
+
+                                    getOwnChunck(position) {
+                                        for (const chunck of this.chuncks) {
+                                            if (
+                                                chunck.isOwnChunckPosition(
+                                                    position
+                                                )
+                                            ) {
+                                                return chunck;
+                                            }
+                                        }
+
+                                        return null;
+                                    }
+                                };
+
+                                /***/
+                            },
+
+                            /***/ 478: /***/ (
                                 module,
                                 __unused_webpack_exports,
                                 __webpack_require__
@@ -10326,33 +10787,37 @@ System.register(
                                  * @author Astecom
                                  */
 
-                                const {
-                                        maybeEquals,
-                                        toBytes,
-                                    } = __webpack_require__(88),
+                                const { maybeEquals } = __webpack_require__(88),
                                     { CHARTYPE } = __webpack_require__(351),
                                     { IOError } = __webpack_require__(943),
                                     Exceptions = __webpack_require__(943),
-                                    lexer = __webpack_require__(94);
+                                    lexer = __webpack_require__(94),
+                                    ChunkData = __webpack_require__(700),
+                                    LinkerData = __webpack_require__(946);
                                 /**
                                  * Препроцессораня функция, линкует файлы.
                                  *
                                  * @param {Array<Token>} data данные для парсинга
-                                 * @param {String} parent_path Путь к файлу, который сейчас обрабатываем
+                                 * @param {String} passed_parent_path Путь к файлу, который сейчас обрабатываем
                                  * @param {Function} reject Фукцния выбрасывания ошибок
                                  *
                                  * @memberof Poonya.Linker
+                                 * @returns {LinkerData}
                                  * @protected
                                  * @async
                                  */
 
                                 async function linker(
                                     data,
-                                    parent_path,
+                                    passed_parent_path,
                                     reject
                                 ) {
+                                    const r_data = new LinkerData(data, []);
+
                                     for (let i = 0; ; i++) {
-                                        if (data[i] == null) return data;
+                                        if (data[i] == null) {
+                                            return r_data;
+                                        }
 
                                         if (
                                             data[i].equals(
@@ -10370,7 +10835,15 @@ System.register(
                                                     CHARTYPE.STRING
                                                 )
                                             ) {
-                                                let path, content;
+                                                let path,
+                                                    content,
+                                                    chunck = r_data.getOwnChunck(
+                                                        data[i].position
+                                                    ),
+                                                    parent_path =
+                                                        chunck == null
+                                                            ? passed_parent_path
+                                                            : chunck.name;
                                                 /*LIQUID*/
 
                                                 path =
@@ -10394,22 +10867,58 @@ System.register(
                                                 }).then((e) => e.text());
                                                 /*LIQUID-END*/
 
+                                                if (path == parent_path) {
+                                                    reject(
+                                                        data[i].position,
+                                                        new Exceptions.IsRecursiveLink(
+                                                            parent_path
+                                                        )
+                                                    );
+                                                }
+
                                                 if (parent_path != null) {
                                                     try {
+                                                        const chunck = new ChunkData(
+                                                            path,
+                                                            await content,
+                                                            data[i].position
+                                                        );
+                                                        const lexed = lexer(
+                                                            chunck.raw,
+                                                            false
+                                                        );
+                                                        const last_pos =
+                                                            lexed[
+                                                                lexed.length - 1
+                                                            ].position;
+
+                                                        for (const current of data.slice(
+                                                            i
+                                                        )) {
+                                                            current.position += last_pos;
+                                                        }
+
+                                                        for (const current of lexed) {
+                                                            current.position +=
+                                                                data[
+                                                                    i
+                                                                ].position;
+                                                        }
+
                                                         data.splice(
                                                             i,
-                                                            data[i + 2].equals(
+                                                            data[
+                                                                i-- + 2
+                                                            ].equals(
                                                                 CHARTYPE.OPERATOR,
                                                                 ';'
                                                             )
                                                                 ? 3
                                                                 : 2,
-                                                            ...lexer(
-                                                                toBytes(
-                                                                    await content
-                                                                ),
-                                                                false
-                                                            )
+                                                            ...lexed
+                                                        );
+                                                        r_data.chuncks.push(
+                                                            chunck
                                                         );
                                                     } catch (e) {
                                                         reject(
@@ -10435,7 +10944,18 @@ System.register(
                                 /***/
                             },
 
-                            /***/ 743: /***/ (
+                            /***/ 938: /***/ (module) => {
+                                module.exports = class ParserData {
+                                    constructor(linker_data, sequense) {
+                                        this.linker_data = linker_data;
+                                        this.sequense = sequense;
+                                    }
+                                };
+
+                                /***/
+                            },
+
+                            /***/ 190: /***/ (
                                 module,
                                 __unused_webpack_exports,
                                 __webpack_require__
@@ -10469,10 +10989,14 @@ System.register(
                                     {
                                         maybeEquals,
                                         countKeys,
+                                        throwError,
+                                        toBytes,
                                     } = __webpack_require__(88),
                                     { CHARTYPE, SERVICE } = __webpack_require__(
                                         351
                                     ),
+                                    ParserData = __webpack_require__(938),
+                                    UseStatement = __webpack_require__(887),
                                     FunctionCall = __webpack_require__(79),
                                     ObjectContructorCall = __webpack_require__(
                                         657
@@ -10481,7 +11005,7 @@ System.register(
                                     ExpressionGroup = __webpack_require__(515),
                                     GetOperator = __webpack_require__(346),
                                     IfStatement = __webpack_require__(602),
-                                    SequenceGroup = __webpack_require__(938),
+                                    SequenceGroup = __webpack_require__(530),
                                     OutStatement = __webpack_require__(254),
                                     WhileStatement = __webpack_require__(267),
                                     RepeatStatement = __webpack_require__(91),
@@ -10498,7 +11022,9 @@ System.register(
                                     ContinueStatement = __webpack_require__(
                                         914
                                     ),
-                                    linker = __webpack_require__(434);
+                                    linker = __webpack_require__(478),
+                                    lexer = __webpack_require__(94),
+                                    LinkerData = __webpack_require__(946);
 
                                 const KEYWORDS = ['true', 'false', 'null'];
                                 /**
@@ -11632,7 +12158,10 @@ System.register(
                                         buffer = [new Array()];
 
                                     for (let i = start; ; i++) {
-                                        if (entries[i].equals(CHARTYPE.NEWLINE))
+                                        if (
+                                            entries[i] != null &&
+                                            entries[i].equals(CHARTYPE.NEWLINE)
+                                        )
                                             continue;
 
                                         switch (true) {
@@ -12058,6 +12587,27 @@ System.register(
                                                     i += result[0].jump;
                                                     buffer.push(result[0].data);
                                                     continue;
+
+                                                case entries[i].equals(
+                                                    CHARTYPE.WORD,
+                                                    'use'
+                                                ):
+                                                    result[0] = parseExpression(
+                                                        i + 1,
+                                                        entries,
+                                                        reject
+                                                    );
+                                                    buffer.push(
+                                                        new UseStatement(
+                                                            entries[
+                                                                i + 1
+                                                            ].position,
+                                                            result[0].data
+                                                        )
+                                                    );
+                                                    i += result[0].jump + 1;
+                                                    continue;
+                                                    break;
 
                                                 case entries[i].equals(
                                                     CHARTYPE.WORD,
@@ -12646,40 +13196,42 @@ System.register(
                                 /**
                                  * Парсит вхождения, которые можно получить вызовом функции @see {@link lexer}
                                  *
-                                 * @param {Array<Token>} entries Вхождения которые будут обработаны парсером
-                                 * @param {Function} reject {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождения на котором произошла ошибка
+                                 * @param {String} input Входящая строка для разбора
                                  * @param {?String} parent_path Путь к шаблону
                                  *
-                                 * @returns {SequenceMainGroup} Тело исполнителя
+                                 * @returns {ParserData} Тело исполнителя
                                  *
                                  * @memberof Poonya.Parser
                                  * @protected
                                  * @async
                                  */
 
-                                async function parser(
-                                    entries,
-                                    reject,
-                                    parent_path
-                                ) {
-                                    return new SequenceMainGroup(
+                                async function parser(input, parent_path) {
+                                    const linked = await linker(
+                                        lexer(toBytes(input), false),
+                                        parent_path,
+                                        throwError
+                                    );
+                                    const data = new ParserData(linked);
+                                    const reject = throwError.bind({
+                                        data: data,
+                                        path: parent_path,
+                                        input,
+                                    });
+                                    data.sequense = new SequenceMainGroup(
                                         codeBlockParser(
                                             0,
-                                            await linker(
-                                                entries,
-                                                parent_path,
-                                                reject
-                                            ),
+                                            linked.contents,
                                             reject
                                         ).data.Sequence
                                     ).__sync(reject);
+                                    return data;
                                 }
                                 /**
                                  * Парсит шаблон сообщения, которое помимо кода Poonya может содержать и любые другие символы вне префикса.
                                  *
-                                 * @param {Array<Token>} entries Вхождения для парсинга
+                                 * @param {String} input Входящая строка для разбора
                                  * @param {String} block_prefix Префикс для обозначения начала блока кода poonya
-                                 * @param {Function} reject {@link CodeEmitter.throwError} - Вызываем при ошибке функция, котора первым аргументм принимает позицию вхождени
                                  * @param {String} parent_path Путь к шаблону
                                  *
                                  * @returns {SequenceMainGroup} Тело исполнителя
@@ -12690,15 +13242,19 @@ System.register(
                                  */
 
                                 async function parserMP(
-                                    entries,
+                                    input,
                                     block_prefix,
-                                    reject,
                                     parent_path
                                 ) {
                                     let hook_index = 0,
                                         buffer = new Array(),
-                                        out = new SequenceMainGroup();
-
+                                        out = new SequenceMainGroup(),
+                                        chuncks = new Array(),
+                                        entries = lexer(toBytes(input), true),
+                                        reject = throwError.bind({
+                                            path: parent_path,
+                                            input,
+                                        });
                                     for (let i = 0; ; i++) {
                                         if (entries[i] == null) break;
 
@@ -12756,22 +13312,32 @@ System.register(
                                             ) &&
                                             hook_index === 1
                                         ) {
+                                            const tmp_linked = await linker(
+                                                buffer.filter(
+                                                    (e) =>
+                                                        e.type !==
+                                                        CHARTYPE.SPACE
+                                                ),
+                                                parent_path,
+                                                throwError
+                                            );
+                                            const tmp_data = new ParserData(
+                                                tmp_linked
+                                            );
+                                            const reject = throwError.bind({
+                                                data: tmp_data,
+                                                path: parent_path,
+                                                input,
+                                            });
                                             out.push(
                                                 codeBlockParser(
                                                     0,
-                                                    await linker(
-                                                        buffer.filter(
-                                                            (e) =>
-                                                                e.type !==
-                                                                CHARTYPE.SPACE
-                                                        ),
-                                                        parent_path,
-                                                        reject
-                                                    ),
+                                                    tmp_linked.contents,
                                                     reject
                                                 ).data
                                             );
                                             buffer.splice(0, buffer.length);
+                                            chuncks.push(...tmp_linked.chuncks);
                                             hook_index--;
                                             continue;
                                         } else {
@@ -12800,21 +13366,31 @@ System.register(
 
                                     if (buffer.length !== 0)
                                         if (hook_index === 1) {
+                                            const tmp_linked = await linker(
+                                                buffer.filter(
+                                                    (e) =>
+                                                        e.type !==
+                                                        CHARTYPE.SPACE
+                                                ),
+                                                parent_path,
+                                                reject
+                                            );
+                                            const tmp_data = new ParserData(
+                                                tmp_linked
+                                            );
+                                            const reject = throwError.bind({
+                                                data: tmp_data,
+                                                path: parent_path,
+                                                input,
+                                            });
                                             out.push(
                                                 codeBlockParser(
                                                     0,
-                                                    await linker(
-                                                        buffer.filter(
-                                                            (e) =>
-                                                                e.type !==
-                                                                CHARTYPE.SPACE
-                                                        ),
-                                                        parent_path,
-                                                        reject
-                                                    ),
+                                                    tmp_linked.contents,
                                                     reject
                                                 ).data
                                             );
+                                            chuncks.push(...tmp_linked.chuncks);
                                             buffer.splice(0, buffer.length);
                                         } else if (hook_index === 0) {
                                             if (buffer.length != 0) {
@@ -12842,7 +13418,13 @@ System.register(
                                                 )
                                             );
                                         }
-                                    return out.__sync(reject);
+
+                                    const synced = out.__sync(reject);
+
+                                    return new ParserData(
+                                        new LinkerData(synced, chuncks),
+                                        synced
+                                    );
                                 }
 
                                 module.exports.parser = parser;
@@ -12948,13 +13530,15 @@ System.register(
                                         parser,
                                         parseExpression,
                                         parserMP,
-                                    } = __webpack_require__(743),
+                                    } = __webpack_require__(190),
                                     { SERVICE } = __webpack_require__(351),
                                     {
                                         toFixed,
                                         toBytes,
                                         fromBytes,
                                         setImmediate,
+                                        throwError,
+                                        createCustomErrorHandler,
                                     } = __webpack_require__(88),
                                     {
                                         iPoonyaConstructsData,
@@ -12982,6 +13566,8 @@ System.register(
                                      *                                 Array with native import libraries
                                      * @param {Console} logger Логгер, за интерфейс нужно взять console, с функциями log, warn, error;
                                      *                         Logger, you need to take console as the interface, with the functions log, warn, error;
+                                     *
+                                     * @property {ParserData} data данные, которые были подготовлены парсером для разбора
                                      *
                                      * @memberof Poonya
                                      * @constructs CodeEmitter
@@ -13167,117 +13753,21 @@ System.register(
                                         }
                                     }
                                     /**
-                                     * Выводит сообщение об ошибке, прекращает выполнения текущего шаблона.
-                                     * Displays an error message, terminates the execution of the current template.
-                                     *
-                                     * @param {Number} pos Позиция в которой произшла ошибка
-                                     *                     The position at which the error occurred
-                                     *
-                                     * @param {String} error Сообщение с ошибкой
-                                     *                       Error message
-                                     *
-                                     * @param {Number} rad_of Радиус печати, т.е. количество строк которое будет печатать в вывод по мимо строки на которой произошла ошибка
-                                     *                        The radius of the seal, i.e. the number of lines that will print to the output next to the line on which the error occurred
-                                     * @method
-                                     * @public
-                                     */
-
-                                    throwError(pos, error, rad_of = 5) {
-                                        rad_of = parseInt(rad_of);
-                                        let buffer = [],
-                                            data = this.input.split(/$\n/gm),
-                                            line_dump = fromBytes(
-                                                toBytes(this.input).slice(
-                                                    0,
-                                                    pos
-                                                )
-                                            ).split(/$\n/gm),
-                                            line = line_dump.length - 1,
-                                            line_start =
-                                                line - parseInt(rad_of / 2) < 0
-                                                    ? 0
-                                                    : line -
-                                                      parseInt(rad_of / 2),
-                                            line_end =
-                                                line_start + rad_of <
-                                                data.length
-                                                    ? line_start + rad_of
-                                                    : data.length,
-                                            ll =
-                                                line_end.toString(16).length +
-                                                2;
-                                        buffer.push(
-                                            '  at ',
-                                            this.path,
-                                            ':',
-                                            line + 1,
-                                            ':',
-                                            line_dump[line].length
-                                        );
-
-                                        if (pos != -1) {
-                                            buffer.push(' :>\n');
-
-                                            for (
-                                                let i = line_start;
-                                                i < line_end;
-                                                i++
-                                            ) {
-                                                buffer.push(
-                                                    '     ',
-                                                    toFixed(i + 1, ll),
-                                                    ' |> ',
-                                                    data[i]
-                                                );
-
-                                                if (i === line) {
-                                                    buffer.push(
-                                                        '\n     '.padEnd(
-                                                            ll + 6,
-                                                            ' '
-                                                        ),
-                                                        ' |> '.padEnd(
-                                                            line_dump[line]
-                                                                .length + 3,
-                                                            ' '
-                                                        ),
-                                                        '^'
-                                                    );
-                                                }
-
-                                                if (i + 1 !== line_end)
-                                                    buffer.push('\n');
-                                            }
-                                        }
-
-                                        if (error instanceof PoonyaException) {
-                                            error.message +=
-                                                '\n' + buffer.join('');
-                                            throw error;
-                                        } else
-                                            throw new PoonyaException(
-                                                error,
-                                                buffer.join('')
-                                            );
-                                    }
-                                    /**
                                      * Инициалзирует блок инструкций
                                      * Initializes a block of instructions
                                      *
                                      * @param {String|Heap} import_s названия нативных библиотек для импорта
                                      *                               names of native libraries for import
-                                     * @param {Console} logger интерфейс логгинга, Console like
-                                     *                         logging interface, Console like
                                      *
                                      * @method
                                      * @private
                                      */
 
-                                    [INIT](import_s, logger) {
-                                        this.libraries = Import(
-                                            ['default', ...import_s],
-                                            logger
-                                        );
+                                    [INIT](import_s) {
+                                        this.libraries = Import([
+                                            'default',
+                                            ...import_s,
+                                        ]);
                                         this.import = import_s;
                                         this.data = null;
                                     }
@@ -13298,12 +13788,12 @@ System.register(
 
                                     [RESULT](data, error, out, c_clone) {
                                         if (Array.isArray(data)) {
-                                            this.data.result(
+                                            this.data.sequense.result(
                                                 new Context(
                                                     this.libraries,
                                                     error,
                                                     ...data
-                                                ),
+                                                ).setSource(this.path),
                                                 out,
                                                 error,
                                                 () => out.end()
@@ -13311,18 +13801,15 @@ System.register(
                                         } else if (data instanceof Context) {
                                             if (c_clone) {
                                                 const clone = data.clone();
-                                                clone.import(
-                                                    this.libraries,
-                                                    error
-                                                );
-                                                this.data.result(
+                                                clone.import(this.libraries);
+                                                this.data.sequense.result(
                                                     clone,
                                                     out,
                                                     error,
                                                     () => out.end()
                                                 );
                                             } else {
-                                                this.data.result(
+                                                this.data.sequense.result(
                                                     data,
                                                     out,
                                                     error,
@@ -13330,12 +13817,12 @@ System.register(
                                                 );
                                             }
                                         } else {
-                                            this.data.result(
+                                            this.data.sequense.result(
                                                 new Context(
                                                     this.libraries,
                                                     error,
                                                     data
-                                                ),
+                                                ).setSource(this.path),
                                                 out,
                                                 error,
                                                 () => out.end()
@@ -13361,17 +13848,21 @@ System.register(
 
                                     result(
                                         data = new Heap(),
-                                        error = this.throwError.bind(this),
+                                        error = throwError.bind(this),
                                         c_clone = false
                                     ) {
-                                        const out = new PoonyaOutputStream(); // Если вхождения уже загружены, выполняем последовательность
+                                        const out = new PoonyaOutputStream(),
+                                            m_error = createCustomErrorHandler(
+                                                error,
+                                                out
+                                            ); // Если вхождения уже загружены, выполняем последовательность
                                         // If the entries have already been loaded, execute the sequence
 
                                         if (this.loaded) {
                                             setImmediate(() =>
                                                 this[RESULT](
                                                     data,
-                                                    error,
+                                                    m_error,
                                                     out,
                                                     c_clone
                                                 )
@@ -13382,7 +13873,7 @@ System.register(
                                             this.on('load', () =>
                                                 this[RESULT](
                                                     data,
-                                                    error,
+                                                    m_error,
                                                     out,
                                                     c_clone
                                                 )
@@ -13431,13 +13922,8 @@ System.register(
                                             async () => {
                                                 try {
                                                     this.data = await parserMP(
-                                                        lexer(
-                                                            toBytes(this.input)
-                                                        ),
+                                                        this.input,
                                                         block_prefix,
-                                                        this.throwError.bind(
-                                                            this
-                                                        ),
                                                         this.path
                                                     );
                                                 } catch (e) {
@@ -13489,13 +13975,7 @@ System.register(
                                             async () => {
                                                 try {
                                                     this.data = await parser(
-                                                        lexer(
-                                                            toBytes(this.input),
-                                                            false
-                                                        ),
-                                                        this.throwError.bind(
-                                                            this
-                                                        ),
+                                                        this.input,
                                                         this.path
                                                     );
                                                 } catch (e) {
@@ -13540,8 +14020,7 @@ System.register(
                                                     lexer(
                                                         toBytes(this.input),
                                                         false
-                                                    ),
-                                                    this.throwError.bind(this)
+                                                    )
                                                 ).data;
                                             } catch (e) {
                                                 this.emit('error', e);
@@ -13561,7 +14040,7 @@ System.register(
                                                         this.libraries,
                                                         error
                                                     );
-                                                    this.data.result(
+                                                    this.data.sequense.result(
                                                         context,
                                                         [],
                                                         error,
@@ -13574,7 +14053,7 @@ System.register(
                                                             )
                                                     );
                                                 } else {
-                                                    this.data.result(
+                                                    this.data.sequense.result(
                                                         data,
                                                         [],
                                                         error,
@@ -13593,8 +14072,8 @@ System.register(
                                                         this.libraries,
                                                         error,
                                                         ...data
-                                                    );
-                                                    this.data.result(
+                                                    ).setSource(this.path);
+                                                    this.data.sequense.result(
                                                         context,
                                                         [],
                                                         error,
@@ -13611,8 +14090,8 @@ System.register(
                                                         this.libraries,
                                                         error,
                                                         ...data
-                                                    );
-                                                    this.data.result(
+                                                    ).setSource(this.path);
+                                                    this.data.sequense.result(
                                                         context,
                                                         [],
                                                         error,
@@ -13640,18 +14119,18 @@ System.register(
 
                                     result(
                                         data = new Heap(),
-                                        error = this.throwError.bind(this),
+                                        error = throwError.bind(this),
                                         c_clone = false
                                     ) {
                                         const _ = this;
 
                                         return new Promise((res) => {
                                             if (_.loaded)
-                                                _[RESULT](
-                                                    data,
-                                                    error,
-                                                    c_clone
-                                                ).then(res);
+                                                _[RESULT](data, error, c_clone)
+                                                    .then(res)
+                                                    .catch((e) => {
+                                                        throw e;
+                                                    });
                                             else
                                                 _.on('load', () =>
                                                     _[RESULT](
@@ -13659,7 +14138,9 @@ System.register(
                                                         error,
                                                         c_clone
                                                     ).then(res)
-                                                );
+                                                ).catch((e) => {
+                                                    throw e;
+                                                });
                                         });
                                     }
                                 }
@@ -13692,15 +14173,15 @@ System.register(
                                                         'default',
                                                         ...libs,
                                                     ]),
-                                                    CodeEmitter.prototype.throwError.bind(
-                                                        {
-                                                            input: '',
-                                                            charset: 'utf-8',
-                                                            path: 'untitled.po',
-                                                            logger: console,
-                                                        }
-                                                    ),
+                                                    throwError.bind({
+                                                        input: '',
+                                                        charset: 'utf-8',
+                                                        path: 'untitled.po',
+                                                        logger: console,
+                                                    }),
                                                     data
+                                                ).setSource(
+                                                    module.parent.filename
                                                 )
                                             );
                                         } else {
@@ -13711,17 +14192,15 @@ System.register(
                                                             'default',
                                                             ...libs,
                                                         ]),
-                                                        CodeEmitter.prototype.throwError.bind(
-                                                            {
-                                                                input: '',
-                                                                charset:
-                                                                    'utf-8',
-                                                                path:
-                                                                    'untitled.po',
-                                                                logger: console,
-                                                            }
-                                                        ),
+                                                        throwError.bind({
+                                                            input: '',
+                                                            charset: 'utf-8',
+                                                            path: 'untitled.po',
+                                                            logger: console,
+                                                        }),
                                                         data
+                                                    ).setSource(
+                                                        module.parent.filename
                                                     )
                                                 );
                                             });
@@ -13969,6 +14448,9 @@ System.register(
                                         iPoonyaPrototype,
                                         iCodeEmitter,
                                     } = __webpack_require__(161),
+                                    { PoonyaException } = __webpack_require__(
+                                        943
+                                    ),
                                     NativeFunction = __webpack_require__(329);
                                 /**
                                  * Фукция которая преобразует нативное значение в значение Poonya
@@ -14132,6 +14614,150 @@ System.register(
                                     }
                                 }
                                 /**
+                                 * Создает кастомный обработчик ошибок, для вывода их в поток вывода
+                                 *
+                                 * @param {throwError} error функция выброса исключений
+                                 * @param {PoonyaOutputStream} out поток вывода
+                                 * @returns кастомный обработчик ошибок
+                                 */
+
+                                function createCustomErrorHandler(error, out) {
+                                    return (position, content) => {
+                                        try {
+                                            error(position, content);
+                                        } catch (e) {
+                                            out.error(e);
+                                        }
+                                    };
+                                }
+                                /**
+                                 * !! Необходимо привести контекст
+                                 *
+                                 * Выводит сообщение об ошибке, прекращает выполнения текущего шаблона.
+                                 * Displays an error message, terminates the execution of the current template.
+                                 *
+                                 * @param {Number} pos Позиция в которой произшла ошибка
+                                 *                     The position at which the error occurred
+                                 *
+                                 * @param {String} error Сообщение с ошибкой
+                                 *                       Error message
+                                 *
+                                 * @param {Number} rad_of Радиус печати, т.е. количество строк которое будет печатать в вывод по мимо строки на которой произошла ошибка
+                                 *                        The radius of the seal, i.e. the number of lines that will print to the output next to the line on which the error occurred
+                                 * @method
+                                 * @public
+                                 */
+
+                                function throwError(pos, error, rad_of = 5) {
+                                    rad_of = parseInt(rad_of);
+                                    const linked =
+                                        this != null && this.data != null
+                                            ? this.data.linker_data.getOwnChunck(
+                                                  pos
+                                              )
+                                            : null;
+                                    const input =
+                                        linked != null
+                                            ? linked.toString()
+                                            : this != null
+                                            ? this.input
+                                            : null;
+                                    const path =
+                                        linked != null
+                                            ? linked.name
+                                            : this != null
+                                            ? this.path
+                                            : null;
+                                    const buffer = new Array();
+
+                                    if (input) {
+                                        let data = input.split(/$\n/gm),
+                                            line_dump = fromBytes(
+                                                toBytes(input).slice(
+                                                    0,
+                                                    pos -
+                                                        (linked != null
+                                                            ? linked.from
+                                                            : 0)
+                                                )
+                                            ).split(/$\n/gm),
+                                            line = line_dump.length - 1,
+                                            line_start =
+                                                line - parseInt(rad_of / 2) < 0
+                                                    ? 0
+                                                    : line -
+                                                      parseInt(rad_of / 2),
+                                            line_end =
+                                                line_start + rad_of <
+                                                data.length
+                                                    ? line_start + rad_of
+                                                    : data.length,
+                                            ll =
+                                                line_end.toString(16).length +
+                                                2;
+
+                                        if (pos != -1) {
+                                            buffer.push(
+                                                '  at ',
+                                                path,
+                                                ':',
+                                                line + 1,
+                                                ':',
+                                                line_dump[line].length,
+                                                ' :>\n'
+                                            );
+
+                                            for (
+                                                let i = line_start;
+                                                i < line_end;
+                                                i++
+                                            ) {
+                                                buffer.push(
+                                                    '     ',
+                                                    toFixed(i + 1, ll),
+                                                    ' |> ',
+                                                    data[i]
+                                                );
+
+                                                if (i === line) {
+                                                    buffer.push(
+                                                        '\n     '.padEnd(
+                                                            ll + 6,
+                                                            ' '
+                                                        ),
+                                                        ' |> '.padEnd(
+                                                            line_dump[line]
+                                                                .length + 3,
+                                                            ' '
+                                                        ),
+                                                        '^'
+                                                    );
+                                                }
+
+                                                if (i + 1 !== line_end)
+                                                    buffer.push('\n');
+                                            }
+                                        }
+                                    }
+
+                                    if (error != null && !error.throwed) {
+                                        if (error instanceof PoonyaException) {
+                                            if (buffer.length != 0) {
+                                                error.message +=
+                                                    '\n' + buffer.join('');
+                                            }
+
+                                            error.throwed = true;
+                                            throw error;
+                                        } else
+                                            throw new PoonyaException(
+                                                error,
+                                                buffer.join(''),
+                                                true
+                                            );
+                                    }
+                                }
+                                /**
                                  * Иногда некоторые выражения записываются неоднозначно, допустим <br> <br>
                                  *
                                  * if (<b> < exp > </b>) {} <br>
@@ -14289,14 +14915,16 @@ System.register(
                                 const Tick = setImmediate;
                                 /*LIQUID-END*/
 
-                                module.exports.setImmediate = setImmediate;
-                                module.exports.maybeEquals = maybeEquals;
-                                module.exports.countKeys = countKeys;
-                                module.exports.fromBytes = fromBytes;
-                                module.exports.toFixed = toFixed;
-                                module.exports.toBytes = toBytes;
                                 module.exports.Tick = Tick;
                                 module.exports.Cast = Cast;
+                                module.exports.toFixed = toFixed;
+                                module.exports.toBytes = toBytes;
+                                module.exports.countKeys = countKeys;
+                                module.exports.fromBytes = fromBytes;
+                                module.exports.throwError = throwError;
+                                module.exports.maybeEquals = maybeEquals;
+                                module.exports.setImmediate = setImmediate;
+                                module.exports.createCustomErrorHandler = createCustomErrorHandler;
 
                                 /***/
                             },
