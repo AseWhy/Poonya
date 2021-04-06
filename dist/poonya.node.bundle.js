@@ -9970,7 +9970,11 @@ module.exports = /******/ (() => {
                                     logger: console,
                                 }),
                                 data
-                            ).setSource(module.parent.filename)
+                            ).setSource(
+                                module.parent
+                                    ? module.parent.filename
+                                    : module.filename
+                            )
                         );
                     } else {
                         SERVICE.ACTIONS.on('load', () => {
@@ -9984,7 +9988,11 @@ module.exports = /******/ (() => {
                                         logger: console,
                                     }),
                                     data
-                                ).setSource(module.parent.filename)
+                                ).setSource(
+                                    module.parent
+                                        ? module.parent.filename
+                                        : module.filename
+                                )
                             );
                         });
                     }

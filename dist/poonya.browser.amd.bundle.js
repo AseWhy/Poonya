@@ -11759,7 +11759,11 @@ define('poonya', [], () =>
                                         logger: console,
                                     }),
                                     data
-                                ).setSource(module.parent.filename)
+                                ).setSource(
+                                    /*LIQUID*/
+                                    window.location.origin
+                                    /*LIQUID-END*/
+                                )
                             );
                         } else {
                             SERVICE.ACTIONS.on('load', () => {
@@ -11773,7 +11777,11 @@ define('poonya', [], () =>
                                             logger: console,
                                         }),
                                         data
-                                    ).setSource(module.parent.filename)
+                                    ).setSource(
+                                        /*LIQUID*/
+                                        window.location.origin
+                                        /*LIQUID-END*/
+                                    )
                                 );
                             });
                         }

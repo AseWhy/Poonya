@@ -14181,7 +14181,9 @@ System.register(
                                                     }),
                                                     data
                                                 ).setSource(
-                                                    module.parent.filename
+                                                    /*LIQUID*/
+                                                    window.location.origin
+                                                    /*LIQUID-END*/
                                                 )
                                             );
                                         } else {
@@ -14200,7 +14202,9 @@ System.register(
                                                         }),
                                                         data
                                                     ).setSource(
-                                                        module.parent.filename
+                                                        /*LIQUID*/
+                                                        window.location.origin
+                                                        /*LIQUID-END*/
                                                     )
                                                 );
                                             });

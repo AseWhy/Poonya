@@ -541,7 +541,14 @@ function createContext(data = new Object, ...libs) {
                 }),
 
                 data
-            ).setSource(module.parent.filename));
+            ).setSource(
+                // #!if platform === 'node'
+                module.parent ? module.parent.filename : module.filename
+                // #!endif
+                // #!if platform === 'browser'
+                // ~ window.location.origin
+                // #!endif
+            ));
         } else {
             SERVICE.ACTIONS.on('load', () => {
                 res(new Context(
@@ -555,7 +562,14 @@ function createContext(data = new Object, ...libs) {
                     }),
     
                     data
-                ).setSource(module.parent.filename));
+                ).setSource(
+                    // #!if platform === 'node'
+                    module.parent ? module.parent.filename : module.filename
+                    // #!endif
+                    // #!if platform === 'browser'
+                    // ~ window.location.origin
+                    // #!endif
+                ));
             });
         }
     });
