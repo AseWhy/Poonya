@@ -1,0 +1,5 @@
+set libname = 'html';
+
+use 'default.' libname;
+
+> html != null ? 'It working!)' : 'It not working!(';

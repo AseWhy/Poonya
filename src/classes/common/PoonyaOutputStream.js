@@ -62,6 +62,7 @@ class PoonyaOutputStream extends iPoonyaOutputStream {
         const stream = new Stream.Writable();
 
         _.on('data', stream.write.bind(stream));
+        _.on('error', stream.emit.bind(stream, 'error'));
         _.on('end', stream.end.bind(stream));
 
         return stream;
@@ -104,6 +105,12 @@ class PoonyaOutputStream extends iPoonyaOutputStream {
         this.emit('data', data);
     }
 
+    error(error) {
+        this._data.push(error);
+
+        this.emit('error', error);
+    }
+
     end() {
         this._ended = true;
 
@@ -122,7 +129,10 @@ class PoonyaOutputStream extends iPoonyaOutputStream {
      */
     complete() {
         if (!this._ended)
-            return new Promise(res => this.on('end', () => res(this._data)));
+            return new Promise((res, rej) => {
+                this.on('end', () => res(this._data));
+                this.on('error', error => rej(error))
+            });
         else
             return this._data;
     }

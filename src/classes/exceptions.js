@@ -43,6 +43,20 @@ class ParserException extends PoonyaException {
 }
 
 /**
+ * Основное исключение лексера
+ *
+ * @memberof Poonya.Exceptions
+ * @name LexerException
+ * @class
+ * @protected
+ */
+ class LexerException extends PoonyaException {
+    constructor(header, message) {
+        super('Lexer exception / ' + header, message);
+    }
+}
+
+/**
  * Основное исключение линкера
  *
  * @memberof Poonya.Exceptions
@@ -419,6 +433,20 @@ class CriticalParserErrorUnexpectedEndOfExpression extends ParserException {
 }
 
 /**
+ * Критическая ошибка лексера, неожиданный конец ввода
+ *
+ * @memberof Poonya.Exceptions
+ * @name CriticalLexerErrorUnexpectedEndOfInputException
+ * @class
+ * @protected
+ */
+ class CriticalLexerErrorUnexpectedEndOfInputException extends LexerException {
+    constructor() {
+        super(`Critical lexer error: unexpected end of input`);
+    }
+}
+
+/**
  * Критическая ошибка парсера, неожиданный конец ввода
  *
  * @memberof Poonya.Exceptions
@@ -564,9 +592,24 @@ class IsNotAConstructorException extends PoonyaException {
     }
 }
 
+/**
+ * Невозможно импортировать статическую библиотеку, возможно неправильно указано имя.
+ *
+ * @memberof Poonya.Exceptions
+ * @name CannotImportStaticLibrary
+ * @class
+ * @protected
+ */
+ class CannotImportStaticLibrary extends PoonyaException {
+    constructor(...libs) {
+        super(`library ${libs.map(e => `"${e.name}"`).join(', ')} cannot be imported, possibly the wrong library identifier for import was specified`);
+    }
+}
+
 module.exports.IOError = IOError;
-module.exports.IsRecursiveLink = IsRecursiveLink;
 module.exports.LinkerIOError = LinkerIOError;
+module.exports.LexerException = LexerException;
+module.exports.IsRecursiveLink = IsRecursiveLink;
 module.exports.LinkerException = LinkerException;
 module.exports.PoonyaException = PoonyaException;
 module.exports.ParserException = ParserException;
@@ -576,28 +619,30 @@ module.exports.GetFieldOfNullException = GetFieldOfNullException;
 module.exports.BadEmptyObjectException = BadEmptyObjectException;
 module.exports.UnexpectedTokenException = UnexpectedTokenException;
 module.exports.UnexpectedTokenStatement = UnexpectedTokenStatement;
+module.exports.CannotImportStaticLibrary = CannotImportStaticLibrary;
 module.exports.FieldNotAFunctionException = FieldNotAFunctionException;
 module.exports.BadKeyInvalidTypeException = BadKeyInvalidTypeException;
 module.exports.IsNotAConstructorException = IsNotAConstructorException;
-module.exports.ParserEmtyArgumentException = ParserEmtyArgumentException;
 module.exports.LinkerPathNotGiveException = LinkerPathNotGiveException;
+module.exports.ParserEmtyArgumentException = ParserEmtyArgumentException;
 module.exports.CriticalParserErrorException = CriticalParserErrorException;
 module.exports.NativeFunctionExecutionError = NativeFunctionExecutionError;
 module.exports.BadKeyProtectedFieldException = BadKeyProtectedFieldException;
 module.exports.TheFieldMustBeNumberException = TheFieldMustBeNumberException;
+module.exports.BadArrowNotationJumpingTwoLevels = BadArrowNotationJTException;
 module.exports.NativeFunctionReturnValueError = NativeFunctionReturnValueError;
 module.exports.UnableToRecognizeTypeException = UnableToRecognizeTypeException;
 module.exports.TheFieldNotHasDeclaredExceprion = TheFieldNotHasDeclaredExceprion;
 module.exports.UnableToCreateAnObjectException = UnableToCreateAnObjectException;
-module.exports.BadArrowNotationJumpingTwoLevels = BadArrowNotationJTException;
+module.exports.BadArrowNotationJumpingToUpperLevel = BadArrowNotationJTULException;
 module.exports.UnexpectedWordTypeAndGetException = UnexpectedWordTypeAndGetException;
 module.exports.ParserUnfinishedNotationException = ParserUnfinishedNotationException;
-module.exports.BadArrowNotationJumpingToUpperLevel = BadArrowNotationJTULException;
 module.exports.TheFieldMustBeAnArrayInstanceExceprion = TheFieldMustBeAnArrayInstanceExceprion;
 module.exports.TheFieldAlreadyHasBeenDeclaredException = TheFieldAlreadyHasBeenDeclaredException;
 module.exports.SegmentationFaultEmptyArgumentException = SegmentationFaultEmptyArgumentException;
 module.exports.InvalidSequenceForLetiableAccessException = InvalidSequenceForLetiableAccessException;
 module.exports.CriticalParserErrorUnexpectedEndOfExpression = CriticalParserErrorUnexpectedEndOfExpression;
+module.exports.CriticalLexerErrorUnexpectedEndOfInputException = CriticalLexerErrorUnexpectedEndOfInputException;
 module.exports.CriticalParserErrorUnexpectedEndOfInputException = CriticalParserErrorUnexpectedEndOfInputException;
 module.exports.CriticalParserErrorNoRawDataTransmittedException = CriticalParserErrorNoRawDataTransmittedException;
 module.exports.SegmentationFaultMaximumSegmentsForBlockException = SegmentationFaultMaximumSegmentsForBlockException;

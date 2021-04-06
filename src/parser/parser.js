@@ -36,6 +36,7 @@ const {
     ,   SERVICE
     } = require('../classes/static')
     ,   ParserData = require('./ParserData')
+    ,   UseStatement = require("../classes/excecution/statements/UseStatement")
     ,   FunctionCall = require('../classes/excecution/expression/FunctionCall')
     ,   ObjectContructorCall = require('../classes/excecution/expression/ObjectContructorCall')
     ,   TernarOperator = require('../classes/excecution/expression/TernarOperator')
@@ -53,9 +54,9 @@ const {
     ,   GroupOutStatement = require('../classes/excecution/expression/GroupOutStatement')
     ,   BreakStatement = require('../classes/excecution/statements/BreakStatement')
     ,   ContinueStatement = require('../classes/excecution/statements/ContinueStatement')
-    ,   linker = require('../linker/linker');
-const lexer = require("../lexer/lexer");
-const LinkerData = require("../linker/LinkerData");
+    ,   linker = require('../linker/linker')
+    ,   lexer = require("../lexer/lexer")
+    ,   LinkerData = require("../linker/LinkerData");
 
 const KEYWORDS = [ 'true', 'false', 'null' ];
 
@@ -759,7 +760,7 @@ function segmentationParser(
         buffer = [new Array()];
 
     for (let i = start;; i++) {
-        if(entries[i].equals(CHARTYPE.NEWLINE))
+        if(entries[i] != null && entries[i].equals(CHARTYPE.NEWLINE))
             continue;
 
         switch (true) {
@@ -1059,6 +1060,14 @@ function codeBlockParser(start, entries, reject) {
 
                     buffer.push(result[0].data);
                     continue;
+                case entries[i].equals(CHARTYPE.WORD, 'use'):
+                    result[0] = parseExpression(i + 1, entries, reject);
+
+                    buffer.push(new UseStatement(entries[i + 1].position, result[0].data));
+
+                    i += result[0].jump + 1;
+                    continue;
+                break;
                 case entries[i].equals(CHARTYPE.WORD, "while"):
                     if (
                         i + 1 < leng &&

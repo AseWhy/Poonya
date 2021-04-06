@@ -145,17 +145,21 @@ new class DefaultHtmlStaticLibrary extends PoonyaStaticLibrary {
         this.addField('closeTag', this.closeTag, FIELDFLAGS.CONSTANT);
     }
 
-    createElement(service, tag, content, attrs){
-        if(typeof tag === 'string' && typeof content === 'string') {
-            let form_attrs = new Array();
+    createElement(service, tag, content, attrs = new Array()){
+        if(typeof tag != 'string') {
+			tag = tag != null ? tag.toString() : '';
+		}
 
-            for(let key in attrs)
-                form_attrs.push(`${key}="${format(attrs[key]).replace(QUOTE_EXP, '\\"')}"`);
+		if(typeof content != 'string') {
+			content = content != null ? content.toString() : '';
+		}
 
-            return `<${tag} ${form_attrs.join(' ')}>${content}</${tag}>`;
-        } else {
-            return null;
-        }
+		let form_attrs = new Array();
+
+		for(let key in attrs)
+			form_attrs.push(`${key}="${format(attrs[key]).replace(QUOTE_EXP, '\\"')}"`);
+
+		return `<${tag}${form_attrs.length > 0 ? ' ' + form_attrs.join(' ') : ''}>${content}</${tag}>`;
     }
 
     getElementName(service, element) {
@@ -172,7 +176,7 @@ new class DefaultHtmlStaticLibrary extends PoonyaStaticLibrary {
             return false;
     }
 
-    createTag(service, tag, attrs) {
+    createTag(service, tag, attrs = new Array()) {
         if(typeof tag == 'string'){
             let form_attrs = new Array();
 

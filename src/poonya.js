@@ -87,7 +87,7 @@ const
     { Context, Heap } = require("./classes/storage"),
     { parser, parseExpression, parserMP } = require("./parser/parser.js"),
     { SERVICE } = require('./classes/static'),
-    { toFixed, toBytes, fromBytes, setImmediate, throwError } = require('./utils'),
+    { toFixed, toBytes, fromBytes, setImmediate, throwError, createCustomErrorHandler } = require('./utils'),
     { iPoonyaConstructsData, iCodeEmitter } = require("./classes/interfaces"),
     PoonyaOutputStream = require("./classes/common/PoonyaOutputStream"),
     lexer = require("./lexer/lexer.js");
@@ -260,14 +260,12 @@ class CodeEmitter extends iCodeEmitter {
      *
      * @param {String|Heap} import_s названия нативных библиотек для импорта
      *                               names of native libraries for import
-     * @param {Console} logger интерфейс логгинга, Console like
-     *                         logging interface, Console like
      * 
      * @method
      * @private
      */
-    [INIT](import_s, logger){
-        this.libraries = Import(["default", ...import_s], logger);
+    [INIT](import_s){
+        this.libraries = Import(["default", ...import_s]);
 
         this.import = import_s;
 
@@ -295,7 +293,7 @@ class CodeEmitter extends iCodeEmitter {
             if(c_clone) {
                 const clone = data.clone();
 
-                clone.import(this.libraries, error);
+                clone.import(this.libraries);
 
                 this.data.sequense.result(clone, out, error, () => out.end());
             } else {
@@ -323,16 +321,17 @@ class CodeEmitter extends iCodeEmitter {
      * @public
      */
     result(data = new Heap(), error = throwError.bind(this), c_clone = false) {
-        const out = new PoonyaOutputStream();
+        const out = new PoonyaOutputStream(),
+              m_error = createCustomErrorHandler(error, out);
 
         // Если вхождения уже загружены, выполняем последовательность
         // If the entries have already been loaded, execute the sequence
         if(this.loaded) {
-            setImmediate(() => this[RESULT](data, error, out, c_clone));
+            setImmediate(() => this[RESULT](data, m_error, out, c_clone));
         } else {
             // Иначе, ждем окончания загрузки и выполняем последовательность
             // Otherwise, wait for the download to finish and execute the sequence
-            this.on('load', () => this[RESULT](data, error, out, c_clone));
+            this.on('load', () => this[RESULT](data, m_error, out, c_clone));
         }
 
         return out;
@@ -503,9 +502,9 @@ class ExpressionPattern extends CodeEmitter {
 
         return new Promise(res => {
             if(_.loaded)
-                _[RESULT](data, error, c_clone).then(res);
+                _[RESULT](data, error, c_clone).then(res).catch(e => {throw e});
             else
-                _.on('load', () => _[RESULT](data, error, c_clone).then(res));
+                _.on('load', () => _[RESULT](data, error, c_clone).then(res)).catch(e => {throw e});
         });
     }
 }

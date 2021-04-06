@@ -6,7 +6,6 @@
 
 "use strict";
 
-const { PoonyaException } = require("./classes/exceptions");
 const {
         SERVICE
     } = require('./classes/static'), {
@@ -16,6 +15,9 @@ const {
         iPoonyaPrototype,
         iCodeEmitter
     } = require('./classes/interfaces'),
+    {   
+        PoonyaException
+    } = require("./classes/exceptions"),
     // #!if platform === 'node'
     {
         nextTick
@@ -92,87 +94,20 @@ function Cast(data, context, parents_three = new Array(), resolve) {
 }
 
 /**
- * Иногда некоторые выражения записываются неоднозначно, допустим <br> <br>
- *
- * if (<b> < exp > </b>) {} <br>
- * <br>
- * Или <br>
- * <br>
- * if (<b> < exp > </b>) { <br>
- *  <br>
- * } <br>
- * <br>
- * Или <br>
- * <br>
- * if (<b> < exp > </b>) <br>
- * { <br>
- *  <br>
- * } <br>
- * <br>
- * И это все будет if, эта функцию убирает возможные 'линие символы'
- *
- * @param {Array<Token>} entries Выхождение, на вход
- * @param {Number} index Проверяемый индекс
- * @param {String} equalts_t Тип с которым сравниваем
- * @param {String|Array<String>} equalts_v Значение(я) с которым(и) сравниваем
- *
- * @memberof Poonya.Utils
- * @private
+ * Создает кастомный обработчик ошибок, для вывода их в поток вывода
+ * 
+ * @param {throwError} error функция выброса исключений
+ * @param {PoonyaOutputStream} out поток вывода
+ * @returns кастомный обработчик ошибок
  */
-function maybeEquals(entries, index, equalts_t, equalts_v) {
-    while (entries[index] != null && entries[index].equals(equalts_t, equalts_v))
-        entries.splice(index, 1);
-
-    return true;
-}
-
-/**
- * Подсчитывает количиство неприрывных одинаковых вхождений
- *
- * @param {Array<Token>} entries вхождения для парсинга
- * @param {Number} start начальная позиция парсинга
- * @param {String} equalts_t Тип с которым сравниваем
- * @param {String|Array<String>} equalts_v Значение(я) с которым(и) сравниваем
- *
- * @memberof Poonya.Utils
- * @private
- */
-function countKeys(entries, start, equalts_t, equalts_v) {
-    for (let i = start, to = entries.length; i < to; i++)
-        if (entries[i] == null || !entries[i].equals(equalts_t, equalts_v)) return i - start;
-}
-
-/**
- * Форматирует число подгоняя его под общую длинну
- *
- * @param {Number} d Чило для формата
- * @param {Number} l Желаемая длинна
- * @memberof Poonya.Utils
- * @function toFixed
- * @protected
- * @static
- */
-function toFixed(d, l) {
-    return '0x' + d.toString(16).padStart(l - 2, '0');
-}
-
-/**
- * Преобразует строку в массив байтов
- *
- * @function toBytes
- * @param {String} input Строка для преобразования
- * @memberof Poonya.Utils
- * @returns {Array<Number>} массив с байтами
- * @protected
- * @static
- */
-function toBytes(input) {
-    let bytes = new Array();
-
-    for(let i = 0, char, leng = input.length; i < leng; i++)
-        bytes.push((char = input.charCodeAt(i)) >>> 8, char & 0xFF);
-
-    return bytes;
+ function createCustomErrorHandler(error, out) {
+    return (position, content) => {
+        try {
+            error(position, content);
+        } catch(e) {
+            out.error(e);
+        }
+    }
 }
 
 /**
@@ -264,6 +199,90 @@ function toBytes(input) {
 }
 
 /**
+ * Иногда некоторые выражения записываются неоднозначно, допустим <br> <br>
+ *
+ * if (<b> < exp > </b>) {} <br>
+ * <br>
+ * Или <br>
+ * <br>
+ * if (<b> < exp > </b>) { <br>
+ *  <br>
+ * } <br>
+ * <br>
+ * Или <br>
+ * <br>
+ * if (<b> < exp > </b>) <br>
+ * { <br>
+ *  <br>
+ * } <br>
+ * <br>
+ * И это все будет if, эта функцию убирает возможные 'линие символы'
+ *
+ * @param {Array<Token>} entries Выхождение, на вход
+ * @param {Number} index Проверяемый индекс
+ * @param {String} equalts_t Тип с которым сравниваем
+ * @param {String|Array<String>} equalts_v Значение(я) с которым(и) сравниваем
+ *
+ * @memberof Poonya.Utils
+ * @private
+ */
+function maybeEquals(entries, index, equalts_t, equalts_v) {
+    while (entries[index] != null && entries[index].equals(equalts_t, equalts_v))
+        entries.splice(index, 1);
+
+    return true;
+}
+
+/**
+ * Подсчитывает количиство неприрывных одинаковых вхождений
+ *
+ * @param {Array<Token>} entries вхождения для парсинга
+ * @param {Number} start начальная позиция парсинга
+ * @param {String} equalts_t Тип с которым сравниваем
+ * @param {String|Array<String>} equalts_v Значение(я) с которым(и) сравниваем
+ *
+ * @memberof Poonya.Utils
+ * @private
+ */
+function countKeys(entries, start, equalts_t, equalts_v) {
+    for (let i = start, to = entries.length; i < to; i++)
+        if (entries[i] == null || !entries[i].equals(equalts_t, equalts_v)) return i - start;
+}
+
+/**
+ * Форматирует число подгоняя его под общую длинну
+ *
+ * @param {Number} d Чило для формата
+ * @param {Number} l Желаемая длинна
+ * @memberof Poonya.Utils
+ * @function toFixed
+ * @protected
+ * @static
+ */
+function toFixed(d, l) {
+    return '0x' + d.toString(16).padStart(l - 2, '0');
+}
+
+/**
+ * Преобразует строку в массив байтов
+ *
+ * @function toBytes
+ * @param {String} input Строка для преобразования
+ * @memberof Poonya.Utils
+ * @returns {Array<Number>} массив с байтами
+ * @protected
+ * @static
+ */
+function toBytes(input) {
+    let bytes = new Array();
+
+    for(let i = 0, char, leng = input.length; i < leng; i++)
+        bytes.push((char = input.charCodeAt(i)) >>> 8, char & 0xFF);
+
+    return bytes;
+}
+
+/**
  * Преобразует массив байтов в строку
  *
  * @function toBytes
@@ -300,12 +319,13 @@ const Tick = nextTick;
 // ~ const Tick = setImmediate;
 // #!endif
 
-module.exports.throwError = throwError;
-module.exports.setImmediate = setImmediate;
-module.exports.maybeEquals = maybeEquals;
-module.exports.countKeys = countKeys;
-module.exports.fromBytes = fromBytes;
-module.exports.toFixed = toFixed;
-module.exports.toBytes = toBytes;
 module.exports.Tick = Tick;
 module.exports.Cast = Cast;
+module.exports.toFixed = toFixed;
+module.exports.toBytes = toBytes;
+module.exports.countKeys = countKeys;
+module.exports.fromBytes = fromBytes;
+module.exports.throwError = throwError;
+module.exports.maybeEquals = maybeEquals;
+module.exports.setImmediate = setImmediate;
+module.exports.createCustomErrorHandler = createCustomErrorHandler;

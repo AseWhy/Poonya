@@ -202,11 +202,14 @@ class Context extends iContext {
      * 
      * @param {Array<PoonyaStaticLibrary>} libraries массив с библиотеками, которые нужно импортировать
      * @param {Function} reject фукнция вызова ошибки
+     * @param {Boolean} add_root_level если true, то при имотрте будет добавлен новый слой памяти
      */
-    import(libraries, reject){
+    import(libraries, reject, add_root_level = true){
         if (libraries != null) {
             // Корневой слой
-            this.addLevel();
+            if(add_root_level) {
+                this.addLevel();
+            }
 
             for (let i = 0, leng = libraries.length, target; i < leng; i++) {
                 if (libraries[i] instanceof PoonyaStaticLibrary && !this._lib_cache.includes(libraries[i].namespace)) {
@@ -262,7 +265,13 @@ class Context extends iContext {
                                     out : 
                                     new iPoonyaOutputStream(), 
 
-                                throwError.bind({ input, path: this.source }),
+                                (position, content) => {
+                                    try {
+                                        throwError.call({ input, path: this.source }, position, content);
+                                    } catch(e) {
+                                        rej(e);
+                                    }
+                                },
 
                                 res
                             );

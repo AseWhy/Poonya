@@ -6,8 +6,10 @@
 
 "use strict";
 
+const { CriticalLexerErrorUnexpectedEndOfInputException } = require("../classes/exceptions");
 const { CHARTYPE } = require('../classes/static')
     ,   Token = require('./Token');
+const { throwError, fromBytes } = require("../utils");
 
 /**
  * Лексер, который производит лексический разбор подаваемого текста в буффере
@@ -271,6 +273,14 @@ function lexer(input, allow_spaces = true, offset = 0) {
 
             last = cur;
         }
+    }
+
+    if(is_comment || is_string) {
+        throwError.call(
+            { input: fromBytes(input) }, 
+            offset + input.length - 1, 
+            new CriticalLexerErrorUnexpectedEndOfInputException()
+        )
     }
 
     if (!is_comment && (allow_spaces || cur !== CHARTYPE.SPACE) && buff.length != 0)

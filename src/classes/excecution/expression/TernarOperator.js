@@ -43,9 +43,9 @@ class TernarOperator extends Operand {
      * @returns {TernarOperator}
      */
      __sync(reject){
-        condition.__sync(reject);
-        v_o.__sync(reject);
-        v_t.__sync(reject);
+        this.condition.__sync(reject);
+        this.v_o.__sync(reject);
+        this.v_t.__sync(reject);
 
         return this;
     }
