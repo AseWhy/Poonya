@@ -6650,7 +6650,7 @@ poonya = /******/ (() => {
                 constructor(...libs) {
                     super(
                         `library ${libs
-                            .map((e) => `"${e.name}"`)
+                            .map((e) => `"${e}"`)
                             .join(
                                 ', '
                             )} cannot be imported, possibly the wrong library identifier for import was specified`

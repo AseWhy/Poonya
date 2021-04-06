@@ -5318,7 +5318,7 @@ module.exports = /******/ (() => {
                 constructor(...libs) {
                     super(
                         `library ${libs
-                            .map((e) => `"${e.name}"`)
+                            .map((e) => `"${e}"`)
                             .join(
                                 ', '
                             )} cannot be imported, possibly the wrong library identifier for import was specified`
@@ -6885,7 +6885,7 @@ module.exports = /******/ (() => {
                     if (id === 'poonya') {
                         return __webpack_require__(9040);
                     } else {
-                        return __webpack_require__(875)(id);
+                        return super.require(id);
                     }
                 }
             }
@@ -10505,20 +10505,6 @@ module.exports = /******/ (() => {
             /***/
         },
 
-        /***/ 875: /***/ (module) => {
-            function webpackEmptyContext(req) {
-                var e = new Error("Cannot find module '" + req + "'");
-                e.code = 'MODULE_NOT_FOUND';
-                throw e;
-            }
-            webpackEmptyContext.keys = () => [];
-            webpackEmptyContext.resolve = webpackEmptyContext;
-            webpackEmptyContext.id = 875;
-            module.exports = webpackEmptyContext;
-
-            /***/
-        },
-
         /***/ 8614: /***/ (module) => {
             'use strict';
             module.exports = require('events');
@@ -10589,15 +10575,9 @@ module.exports = /******/ (() => {
         /******/
         /******/ /******/ return module.exports;
         /******/
-    } /* webpack/runtime/hasOwnProperty shorthand */
+    } /* webpack/runtime/node module decorator */
     /******/
     /************************************************************************/
-    /******/ /******/ (() => {
-        /******/ __webpack_require__.o = (obj, prop) =>
-            Object.prototype.hasOwnProperty.call(obj, prop);
-        /******/
-    })(); /* webpack/runtime/node module decorator */
-    /******/
     /******/ /******/ (() => {
         /******/ __webpack_require__.nmd = (module) => {
             /******/ module.paths = [];

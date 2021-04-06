@@ -318,7 +318,7 @@ class PoonyaModule extends Module {
         if(id === 'poonya') {
             return require('./preset');
         } else {
-            return require(id);
+            return super.require(id);
         }
     }
 }

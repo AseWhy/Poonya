@@ -602,7 +602,7 @@ class IsNotAConstructorException extends PoonyaException {
  */
  class CannotImportStaticLibrary extends PoonyaException {
     constructor(...libs) {
-        super(`library ${libs.map(e => `"${e.name}"`).join(', ')} cannot be imported, possibly the wrong library identifier for import was specified`);
+        super(`library ${libs.map(e => `"${e}"`).join(', ')} cannot be imported, possibly the wrong library identifier for import was specified`);
     }
 }
 
