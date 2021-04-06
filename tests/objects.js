@@ -3,7 +3,7 @@ const poonya = require("../src/poonya")
     , assert = require("assert");
 
 describe("poonya-objects-test", () => {
-    describe("#script-execution-test[eval#2]-object-constructions", () => {
+    describe("#script-execution-test[eval#3]-object-constructions", () => {
         it("Object constructs#1", async () => {
             const context = await poonya.createContext();
 

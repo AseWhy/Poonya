@@ -1,5 +1,10 @@
 const { PoonyaStaticLibrary, PoonyaPrototype, FIELDFLAGS, Exceptions } = require('poonya');
 
+// #!if platform === 'node'
+const { readFile } = require('fs'),
+      { join, dirname, extname } = require('path');
+// #!endif
+
 new class DefaultMathStaticLibrary extends PoonyaStaticLibrary {
     constructor(){
         super('default.joiners', false, false, 'Join');
@@ -370,10 +375,66 @@ new class DefaultStaticLibrary extends PoonyaStaticLibrary {
 
         this.addField('log', this.log, FIELDFLAGS.CONSTANT);
         this.addField('wait', this.wait, FIELDFLAGS.CONSTANT);
+        this.addField('require', this.require, FIELDFLAGS.CONSTANT);
+        this.addField('eval', this.eval, FIELDFLAGS.CONSTANT);
 
         this.addLib('default.joiners');
         this.addLib('default.dates');
         this.addLib('default.math');
+    }
+
+    require(service, r_path) {
+        (async () => {
+            let path,
+                content;
+            
+            // #!if platform === 'node'
+                path = join(dirname(service.context.source), r_path.toString());
+
+                path = extname(path) == '' ? path + '.po' : path;
+
+                content = new Promise(res => {
+                    readFile(path, (err, r_data) => {
+                        if(err) {
+                            service.reject(service.position, new Exceptions.IOError(path));
+
+                            return;
+                        };
+
+                        res(r_data.toString());
+                    });
+                });
+            // #!endif
+
+            // #!if platform === 'browser'
+            /*~
+                path = window.location.origin + '/' + service.context.source.split('/').slice(0, -1).join('/') + '/' + r_path;
+
+                path = path.split('/').pop().split('.').length > 0 ? path : path + '.po'
+                
+                content = fetch(path, { method: 'GET' }).then(e => e.text());
+            */
+            // #!endif
+
+            if(path == service.context.source) {
+                service.reject(data[i].position, new Exceptions.IsRecursiveLink(service.context.source));
+            }
+
+            try {
+                service.resolve(
+                    await service.context
+                        .clone()
+                        .setSource(path)
+                        .eval(await content)
+                );
+            } catch (e) {
+                service.reject(data[i].position, new Exceptions.LinkerIOError(path));
+            }
+        })()
+    }
+
+    eval(srvice, string){
+        return service.context.eval(string);
     }
 
     wait(service, milis){

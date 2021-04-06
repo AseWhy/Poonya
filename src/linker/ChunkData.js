@@ -15,7 +15,7 @@ module.exports = class ChunkData {
      * @returns true если приндалежит false если не приндалежит
      */
     isOwnChunckPosition(position) {
-        return position > this.from && position <= this.to;
+        return position >= this.from && position <= this.to;
     }
 
     toString(){

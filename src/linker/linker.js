@@ -16,8 +16,8 @@ const
     { IOError } = require('../classes/exceptions'),
       Exceptions = require('../classes/exceptions'),
       lexer = require('../lexer/lexer'),
-      ChunkData = require("./ChunkData");
-const LinkerData = require("./LinkerData");
+      ChunkData = require("./ChunkData"),
+      LinkerData = require("./LinkerData");
 
 /**
  * Препроцессораня функция, линкует файлы.

@@ -161,6 +161,8 @@ class Context extends iContext {
 
         this.levels = new Array();
 
+        this.source = '';
+
         this._lib_cache = new Array();
         
         // Если переданы дидлиотеки для импорта, то импортируем их в этот контекст
@@ -183,6 +185,16 @@ class Context extends iContext {
             // Удаляем все не объекты
             ).filter(e => e !== null)
         );
+    }
+
+    /**
+     * Устнаваливает истоник контекста (путь к файлу, из-за выполнения которого этот контекст был создан)
+     * 
+     * @param {String} new_source 
+     * @returns 
+     */
+    setSource(new_source){
+        this.source = new_source;return this;
     }
 
     /**
@@ -225,43 +237,36 @@ class Context extends iContext {
      * Выполняет код poonya из строки
      * 
      * @param {String} input Вход шаблона
-     * @param {PoonyaOutputStream} out Вывод шаблонизатора
+     * @param {?PoonyaOutputStream} out Вывод шаблонизатора
      * 
      * @method
      * @public
      * @async
      */
     eval(input, out) {
-        const ident = 'eval-' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16);
-
         return new Promise((res, rej) => {
             parser(
                 input,
-                ident
+                this.source
             )
                 .catch(
                     error => rej(error)
                 )
                 .then(
                     result => {
-                        result && 
-                        result.sequense.result(
-                            this, 
-                            out != null ? 
-                                out : 
-                                new iPoonyaOutputStream(), 
-                            (symbol, message) => rej(
-                                new PoonyaException(
-                                    message + 
-                                    ', at symbol ' + 
-                                    symbol
-                                )
-                            ),
+                        if(result) {
+                            result.sequense.result(
+                                this, 
 
-                            res,
+                                out != null ? 
+                                    out : 
+                                    new iPoonyaOutputStream(), 
 
-                            throwError.bind({ input, path: ident })
-                        );
+                                throwError.bind({ input, path: this.source }),
+
+                                res
+                            );
+                        }
                     }
                 );
         });
@@ -275,7 +280,7 @@ class Context extends iContext {
      * @public
      */
     clone() {
-        const clone = new Context(null, null, ...this.levels);
+        const clone = new Context(null, null, ...this.levels).setSource(this.source);
 
         clone._lib_cache = Array.from(this._lib_cache);
 

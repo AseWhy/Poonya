@@ -290,7 +290,7 @@ class CodeEmitter extends iCodeEmitter {
      */
     [RESULT](data, error, out, c_clone){
         if (Array.isArray(data)) {
-            this.data.sequense.result(new Context(this.libraries, error, ...data), out, error, () => out.end());
+            this.data.sequense.result(new Context(this.libraries, error, ...data).setSource(this.path), out, error, () => out.end());
         } else if(data instanceof Context){
             if(c_clone) {
                 const clone = data.clone();
@@ -302,7 +302,7 @@ class CodeEmitter extends iCodeEmitter {
                 this.data.sequense.result(data, out, error, () => out.end());
             }
         } else {
-            this.data.sequense.result(new Context(this.libraries, error, data), out, error, () => out.end());
+            this.data.sequense.result(new Context(this.libraries, error, data).setSource(this.path), out, error, () => out.end());
         }
     }
 
@@ -467,7 +467,7 @@ class ExpressionPattern extends CodeEmitter {
                 }
             } else {
                 if (Array.isArray(data)) {
-                    const context = new Context(this.libraries, error, ...data);
+                    const context = new Context(this.libraries, error, ...data).setSource(this.path);
 
                     this.data.sequense.result(
                         context,
@@ -476,7 +476,7 @@ class ExpressionPattern extends CodeEmitter {
                         result => result.result(context, null, null, res)
                     );
                 } else {
-                    const context = new Context(this.libraries, error, ...data);
+                    const context = new Context(this.libraries, error, ...data).setSource(this.path);
 
                     this.data.sequense.result(
                         context,
@@ -542,7 +542,7 @@ function createContext(data = new Object, ...libs) {
                 }),
 
                 data
-            ));
+            ).setSource(module.parent.filename));
         } else {
             SERVICE.ACTIONS.on('load', () => {
                 res(new Context(
@@ -556,7 +556,7 @@ function createContext(data = new Object, ...libs) {
                     }),
     
                     data
-                ));
+                ).setSource(module.parent.filename));
             });
         }
     });
